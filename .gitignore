@@ -130,3 +130,4 @@ dist
 /*.sqlite-wal
 *.sqlite
 customWads/**
+**/*.iml
