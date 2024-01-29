@@ -53,4 +53,8 @@ export class FileUploadService {
         return new FileUploadModelResponse(savedEntry, this.baseUrl);
     }
 
+    public processDelete(token: string): Promise<boolean> {
+
+    }
+
 }

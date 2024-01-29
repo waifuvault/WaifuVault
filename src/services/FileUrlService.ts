@@ -11,7 +11,7 @@ export class FileUrlService {
     @Constant(GlobalEnv.FILE_SIZE_UPLOAD_LIMIT_MB)
     private readonly MAX_SIZE: string;
 
-    private readonly basePath = `${__dirname}/../../customWads`;
+    private readonly basePath = `${__dirname}/../../files`;
 
     public async getFile(url: string): Promise<string> {
         const headCheck = await fetch(url, {
@@ -22,7 +22,7 @@ export class FileUrlService {
             throw new BadRequest("Unable to obtain content size for deleted file");
         }
         const contentLength = Number.parseInt(contentLengthStr);
-        if (contentLength > Number.parseInt(this.MAX_SIZE)) {
+        if (contentLength > Number.parseInt(this.MAX_SIZE) * 1048576) {
             throw new BadRequest("file too big");
         }
         const response = await fetch(url, {

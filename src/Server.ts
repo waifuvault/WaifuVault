@@ -8,6 +8,7 @@ import "./protocols";
 import "./filters";
 import "./engine/impl/HttpErrorRenderers";
 import * as rest from "./controllers/rest";
+import "./services/FileCleaner";
 // import * as views from "./controllers/views";
 // import * as secureViews from "./controllers/secureViews";
 // custom index imports end
