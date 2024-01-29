@@ -14,12 +14,16 @@ export class FileCleaner implements OnInit {
 
     private static readonly MIN_EXPIRATION = 30 * 24 * 60 * 60 * 1000;
     private static readonly MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
+
     @Inject()
     private scheduleService: ScheduleService;
+
     @Inject()
     private fileUploadService: FileUploadService;
+
     @Constant(GlobalEnv.FILE_SIZE_UPLOAD_LIMIT_MB)
     private readonly MAX_SIZE: string;
+
     private readonly basePath = `${__dirname}/../../files`;
 
     public async processFiles(): Promise<void> {

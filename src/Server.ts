@@ -140,7 +140,7 @@ const opts: Partial<TsED.Configuration> = {
     },
     swagger: [
         {
-            path: "/api-docs",
+            path: "/",
             specVersion: "3.0.3",
             options: {
                 withCredentials: true

@@ -11,6 +11,7 @@ import fs from "fs";
 import crypto from "crypto";
 import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse";
 import GlobalEnv from "../model/constants/GlobalEnv";
+import {Logger} from "@tsed/logger";
 
 @Service()
 export class FileUploadService {
@@ -26,6 +27,9 @@ export class FileUploadService {
 
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
+
+    @Inject()
+    private logger: Logger;
 
     public async processUpload(ip: string, file?: PlatformMulterFile, url?: string): Promise<FileUploadModelResponse> {
         const token = crypto.randomUUID();
@@ -53,8 +57,20 @@ export class FileUploadService {
         return new FileUploadModelResponse(savedEntry, this.baseUrl);
     }
 
-    public processDelete(token: string): Promise<boolean> {
-
+    public async processDelete(token: string): Promise<boolean> {
+        let deleted = false;
+        const entry = await this.repo.getEntry(token);
+        if (!entry) {
+            return false;
+        }
+        try {
+            await this.fileEngine.deleteFile(entry.fileName);
+            deleted = await this.repo.deleteEntry(token);
+        } catch (e) {
+            this.logger.error(e);
+            return false;
+        }
+        return deleted;
     }
 
 }

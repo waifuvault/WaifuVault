@@ -2,7 +2,6 @@ import {Inject, Service} from "@tsed/di";
 import {UserModel} from "../model/db/User.model";
 import argon2 from "argon2";
 import {CustomUserInfoModel} from "../model/auth/CustomUserInfoModel";
-import {Logger} from "@tsed/logger";
 import {Unauthorized} from "@tsed/exceptions";
 import {UserRepo} from "../db/repo/UserRepo";
 
@@ -11,9 +10,6 @@ export class UserService {
 
     @Inject()
     private userRepo: UserRepo;
-
-    @Inject()
-    private logger: Logger;
 
     public async getUser(email: string, password: string): Promise<UserModel | null> {
         const userObject = await this.userRepo.getUser(email);

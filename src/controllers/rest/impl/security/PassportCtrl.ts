@@ -1,6 +1,6 @@
 import {Controller, Inject, ProviderScope, Scope} from "@tsed/di";
 import {Authenticate, Authorize} from "@tsed/passport";
-import {Get, Post, Returns, Security} from "@tsed/schema";
+import {Get, Hidden, Post, Returns, Security} from "@tsed/schema";
 import {PlatformResponse, Req, Res} from "@tsed/common";
 import {StatusCodes} from "http-status-codes";
 import {BodyParams} from "@tsed/platform-params";
@@ -11,6 +11,7 @@ import {UserService} from "../../../../services/UserService";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
+@Hidden()
 export class PassportCtrl extends BaseRestController {
 
     @Inject()

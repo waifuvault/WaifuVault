@@ -1,9 +1,9 @@
 import {Controller, Inject} from "@tsed/di";
-import {Post, Returns} from "@tsed/schema";
+import {Delete, Description, Post, Returns} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse";
-import {BadRequest, NotFound} from "@tsed/exceptions";
-import {MultipartFile, PlatformMulterFile, Req} from "@tsed/common";
+import {BadRequest} from "@tsed/exceptions";
+import {MultipartFile, PlatformMulterFile, QueryParams, Req} from "@tsed/common";
 import {BodyParams} from "@tsed/platform-params";
 import {FileEngine} from "../../../engine/FileEngine";
 import {FileUploadService} from "../../../services/FileUploadService";
@@ -19,8 +19,8 @@ export class FileUploadController {
 
     @Post("/")
     @Returns(StatusCodes.CREATED, FileUploadModelResponse)
-    @Returns(StatusCodes.NOT_FOUND, NotFound)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    @Description("Upload a file or specify URL to a file")
     public async addEntry(@Req() req: Req, @MultipartFile("file") file?: PlatformMulterFile, @BodyParams("url") url?: string): Promise<unknown> {
         if (file && url) {
             if (file) {
@@ -30,6 +30,20 @@ export class FileUploadController {
         }
         const ip = req.ip;
         return this.fileUploadService.processUpload(ip, file, url);
-        // const foo = Builder(FileUploadModelResponse).url(`http://localhost:8081/f/${file?.filename}`).build();
+    }
+
+    @Delete("/")
+    @Returns(StatusCodes.OK, Boolean)
+    @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    @Description("Delete a file via the token")
+    public async deleteEntry(@QueryParams("token") token: string): Promise<unknown> {
+        if (!token) {
+            throw new BadRequest("no token provided");
+        }
+        const deleted = await this.fileUploadService.processDelete(token);
+        if (!deleted) {
+            throw new BadRequest(`Unknown token ${token}`);
+        }
+        return deleted;
     }
 }

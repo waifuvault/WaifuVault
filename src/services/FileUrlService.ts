@@ -31,13 +31,15 @@ export class FileUrlService {
         if (!response.ok) {
             throw new BadRequest(`Unable to get response ${response.statusText}`);
         }
-        const fileName = `${Date.now()}${url.substring(url.lastIndexOf('/') + 1)}`;
-        const destination = path.resolve(`${this.basePath}/${fileName}`);
+        const now = Date.now();
+        const fileName = `${now}${url.substring(url.lastIndexOf('/') + 1)}`;
+        const ext = fileName.split('.').pop();
+        const destination = path.resolve(`${this.basePath}/${now}.${ext}`);
         const fileStream = fs.createWriteStream(destination);
         return new Promise((resolve, reject) => {
             response.body.pipe(fileStream);
             response.body.on("error", reject);
             fileStream.on("finish", resolve);
-        }).then(() => fileName);
+        }).then(() => destination);
     }
 }
