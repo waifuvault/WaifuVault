@@ -21,8 +21,8 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         });
     }
 
-    public getEntryFromChecksum(checksum: string, transaction?: EntityManager): Promise<FileUploadModel | null> {
-        return this.getEntityManager(transaction).findOneBy({
+    public getEntriesFromChecksum(checksum: string, transaction?: EntityManager): Promise<FileUploadModel[]> {
+        return this.getEntityManager(transaction).findBy({
             checksum
         });
     }
