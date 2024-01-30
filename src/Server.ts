@@ -31,6 +31,7 @@ import GlobalEnv from "./model/constants/GlobalEnv";
 import multer from "multer";
 import path from "path";
 import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware";
+import rateLimit from "express-rate-limit";
 import LRUCache = require("lru-cache");
 
 const storage = multer.diskStorage({
@@ -125,7 +126,13 @@ const opts: Partial<TsED.Configuration> = {
             extended: true
         }),
         compression(),
-        IpFilterMiddleware
+        IpFilterMiddleware,
+        rateLimit({
+            windowMs: 1000,
+            limit: 1,
+            message: "You have exceeded your 1 request a second.",
+            legacyHeaders: true,
+        })
     ],
     views: {
         root: `${__dirname}/public`,

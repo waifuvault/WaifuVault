@@ -1,14 +1,15 @@
 import {Controller, Inject} from "@tsed/di";
-import {Delete, Description, Post, Returns} from "@tsed/schema";
+import {Delete, Description, Put, Returns} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse";
-import {BadRequest} from "@tsed/exceptions";
+import {BadRequest, Forbidden} from "@tsed/exceptions";
 import {MultipartFile, PlatformMulterFile, QueryParams, Req} from "@tsed/common";
 import {BodyParams} from "@tsed/platform-params";
 import {FileEngine} from "../../../engine/FileEngine";
 import {FileUploadService} from "../../../services/FileUploadService";
 
 @Controller("/upload")
+@Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
 export class FileUploadController {
 
     @Inject()
@@ -17,7 +18,7 @@ export class FileUploadController {
     @Inject()
     private fileUploadService: FileUploadService;
 
-    @Post("/")
+    @Put("/")
     @Returns(StatusCodes.CREATED, FileUploadModelResponse)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
     @Description("Upload a file or specify URL to a file")
