@@ -25,6 +25,12 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         });
     }
 
+    public getEntryFromChecksum(checksum: string, transaction?: EntityManager): Promise<FileUploadModel | null> {
+        return this.getEntityManager(transaction).findOneBy({
+            checksum
+        });
+    }
+
     public async deleteEntry(token: string, transaction?: EntityManager): Promise<boolean> {
         const deleteResult = await this.getEntityManager(transaction).delete({
             token
@@ -35,4 +41,5 @@ export class FileDao extends AbstractDao<FileUploadModel> {
     public getAllEntries(transaction?: EntityManager): Promise<FileUploadModel[]> {
         return this.getEntityManager(transaction).find();
     }
+
 }

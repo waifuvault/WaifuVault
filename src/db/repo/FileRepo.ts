@@ -16,6 +16,10 @@ export class FileRepo {
         return this.fileDao.getEntry(token);
     }
 
+    public getEntryFromChecksum(hash: string): Promise<FileUploadModel | null> {
+        return this.fileDao.getEntryFromChecksum(hash);
+    }
+
     public getAllEntries(): Promise<FileUploadModel[]> {
         return this.fileDao.getAllEntries();
     }

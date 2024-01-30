@@ -48,13 +48,22 @@ export class FileUploadService {
         } else {
             throw new BadRequest("Unable to process both a file and a url");
         }
+        const checksum = await this.getFileHash(resourcePath);
+        const existingFileModel = await this.repo.getEntryFromChecksum(checksum);
+        if (existingFileModel) {
+            await this.fileEngine.deleteFile(path.basename(resourcePath));
+            return FileUploadModelResponse.fromExistsUrl(existingFileModel, this.baseUrl);
+        }
+        uploadEntry.checksum(checksum);
+        const savedEntry = await this.repo.saveEntry(uploadEntry.build());
+        return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl);
+    }
+
+    private async getFileHash(resourcePath: string): Promise<string> {
         const fileBuffer = await fs.promises.readFile(resourcePath);
         const hashSum = crypto.createHash('md5');
         hashSum.update(fileBuffer);
-        const checksum = hashSum.digest('hex');
-        uploadEntry.checksum(checksum);
-        const savedEntry = await this.repo.saveEntry(uploadEntry.build());
-        return new FileUploadModelResponse(savedEntry, this.baseUrl);
+        return hashSum.digest('hex');
     }
 
     public async processDelete(token: string): Promise<boolean> {

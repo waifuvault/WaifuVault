@@ -1,6 +1,6 @@
 import {Constant, Service} from "@tsed/di";
 import GlobalEnv from "../model/constants/GlobalEnv";
-import fetch from 'node-fetch';
+import fetch, {Response} from 'node-fetch';
 import {BadRequest} from "@tsed/exceptions";
 import path from "path";
 import fs from "fs";
@@ -14,9 +14,14 @@ export class FileUrlService {
     private readonly basePath = `${__dirname}/../../files`;
 
     public async getFile(url: string): Promise<string> {
-        const headCheck = await fetch(url, {
-            method: "HEAD"
-        });
+        let headCheck: Response;
+        try {
+            headCheck = await fetch(url, {
+                method: "HEAD"
+            });
+        } catch (e) {
+            throw new BadRequest(e.message);
+        }
         const contentLengthStr = headCheck.headers.get("content-length");
         if (!contentLengthStr) {
             throw new BadRequest("Unable to obtain content size for deleted file");
@@ -25,9 +30,16 @@ export class FileUrlService {
         if (contentLength > Number.parseInt(this.MAX_SIZE) * 1048576) {
             throw new BadRequest("file too big");
         }
-        const response = await fetch(url, {
-            method: "GET"
-        });
+
+        let response: Response;
+        try {
+            response = await fetch(url, {
+                method: "GET"
+            });
+        } catch (e) {
+            throw new BadRequest(e.message);
+        }
+
         if (!response.ok) {
             throw new BadRequest(`Unable to get response ${response.statusText}`);
         }

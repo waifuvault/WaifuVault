@@ -53,7 +53,7 @@ export class FileCleaner implements OnInit {
 
     public $onInit(): void {
         this.scheduleService.scheduleJobInterval({
-            days: 1,
+            hours: 1,
             runImmediately: true
         }, this.processFiles, "removeExpiredFiles", this);
     }
