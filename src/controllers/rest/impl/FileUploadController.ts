@@ -8,7 +8,7 @@ import {BodyParams} from "@tsed/platform-params";
 import {FileEngine} from "../../../engine/FileEngine";
 import {FileUploadService} from "../../../services/FileUploadService";
 
-@Controller("/upload")
+@Controller("/")
 @Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
 export class FileUploadController {
 
@@ -18,7 +18,7 @@ export class FileUploadController {
     @Inject()
     private fileUploadService: FileUploadService;
 
-    @Put("/")
+    @Put()
     @Returns(StatusCodes.CREATED, FileUploadModelResponse)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
     @Description("Upload a file or specify URL to a file")
@@ -29,11 +29,14 @@ export class FileUploadController {
             }
             throw new BadRequest("Unable to upload both a file and a url");
         }
+        if (!file && !url) {
+            throw new BadRequest("Please supply a file or url");
+        }
         const ip = req.ip;
-        return this.fileUploadService.processUpload(ip, file, url);
+        return this.fileUploadService.processUpload(ip, url || file!);
     }
 
-    @Delete("/")
+    @Delete()
     @Returns(StatusCodes.OK, Boolean)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
     @Description("Delete a file via the token")

@@ -131,7 +131,10 @@ const opts: Partial<TsED.Configuration> = {
             windowMs: 1000,
             limit: 1,
             message: "You have exceeded your 1 request a second.",
-            legacyHeaders: true,
+            standardHeaders: true,
+            skip: (request) => {
+                return !request.path.includes("/upload");
+            }
         })
     ],
     views: {
