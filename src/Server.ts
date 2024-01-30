@@ -133,7 +133,7 @@ const opts: Partial<TsED.Configuration> = {
             message: "You have exceeded your 1 request a second.",
             standardHeaders: true,
             skip: (request) => {
-                return !request.path.includes("/upload");
+                return !request.path.includes("/rest");
             }
         })
     ],
