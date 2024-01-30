@@ -4,4 +4,3 @@
 
 export * from "./AbstractEjsHttpRenderEngine";
 export * from "./DefaultHttpRenderEngine";
-export * from "./HttpUnauthorizedRenderEngine";

@@ -2,14 +2,10 @@ import {Inject, Injectable} from "@tsed/di";
 import {AbstractDao} from "./AbstractDao";
 import {FileUploadModel} from "../../model/db/FileUpload.model";
 import {SQLITE_DATA_SOURCE} from "../../model/di/tokens";
-import {Logger} from "@tsed/logger";
 import {DataSource, EntityManager} from "typeorm";
 
 @Injectable()
 export class FileDao extends AbstractDao<FileUploadModel> {
-
-    @Inject()
-    private logger: Logger;
 
     public constructor(@Inject(SQLITE_DATA_SOURCE) ds: DataSource) {
         super(ds, FileUploadModel);

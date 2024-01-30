@@ -30,6 +30,7 @@ import compression from "compression";
 import GlobalEnv from "./model/constants/GlobalEnv";
 import multer from "multer";
 import path from "path";
+import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware";
 import LRUCache = require("lru-cache");
 
 const storage = multer.diskStorage({
@@ -123,7 +124,8 @@ const opts: Partial<TsED.Configuration> = {
         bodyParser.urlencoded({
             extended: true
         }),
-        compression()
+        compression(),
+        IpFilterMiddleware
     ],
     views: {
         root: `${__dirname}/public`,
