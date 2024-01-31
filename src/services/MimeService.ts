@@ -11,6 +11,9 @@ export class MimeService {
     private readonly blockedMimeTypes: string;
 
     public async isBlocked(filepath: string): Promise<boolean> {
+        if (!this.blockedMimeTypes) {
+            return false;
+        }
         const detected = await this.findMimeType(filepath);
         if (detected === null) {
             throw new BadRequest("Unable to determine mime type, file rejected");
