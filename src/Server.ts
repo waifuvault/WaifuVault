@@ -140,6 +140,9 @@ const opts: Partial<TsED.Configuration> = {
             standardHeaders: true,
             skip: (request) => {
                 return !request.path.includes("/rest");
+            },
+            keyGenerator: (request) => {
+                return request.ip.replace(/:\d+[^:]*$/, '');
             }
         })
     ],
