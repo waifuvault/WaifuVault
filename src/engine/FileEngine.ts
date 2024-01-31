@@ -1,11 +1,12 @@
 import {Constant, Inject, Injectable, ProviderScope} from "@tsed/di";
-import fs from "fs";
+import fs from 'node:fs/promises';
 import {PlatformMulterFile} from "@tsed/common";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {exec} from "child_process";
 import {promisify} from "util";
 import {Logger} from "@tsed/logger";
 import path from "path";
+import {__dirname} from "../utils/Utils.js";
 
 @Injectable({
     scope: ProviderScope.SINGLETON
@@ -21,7 +22,7 @@ export class FileEngine {
 
     public deleteFile(file: string | PlatformMulterFile): Promise<void> {
         const toDelete = this.getFilePath(file);
-        return fs.promises.rm(toDelete, {recursive: true, force: true});
+        return fs.rm(toDelete, {recursive: true, force: true});
     }
 
     public async scanFileWithClam(file: string | PlatformMulterFile): Promise<boolean> {

@@ -4,7 +4,7 @@ import {Get, Hidden, Post, Returns, Security} from "@tsed/schema";
 import {PlatformResponse, Req, Res} from "@tsed/common";
 import {StatusCodes} from "http-status-codes";
 import {BodyParams} from "@tsed/platform-params";
-import {UserModel} from "../../../../model/db/User.model";
+import {UserModel} from "../../../../model/db/User.model.js";
 import {BaseRestController} from "../../BaseRestController.js";
 import {CustomUserInfoModel} from "../../../../model/auth/CustomUserInfoModel.js";
 import {UserService} from "../../../../services/UserService.js";

@@ -7,12 +7,12 @@ import {FileUrlService} from "./FileUrlService.js";
 import {MimeService} from "./MimeService.js";
 import {Builder} from "builder-pattern";
 import path from "path";
-import fs from "fs";
+import fs from "node:fs/promises";
 import crypto from "crypto";
 import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {Logger} from "@tsed/logger";
-import {XOR} from "../model/constants/utils/typeings.js";
+import {XOR} from "../utils/typeings.js";
 import {BadRequest} from "@tsed/exceptions";
 
 @Service()
@@ -69,7 +69,7 @@ export class FileUploadService {
     }
 
     private async getFileHash(resourcePath: string): Promise<string> {
-        const fileBuffer = await fs.promises.readFile(resourcePath);
+        const fileBuffer = await fs.readFile(resourcePath);
         const hashSum = crypto.createHash('md5');
         hashSum.update(fileBuffer);
         return hashSum.digest('hex');

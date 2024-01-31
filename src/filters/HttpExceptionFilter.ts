@@ -2,7 +2,7 @@ import {Catch, ExceptionFilterMethods, PlatformContext} from "@tsed/common";
 import {Exception} from "@tsed/exceptions";
 import {Inject} from "@tsed/di";
 import {HttpErrorFactory} from "../factory/HttpErrorFactory.js";
-import {HttpErrorRenderObj} from "../model/constants/utils/typeings.js";
+import {HttpErrorRenderObj} from "../utils/typeings.js";
 
 @Catch(Exception)
 export class HttpExceptionFilter implements ExceptionFilterMethods<Exception> {

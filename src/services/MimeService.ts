@@ -1,6 +1,6 @@
 import {Constant, Service} from "@tsed/di";
-import {MIME_MAGIC_CONSTANTS} from "../model/constants/utils/MIME_MAGIC_CONSTANTS.js";
-import fs from "fs";
+import {MIME_MAGIC_CONSTANTS} from "../utils/MIME_MAGIC_CONSTANTS.js";
+import fs from "node:fs/promises";
 import mime from 'mime';
 import {BadRequest} from "@tsed/exceptions";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
@@ -20,10 +20,10 @@ export class MimeService {
     }
 
     public async findMimeType(filepath: string): Promise<string | null> {
-        let fileHandle: fs.promises.FileHandle | null = null;
+        let fileHandle: fs.FileHandle | null = null;
         try {
             const buffer = Buffer.alloc(1024 * 1024);
-            fileHandle = await fs.promises.open(filepath, 'r');
+            fileHandle = await fs.open(filepath, 'r');
             await fileHandle.read(buffer, 0, buffer.length, 0);
             for (const key in MIME_MAGIC_CONSTANTS) {
                 const currentType = MIME_MAGIC_CONSTANTS[key].mime;

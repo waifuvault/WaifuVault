@@ -1,3 +1,6 @@
+import {fileURLToPath} from 'node:url';
+import path from "node:path";
+
 export class ObjectUtils {
 
     public static getEnumAsObject(obj: Record<string, unknown>): Record<string, unknown> {
@@ -22,3 +25,6 @@ export class ObjectUtils {
         }
     }
 }
+
+export const __filename = fileURLToPath(import.meta.url);
+export const __dirname = path.dirname(fileURLToPath(import.meta.url));

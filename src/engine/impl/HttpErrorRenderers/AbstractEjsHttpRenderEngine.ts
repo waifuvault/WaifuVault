@@ -1,6 +1,6 @@
-import {IHttpErrorRenderEngine} from "../../IHttpErrorRenderEngine";
+import {IHttpErrorRenderEngine} from "../../IHttpErrorRenderEngine.js";
 import {Exception} from "@tsed/exceptions";
-import {HttpErrorRenderObj} from "../../../model/constants/utils/typeings.js";
+import {HttpErrorRenderObj} from "../../../utils/typeings.js";
 import {PlatformResponse} from "@tsed/common";
 
 export abstract class AbstractEjsHttpRenderEngine implements IHttpErrorRenderEngine<string> {

@@ -3,8 +3,9 @@ import GlobalEnv from "../model/constants/GlobalEnv.js";
 import fetch, {Response} from 'node-fetch';
 import {BadRequest} from "@tsed/exceptions";
 import path from "path";
-import fs from "fs";
-import url from "url";
+import fs from "node:fs";
+import url from "node:url";
+import {__dirname} from "../utils/Utils.js";
 
 @Service()
 export class FileUrlService {

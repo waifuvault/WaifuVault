@@ -5,13 +5,12 @@ import {Server} from "./Server.js";
 import {DataSource, Logger as TypeOrmLogger} from "typeorm";
 import {SQLITE_DATA_SOURCE} from "./model/di/tokens.js";
 import path from "path";
-import url from "url";
+import {fileURLToPath} from "node:url";
 
-const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 const dataSource = new DataSource({
     type: "better-sqlite3",
-    entities: [`${__dirname}/model/db/**/*.model.{ts,js}`],
+    entities: [`${path.dirname(fileURLToPath(import.meta.url))}/model/db/**/*.model.{ts,js}`],
     synchronize: true,
     database: "main.sqlite"
 });

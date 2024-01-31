@@ -4,9 +4,9 @@ import "@tsed/platform-express";
 import "@tsed/ajv";
 import "@tsed/swagger";
 // custom index imports
-import "./protocols.js";
-import "./filters.js";
-import "./engine/impl/HttpErrorRenderers.js";
+import "./protocols/index.js";
+import "./filters/index.js";
+import "./engine/impl/HttpErrorRenderers/index.js";
 import * as rest from "./controllers/rest/index.js";
 import "./services/FileCleaner.js";
 // import * as views from "./controllers/views";
@@ -32,8 +32,8 @@ import multer, {FileFilterCallback} from "multer";
 import path from "path";
 import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware.js";
 import rateLimit from "express-rate-limit";
-import LRUCache from "lru-cache";
-
+import {LRUCache} from "lru-cache";
+import {__dirname} from "./utils/Utils.js";
 
 const opts: Partial<TsED.Configuration> = {
     ...config,

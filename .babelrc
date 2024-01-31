@@ -9,7 +9,9 @@
     [
       "@babel/env",
       {
-        "debug": true
+        "debug": true,
+        "loose": true,
+        "modules": false
       }
     ],
     [

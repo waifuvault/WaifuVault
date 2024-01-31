@@ -2,9 +2,10 @@ import {Constant, Inject, OnInit, Service} from "@tsed/di";
 import {FileRepo} from "../db/repo/FileRepo.js";
 import {ScheduleService} from "./ScheduleService.js";
 import {FileUploadModel} from "../model/db/FileUpload.model.js";
-import fs from "fs";
+import fs from "node:fs/promises";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {FileUploadService} from "./FileUploadService.js";
+import {__dirname} from "../utils/Utils.js";
 
 @Service()
 export class FileCleaner implements OnInit {
@@ -47,7 +48,7 @@ export class FileCleaner implements OnInit {
     }
 
     private async getFileSize(filename: string): Promise<number> {
-        const info = await fs.promises.stat(filename);
+        const info = await fs.stat(filename);
         return info.size;
     }
 
