@@ -1,4 +1,7 @@
-export const mimemagics:any = {
+export const MIME_MAGIC_CONSTANTS: Record<string, {
+    signs: string[];
+    mime: string;
+}> = {
     "123": {
         "signs": [
             "0,00001A00051004"

@@ -1,6 +1,6 @@
 import {IHttpErrorRenderEngine} from "../../IHttpErrorRenderEngine";
 import {Exception} from "@tsed/exceptions";
-import {HttpErrorRenderObj} from "../../../utils/typeings";
+import {HttpErrorRenderObj} from "../../../model/constants/utils/typeings";
 import {Injectable, ProviderScope} from "@tsed/di";
 import {HTTP_RENDER_ENGINE} from "../../../model/di/tokens";
 

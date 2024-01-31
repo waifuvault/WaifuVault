@@ -28,20 +28,12 @@ import {DataSource} from "typeorm";
 import {SessionModel} from "./model/db/Session.model";
 import compression from "compression";
 import GlobalEnv from "./model/constants/GlobalEnv";
-import multer from "multer";
+import multer, {FileFilterCallback} from "multer";
 import path from "path";
 import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware";
 import rateLimit from "express-rate-limit";
 import LRUCache = require("lru-cache");
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, `${__dirname}/../files`);
-    },
-    filename: function (req, file, cb) {
-        cb(null, `${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
 
 const opts: Partial<TsED.Configuration> = {
     ...config,
@@ -55,10 +47,22 @@ const opts: Partial<TsED.Configuration> = {
     }()),
     multer: {
         dest: `${__dirname}/../files`,
+        fileFilter: function (request: Request,
+                              file: Express.Multer.File,
+                              callback: FileFilterCallback): void {
+            callback(null, true);
+        },
         limits: {
             fileSize: Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB as string) * 1048576
         },
-        storage: storage,
+        storage: multer.diskStorage({
+            destination: function (req, file, cb) {
+                cb(null, `${__dirname}/../files`);
+            },
+            filename: function (req, file, cb) {
+                cb(null, `${Date.now()}${path.extname(file.originalname)}`);
+            }
+        }),
         preservePath: true
     },
     passport: {

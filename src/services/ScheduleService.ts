@@ -4,7 +4,7 @@ import {SimpleIntervalSchedule} from "toad-scheduler/dist/lib/engines/simple-int
 import {AsyncTask} from "toad-scheduler/dist/lib/common/AsyncTask";
 import schedule, {Job as DateJob, JobCallback} from "node-schedule";
 import {Logger} from "@tsed/logger";
-import {ObjectUtils} from "../utils/Utils";
+import {ObjectUtils} from "../model/constants/utils/Utils";
 
 @Service()
 export class ScheduleService {

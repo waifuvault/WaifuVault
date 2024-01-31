@@ -1,4 +1,4 @@
-import {HttpErrorRenderObj} from "../utils/typeings";
+import {HttpErrorRenderObj} from "../model/constants/utils/typeings";
 import {Exception} from "@tsed/exceptions";
 import {PlatformResponse} from "@tsed/common";
 

@@ -12,7 +12,7 @@ import crypto from "crypto";
 import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse";
 import GlobalEnv from "../model/constants/GlobalEnv";
 import {Logger} from "@tsed/logger";
-import {XOR} from "../utils/typeings";
+import {XOR} from "../model/constants/utils/typeings";
 import {BadRequest} from "@tsed/exceptions";
 
 @Service()
