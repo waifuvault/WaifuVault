@@ -1,7 +1,7 @@
 import {Constant, Inject, Injectable, ProviderScope} from "@tsed/di";
 import fs from "fs";
 import {PlatformMulterFile} from "@tsed/common";
-import GlobalEnv from "../model/constants/GlobalEnv";
+import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {exec} from "child_process";
 import {promisify} from "util";
 import {Logger} from "@tsed/logger";

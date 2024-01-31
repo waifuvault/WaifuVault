@@ -1,5 +1,5 @@
 import {Column, Entity, Index} from "typeorm";
-import {AbstractModel} from "./AbstractModel";
+import {AbstractModel} from "./AbstractModel.js";
 
 @Entity()
 @Index(["token"], {

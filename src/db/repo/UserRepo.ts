@@ -1,6 +1,6 @@
 import {Inject, Injectable, ProviderScope} from "@tsed/di";
-import {UserDao} from "../dao/UserDao";
-import {UserModel} from "../../model/db/User.model";
+import {UserDao} from "../dao/UserDao.js";
+import {UserModel} from "../../model/db/User.model.js";
 import {Builder} from "builder-pattern";
 
 @Injectable({

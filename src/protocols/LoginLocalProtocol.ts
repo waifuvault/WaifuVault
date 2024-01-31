@@ -3,8 +3,8 @@ import {Inject} from "@tsed/di";
 import {BodyParams} from "@tsed/platform-params";
 import {OnVerify, Protocol} from "@tsed/passport";
 import {IStrategyOptions, Strategy} from "passport-local";
-import {UserModel} from "../model/db/User.model";
-import {UserService} from "../services/UserService";
+import {UserModel} from "../model/db/User.model.js";
+import {UserService} from "../services/UserService.js";
 
 @Protocol<IStrategyOptions>({
     name: "login",

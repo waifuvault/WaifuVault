@@ -1,18 +1,18 @@
 import {Constant, Inject, Service} from "@tsed/di";
-import {FileRepo} from "../db/repo/FileRepo";
+import {FileRepo} from "../db/repo/FileRepo.js";
 import {PlatformMulterFile} from "@tsed/common";
-import {FileUploadModel} from "../model/db/FileUpload.model";
-import {FileEngine} from "../engine/FileEngine";
-import {FileUrlService} from "./FileUrlService";
-import {MimeService} from "./MimeService";
+import {FileUploadModel} from "../model/db/FileUpload.model.js";
+import {FileEngine} from "../engine/FileEngine.js";
+import {FileUrlService} from "./FileUrlService.js";
+import {MimeService} from "./MimeService.js";
 import {Builder} from "builder-pattern";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse";
-import GlobalEnv from "../model/constants/GlobalEnv";
+import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse.js";
+import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {Logger} from "@tsed/logger";
-import {XOR} from "../model/constants/utils/typeings";
+import {XOR} from "../model/constants/utils/typeings.js";
 import {BadRequest} from "@tsed/exceptions";
 
 @Service()

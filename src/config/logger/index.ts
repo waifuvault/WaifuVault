@@ -1,5 +1,5 @@
 import {$log, DILoggerOptions} from "@tsed/common";
-import {isProduction} from "../envs";
+import {isProduction} from "../envs/index.js";
 
 if (isProduction) {
     $log.appenders.set("stdout", {

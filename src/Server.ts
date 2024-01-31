@@ -4,35 +4,35 @@ import "@tsed/platform-express";
 import "@tsed/ajv";
 import "@tsed/swagger";
 // custom index imports
-import "./protocols";
-import "./filters";
-import "./engine/impl/HttpErrorRenderers";
-import * as rest from "./controllers/rest";
-import "./services/FileCleaner";
+import "./protocols.js";
+import "./filters.js";
+import "./engine/impl/HttpErrorRenderers.js";
+import * as rest from "./controllers/rest/index.js";
+import "./services/FileCleaner.js";
 // import * as views from "./controllers/views";
 // import * as secureViews from "./controllers/secureViews";
 // custom index imports end
-import {config} from "./config";
-import {CustomUserInfoModel} from "./model/auth/CustomUserInfoModel";
+import {config} from "./config/index.js";
+import {CustomUserInfoModel} from "./model/auth/CustomUserInfoModel.js";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import methodOverride from "method-override";
-import {isProduction} from "./config/envs";
+import {isProduction} from "./config/envs/index.js";
 import helmet from "helmet";
 import process from "process";
 import cors from "cors";
 import {TypeormStore} from "connect-typeorm";
-import {SQLITE_DATA_SOURCE} from "./model/di/tokens";
+import {SQLITE_DATA_SOURCE} from "./model/di/tokens.js";
 import {DataSource} from "typeorm";
-import {SessionModel} from "./model/db/Session.model";
+import {SessionModel} from "./model/db/Session.model.js";
 import compression from "compression";
-import GlobalEnv from "./model/constants/GlobalEnv";
+import GlobalEnv from "./model/constants/GlobalEnv.js";
 import multer, {FileFilterCallback} from "multer";
 import path from "path";
-import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware";
+import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware.js";
 import rateLimit from "express-rate-limit";
-import LRUCache = require("lru-cache");
+import LRUCache from "lru-cache";
 
 
 const opts: Partial<TsED.Configuration> = {

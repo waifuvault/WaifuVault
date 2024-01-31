@@ -5,9 +5,9 @@ import {PlatformResponse, Req, Res} from "@tsed/common";
 import {StatusCodes} from "http-status-codes";
 import {BodyParams} from "@tsed/platform-params";
 import {UserModel} from "../../../../model/db/User.model";
-import {BaseRestController} from "../../BaseRestController";
-import {CustomUserInfoModel} from "../../../../model/auth/CustomUserInfoModel";
-import {UserService} from "../../../../services/UserService";
+import {BaseRestController} from "../../BaseRestController.js";
+import {CustomUserInfoModel} from "../../../../model/auth/CustomUserInfoModel.js";
+import {UserService} from "../../../../services/UserService.js";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)

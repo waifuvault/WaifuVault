@@ -2,10 +2,11 @@
   "name": "host_my_shit",
   "version": "1.0.0",
   "description": "Temp file hosting for nerds",
+  "type": "module",
   "scripts": {
     "tsc": "tsc --project tsconfig.compile.json",
     "build": "npm run tsc && npm run barrels && babel src --out-dir dist --extensions \".ts,.tsx,.js\" --copy-files",
-    "barrels": "barrelsby --config .barrelsby.json",
+    "barrels": "barrelsby --config .barrelsby.json && node fixbarrels.cjs",
     "start_js": "node dist/index.js",
     "start": "ts-node-esm src/index.ts",
     "start:prod": "cross-env NODE_ENV=production nodemon dist/index.js",

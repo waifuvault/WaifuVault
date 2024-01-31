@@ -1,8 +1,8 @@
 import {Arg, OnVerify, Protocol} from "@tsed/passport";
-import {UserModel} from "../model/db/User.model";
+import {UserModel} from "../model/db/User.model.js";
 import {BasicStrategy} from "passport-http";
 import {Inject} from "@tsed/di";
-import {UserService} from "../services/UserService";
+import {UserService} from "../services/UserService.js";
 
 @Protocol({
     name: "basic",

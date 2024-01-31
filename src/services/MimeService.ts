@@ -1,9 +1,9 @@
 import {Constant, Service} from "@tsed/di";
-import {MIME_MAGIC_CONSTANTS} from "../model/constants/utils/MIME_MAGIC_CONSTANTS";
+import {MIME_MAGIC_CONSTANTS} from "../model/constants/utils/MIME_MAGIC_CONSTANTS.js";
 import fs from "fs";
 import mime from 'mime';
 import {BadRequest} from "@tsed/exceptions";
-import GlobalEnv from "../model/constants/GlobalEnv";
+import GlobalEnv from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class MimeService {

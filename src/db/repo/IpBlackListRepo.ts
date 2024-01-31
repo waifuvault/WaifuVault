@@ -1,6 +1,6 @@
 import {Inject, Injectable} from "@tsed/di";
-import {IpBlackListModel} from "../../model/db/IpBlackList.model";
-import {IpBlackListDao} from "../dao/IpBlackListDao";
+import {IpBlackListModel} from "../../model/db/IpBlackList.model.js";
+import {IpBlackListDao} from "../dao/IpBlackListDao.js";
 import {Builder} from "builder-pattern";
 
 @Injectable()

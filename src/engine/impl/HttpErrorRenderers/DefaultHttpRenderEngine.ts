@@ -1,8 +1,8 @@
-import {IHttpErrorRenderEngine} from "../../IHttpErrorRenderEngine";
+import {IHttpErrorRenderEngine} from "../../IHttpErrorRenderEngine.js";
 import {Exception} from "@tsed/exceptions";
-import {HttpErrorRenderObj} from "../../../model/constants/utils/typeings";
+import {HttpErrorRenderObj} from "../../../model/constants/utils/typeings.js";
 import {Injectable, ProviderScope} from "@tsed/di";
-import {HTTP_RENDER_ENGINE} from "../../../model/di/tokens";
+import {HTTP_RENDER_ENGINE} from "../../../model/di/tokens.js";
 
 export type DefaultRenderObj = {
     name: string;

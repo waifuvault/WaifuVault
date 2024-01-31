@@ -1,12 +1,12 @@
 import {Controller, Inject} from "@tsed/di";
 import {Delete, Description, Put, Returns} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
-import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse";
+import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
 import {BadRequest, Forbidden} from "@tsed/exceptions";
 import {MultipartFile, PlatformMulterFile, QueryParams, Req} from "@tsed/common";
 import {BodyParams} from "@tsed/platform-params";
-import {FileEngine} from "../../../engine/FileEngine";
-import {FileUploadService} from "../../../services/FileUploadService";
+import {FileEngine} from "../../../engine/FileEngine.js";
+import {FileUploadService} from "../../../services/FileUploadService.js";
 
 @Controller("/")
 @Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")

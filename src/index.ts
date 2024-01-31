@@ -1,10 +1,13 @@
 import "reflect-metadata";
 import {$log, Logger as TsEdLogger, registerProvider} from "@tsed/common";
 import {PlatformExpress} from "@tsed/platform-express";
-import {Server} from "./Server";
+import {Server} from "./Server.js";
 import {DataSource, Logger as TypeOrmLogger} from "typeorm";
-import {SQLITE_DATA_SOURCE} from "./model/di/tokens";
+import {SQLITE_DATA_SOURCE} from "./model/di/tokens.js";
+import path from "path";
+import url from "url";
 
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 const dataSource = new DataSource({
     type: "better-sqlite3",

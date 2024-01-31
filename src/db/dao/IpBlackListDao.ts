@@ -1,7 +1,7 @@
 import {Inject, Injectable} from "@tsed/di";
-import {AbstractDao} from "./AbstractDao";
-import {IpBlackListModel} from "../../model/db/IpBlackList.model";
-import {SQLITE_DATA_SOURCE} from "../../model/di/tokens";
+import {AbstractDao} from "./AbstractDao.js";
+import {IpBlackListModel} from "../../model/db/IpBlackList.model.js";
+import {SQLITE_DATA_SOURCE} from "../../model/di/tokens.js";
 import {DataSource, EntityManager} from "typeorm";
 
 @Injectable()

@@ -1,5 +1,5 @@
 import {Nullable, Property} from "@tsed/schema";
-import {FileUploadModel} from "../db/FileUpload.model";
+import {FileUploadModel} from "../db/FileUpload.model.js";
 import {Builder} from "builder-pattern";
 
 export class FileUploadModelResponse {

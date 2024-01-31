@@ -1,5 +1,5 @@
 import {Column, Entity} from "typeorm";
-import {AbstractModel} from "./AbstractModel";
+import {AbstractModel} from "./AbstractModel.js";
 
 @Entity()
 export class IpBlackListModel extends AbstractModel {

@@ -1,15 +1,18 @@
 import {Constant, Service} from "@tsed/di";
-import GlobalEnv from "../model/constants/GlobalEnv";
+import GlobalEnv from "../model/constants/GlobalEnv.js";
 import fetch, {Response} from 'node-fetch';
 import {BadRequest} from "@tsed/exceptions";
 import path from "path";
 import fs from "fs";
+import url from "url";
 
 @Service()
 export class FileUrlService {
 
     @Constant(GlobalEnv.FILE_SIZE_UPLOAD_LIMIT_MB)
     private readonly MAX_SIZE: string;
+
+    private readonly __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
     private readonly basePath = `${__dirname}/../../files`;
 

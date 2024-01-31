@@ -1,7 +1,7 @@
 import {Inject, Injectable} from "@tsed/di";
-import {AbstractDao} from "./AbstractDao";
-import {UserModel} from "../../model/db/User.model";
-import {SQLITE_DATA_SOURCE} from "../../model/di/tokens";
+import {AbstractDao} from "./AbstractDao.js";
+import {UserModel} from "../../model/db/User.model.js";
+import {SQLITE_DATA_SOURCE} from "../../model/di/tokens.js";
 import {DataSource, EntityManager} from "typeorm";
 
 @Injectable()

@@ -1,9 +1,9 @@
 import {Inject, Service} from "@tsed/di";
-import {UserModel} from "../model/db/User.model";
+import {UserModel} from "../model/db/User.model.js";
 import argon2 from "argon2";
-import {CustomUserInfoModel} from "../model/auth/CustomUserInfoModel";
+import {CustomUserInfoModel} from "../model/auth/CustomUserInfoModel.js";
 import {Unauthorized} from "@tsed/exceptions";
-import {UserRepo} from "../db/repo/UserRepo";
+import {UserRepo} from "../db/repo/UserRepo.js";
 
 @Service()
 export class UserService {

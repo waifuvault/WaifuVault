@@ -1,10 +1,10 @@
 import {Constant, Inject, OnInit, Service} from "@tsed/di";
-import {FileRepo} from "../db/repo/FileRepo";
-import {ScheduleService} from "./ScheduleService";
-import {FileUploadModel} from "../model/db/FileUpload.model";
+import {FileRepo} from "../db/repo/FileRepo.js";
+import {ScheduleService} from "./ScheduleService.js";
+import {FileUploadModel} from "../model/db/FileUpload.model.js";
 import fs from "fs";
-import GlobalEnv from "../model/constants/GlobalEnv";
-import {FileUploadService} from "./FileUploadService";
+import GlobalEnv from "../model/constants/GlobalEnv.js";
+import {FileUploadService} from "./FileUploadService.js";
 
 @Service()
 export class FileCleaner implements OnInit {
