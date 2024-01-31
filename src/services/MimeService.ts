@@ -1,25 +1,22 @@
-import {Service} from "@tsed/di";
+import {Constant, Service} from "@tsed/di";
 import {MIME_MAGIC_CONSTANTS} from "../model/constants/utils/MIME_MAGIC_CONSTANTS";
 import fs from "fs";
 import mime from 'mime';
 import {BadRequest} from "@tsed/exceptions";
+import GlobalEnv from "../model/constants/GlobalEnv";
 
 @Service()
 export class MimeService {
-    private blockedTypes: string[] = [
-        'application/x-dosexec',
-        'application/x-executable',
-        'application/x-hdf5',
-        'application/x-java-archive',
-        'application/vnd.rar'
-    ];
+
+    @Constant(GlobalEnv.BLOCKED_MIME_TYPES)
+    private readonly blockedMimeTypes: string;
 
     public async isBlocked(filepath: string): Promise<boolean> {
         const detected = await this.findMimeType(filepath);
         if (detected === null) {
             throw new BadRequest("Unable to determine mime type, file rejected");
         }
-        return this.blockedTypes.includes(detected);
+        return this.blockedMimeTypes.split(',').includes(detected);
     }
 
     public async findMimeType(filepath: string): Promise<string | null> {

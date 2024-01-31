@@ -11,7 +11,8 @@ enum GlobalEnv {
     NODE_ENV = `${prefix}NODE_ENV`,
     BASE_URL = `${prefix}BASE_URL`,
     FILE_SIZE_UPLOAD_LIMIT_MB = `${prefix}FILE_SIZE_UPLOAD_LIMIT_MB`,
-    CLAM_PATH = `${prefix}CLAM_PATH`
+    CLAM_PATH = `${prefix}CLAM_PATH`,
+    BLOCKED_MIME_TYPES = `${prefix}BLOCKED_MIME_TYPES`
 }
 
 export default GlobalEnv;
