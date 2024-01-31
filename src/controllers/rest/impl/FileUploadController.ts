@@ -1,5 +1,5 @@
 import {Controller, Inject} from "@tsed/di";
-import {Delete, Description, Put, Returns} from "@tsed/schema";
+import {Delete, Description, Name, Put, Returns} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
 import {BadRequest, Forbidden} from "@tsed/exceptions";
@@ -11,6 +11,8 @@ import {FileUploadService} from "../../../services/FileUploadService.js";
 
 @Controller("/")
 @Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
+@Description("This is the API documentation for uploading and sharing files.")
+@Name("File Uploader")
 export class FileUploadController {
 
     @Inject()
