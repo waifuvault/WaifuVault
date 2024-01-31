@@ -1,9 +1,8 @@
 import {Constant, Service} from "@tsed/di";
-import {MIME_MAGIC_CONSTANTS} from "../utils/MIME_MAGIC_CONSTANTS.js";
-import fs from "node:fs/promises";
 import mime from 'mime';
 import {BadRequest} from "@tsed/exceptions";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
+import {fileTypeFromFile} from 'file-type';
 
 @Service()
 export class MimeService {
@@ -20,36 +19,10 @@ export class MimeService {
     }
 
     public async findMimeType(filepath: string): Promise<string | null> {
-        let fileHandle: fs.FileHandle | null = null;
-        try {
-            const buffer = Buffer.alloc(1024 * 1024);
-            fileHandle = await fs.open(filepath, 'r');
-            await fileHandle.read(buffer, 0, buffer.length, 0);
-            for (const key in MIME_MAGIC_CONSTANTS) {
-                const currentType = MIME_MAGIC_CONSTANTS[key].mime;
-                for (const item of MIME_MAGIC_CONSTANTS[key].signs) {
-                    const splitSign = item.split(',');
-                    if (this.checkMagic(buffer, parseInt(splitSign[0]), splitSign[1])) {
-                        return currentType;
-                    }
-                }
-            }
-        } finally {
-            if (fileHandle) {
-                await fileHandle.close();
-            }
+        const mimeType = await fileTypeFromFile(filepath);
+        if (mimeType) {
+            return mimeType.mime;
         }
-
         return mime.getType(filepath);
-    }
-
-    private checkMagic(buffer: Buffer, offset: number, hexstr: string): boolean {
-        const hexBuffer: Buffer = Buffer.from(hexstr, 'hex');
-        for (let i = 0; i < hexBuffer.length; i++) {
-            if (buffer[offset + i] !== hexBuffer[i]) {
-                return false;
-            }
-        }
-        return true;
     }
 }
