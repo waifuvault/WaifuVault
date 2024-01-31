@@ -26,4 +26,4 @@ export class ObjectUtils {
     }
 }
 
-export const filesDir = `${path.dirname(fileURLToPath(import.meta.url))}\\..\\..\\files`;
+export const filesDir = `${path.dirname(fileURLToPath(import.meta.url))}/../../files`;
