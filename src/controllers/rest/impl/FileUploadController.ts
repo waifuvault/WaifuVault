@@ -33,7 +33,10 @@ export class FileUploadController {
         if (!file && !url) {
             throw new BadRequest("Please supply a file or url");
         }
-        const ip = req.ip;
+        let ip = req.ip;
+        if (ip.includes(":")) {
+            ip = ip!.split(":")!.shift()!;
+        }
         return this.fileUploadService.processUpload(ip, url || file!);
     }
 
