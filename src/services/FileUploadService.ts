@@ -56,8 +56,9 @@ export class FileUploadService {
         await this.checkMime(resourcePath);
 
         const checksum = await this.getFileHash(resourcePath);
-        const existingFileModel = await this.repo.getEntryFromChecksum(checksum);
-        if (existingFileModel && ip === existingFileModel.ip) {
+        const existingFileModels = await this.repo.getEntriesFromChecksum(checksum);
+        const existingFileModel = existingFileModels.find(m => m.ip === ip);
+        if (existingFileModel) {
             // ignore promise
             this.deleteUploadedFile(resourcePath);
             return FileUploadModelResponse.fromExistsUrl(existingFileModel, this.baseUrl);
