@@ -4,6 +4,7 @@ import {PlatformMulterFile} from "@tsed/common";
 import {FileUploadModel} from "../model/db/FileUpload.model";
 import {FileEngine} from "../engine/FileEngine";
 import {FileUrlService} from "./FileUrlService";
+import {MimeService} from "./MimeService";
 import {Builder} from "builder-pattern";
 import path from "path";
 import fs from "fs";
@@ -25,6 +26,9 @@ export class FileUploadService {
 
     @Inject()
     private fileUrlService: FileUrlService;
+
+    @Inject()
+    private mimeService: MimeService;
 
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
@@ -49,6 +53,7 @@ export class FileUploadService {
         }
 
         await this.scanFile(resourcePath);
+        await this.checkMime(resourcePath);
 
         const checksum = await this.getFileHash(resourcePath);
         const existingFileModel = await this.repo.getEntryFromChecksum(checksum);
@@ -81,6 +86,21 @@ export class FileUploadService {
         if (!didPassAvScan) {
             this.deleteUploadedFile(resourcePath);
             throw new BadRequest("Failed to store file due to positive virus scan");
+        }
+    }
+
+    private async checkMime(resourcePath: string): Promise<void> {
+        let failedMime = false;
+        try {
+            failedMime = await this.mimeService.isBlocked(resourcePath);
+        } catch (e) {
+            this.deleteUploadedFile(resourcePath);
+            throw new BadRequest("Failed to execute blocked file type check on item");
+        }
+
+        if (failedMime) {
+            this.deleteUploadedFile(resourcePath);
+            throw new BadRequest("Failed to store file due to blocked file type");
         }
     }
 
