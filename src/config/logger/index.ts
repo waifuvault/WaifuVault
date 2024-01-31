@@ -1,4 +1,4 @@
-import {$log, DILoggerOptions} from "@tsed/common";
+import {$log, type DILoggerOptions} from "@tsed/common";
 import {isProduction} from "../envs/index.js";
 
 if (isProduction) {

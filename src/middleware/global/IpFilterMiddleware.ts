@@ -1,4 +1,4 @@
-import {Middleware, MiddlewareMethods} from "@tsed/platform-middlewares";
+import {Middleware, type MiddlewareMethods} from "@tsed/platform-middlewares";
 import {Req} from "@tsed/common";
 import {Inject} from "@tsed/di";
 import {IpBlackListRepo} from "../../db/repo/IpBlackListRepo.js";

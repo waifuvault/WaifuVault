@@ -1,6 +1,6 @@
 import {Inject, Service} from "@tsed/di";
-import {AsyncTask, Job, SimpleIntervalJob, SimpleIntervalSchedule, ToadScheduler} from "toad-scheduler";
-import schedule, {Job as DateJob, JobCallback} from "node-schedule";
+import {AsyncTask, Job, SimpleIntervalJob, type SimpleIntervalSchedule, ToadScheduler} from "toad-scheduler";
+import schedule, {Job as DateJob, type JobCallback} from "node-schedule";
 import {Logger} from "@tsed/logger";
 import {ObjectUtils} from "../utils/Utils.js";
 

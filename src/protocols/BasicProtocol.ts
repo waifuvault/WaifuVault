@@ -1,4 +1,5 @@
-import {Arg, OnVerify, Protocol} from "@tsed/passport";
+import type {OnVerify} from "@tsed/passport";
+import {Arg, Protocol} from "@tsed/passport";
 import {UserModel} from "../model/db/User.model.js";
 import {BasicStrategy} from "passport-http";
 import {Inject} from "@tsed/di";

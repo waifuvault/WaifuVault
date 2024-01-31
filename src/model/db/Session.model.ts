@@ -1,4 +1,4 @@
-import {ISession} from "connect-typeorm";
+import type {ISession} from "connect-typeorm";
 import {Column, DeleteDateColumn, Entity, Index, PrimaryColumn} from "typeorm";
 
 @Entity()

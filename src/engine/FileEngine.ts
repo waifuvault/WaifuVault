@@ -1,6 +1,6 @@
 import {Constant, Inject, Injectable, ProviderScope} from "@tsed/di";
 import fs from 'node:fs/promises';
-import {PlatformMulterFile} from "@tsed/common";
+import type {PlatformMulterFile} from "@tsed/common";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {exec} from "child_process";
 import {promisify} from "util";

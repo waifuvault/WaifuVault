@@ -2,7 +2,7 @@ import "reflect-metadata";
 import {$log, Logger as TsEdLogger, registerProvider} from "@tsed/common";
 import {PlatformExpress} from "@tsed/platform-express";
 import {Server} from "./Server.js";
-import {DataSource, Logger as TypeOrmLogger} from "typeorm";
+import {DataSource, type Logger as TypeOrmLogger} from "typeorm";
 import {SQLITE_DATA_SOURCE} from "./model/di/tokens.js";
 import path from "path";
 import {fileURLToPath} from "node:url";

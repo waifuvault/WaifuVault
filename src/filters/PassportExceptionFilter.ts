@@ -1,4 +1,5 @@
-import {Catch, ExceptionFilterMethods, PlatformContext} from "@tsed/common";
+import type {ExceptionFilterMethods, PlatformContext} from "@tsed/common";
+import {Catch} from "@tsed/common";
 import {PassportException} from "@tsed/passport";
 import {Inject} from "@tsed/di";
 import {HttpExceptionFilter} from "./HttpExceptionFilter.js";

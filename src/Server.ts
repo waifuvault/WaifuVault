@@ -1,5 +1,6 @@
 import {Configuration, Constant, Inject} from "@tsed/di";
-import {BeforeRoutesInit, PlatformApplication} from "@tsed/common";
+import type {BeforeRoutesInit} from "@tsed/common";
+import {PlatformApplication} from "@tsed/common";
 import "@tsed/platform-express";
 import "@tsed/ajv";
 import "@tsed/swagger";
@@ -28,7 +29,7 @@ import {DataSource} from "typeorm";
 import {SessionModel} from "./model/db/Session.model.js";
 import compression from "compression";
 import GlobalEnv from "./model/constants/GlobalEnv.js";
-import multer, {FileFilterCallback} from "multer";
+import multer, {type FileFilterCallback} from "multer";
 import path from "path";
 import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware.js";
 import rateLimit from "express-rate-limit";

@@ -1,4 +1,4 @@
-import {DataSource, EntityManager, EntityTarget, Repository as Dao} from "typeorm";
+import type {DataSource, EntityManager, EntityTarget, Repository as Dao} from "typeorm";
 import type {ObjectLiteral} from "typeorm/common/ObjectLiteral";
 
 export abstract class AbstractDao<T extends ObjectLiteral> {
