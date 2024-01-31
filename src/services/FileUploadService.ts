@@ -68,6 +68,22 @@ export class FileUploadService {
         return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl);
     }
 
+    public async processDelete(token: string): Promise<boolean> {
+        let deleted = false;
+        const entry = await this.repo.getEntry(token);
+        if (!entry) {
+            return false;
+        }
+        try {
+            await this.fileEngine.deleteFile(entry.fileName);
+            deleted = await this.repo.deleteEntry(token);
+        } catch (e) {
+            this.logger.error(e);
+            return false;
+        }
+        return deleted;
+    }
+
     private async getFileHash(resourcePath: string): Promise<string> {
         const fileBuffer = await fs.readFile(resourcePath);
         const hashSum = crypto.createHash('md5');
@@ -103,22 +119,6 @@ export class FileUploadService {
             this.deleteUploadedFile(resourcePath);
             throw new BadRequest("Failed to store file due to blocked file type");
         }
-    }
-
-    public async processDelete(token: string): Promise<boolean> {
-        let deleted = false;
-        const entry = await this.repo.getEntry(token);
-        if (!entry) {
-            return false;
-        }
-        try {
-            await this.fileEngine.deleteFile(entry.fileName);
-            deleted = await this.repo.deleteEntry(token);
-        } catch (e) {
-            this.logger.error(e);
-            return false;
-        }
-        return deleted;
     }
 
     private deleteUploadedFile(resource: string): Promise<void> {

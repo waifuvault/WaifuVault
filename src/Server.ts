@@ -33,7 +33,8 @@ import path from "path";
 import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware.js";
 import rateLimit from "express-rate-limit";
 import {LRUCache} from "lru-cache";
-import {__dirname} from "./utils/Utils.js";
+import {filesDir} from "./utils/Utils.js";
+import {fileURLToPath} from "node:url";
 
 const opts: Partial<TsED.Configuration> = {
     ...config,
@@ -46,7 +47,7 @@ const opts: Partial<TsED.Configuration> = {
         return false;
     }()),
     multer: {
-        dest: `${__dirname}/../files`,
+        dest: filesDir,
         fileFilter: function (request: Request,
                               file: Express.Multer.File,
                               callback: FileFilterCallback): void {
@@ -57,7 +58,7 @@ const opts: Partial<TsED.Configuration> = {
         },
         storage: multer.diskStorage({
             destination: function (req, file, cb) {
-                cb(null, `${__dirname}/../files`);
+                cb(null, filesDir);
             },
             filename: function (req, file, cb) {
                 cb(null, `${Date.now()}${path.extname(file.originalname)}`);
@@ -82,28 +83,28 @@ const opts: Partial<TsED.Configuration> = {
     statics: {
         "/f": [
             {
-                root: `${__dirname}/../files`
+                root: filesDir
             }
         ],
         "/assets": [
             {
-                root: `${__dirname}/public/assets`
+                root: `${path.dirname(fileURLToPath(import.meta.url))}/public/assets`
             }
         ],
         "/tos": [
             {
-                root: `${__dirname}/public/tos.html`
+                root: `${path.dirname(fileURLToPath(import.meta.url))}/public/tos.html`
             }
         ],
         "/favicon.ico": [
             {
                 // for safari...
-                root: `${__dirname}/public/assets/custom/images/favicon.ico`
+                root: `${path.dirname(fileURLToPath(import.meta.url))}/public/assets/custom/images/favicon.ico`
             }
         ],
         "/robots.txt": [
             {
-                root: `${__dirname}/public/robots.txt`
+                root: `${path.dirname(fileURLToPath(import.meta.url))}/public/robots.txt`
             }
         ]
     },
@@ -142,7 +143,7 @@ const opts: Partial<TsED.Configuration> = {
         })
     ],
     views: {
-        root: `${__dirname}/public`,
+        root: `${path.dirname(fileURLToPath(import.meta.url))}/public`,
         viewEngine: "ejs",
         extensions: {
             ejs: "ejs"

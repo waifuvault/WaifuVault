@@ -6,13 +6,12 @@ import {exec} from "child_process";
 import {promisify} from "util";
 import {Logger} from "@tsed/logger";
 import path from "path";
-import {__dirname} from "../utils/Utils.js";
+import {filesDir} from "../utils/Utils.js";
 
 @Injectable({
     scope: ProviderScope.SINGLETON
 })
 export class FileEngine {
-    private readonly basePath = `${__dirname}\\..\\..\\files`;
 
     @Constant(GlobalEnv.CLAM_PATH)
     private readonly clamPath: string;
@@ -44,7 +43,7 @@ export class FileEngine {
     }
 
     private getFilePath(file: string | PlatformMulterFile): string {
-        return typeof file === "string" ? `${this.basePath}\\${file}` : file.path;
+        return typeof file === "string" ? `${filesDir}\\${file}` : file.path;
     }
 
 }
