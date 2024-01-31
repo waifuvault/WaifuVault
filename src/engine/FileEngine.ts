@@ -31,7 +31,7 @@ export class FileEngine {
         const toScan = path.resolve(this.getFilePath(file));
         const execPromise = promisify(exec);
         try {
-            await execPromise(`"${this.clamPath}\\clamdscan" ${toScan}`);
+            await execPromise(`"${this.clamPath}/clamdscan" ${toScan}`);
         } catch (e) {
             if (e.code === 1) {
                 return false;
@@ -43,7 +43,7 @@ export class FileEngine {
     }
 
     private getFilePath(file: string | PlatformMulterFile): string {
-        return typeof file === "string" ? `${filesDir}\\${file}` : file.path;
+        return typeof file === "string" ? `${filesDir}/${file}` : file.path;
     }
 
 }
