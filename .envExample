@@ -1,0 +1,7 @@
+PORT=localhost:8081
+HTTPS=false
+HTTPS_PORT=4000
+NODE_ENV=development
+BASE_URL=http://localhost:8081
+FILE_SIZE_UPLOAD_LIMIT_MB=512
+BLOCKED_MIME_TYPES=application/x-dosexec,application/x-executable,application/x-hdf5,application/x-java-archive,application/vnd.rar,image/png
