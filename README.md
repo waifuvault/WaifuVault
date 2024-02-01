@@ -39,6 +39,7 @@ Optional Settings
 # add directories (once after cloning)
     mkdir src/controllers/secureViews
     mkdir src/controllers/views
+    mkdir files
 
 # install dependencies
     npm install
@@ -59,3 +60,9 @@ All application functionality is provided by a set of REST endpoints.
 | PUT /rest            | Upload file using either a provided file in form data or a provided URL hosting the file |
 | GET /rest/{token}    | Return file information, including URL and time left to live                             |
 | DELETE /rest/{token} | Delete file referred to by token                                                         |
+
+## Site URL
+
+The following URL is a temporary location whilst BETA testing:
+
+> https://hostmyshit.victorique.moe
