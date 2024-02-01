@@ -1,10 +1,9 @@
 import {Controller, Inject} from "@tsed/di";
-import {Delete, Description, Name, Put, Returns} from "@tsed/schema";
+import {Delete, Description, Get, Name, Put, Returns} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
 import {BadRequest, Forbidden} from "@tsed/exceptions";
-import type {PlatformMulterFile} from "@tsed/common";
-import {MultipartFile, QueryParams, Req} from "@tsed/common";
+import {MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req} from "@tsed/common";
 import {BodyParams} from "@tsed/platform-params";
 import {FileEngine} from "../../../engine/FileEngine.js";
 import {FileUploadService} from "../../../services/FileUploadService.js";
@@ -39,11 +38,29 @@ export class FileUploadController {
         return this.fileUploadService.processUpload(ip, url || file!);
     }
 
-    @Delete()
+
+    @Get("/:token")
+    @Returns(StatusCodes.OK, FileUploadModelResponse)
+    @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    @Description("Get file info")
+    public getInfo(
+        @PathParams("token")
+            token: string,
+        @QueryParams("formatted")
+        @Description("If true, this will format the time remaining to a human readable string instead of an epoch if set to false")
+            humanReadable: boolean): Promise<unknown> {
+        if (!token) {
+            throw new BadRequest("no token provided");
+        }
+        return this.fileUploadService.getFileInfo(token, humanReadable);
+    }
+
+
+    @Delete("/:token")
     @Returns(StatusCodes.OK, Boolean)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
     @Description("Delete a file via the token")
-    public async deleteEntry(@QueryParams("token") token: string): Promise<unknown> {
+    public async deleteEntry(@PathParams("token") token: string): Promise<unknown> {
         if (!token) {
             throw new BadRequest("no token provided");
         }

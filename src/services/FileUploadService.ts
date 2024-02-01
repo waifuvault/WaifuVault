@@ -55,17 +55,27 @@ export class FileUploadService {
         await this.scanFile(resourcePath);
         await this.checkMime(resourcePath);
 
+        const fileSize = await this.fileEngine.getFileSize(path.basename(resourcePath));
+        uploadEntry.fileSize(fileSize);
         const checksum = await this.getFileHash(resourcePath);
         const existingFileModels = await this.repo.getEntriesFromChecksum(checksum);
         const existingFileModel = existingFileModels.find(m => m.ip === ip);
         if (existingFileModel) {
             // ignore promise
             this.deleteUploadedFile(resourcePath);
-            return FileUploadModelResponse.fromExistsUrl(existingFileModel, this.baseUrl);
+            return FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true);
         }
         uploadEntry.checksum(checksum);
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
-        return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl);
+        return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true);
+    }
+
+    public async getFileInfo(token: string, humanReadable: boolean): Promise<FileUploadModelResponse> {
+        const entry = await this.repo.getEntry(token);
+        if (!entry) {
+            throw new BadRequest(`Unknown token ${token}`);
+        }
+        return FileUploadModelResponse.fromModel(entry, this.baseUrl, humanReadable);
     }
 
     public async processDelete(token: string): Promise<boolean> {

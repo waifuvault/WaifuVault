@@ -24,6 +24,12 @@ export class FileEngine {
         return fs.rm(toDelete, {recursive: true, force: true});
     }
 
+    public async getFileSize(file: string | PlatformMulterFile): Promise<number> {
+        const f = this.getFilePath(file);
+        const stat = await fs.stat(f);
+        return stat.size;
+    }
+
     public async scanFileWithClam(file: string | PlatformMulterFile): Promise<boolean> {
         if (!this.clamPath) {
             return true;

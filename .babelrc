@@ -38,7 +38,8 @@
       }
     ],
     "@babel/plugin-proposal-class-properties",
-    "@babel/plugin-transform-private-methods"
+    "@babel/plugin-transform-private-methods",
+    "@babel/plugin-transform-parameters"
   ],
   "exclude": [
     "**/*.min.js",

@@ -1,5 +1,6 @@
 import {Column, Entity, Index} from "typeorm";
 import {AbstractModel} from "./AbstractModel.js";
+import {FileUtils} from "../../utils/Utils.js";
 
 @Entity()
 @Index(["token"], {
@@ -34,4 +35,16 @@ export class FileUploadModel extends AbstractModel {
         unique: false
     })
     public ip: string;
+
+    @Column({
+        nullable: false,
+        type: "integer",
+        unique: false
+    })
+    public fileSize: number;
+
+    public get expiresIn(): number {
+        return FileUtils.getTImeLeft(this);
+    }
+
 }
