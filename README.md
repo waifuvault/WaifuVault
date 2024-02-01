@@ -31,7 +31,15 @@ Optional Settings
 | CLAM_PATH | The path to your Clam Antivirus installation - necessary to enable virus scanning of uploads |
 
 ### Build and Run commands
+
+> **Empty Directories**! The application is currently in BETA with no views, so you will need to add the empty directories first
+
+
 ```batch
+# add directories (once after cloning)
+    mkdir src/controllers/secureViews
+    mkdir src/controllers/views
+
 # install dependencies
     npm install
 
