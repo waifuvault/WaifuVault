@@ -84,8 +84,9 @@ export class FileUtils {
 
     public static getTImeLeft(entry: FileUploadModel): number {
         const maxLifespan: number = Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow((entry.fileSize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1), 3));
+        const customLifespan: number = entry.customExpires ?? 0;
         const currentEpoch: number = Date.now();
-        const maxExpiration: number = maxLifespan + entry.createdAt.getTime();
+        const maxExpiration: number = (customLifespan != 0 ? customLifespan : maxLifespan) + entry.createdAt.getTime();
         return maxExpiration - currentEpoch;
     }
 }

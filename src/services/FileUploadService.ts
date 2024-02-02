@@ -80,7 +80,7 @@ export class FileUploadService {
         return FileUploadModelResponse.fromModel(entry, this.baseUrl, humanReadable);
     }
 
-    public async expires(token: string, expires: string): Promise<string> {
+    public async expires(token: string, expires: string): Promise<FileUploadModelResponse> {
         const entry = await this.repo.getEntry(token);
         let value:number = ObjectUtils.getNumber(expires);
         let timefactor:TIME_UNIT = TIME_UNIT.minutes;
@@ -97,7 +97,12 @@ export class FileUploadService {
             timefactor = TIME_UNIT.hours;
         }
         value = ObjectUtils.convertToMilli(value,timefactor);
-        return `Got ${value} millis from ${expires}`;
+        if (value > entry.expiresIn) {
+            throw new BadRequest('Cannot extend time remaining beyond original');
+        }
+        entry.customExpires = value;
+        await this.repo.saveEntry(entry);
+        return FileUploadModelResponse.fromModel(entry, this.baseUrl, true);
     }
 
     public async processDelete(token: string): Promise<boolean> {
