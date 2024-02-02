@@ -10,18 +10,11 @@ export abstract class AbstractModel {
     };
 
     @PrimaryGeneratedColumn("increment")
-    @Name("id")
-    @Description("The ID of this entry")
     public id: number;
 
     @CreateDateColumn()
-    @Name("created")
-    @Description("When this entry was created")
     public createdAt: Date;
 
     @UpdateDateColumn()
-    @Name("updated")
-    @Ignore()
-    @Description("When this entry was updated")
     public updatedAt: Date;
 }
