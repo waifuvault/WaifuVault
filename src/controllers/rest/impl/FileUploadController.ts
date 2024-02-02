@@ -1,5 +1,5 @@
 import {Controller, Inject} from "@tsed/di";
-import {Delete, Description, Get, Name, Put, Returns} from "@tsed/schema";
+import {Delete, Description, Example, Get, Name, Put, Returns} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
 import {BadRequest, Forbidden} from "@tsed/exceptions";
@@ -26,6 +26,10 @@ export class FileUploadController {
     @Description("Upload a file or specify URL to a file. Use the location header in the response or the url prop in the JSON to get the URL of the file")
     public async addEntry(@Req() req: Req,
                           @Res() res: Res,
+                          @QueryParams("expires")
+                              @Description("a string container a number and a letter of `m` for mins, `h` for hours, `d` for days")
+                              @Example("1d")
+                                  expires: string,
                           @MultipartFile("file") file?: PlatformMulterFile,
                           @BodyParams("url") url?: string): Promise<unknown> {
         if (file && url) {
@@ -37,8 +41,16 @@ export class FileUploadController {
         if (!file && !url) {
             throw new BadRequest("Please supply a file or url");
         }
+        if (expires) {
+            const checkExpires = /[mhd]/;
+            expires = expires.toLowerCase().replace(/ /g, '');
+            if (!checkExpires.test(expires)) {
+                throw new BadRequest("bad expire string format");
+            }
+        }
+
         const ip = req.ip.replace(/:\d+[^:]*$/, '');
-        const uploadModelResponse = await this.fileUploadService.processUpload(ip, url || file!);
+        const uploadModelResponse = await this.fileUploadService.processUpload(ip, expires, url || file!);
         res.location(uploadModelResponse.url);
         return uploadModelResponse;
     }

@@ -5,7 +5,7 @@ import {FileUploadModel} from "../model/db/FileUpload.model.js";
 import {FileEngine} from "../engine/FileEngine.js";
 import {FileUrlService} from "./FileUrlService.js";
 import {MimeService} from "./MimeService.js";
-import {Builder} from "builder-pattern";
+import {Builder, type IBuilder} from "builder-pattern";
 import path from "path";
 import fs from "node:fs/promises";
 import crypto from "crypto";
@@ -14,6 +14,8 @@ import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {Logger} from "@tsed/logger";
 import type {XOR} from "../utils/typeings.js";
 import {BadRequest} from "@tsed/exceptions";
+import {FileUtils, ObjectUtils} from "../utils/Utils.js";
+import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 
 @Service()
 export class FileUploadService {
@@ -36,7 +38,7 @@ export class FileUploadService {
     @Inject()
     private logger: Logger;
 
-    public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>): Promise<FileUploadModelResponse> {
+    public async processUpload(ip: string, expires: string, source: XOR<PlatformMulterFile, string>): Promise<FileUploadModelResponse> {
         const token = crypto.randomUUID();
         const uploadEntry = Builder(FileUploadModel)
             .ip(ip)
@@ -66,7 +68,11 @@ export class FileUploadService {
             return FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true);
         }
         uploadEntry.checksum(checksum);
+        if (expires) {
+            this.calculateCustomExpires(uploadEntry, expires);
+        }
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
+
         return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true);
     }
 
@@ -76,6 +82,27 @@ export class FileUploadService {
             throw new BadRequest(`Unknown token ${token}`);
         }
         return FileUploadModelResponse.fromModel(entry, this.baseUrl, humanReadable);
+    }
+
+    public calculateCustomExpires(entry: IBuilder<FileUploadModel>, expires: string): void {
+        let value: number = ObjectUtils.getNumber(expires);
+        let timefactor: TIME_UNIT = TIME_UNIT.minutes;
+
+        if (value === 0) {
+            throw new BadRequest(`Unable to parse expire value from ${expires}`);
+        }
+        if (expires.includes('d')) {
+            timefactor = TIME_UNIT.days;
+        } else if (expires.includes('h')) {
+            timefactor = TIME_UNIT.hours;
+        }
+        value = ObjectUtils.convertToMilli(value, timefactor);
+        const maxExp: number = FileUtils.getTimeLeftBySize(entry.fileSize());
+
+        if (value > maxExp) {
+            throw new BadRequest(`Cannot extend time remaining beyond ${ObjectUtils.timeToHuman(maxExp)}`);
+        }
+        entry.customExpires(value);
     }
 
     public async processDelete(token: string): Promise<boolean> {

@@ -5,6 +5,11 @@ import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 
 export class ObjectUtils {
 
+    public static getNumber(source: string): number {
+        const matches = source.match(/-?\d+/g);
+        return matches && matches[0] ? parseInt(matches[0]) : 0;
+    }
+
     public static timeToHuman(value: number, timeUnit: TIME_UNIT = TIME_UNIT.milliseconds): string {
         let seconds: number;
         if (timeUnit === TIME_UNIT.milliseconds) {
@@ -78,10 +83,15 @@ export class FileUtils {
     }
 
     public static getTImeLeft(entry: FileUploadModel): number {
-        const maxLifespan: number = Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow((entry.fileSize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1), 3));
+        const maxLifespan: number = this.getTimeLeftBySize(entry.fileSize);
+        const customLifespan: number = entry.customExpires ?? 0;
         const currentEpoch: number = Date.now();
-        const maxExpiration: number = maxLifespan + entry.createdAt.getTime();
+        const maxExpiration: number = (customLifespan != 0 ? customLifespan : maxLifespan) + entry.createdAt.getTime();
         return maxExpiration - currentEpoch;
+    }
+
+    public static getTimeLeftBySize(filesize: number): number {
+        return Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow((filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1), 3));
     }
 }
 

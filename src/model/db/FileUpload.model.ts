@@ -43,6 +43,13 @@ export class FileUploadModel extends AbstractModel {
     })
     public fileSize: number;
 
+    @Column({
+        nullable: true,
+        type: "integer",
+        unique: false
+    })
+    public customExpires: number;
+
     public get expiresIn(): number {
         return FileUtils.getTImeLeft(this);
     }
