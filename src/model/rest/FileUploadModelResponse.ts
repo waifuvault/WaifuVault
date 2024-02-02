@@ -6,10 +6,11 @@ import {ObjectUtils} from "../../utils/Utils.js";
 export class FileUploadModelResponse {
 
     @Property()
-    @Nullable(String)
-    public token: string | null = null;
+    @Description("Used for file info and deleting")
+    public token: string;
 
     @Property()
+    @Description("Location of the uploaded file")
     public url: string;
 
     @Property()

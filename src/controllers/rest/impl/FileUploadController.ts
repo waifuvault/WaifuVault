@@ -3,7 +3,7 @@ import {Delete, Description, Get, Name, Put, Returns} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
 import {BadRequest, Forbidden} from "@tsed/exceptions";
-import {MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req} from "@tsed/common";
+import {MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res} from "@tsed/common";
 import {BodyParams} from "@tsed/platform-params";
 import {FileEngine} from "../../../engine/FileEngine.js";
 import {FileUploadService} from "../../../services/FileUploadService.js";
@@ -23,8 +23,11 @@ export class FileUploadController {
     @Put()
     @Returns(StatusCodes.CREATED, FileUploadModelResponse)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
-    @Description("Upload a file or specify URL to a file")
-    public async addEntry(@Req() req: Req, @MultipartFile("file") file?: PlatformMulterFile, @BodyParams("url") url?: string): Promise<unknown> {
+    @Description("Upload a file or specify URL to a file. Use the location header in the response or the url prop in the JSON to get the URL of the file")
+    public async addEntry(@Req() req: Req,
+                          @Res() res: Res,
+                          @MultipartFile("file") file?: PlatformMulterFile,
+                          @BodyParams("url") url?: string): Promise<unknown> {
         if (file && url) {
             if (file) {
                 await this.fileEngine.deleteFile(file);
@@ -35,7 +38,9 @@ export class FileUploadController {
             throw new BadRequest("Please supply a file or url");
         }
         const ip = req.ip.replace(/:\d+[^:]*$/, '');
-        return this.fileUploadService.processUpload(ip, url || file!);
+        const uploadModelResponse = await this.fileUploadService.processUpload(ip, url || file!);
+        res.location(uploadModelResponse.url);
+        return uploadModelResponse;
     }
 
 

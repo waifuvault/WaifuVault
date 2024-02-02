@@ -24,7 +24,7 @@ export class FileUrlService {
         }
         const contentLengthStr = headCheck.headers.get("content-length");
         if (!contentLengthStr) {
-            throw new BadRequest("Unable to obtain content size for deleted file");
+            throw new BadRequest("Unable to obtain content size for file");
         }
         const contentLength = Number.parseInt(contentLengthStr);
         if (contentLength > Number.parseInt(this.MAX_SIZE) * 1048576) {
