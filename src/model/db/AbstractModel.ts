@@ -1,6 +1,5 @@
 import type {RelationOptions} from "typeorm";
 import {CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
-import {Description, Ignore, Name} from "@tsed/schema";
 
 export abstract class AbstractModel {
 

@@ -38,7 +38,7 @@ export class FileUploadService {
     @Inject()
     private logger: Logger;
 
-    public async processUpload(ip: string, expires:string, source: XOR<PlatformMulterFile, string>): Promise<FileUploadModelResponse> {
+    public async processUpload(ip: string, expires: string, source: XOR<PlatformMulterFile, string>): Promise<FileUploadModelResponse> {
         const token = crypto.randomUUID();
         const uploadEntry = Builder(FileUploadModel)
             .ip(ip)
@@ -69,8 +69,8 @@ export class FileUploadService {
         }
         uploadEntry.checksum(checksum);
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
-        if(expires) {
-            await this.expires(savedEntry,expires);
+        if (expires) {
+            await this.expires(savedEntry, expires);
         }
         return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true);
     }
@@ -83,9 +83,9 @@ export class FileUploadService {
         return FileUploadModelResponse.fromModel(entry, this.baseUrl, humanReadable);
     }
 
-    public async expires(entry:FileUploadModel, expires: string):Promise<void> {
-        let value:number = ObjectUtils.getNumber(expires);
-        let timefactor:TIME_UNIT = TIME_UNIT.minutes;
+    public async expires(entry: FileUploadModel, expires: string): Promise<void> {
+        let value: number = ObjectUtils.getNumber(expires);
+        let timefactor: TIME_UNIT = TIME_UNIT.minutes;
 
         if (value === 0) {
             await this.repo.deleteEntry(entry.token);
@@ -96,7 +96,7 @@ export class FileUploadService {
         } else if (expires.includes('h')) {
             timefactor = TIME_UNIT.hours;
         }
-        value = ObjectUtils.convertToMilli(value,timefactor);
+        value = ObjectUtils.convertToMilli(value, timefactor);
         if (value > entry.expiresIn) {
             await this.repo.deleteEntry(entry.token);
             throw new BadRequest('Cannot extend time remaining beyond original');

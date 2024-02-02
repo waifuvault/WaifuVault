@@ -5,7 +5,7 @@ import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 
 export class ObjectUtils {
 
-    public static getNumber(source:string): number {
+    public static getNumber(source: string): number {
         const matches = source.match(/-?\d+/g);
         return matches && matches[0] ? parseInt(matches[0]) : 0;
     }
