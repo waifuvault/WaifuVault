@@ -195,20 +195,22 @@ export class Server implements BeforeRoutesInit {
         if (isProduction) {
             this.app.getApp().set("trust proxy", 1);
         }
-        this.app.use(session({
-            secret: this.sessionKey,
-            resave: false,
-            store: new TypeormStore({
-                cleanupLimit: 2,
-            }).connect(this.ds.getRepository(SessionModel)),
-            saveUninitialized: false,
-            cookie: {
-                path: "/",
-                httpOnly: true,
-                maxAge: 86400000,
-                secure: this.https === "true",
-                sameSite: "strict"
-            }
-        }));
+        if (this.sessionKey) {
+            this.app.use(session({
+                secret: this.sessionKey,
+                resave: false,
+                store: new TypeormStore({
+                    cleanupLimit: 2,
+                }).connect(this.ds.getRepository(SessionModel)),
+                saveUninitialized: false,
+                cookie: {
+                    path: "/",
+                    httpOnly: true,
+                    maxAge: 86400000,
+                    secure: this.https === "true",
+                    sameSite: "strict"
+                }
+            }));
+        }
     }
 }
