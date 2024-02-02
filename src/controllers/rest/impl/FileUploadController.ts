@@ -28,8 +28,8 @@ export class FileUploadController {
                           @Res() res: Res,
                           @QueryParams("expires")
                               @Description("a string container a number and a letter of `m` for mins, `h` for hours, `d` for days")
-                              @Example("1d")
-                                  expires: string,
+                              @Example("1h")
+                                  expires?: string,
                           @MultipartFile("file") file?: PlatformMulterFile,
                           @BodyParams("url") url?: string): Promise<unknown> {
         if (file && url) {
@@ -50,7 +50,7 @@ export class FileUploadController {
         }
 
         const ip = req.ip.replace(/:\d+[^:]*$/, '');
-        const uploadModelResponse = await this.fileUploadService.processUpload(ip, expires, url || file!);
+        const uploadModelResponse = await this.fileUploadService.processUpload(ip, url || file!, expires);
         res.location(uploadModelResponse.url);
         return uploadModelResponse;
     }

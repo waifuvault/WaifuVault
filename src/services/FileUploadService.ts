@@ -38,7 +38,7 @@ export class FileUploadService {
     @Inject()
     private logger: Logger;
 
-    public async processUpload(ip: string, expires: string, source: XOR<PlatformMulterFile, string>): Promise<FileUploadModelResponse> {
+    public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, expires?: string): Promise<FileUploadModelResponse> {
         const token = crypto.randomUUID();
         const uploadEntry = Builder(FileUploadModel)
             .ip(ip)
