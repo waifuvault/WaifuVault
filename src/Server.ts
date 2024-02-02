@@ -10,7 +10,7 @@ import "./filters/index.js";
 import "./engine/impl/HttpErrorRenderers/index.js";
 import * as rest from "./controllers/rest/index.js";
 import "./services/FileCleaner.js";
-// import * as views from "./controllers/views";
+import * as views from "./controllers/views/index.js";
 // import * as secureViews from "./controllers/secureViews";
 // custom index imports end
 import {config} from "./config/index.js";
@@ -74,12 +74,9 @@ const opts: Partial<TsED.Configuration> = {
         "/rest": [
             ...Object.values(rest)
         ],
-        /* "/": [
+        "/": [
             ...Object.values(views)
         ],
-        "/secure": [
-            ...Object.values(secureViews)
-        ] */
     },
     statics: {
         "/f": [
@@ -161,7 +158,7 @@ const opts: Partial<TsED.Configuration> = {
     },
     swagger: [
         {
-            path: "/",
+            path: "/api-docs",
             specVersion: "3.0.3",
             options: {
                 withCredentials: true
