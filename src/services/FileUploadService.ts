@@ -5,7 +5,7 @@ import {FileUploadModel} from "../model/db/FileUpload.model.js";
 import {FileEngine} from "../engine/FileEngine.js";
 import {FileUrlService} from "./FileUrlService.js";
 import {MimeService} from "./MimeService.js";
-import {Builder, IBuilder} from "builder-pattern";
+import {Builder, type IBuilder} from "builder-pattern";
 import path from "path";
 import fs from "node:fs/promises";
 import crypto from "crypto";
@@ -38,7 +38,7 @@ export class FileUploadService {
     @Inject()
     private logger: Logger;
 
-    public async processUpload(ip: string, expires:string, source: XOR<PlatformMulterFile, string>): Promise<FileUploadModelResponse> {
+    public async processUpload(ip: string, expires: string, source: XOR<PlatformMulterFile, string>): Promise<FileUploadModelResponse> {
         const token = crypto.randomUUID();
         const uploadEntry = Builder(FileUploadModel)
             .ip(ip)
@@ -68,8 +68,8 @@ export class FileUploadService {
             return FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true);
         }
         uploadEntry.checksum(checksum);
-        if(expires) {
-            this.calculateCustomExpires(uploadEntry,expires);
+        if (expires) {
+            this.calculateCustomExpires(uploadEntry, expires);
         }
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
 
@@ -84,9 +84,9 @@ export class FileUploadService {
         return FileUploadModelResponse.fromModel(entry, this.baseUrl, humanReadable);
     }
 
-    public calculateCustomExpires(entry:IBuilder<FileUploadModel>, expires: string):void {
-        let value:number = ObjectUtils.getNumber(expires);
-        let timefactor:TIME_UNIT = TIME_UNIT.minutes;
+    public calculateCustomExpires(entry: IBuilder<FileUploadModel>, expires: string): void {
+        let value: number = ObjectUtils.getNumber(expires);
+        let timefactor: TIME_UNIT = TIME_UNIT.minutes;
 
         if (value === 0) {
             throw new BadRequest(`Unable to parse expire value from ${expires}`);
@@ -96,8 +96,8 @@ export class FileUploadService {
         } else if (expires.includes('h')) {
             timefactor = TIME_UNIT.hours;
         }
-        value = ObjectUtils.convertToMilli(value,timefactor);
-        const maxExp:number = FileUtils.getTimeLeftBySize(entry.fileSize());
+        value = ObjectUtils.convertToMilli(value, timefactor);
+        const maxExp: number = FileUtils.getTimeLeftBySize(entry.fileSize());
 
         if (value > maxExp) {
             throw new BadRequest(`Cannot extend time remaining beyond ${ObjectUtils.timeToHuman(maxExp)}`);
