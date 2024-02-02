@@ -74,3 +74,29 @@
 .bd-mode-toggle .dropdown-menu .active .bi {
     display: block !important;
 }
+
+#victorique {
+    position: absolute;
+    right: 90px;
+    top: 20px;
+    width: 297px;
+}
+
+@media (width <= 1200px) {
+    #victorique {
+        width: 197px;
+    }
+}
+
+@media (width <= 991px) {
+    #victorique {
+        top: 180px;
+    }
+}
+
+
+@media (width <= 767px) {
+    #victorique {
+        display: none;
+    }
+}
