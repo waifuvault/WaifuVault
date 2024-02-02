@@ -75,4 +75,20 @@ export class FileUploadController {
         }
         return deleted;
     }
+
+    @Get("/expires/:token")
+    @Returns(StatusCodes.OK, FileUploadModelResponse)
+    @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    @Description("Change file expiry")
+    public expires(
+        @PathParams("token")
+            token: string,
+        @QueryParams("expires")
+        @Description("Change to expiry time as (m|h|d).  Cannot extend time.")
+            expires: string): Promise<unknown> {
+        if (!token) {
+            throw new BadRequest("no token provided");
+        }
+        return this.fileUploadService.expires(token, expires);
+    }
 }

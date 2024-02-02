@@ -78,6 +78,14 @@ export class FileUploadService {
         return FileUploadModelResponse.fromModel(entry, this.baseUrl, humanReadable);
     }
 
+    public async expires(token: string, expires: string): Promise<string> {
+        const entry = await this.repo.getEntry(token);
+        if (!entry) {
+            throw new BadRequest(`Unknown token ${token}`);
+        }
+        return 'Got expires: ' + expires;
+    }
+
     public async processDelete(token: string): Promise<boolean> {
         let deleted = false;
         const entry = await this.repo.getEntry(token);
