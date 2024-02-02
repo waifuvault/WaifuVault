@@ -50,7 +50,7 @@ export class FileUploadController {
         }
 
         const ip = req.ip.replace(/:\d+[^:]*$/, '');
-        const uploadModelResponse = await this.fileUploadService.processUpload(ip, expires,url || file!);
+        const uploadModelResponse = await this.fileUploadService.processUpload(ip, expires, url || file!);
         res.location(uploadModelResponse.url);
         return uploadModelResponse;
     }
