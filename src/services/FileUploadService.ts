@@ -149,7 +149,7 @@ export class FileUploadService {
             failedMime = await this.mimeService.isBlocked(resourcePath);
         } catch (e) {
             this.deleteUploadedFile(resourcePath);
-            throw new BadRequest("Failed to execute blocked file type check on item");
+            throw e;
         }
 
         if (failedMime) {
