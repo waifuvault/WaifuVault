@@ -14,6 +14,8 @@ import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {Logger} from "@tsed/logger";
 import type {XOR} from "../utils/typeings.js";
 import {BadRequest} from "@tsed/exceptions";
+import {ObjectUtils} from "../utils/Utils.js";
+import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 
 @Service()
 export class FileUploadService {
@@ -80,10 +82,22 @@ export class FileUploadService {
 
     public async expires(token: string, expires: string): Promise<string> {
         const entry = await this.repo.getEntry(token);
+        let value:number = ObjectUtils.getNumber(expires);
+        let timefactor:TIME_UNIT = TIME_UNIT.minutes;
         if (!entry) {
             throw new BadRequest(`Unknown token ${token}`);
         }
-        return 'Got expires: ' + expires;
+        if (value === 0) {
+            throw new BadRequest(`Unable to parse expire value from ${expires}`);
+        }
+        if (expires.includes('d')) {
+            timefactor = TIME_UNIT.days;
+        }
+        else if (expires.includes('h')) {
+            timefactor = TIME_UNIT.hours;
+        }
+        value = ObjectUtils.convertToMilli(value,timefactor);
+        return `Got ${value} millis from ${expires}`;
     }
 
     public async processDelete(token: string): Promise<boolean> {

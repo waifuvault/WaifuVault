@@ -86,8 +86,13 @@ export class FileUploadController {
         @QueryParams("expires")
         @Description("Change to expiry time as (m|h|d).  Cannot extend time.")
             expires: string): Promise<unknown> {
+        const checkExpires = /[mhd]/;
+        expires = expires.toLowerCase().replace(/ /g,'');
         if (!token) {
             throw new BadRequest("no token provided");
+        }
+        if (!checkExpires.test(expires)) {
+            throw new BadRequest("bad expire string format");
         }
         return this.fileUploadService.expires(token, expires);
     }

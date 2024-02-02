@@ -5,6 +5,11 @@ import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 
 export class ObjectUtils {
 
+    public static getNumber(source:string): number {
+        const matches = source.match(/-?\d+/g);
+        return matches && matches[0] ? parseInt(matches[0]) : 0;
+    }
+
     public static timeToHuman(value: number, timeUnit: TIME_UNIT = TIME_UNIT.milliseconds): string {
         let seconds: number;
         if (timeUnit === TIME_UNIT.milliseconds) {
