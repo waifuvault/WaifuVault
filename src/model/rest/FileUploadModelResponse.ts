@@ -14,7 +14,6 @@ export class FileUploadModelResponse {
     public url: string;
 
     @Property()
-    // @Any("string", "number")
     @Description("How long this file will exist for")
     @Nullable(Number, String)
     public retentionPeriod: string | number | null = null;

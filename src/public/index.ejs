@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <%- include('snippets/head.ejs'); %>
+    <link href="assets/custom/css/index.css" rel="stylesheet">
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+</head>
+<body>
+
+<main>
+    <div class="container py-4">
+        <header class="pb-3 mb-4 border-bottom d-flex justify-content-between">
+            <a href="/" class="text-body-emphasis text-decoration-none">
+                <span class="fs-4">Host My Shit</span>
+            </a>
+            <a class="github-button" href="https://github.com/VictoriqueMoe/hostMyShit"
+               data-color-scheme="no-preference: dark; light: light; dark: dark;"
+               data-size="large"
+               aria-label="Star VictoriqueMoe/hostMyShit on GitHub">Source</a>
+        </header>
+
+        <div class="p-5 mb-4 bg-body-tertiary rounded-3 border border-primary-subtle position-relative">
+            <div class="container-fluid py-5 ">
+                <h1 class="display-5 fw-bold">No BS temp file hosting</h1>
+                <p class="col-md-8 fs-4">hostMyShit is a temporary file hosting service that allows for file uploads that are hosted for a set amount of time.</p>
+                <a class="btn btn-primary btn-lg" type="button" href="/api-docs" target="_blank">Api Documentation</a>
+                <img id="victorique" class="img-fluid" src="assets/custom/images/08.png"/>
+            </div>
+        </div>
+
+        <div class="row align-items-md-stretch">
+            <div class="col-md-6">
+                <div class="h-100 p-5 text-bg-dark rounded-3 border border-danger-subtle bg-body-tertiary">
+                    <h2>Restrictions</h2>
+                    <p>The following cannot be uploaded, and any uploads in violation of this will be IP banned</p>
+                    <ul class="list-group mb-4 mt-4">
+                        <li class="list-group-item">Piracy</li>
+                        <li class="list-group-item">Extremist material</li>
+                        <li class="list-group-item">Malware</li>
+                        <li class="list-group-item">Crypto shit</li>
+                        <li class="list-group-item">Anything illegal under British Law</li>
+                        <li class="list-group-item">File Limit: <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</li>
+                        <li class="list-group-item">Blocked MIME types:
+                            <ul>
+                                <% for(const blockedMime of process.env.BLOCKED_MIME_TYPES.split(",")){ %>
+                                    <li><%- blockedMime; -%></li>
+                                <% } %>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p>The amount of time a given file is hosted for is determined by its size. Files are hosted for a maximum of 365 days, with the time being shortened on a cubic curve.</p>
+                    <p>This means for files up to about 50% of the maximum file size will get close to the maximum time. Beyond that, the time allotted drops off sharply, with the maximum size file getting about 5 minutes of hosting.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="h-100 p-5  border border-info-subtle rounded-3">
+                    <h2>Privacy Policy</h2>
+                    <p>The following info is obtained for each upload</p>
+                    <ul class="list-group mb-4 mt-4">
+                        <li class="list-group-item">IP address</li>
+                        <li class="list-group-item">User agent</li>
+                    </ul>
+                    <p>No data is shared, and data will be deleted permanently when the file expires or is deleted by the user</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="pt-3 mt-4 text-body-secondary border-top">
+            &copy; Victoria
+        </footer>
+    </div>
+</main>
+<%- include('snippets/scripts.ejs'); %>
+</body>
+</html>
