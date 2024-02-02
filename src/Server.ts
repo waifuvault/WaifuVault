@@ -29,7 +29,7 @@ import {DataSource} from "typeorm";
 import {SessionModel} from "./model/db/Session.model.js";
 import compression from "compression";
 import GlobalEnv from "./model/constants/GlobalEnv.js";
-import multer, {type FileFilterCallback} from "multer";
+import multer from "multer";
 import path from "path";
 import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware.js";
 import rateLimit from "express-rate-limit";
@@ -49,11 +49,6 @@ const opts: Partial<TsED.Configuration> = {
     }()),
     multer: {
         dest: filesDir,
-        fileFilter: function (request: Request,
-                              file: Express.Multer.File,
-                              callback: FileFilterCallback): void {
-            callback(null, true);
-        },
         limits: {
             fileSize: Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB as string) * 1048576
         },
@@ -87,11 +82,6 @@ const opts: Partial<TsED.Configuration> = {
         "/assets": [
             {
                 root: `${path.dirname(fileURLToPath(import.meta.url))}/public/assets`
-            }
-        ],
-        "/tos": [
-            {
-                root: `${path.dirname(fileURLToPath(import.meta.url))}/public/tos.html`
             }
         ],
         "/favicon.ico": [
