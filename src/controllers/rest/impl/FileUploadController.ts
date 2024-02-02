@@ -1,5 +1,5 @@
 import {Controller, Inject} from "@tsed/di";
-import {Delete, Description, Example, Get, Name, Put, Returns} from "@tsed/schema";
+import {Delete, Description, Get, Name, Put, Returns} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
 import {BadRequest, Forbidden} from "@tsed/exceptions";
@@ -27,8 +27,7 @@ export class FileUploadController {
     public async addEntry(@Req() req: Req,
                           @Res() res: Res,
                           @QueryParams("expires")
-                              @Description("a string container a number and a letter of `m` for mins, `h` for hours, `d` for days")
-                              @Example("1h")
+                              @Description("a string container a number and a letter of `m` for mins, `h` for hours, `d` for days. For example: 1h would be 1 hour and 1d would be 1 day. leave this blank if you want the file to exist according to the retention policy")
                                   expires?: string,
                           @MultipartFile("file") file?: PlatformMulterFile,
                           @BodyParams("url") url?: string): Promise<unknown> {
