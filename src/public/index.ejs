@@ -90,7 +90,9 @@
                     <p>Use the control below to see how long a file will be retained for</p>
                     <div class="mb-3">
                         <input class="form-control" type="file" id="caculateFileTime">
-                        <input disabled class="form-control mt-2" id="fileTime" placeholder="No file selected">
+                        <div class="alert alert-success mt-2 hidden" role="alert" id="okFileSize"></div>
+                        <div class="alert alert-danger mt-2 hidden" role="alert" id="badFileSize">File exceeds max size of <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</div>
+
                     </div>
                 </div>
             </div>
@@ -300,14 +302,30 @@ var urlResponseData = await urlResponse.Content.ReadAsStringAsync();
     const caculateFileInput = document.getElementById("caculateFileTime");
     const MIN_EXPIRATION = 30 * 24 * 60 * 60 * 1000;
     const MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
-    caculateFileInput?.addEventListener("change", ev => {
+    caculateFileInput?.addEventListener("change", () => {
+        const okFileSize = document.getElementById("okFileSize");
+        const badFileSize = document.getElementById("badFileSize");
+        toggleShow(badFileSize, false);
+        toggleShow(okFileSize, false);
         const file = caculateFileInput.files[0];
-        document.getElementById("fileTime").value = timeToHuman(getTimeLeftBySize(file.size));
+        const fileSize = file.size;
+        if (fileSize > fileSizeLimit) {
+            toggleShow(badFileSize, true);
+            toggleShow(okFileSize, false);
+            return
+        }
+        okFileSize.innerText = timeToHuman(getTimeLeftBySize(file.size));
+        toggleShow(badFileSize, false);
+        toggleShow(okFileSize, true);
     });
 
     function getTimeLeftBySize(filesize) {
-        const ttl = Math.floor((MIN_EXPIRATION - MAX_EXPIRATION) * Math.pow((filesize / (fileSizeLimit * 1048576) - 1), 3));
+        const ttl = Math.floor((MIN_EXPIRATION - MAX_EXPIRATION) * Math.pow((filesize / (fileSizeLimit) - 1), 3));
         return ttl < MIN_EXPIRATION ? MIN_EXPIRATION : ttl;
+    }
+
+    function toggleShow(el, show) {
+        show ? el.classList.remove("hidden") : el.classList.add("hidden");
     }
 
     function timeToHuman(value) {

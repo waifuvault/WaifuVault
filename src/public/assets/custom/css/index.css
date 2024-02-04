@@ -104,3 +104,7 @@
 .card > i {
     font-size: 2rem;
 }
+
+.hidden {
+    display: none;
+}
