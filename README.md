@@ -1,5 +1,6 @@
-## hostMyShit
-hostMyShit is a temporary file hosting service, that allows for file uploads that are hosted for a set amount of time.  
+## WaifuVault
+
+WaifuVault is a temporary file hosting service, that allows for file uploads that are hosted for a set amount of time.
 
 The amount of time a given file is hosted for is determined by its size.  Files are hosted for a maximum of 365 days, 
 with the time being shortened on a cubic curve.  This means for files up to about 50% of maximum file size will get 
@@ -57,6 +58,4 @@ All application functionality is provided by a set of REST endpoints.
 
 ## Site URL
 
-The following URL is a temporary location whilst BETA testing:
-
-> https://hostmyshit.victorique.moe
+> https://waifuvault.moe
