@@ -141,6 +141,9 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="python-tab" data-bs-toggle="tab" data-bs-target="#python-tab-pane" type="button" role="tab" aria-controls="python-tab-pane" aria-selected="false">Python</button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="rust-tab" data-bs-toggle="tab" data-bs-target="#rust-tab-pane" type="button" role="tab" aria-controls="rust-tab-pane" aria-selected="false">Rust</button>
+                        </li>
                     </ul>
                     <div class="tab-content" id="myTabContent">
                         <div class="tab-pane fade show active" id="curl-tab-pane" role="tabpanel" aria-labelledby="curl-tab" tabindex="0">
@@ -281,6 +284,29 @@ var urlContent = new FormUrlEncodedContent(new []
 });
 var urlResponse = await client.PutAsync("<%- process.env.BASE_URL; -%>/rest", urlContent);
 var urlResponseData = await urlResponse.Content.ReadAsStringAsync();
+</code>
+</pre>
+                        </div>
+                        <div class="tab-pane fade" id="rust-tab-pane" role="tabpanel" aria-labelledby="rust-tab" tabindex="0">
+<pre><code class="language-rust">
+use reqwest::blocking::multipart;
+use reqwest::blocking::Client;
+
+fn main() {
+    // NOTE WELL - Requires cargo.toml containing:
+    // reqwest = { version = "0.11.24", features = ["blocking","multipart"]}
+    let client = Client::new();
+
+    // upload file
+    let form = multipart::Form::new().file("file", "./src/main.rs");
+    let response = client.put("<%- process.env.BASE_URL; -%>/rest").multipart(form.unwrap()).send();
+    println!("{:?}",response);
+
+    // upload via URL
+    let params = [("url", "https://victorique.moe/img/slider/Quotes.jpg")];
+    let response_url = client.put("<%- process.env.BASE_URL; -%>/rest").form(&amp;params).send();
+    println!("{:?}",response_url);
+}
 </code>
 </pre>
                         </div>
