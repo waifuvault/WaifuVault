@@ -3,16 +3,15 @@ hostMyShit is a temporary file hosting service, that allows for file uploads tha
 
 The amount of time a given file is hosted for is determined by its size.  Files are hosted for a maximum of 365 days, 
 with the time being shortened on a cubic curve.  This means for files up to about 50% of maximum file size will get 
-close to the maximum time.  Beyond that, the time allotted drops off sharply, with the maximum size file getting about 
-5 minutes of hosting.
+close to the maximum time.  Beyond that, the time allotted drops off sharply, with the maximum size file getting 30 days of hosting.
 
-> **Important!** this is currently in BETA and features such as a homepages and admin pages will be added in the near future
+> **Important!** this is currently in BETA and features such as admin pages will be added in the near future
 
 ## Getting started
 
 > **Important!** this requires Node >= 14, Express >= 4 and TypeScript >= 4.
 
-`.env` file must be created for this application to work. rename `.envExample` to `.env`
+`.env` file must be created for this application to work. Rename `.envExample` to `.env`
 
 ### Env file settings
 Required Settings
@@ -21,8 +20,8 @@ Required Settings
 |---------------------------|-----------------------------------------------------------------------------|
 | FILE_SIZE_UPLOAD_LIMIT_MB | Limit on size of file allowed to be uploaded                                |
 | BLOCKED_MIME_TYPES        | Comma seperated list of MIME types that will be blocked from being uploaded |
-
-> **Note Well** the file size sets the time to live for a file, so files close to the upload limit will only be hosted for about 5 minutes.  It is a cubic curve so files up to 50% of the size will get close to a year of hosting time.
+| SESSION_KEY               | Replace 'YourSessionKey' with a random string to use as the session key     |
+> **Note Well** the file size sets the time to live for a file, so files close to the upload limit will only be hosted for 30 days.  It is a cubic curve so files up to 50% of the size will get close to a year of hosting time.
 
 Optional Settings
 
@@ -32,13 +31,8 @@ Optional Settings
 
 ### Build and Run commands
 
-> **Empty Directories**! The application is currently in BETA with no views, so you will need to add the empty directories first
-
-
 ```batch
 # add directories (once after cloning)
-    mkdir src/controllers/secureViews
-    mkdir src/controllers/views
     mkdir files
 
 # install dependencies
