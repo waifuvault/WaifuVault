@@ -42,12 +42,11 @@
             </div>
             <div class="col-md-4">
                 <div class="card text-center border-0">
-                    <i class="bi bi-lock"></i>
+                    <i class="bi bi-cloud-upload"></i>
                     <div class="card-body text-center">
-                        <h5 class="card-title">Secure?</h5>
+                        <h5 class="card-title">Simple</h5>
                         <p class="card-text">
-                            You are in control of who can read your files.
-                            Each file is protected with a unique token, only known to the uploader.
+                            Simple API access for file upload.  No authorisation for download.
                         </p>
                     </div>
                 </div>
@@ -56,7 +55,7 @@
                 <div class="card text-center border-0">
                     <i class="bi bi-clock-history"></i>
                     <div class="card-body text-center">
-                        <h5 class="card-title">Temporary?</h5>
+                        <h5 class="card-title">Temporary</h5>
                         <p class="card-text">
                             All files uploaded are temporary, and will be deleted once their allotted lifespan expires.
                             Shorter lifespans can be specified at upload.
@@ -105,7 +104,6 @@
                     <p>No uniform technology standard for recognising and implementing Do-Not-Track(DNT) signals has been finalised.
                         As such, we do not currently respond to DNT browser signals or any other mechanism that automatically
                         communicates your choice not to be tracked online.</p>
-                    <p>We do not knowingly solicit information from children under the age of 13.</p>
                     <p>While we have taken reasonable steps to secure any information you provide to us, please be aware that despite our efforts,
                         no security measures are perfect or impenetrable. No method of data transmission can be guaranteed against any interception
                         or other type of misuse. Any information disclosed online is potentially vulnerable to interception and misuse by unauthorised parties.</p>
@@ -128,6 +126,12 @@
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="go-tab" data-bs-toggle="tab" data-bs-target="#go-tab-pane" type="button" role="tab" aria-controls="go-tab-pane" aria-selected="false">Go</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="cs-tab" data-bs-toggle="tab" data-bs-target="#cs-tab-pane" type="button" role="tab" aria-controls="cs-tab-pane" aria-selected="true">C#</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="python-tab" data-bs-toggle="tab" data-bs-target="#python-tab-pane" type="button" role="tab" aria-controls="python-tab-pane" aria-selected="false">Python</button>
                         </li>
                     </ul>
                     <div class="tab-content" id="myTabContent">
@@ -223,6 +227,52 @@ func main() {
 	defer resp.Body.Close()
 }
 
+</code>
+</pre>
+                        </div>
+                        <div class="tab-pane fade" id="python-tab-pane" role="tabpanel" aria-labelledby="python-tab" tabindex="0">
+<pre><code class="language-python">
+import requests
+from requests_toolbelt import MultipartEncoder
+
+# upload file
+multipart_data = MultipartEncoder(
+    fields={
+        'file': ('input.txt', open('./src/input.txt', 'rb'), 'text/plain')
+    }
+)
+response = requests.put("http://localhost:8081/rest", data=multipart_data, headers={'Content-Type': multipart_data.content_type})
+data = response.json()
+
+# upload via URL
+response = requests.put(
+    "http://localhost:8081/rest",
+    data={'url': 'https://victorique.moe/img/slider/Quotes.jpg'}
+)
+data = response.json()
+</code>
+</pre>
+                        </div>
+                        <div class="tab-pane fade" id="cs-tab-pane" role="tabpanel" aria-labelledby="cs-tab" tabindex="0">
+<pre><code class="language-cs">
+var client = new HttpClient();
+
+// Upload file
+var filePath = "./src/input.txt";
+var content = new MultipartFormDataContent();
+var fileStream = new FileStream(filePath, FileMode.Open);
+content.Add(new StreamContent(fileStream), "file", Path.GetFileName(filePath));
+var fileResponse = await client.PutAsync("http://localhost:8081/rest", content);
+var fileResponseData = await fileResponse.Content.ReadAsStringAsync();
+fileStream.Close();
+
+// Upload via URL
+var urlContent = new FormUrlEncodedContent(new []
+{
+    new KeyValuePair<string, string>("url", "https://victorique.moe/img/slider/Quotes.jpg")
+});
+var urlResponse = await client.PutAsync("http://localhost:8081/rest", urlContent);
+var urlResponseData = await urlResponse.Content.ReadAsStringAsync();
 </code>
 </pre>
                         </div>
