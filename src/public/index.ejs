@@ -28,7 +28,44 @@
             </div>
         </div>
 
-        <div class="row align-items-md-stretch">
+        <div class="row align-items-md-stretch mb-4">
+            <div class="col-md-4">
+                <div class="card text-center border-0">
+                    <i class="bi bi-rocket-takeoff"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Fast</h5>
+                        <p class="card-text">
+                            Through the use of ETags and efficient caching, rapid file access and upload.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-0">
+                    <i class="bi bi-cloud-upload"></i>
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Simple</h5>
+                        <p class="card-text">
+                            Simple API access for file upload. No authorisation for download.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-0">
+                    <i class="bi bi-clock-history"></i>
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Temporary</h5>
+                        <p class="card-text">
+                            All files uploaded are temporary, and will be deleted once their allotted lifespan expires.
+                            Shorter lifespans can be specified at upload.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row align-items-md-stretch mb-4">
             <div class="col-md-6">
                 <div class="h-100 p-5 text-bg-dark rounded-3 border border-danger-subtle bg-body-tertiary">
                     <h2>Restrictions</h2>
@@ -49,7 +86,14 @@
                         </li>
                     </ul>
                     <p>The amount of time a given file is hosted for is determined by its size. Files are hosted for a maximum of 365 days, with the time being shortened on a cubic curve.</p>
-                    <p>This means for files up to about 50% of the maximum file size will get close to the maximum time. Beyond that, the time allotted drops off sharply, with the maximum size file getting about 5 minutes of hosting.</p>
+                    <p>This means for files up to about 50% of the maximum file size will get close to the maximum time. All files will be retained for at LEAST 30 days</p>
+                    <p>Use the control below to see how long a file will be retained for</p>
+                    <div class="mb-3">
+                        <input class="form-control" type="file" id="caculateFileTime">
+                        <div class="alert alert-success mt-2 hidden" role="alert" id="okFileSize"></div>
+                        <div class="alert alert-danger mt-2 hidden" role="alert" id="badFileSize">File exceeds max size of <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</div>
+
+                    </div>
                 </div>
             </div>
             <div class="col-md-6">
@@ -61,16 +105,187 @@
                         <li class="list-group-item">User agent</li>
                     </ul>
                     <p>No data is shared with third parties, and data will be deleted permanently when the file expires or is deleted by the user</p>
-                    <p>If we believe the release of this information is necessary to respond to legal process, to investigate or
+                    <p>If we believe the release of this information is necessary to respond to a legal process, to investigate or
                         remedy potential violations of our policies, or to protect the rights, property, and safety of others,
                         we may share your information as permitted or required by any applicable law, rule, or regulation.</p>
-                    <p>No uniform technology standard for recognizing and implementing Do-Not-Track(DNT) signals has been finalized.
+                    <p>No uniform technology standard for recognising and implementing Do-Not-Track(DNT) signals has been finalised.
                         As such, we do not currently respond to DNT browser signals or any other mechanism that automatically
                         communicates your choice not to be tracked online.</p>
-                    <p>We do not knowingly solicit information from children under the age of 13.</p>
                     <p>While we have taken reasonable steps to secure any information you provide to us, please be aware that despite our efforts,
-                        no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception
-                        or other type of misuse. Any information disclosed online is potentially vulnerable to interception and misuse by unauthorized parties.</p>
+                        no security measures are perfect or impenetrable. No method of data transmission can be guaranteed against any interception
+                        or other type of misuse. Any information disclosed online is potentially vulnerable to interception and misuse by unauthorised parties.</p>
+                    <a class="btn btn-secondary btn-sm mt-3" href="mailto:victoria@victorique.moe">Contact me if you have any issues</a>
+                </div>
+            </div>
+        </div>
+        <div class="row align-items-md-stretch mb-4">
+            <div class="col-md-12">
+                <div class="h-100 p-5 text-bg-dark rounded-3 border border-success-subtle bg-body-tertiary">
+                    <h2>Examples</h2>
+                    <p>Please refer to the
+                        <a href="/api-docs" target="_blank">Swagger</a> for full api documentation including endpoints and optional arguments you can pass.
+                    </p>
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="curl-tab" data-bs-toggle="tab" data-bs-target="#curl-tab-pane" type="button" role="tab" aria-controls="curl-tab-pane" aria-selected="true">Curl</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="node-tab" data-bs-toggle="tab" data-bs-target="#node-tab-pane" type="button" role="tab" aria-controls="node-tab-pane" aria-selected="false">Node (node-fetch)</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="go-tab" data-bs-toggle="tab" data-bs-target="#go-tab-pane" type="button" role="tab" aria-controls="go-tab-pane" aria-selected="false">Go</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="cs-tab" data-bs-toggle="tab" data-bs-target="#cs-tab-pane" type="button" role="tab" aria-controls="cs-tab-pane" aria-selected="true">C#</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="python-tab" data-bs-toggle="tab" data-bs-target="#python-tab-pane" type="button" role="tab" aria-controls="python-tab-pane" aria-selected="false">Python</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="curl-tab-pane" role="tabpanel" aria-labelledby="curl-tab" tabindex="0">
+<pre><code class="language-curl">
+// upload file via URL
+curl --request PUT --url <%- process.env.BASE_URL; -%>/rest --data url=https://victorique.moe/img/slider/Quotes.jpg
+
+// upload file via File
+curl --request PUT --url <%- process.env.BASE_URL; -%>/rest --header 'Content-Type: multipart/form-data' --form file=@someFile.png
+</code>
+</pre>
+                        </div>
+                        <div class="tab-pane fade" id="node-tab-pane" role="tabpanel" aria-labelledby="node-tab" tabindex="0">
+<pre><code class="language-ts">
+import fetch, {fileFrom, FormData} from 'node-fetch';
+
+// upload file
+const formData = new FormData();
+const blob = await fileFrom('./src/input.txt');
+formData.set('file', blob);
+const response = await fetch("<%- process.env.BASE_URL; -%>/rest", {
+    method: 'PUT',
+    body: formData
+});
+const data = await response.json(); // object
+
+// upload via URL
+const encodedParams = new URLSearchParams();
+encodedParams.set('url', 'https://victorique.moe/img/slider/Quotes.jpg');
+const response = await fetch("<%- process.env.BASE_URL; -%>/rest", {
+    method: 'PUT',
+    body: encodedParams
+});
+const data = await response.json(); // object
+</code>
+</pre>
+                        </div>
+                        <div class="tab-pane fade" id="go-tab-pane" role="tabpanel" aria-labelledby="go-tab" tabindex="0">
+<pre><code class="language-go">
+//upload via URL
+package main
+
+import (
+	"bytes"
+	"net/http"
+)
+
+func main() {
+	url := "<%- process.env.BASE_URL; -%>/rest"
+	data := []byte(`{"url": "https://victorique.moe/img/slider/Quotes.jpg"}`)
+	req, _ := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(data))
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, _ := client.Do(req)
+	defer resp.Body.Close()
+}
+
+// upload file
+package main
+
+import (
+	"bytes"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path"
+	"path/filepath"
+)
+
+func main() {
+	fileDir, _ := os.Getwd()
+	fileName := "main.go"
+	filePath := path.Join(fileDir, fileName)
+
+	file, _ := os.Open(filePath)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("file", filepath.Base(file.Name()))
+	io.Copy(part, file)
+	writer.Close()
+
+	r, _ := http.NewRequest("PUT", "<%- process.env.BASE_URL; -%>/rest", body)
+	r.Header.Add("Content-Type", writer.FormDataContentType())
+	client := &http.Client{}
+	resp, err := client.Do(r)
+	if err != nil {
+		// handle error
+	}
+	defer resp.Body.Close()
+}
+
+</code>
+</pre>
+                        </div>
+                        <div class="tab-pane fade" id="python-tab-pane" role="tabpanel" aria-labelledby="python-tab" tabindex="0">
+<pre><code class="language-python">
+import requests
+from requests_toolbelt import MultipartEncoder
+
+# upload file
+multipart_data = MultipartEncoder(
+    fields={
+        'file': ('input.txt', open('./src/input.txt', 'rb'), 'text/plain')
+    }
+)
+response = requests.put("<%- process.env.BASE_URL; -%>/rest", data=multipart_data, headers={'Content-Type': multipart_data.content_type})
+data = response.json()
+
+# upload via URL
+response = requests.put(
+    "<%- process.env.BASE_URL; -%>/rest",
+    data={'url': 'https://victorique.moe/img/slider/Quotes.jpg'}
+)
+data = response.json()
+</code>
+</pre>
+                        </div>
+                        <div class="tab-pane fade" id="cs-tab-pane" role="tabpanel" aria-labelledby="cs-tab" tabindex="0">
+<pre><code class="language-cs">
+var client = new HttpClient();
+
+// Upload file
+var filePath = "./src/input.txt";
+var content = new MultipartFormDataContent();
+var fileStream = new FileStream(filePath, FileMode.Open);
+content.Add(new StreamContent(fileStream), "file", Path.GetFileName(filePath));
+var fileResponse = await client.PutAsync("<%- process.env.BASE_URL; -%>/rest", content);
+var fileResponseData = await fileResponse.Content.ReadAsStringAsync();
+fileStream.Close();
+
+// Upload via URL
+var urlContent = new FormUrlEncodedContent(new []
+{
+    new KeyValuePair<string, string>("url", "https://victorique.moe/img/slider/Quotes.jpg")
+});
+var urlResponse = await client.PutAsync("<%- process.env.BASE_URL; -%>/rest", urlContent);
+var urlResponseData = await urlResponse.Content.ReadAsStringAsync();
+</code>
+</pre>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -81,5 +296,57 @@
     </div>
 </main>
 <%- include('snippets/scripts.ejs'); %>
+<script>
+    hljs.highlightAll();
+
+    const caculateFileInput = document.getElementById("caculateFileTime");
+    const MIN_EXPIRATION = 30 * 24 * 60 * 60 * 1000;
+    const MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
+    caculateFileInput?.addEventListener("change", () => {
+        const okFileSize = document.getElementById("okFileSize");
+        const badFileSize = document.getElementById("badFileSize");
+        toggleShow(badFileSize, false);
+        toggleShow(okFileSize, false);
+        const file = caculateFileInput.files[0];
+        const fileSize = file.size;
+        if (fileSize > fileSizeLimit) {
+            toggleShow(badFileSize, true);
+            toggleShow(okFileSize, false);
+            return
+        }
+        okFileSize.innerText = timeToHuman(getTimeLeftBySize(file.size));
+        toggleShow(badFileSize, false);
+        toggleShow(okFileSize, true);
+    });
+
+    function getTimeLeftBySize(filesize) {
+        const ttl = Math.floor((MIN_EXPIRATION - MAX_EXPIRATION) * Math.pow((filesize / (fileSizeLimit) - 1), 3));
+        return ttl < MIN_EXPIRATION ? MIN_EXPIRATION : ttl;
+    }
+
+    function toggleShow(el, show) {
+        show ? el.classList.remove("hidden") : el.classList.add("hidden");
+    }
+
+    function timeToHuman(value) {
+        const seconds = value / 1000;
+        const levels = [
+            [Math.floor(seconds / 31536000), "years"],
+            [Math.floor((seconds % 31536000) / 86400), "days"],
+            [Math.floor(((seconds % 31536000) % 86400) / 3600), "hours"],
+            [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), "minutes"],
+            [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"]
+        ];
+        let returnText = "";
+        for (let i = 0, max = levels.length; i < max; i++) {
+            if (levels[i][0] === 0) {
+                continue;
+            }
+            returnText += ` ${levels[i][0]} ${levels[i][0] === 1 ? levels[i][1].substr(0, levels[i][1].length - 1) : levels[i][1]}`;
+        }
+        return returnText.trim();
+    }
+
+</script>
 </body>
 </html>

@@ -27,7 +27,7 @@ export class ObjectUtils {
             [Math.floor((seconds % 31536000) / 86400), "days"],
             [Math.floor(((seconds % 31536000) % 86400) / 3600), "hours"],
             [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), "minutes"],
-            [(((seconds % 31536000) % 86400) % 3600) % 60, "seconds"]
+            [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"]
         ];
         let returnText = "";
 
@@ -91,7 +91,8 @@ export class FileUtils {
     }
 
     public static getTimeLeftBySize(filesize: number): number {
-        return Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow((filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1), 3));
+        const ttl = Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow((filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1), 3));
+        return ttl < FileUtils.MIN_EXPIRATION ? FileUtils.MIN_EXPIRATION : ttl;
     }
 }
 

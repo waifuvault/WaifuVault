@@ -21,10 +21,11 @@ export class FileCleaner implements OnInit {
         if (allFiles.length === 0) {
             return;
         }
-        const isExpiredPArr = allFiles.map(file => FileUtils.isFileExpired(file));
-        const isExpiredArr = await Promise.all(isExpiredPArr);
-        const expiredFiles = allFiles.filter((_, index) => isExpiredArr[index]);
-        const deletePArr = expiredFiles.map(file => this.fileUploadService.processDelete(file.token));
+        const isExpiredPArr = allFiles.filter(file => FileUtils.isFileExpired(file));
+        if (isExpiredPArr.length === 0) {
+            return;
+        }
+        const deletePArr = isExpiredPArr.map(file => this.fileUploadService.processDelete(file.token));
         await Promise.all(deletePArr);
     }
 

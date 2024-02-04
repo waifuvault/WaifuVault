@@ -1,5 +1,5 @@
 import {Controller, Inject} from "@tsed/di";
-import {Delete, Description, Get, Name, Put, Returns} from "@tsed/schema";
+import {Delete, Description, Example, Examples, Get, Name, Put, Returns} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
 import {BadRequest, Forbidden} from "@tsed/exceptions";
@@ -23,12 +23,30 @@ export class FileUploadController {
     @Put()
     @Returns(StatusCodes.CREATED, FileUploadModelResponse)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    @Example({
+        description: "foo",
+        summary: "bnar"
+    })
     @Description("Upload a file or specify URL to a file. Use the location header in the response or the url prop in the JSON to get the URL of the file")
-    public async addEntry(@Req() req: Req,
-                          @Res() res: Res,
+    public async addEntry(@Req()
+                              req: Req,
+                          @Res()
+                              res: Res,
                           @QueryParams("expires")
-                              @Description("a string container a number and a letter of `m` for mins, `h` for hours, `d` for days. For example: 1h would be 1 hour and 1d would be 1 day. leave this blank if you want the file to exist according to the retention policy")
-                                  expires?: string,
+                          @Examples({
+                              "empty": {
+                                  summary: "empty",
+                                  description: "expires according to retention policy",
+                                  value: ""
+                              },
+                              "1d": {
+                                  summary: "1d",
+                                  description: "expires in 1day",
+                                  value: "1d"
+                              }
+                          })
+                          @Description("a string containing a number and a letter of `m` for mins, `h` for hours, `d` for days. For example: `1h` would be 1 hour and `1d` would be 1 day. leave this blank if you want the file to exist according to the retention policy")
+                              expires?: string,
                           @MultipartFile("file") file?: PlatformMulterFile,
                           @BodyParams("url") url?: string): Promise<unknown> {
         if (file && url) {
