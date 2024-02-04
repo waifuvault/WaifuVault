@@ -46,7 +46,7 @@
                     <div class="card-body text-center">
                         <h5 class="card-title">Simple</h5>
                         <p class="card-text">
-                            Simple API access for file upload.  No authorisation for download.
+                            Simple API access for file upload. No authorisation for download.
                         </p>
                     </div>
                 </div>
@@ -86,7 +86,12 @@
                         </li>
                     </ul>
                     <p>The amount of time a given file is hosted for is determined by its size. Files are hosted for a maximum of 365 days, with the time being shortened on a cubic curve.</p>
-                    <p>This means for files up to about 50% of the maximum file size will get close to the maximum time. Beyond that, the time allotted drops off sharply, with the maximum size file getting about 5 minutes of hosting.</p>
+                    <p>This means for files up to about 50% of the maximum file size will get close to the maximum time. All files will be retained for at LEAST 30 days</p>
+                    <p>Use the control below to see how long a file will be retained for</p>
+                    <div class="mb-3">
+                        <input class="form-control" type="file" id="caculateFileTime">
+                        <input disabled class="form-control mt-2" id="fileTime" placeholder="No file selected">
+                    </div>
                 </div>
             </div>
             <div class="col-md-6">
@@ -107,6 +112,7 @@
                     <p>While we have taken reasonable steps to secure any information you provide to us, please be aware that despite our efforts,
                         no security measures are perfect or impenetrable. No method of data transmission can be guaranteed against any interception
                         or other type of misuse. Any information disclosed online is potentially vulnerable to interception and misuse by unauthorised parties.</p>
+                    <a class="btn btn-secondary btn-sm mt-3" href="mailto:victoria@victorique.moe">Contact me if you have any issues</a>
                 </div>
             </div>
         </div>
@@ -241,12 +247,12 @@ multipart_data = MultipartEncoder(
         'file': ('input.txt', open('./src/input.txt', 'rb'), 'text/plain')
     }
 )
-response = requests.put("http://localhost:8081/rest", data=multipart_data, headers={'Content-Type': multipart_data.content_type})
+response = requests.put("<%- process.env.BASE_URL; -%>/rest", data=multipart_data, headers={'Content-Type': multipart_data.content_type})
 data = response.json()
 
 # upload via URL
 response = requests.put(
-    "http://localhost:8081/rest",
+    "<%- process.env.BASE_URL; -%>/rest",
     data={'url': 'https://victorique.moe/img/slider/Quotes.jpg'}
 )
 data = response.json()
@@ -262,7 +268,7 @@ var filePath = "./src/input.txt";
 var content = new MultipartFormDataContent();
 var fileStream = new FileStream(filePath, FileMode.Open);
 content.Add(new StreamContent(fileStream), "file", Path.GetFileName(filePath));
-var fileResponse = await client.PutAsync("http://localhost:8081/rest", content);
+var fileResponse = await client.PutAsync("<%- process.env.BASE_URL; -%>/rest", content);
 var fileResponseData = await fileResponse.Content.ReadAsStringAsync();
 fileStream.Close();
 
@@ -271,7 +277,7 @@ var urlContent = new FormUrlEncodedContent(new []
 {
     new KeyValuePair<string, string>("url", "https://victorique.moe/img/slider/Quotes.jpg")
 });
-var urlResponse = await client.PutAsync("http://localhost:8081/rest", urlContent);
+var urlResponse = await client.PutAsync("<%- process.env.BASE_URL; -%>/rest", urlContent);
 var urlResponseData = await urlResponse.Content.ReadAsStringAsync();
 </code>
 </pre>
@@ -288,6 +294,41 @@ var urlResponseData = await urlResponse.Content.ReadAsStringAsync();
     </div>
 </main>
 <%- include('snippets/scripts.ejs'); %>
-<script>hljs.highlightAll();</script>
+<script>
+    hljs.highlightAll();
+
+    const caculateFileInput = document.getElementById("caculateFileTime");
+    const MIN_EXPIRATION = 30 * 24 * 60 * 60 * 1000;
+    const MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
+    caculateFileInput?.addEventListener("change", ev => {
+        const file = caculateFileInput.files[0];
+        document.getElementById("fileTime").value = timeToHuman(getTimeLeftBySize(file.size));
+    });
+
+    function getTimeLeftBySize(filesize) {
+        const ttl = Math.floor((MIN_EXPIRATION - MAX_EXPIRATION) * Math.pow((filesize / (fileSizeLimit * 1048576) - 1), 3));
+        return ttl < MIN_EXPIRATION ? MIN_EXPIRATION : ttl;
+    }
+
+    function timeToHuman(value) {
+        const seconds = value / 1000;
+        const levels = [
+            [Math.floor(seconds / 31536000), "years"],
+            [Math.floor((seconds % 31536000) / 86400), "days"],
+            [Math.floor(((seconds % 31536000) % 86400) / 3600), "hours"],
+            [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), "minutes"],
+            [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"]
+        ];
+        let returnText = "";
+        for (let i = 0, max = levels.length; i < max; i++) {
+            if (levels[i][0] === 0) {
+                continue;
+            }
+            returnText += ` ${levels[i][0]} ${levels[i][0] === 1 ? levels[i][1].substr(0, levels[i][1].length - 1) : levels[i][1]}`;
+        }
+        return returnText.trim();
+    }
+
+</script>
 </body>
 </html>
