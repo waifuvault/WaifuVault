@@ -139,6 +139,9 @@
                             <button class="nav-link" id="cs-tab" data-bs-toggle="tab" data-bs-target="#cs-tab-pane" type="button" role="tab" aria-controls="cs-tab-pane" aria-selected="false">C#</button>
                         </li>
                         <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="java-tab" data-bs-toggle="tab" data-bs-target="#java-tab-pane" type="button" role="tab" aria-controls="java-tab-pane" aria-selected="false">Java</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
                             <button class="nav-link" id="python-tab" data-bs-toggle="tab" data-bs-target="#python-tab-pane" type="button" role="tab" aria-controls="python-tab-pane" aria-selected="false">Python</button>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -307,6 +310,50 @@ fn main() {
     let response_url = client.put("<%- process.env.BASE_URL; -%>/rest").form(&amp;params).send();
     println!("{:?}",response_url);
 }
+</code>
+</pre>
+                        </div>
+                        <div class="tab-pane fade" id="java-tab-pane" role="tabpanel" aria-labelledby="java-tab" tabindex="0">
+<pre><code class="language-java">
+// using Apache HttpClient
+
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+
+import java.io.IOException;
+import java.nio.file.Path;
+
+public class Example {
+
+  private static void uploadFile(final Path file) throws IOException {
+    try (final var httpclient = HttpClients.createDefault()) {
+      final var data = MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+          .addBinaryBody("file", file.toFile())
+          .build();
+      final var request = RequestBuilder.put("<%- process.env.BASE_URL; -%>/rest").setEntity(data).build();
+      final ResponseHandler<String> responseHandler = response -> response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : null;
+      final var responseBody = httpclient.execute(request, responseHandler);
+      System.out.println(responseBody);
+    }
+  }
+
+  private static void uploadUrl(final String url) throws IOException {
+    try (final var httpclient = HttpClients.createDefault()) {
+      final var data = MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+          .addTextBody("url", url)
+          .build();
+      final var request = RequestBuilder.put("<%- process.env.BASE_URL; -%>/rest").setEntity(data).build();
+      final ResponseHandler<String> responseHandler = response -> response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : null;
+      final var responseBody = httpclient.execute(request, responseHandler);
+      System.out.println(responseBody);
+    }
+  }
+}
+
 </code>
 </pre>
                         </div>

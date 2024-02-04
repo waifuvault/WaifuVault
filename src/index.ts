@@ -7,7 +7,6 @@ import {SQLITE_DATA_SOURCE} from "./model/di/tokens.js";
 import path from "path";
 import {fileURLToPath} from "node:url";
 
-
 const dataSource = new DataSource({
     type: "better-sqlite3",
     entities: [`${path.dirname(fileURLToPath(import.meta.url))}/model/db/**/*.model.{ts,js}`],

@@ -4,6 +4,7 @@
     "noEmit": true,
     "emitDeclarationOnly": false,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
   }
 }
