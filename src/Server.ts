@@ -141,7 +141,7 @@ const opts: Partial<TsED.Configuration> = {
         },
         options: {
             ejs: {
-                rmWhitespace: isProduction,
+                rmWhitespace: false,
                 cache: isProduction ? LRUCache : null
             }
         }
