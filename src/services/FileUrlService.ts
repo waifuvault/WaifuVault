@@ -5,6 +5,13 @@ import {BadRequest} from "@tsed/exceptions";
 import path from "path";
 import fs from "node:fs";
 import {filesDir} from "../utils/Utils.js";
+import isLocalhost from "is-localhost-ip";
+import Module from "node:module";
+
+const require = Module.createRequire(import.meta.url);
+
+// punycode is weird. no ESM support
+const punycode = require('punycode/');
 
 @Service()
 export class FileUrlService {
@@ -14,6 +21,12 @@ export class FileUrlService {
 
 
     public async getFile(url: string): Promise<string> {
+
+        const isLocalUrl = await this.isLocalhost(url);
+        if (isLocalUrl) {
+            throw new BadRequest("Unable to accept URL");
+        }
+
         let headCheck: Response;
         try {
             headCheck = await fetch(url, {
@@ -52,5 +65,9 @@ export class FileUrlService {
             response.body!.on("error", reject);
             fileStream.on("finish", resolve);
         }).then(() => destination);
+    }
+
+    private isLocalhost(url: string): Promise<boolean> {
+        return isLocalhost(punycode.toASCII(url).split('/')[0].split(':')[0]);
     }
 }
