@@ -20,9 +20,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import methodOverride from "method-override";
 import {isProduction} from "./config/envs/index.js";
-import helmet from "helmet";
 import process from "process";
-import cors from "cors";
 import {TypeormStore} from "connect-typeorm";
 import {SQLITE_DATA_SOURCE} from "./model/di/tokens.js";
 import {DataSource} from "typeorm";
@@ -102,7 +100,7 @@ const opts: Partial<TsED.Configuration> = {
         }
     },
     middlewares: [
-        helmet({
+        /* helmet({
             contentSecurityPolicy: false,
             crossOriginEmbedderPolicy: {
                 policy: "credentialless"
@@ -111,7 +109,7 @@ const opts: Partial<TsED.Configuration> = {
         cors({
             origin: process.env.BASE_URL,
             exposedHeaders: ["Location"]
-        }),
+        }), */
         cookieParser(),
         methodOverride(),
         bodyParser.json(),
