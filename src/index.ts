@@ -7,10 +7,11 @@ import {SQLITE_DATA_SOURCE} from "./model/di/tokens.js";
 import path from "path";
 import {fileURLToPath} from "node:url";
 
-const dataSource = new DataSource({
+export const dataSource = new DataSource({
     type: "better-sqlite3",
     entities: [`${path.dirname(fileURLToPath(import.meta.url))}/model/db/**/*.model.{ts,js}`],
-    synchronize: true,
+    synchronize: false,
+    migrations: [`${path.dirname(fileURLToPath(import.meta.url))}/../migrations/*`],
     database: "main.sqlite"
 });
 
