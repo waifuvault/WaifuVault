@@ -104,7 +104,7 @@ export class NetworkUtils {
         const useCf = process.env.USE_CLOUDFLARE;
         let ip: string;
         if (useCf) {
-            ip = req.headers['x-forwarded-for'] as string;
+            ip = req.headers['cf-connecting-ip'] as string;
         } else {
             ip = req.ip;
         }
