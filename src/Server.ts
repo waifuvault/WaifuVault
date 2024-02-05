@@ -34,7 +34,7 @@ import path from "path";
 import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware.js";
 import rateLimit from "express-rate-limit";
 import {LRUCache} from "lru-cache";
-import {filesDir} from "./utils/Utils.js";
+import {filesDir, NetworkUtils} from "./utils/Utils.js";
 import {fileURLToPath} from "node:url";
 
 const opts: Partial<TsED.Configuration> = {
@@ -129,7 +129,7 @@ const opts: Partial<TsED.Configuration> = {
                 return !request.path.includes("/rest");
             },
             keyGenerator: (request) => {
-                return request.ip.replace(/:\d+[^:]*$/, '');
+                return NetworkUtils.getIp(request);
             }
         })
     ],

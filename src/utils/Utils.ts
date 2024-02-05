@@ -2,6 +2,8 @@ import {fileURLToPath} from 'node:url';
 import path from "node:path";
 import type {FileUploadModel} from "../model/db/FileUpload.model.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
+import {Req} from "@tsed/common";
+import process from "process";
 
 export class ObjectUtils {
 
@@ -93,6 +95,20 @@ export class FileUtils {
     public static getTimeLeftBySize(filesize: number): number {
         const ttl = Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow((filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1), 3));
         return ttl < FileUtils.MIN_EXPIRATION ? FileUtils.MIN_EXPIRATION : ttl;
+    }
+}
+
+export class NetworkUtils {
+
+    public static getIp(req: Req): string {
+        const useCf = process.env.USE_CLOUDFLARE;
+        let ip: string;
+        if (useCf) {
+            ip = req.headers['x-forwarded-for'] as string;
+        } else {
+            ip = req.ip;
+        }
+        return ip.replace(/:\d+[^:]*$/, '');
     }
 }
 
