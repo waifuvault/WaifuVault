@@ -12,9 +12,9 @@
     "start:prod": "cross-env NODE_ENV=production nodemon dist/index.js",
     "update_deps": "npx npm-check-updates",
     "typeorm": "typeorm-ts-node-esm",
-    "generatemigration": "npx typeorm-ts-node-esm migration:generate -d ./src/db/datasource.ts",
-    "runmigration": "npx typeorm-ts-node-esm migration:run -d ./src/db/datasource.ts",
-    "revertmigration": "npx typeorm-ts-node-esm migration:revert -d ./src/db/datasource.ts"
+    "generatemigration": "npx typeorm-ts-node-esm migration:generate -d ./src/index.ts",
+    "runmigration": "npx typeorm-ts-node-esm migration:run -d ./src/index.ts",
+    "revertmigration": "npx typeorm-ts-node-esm migration:revert -d ./src/index.ts"
   },
   "dependencies": {
     "@tsed/ajv": "^7.61.0",

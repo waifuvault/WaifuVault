@@ -2,9 +2,19 @@ import "reflect-metadata";
 import {$log, Logger as TsEdLogger, registerProvider} from "@tsed/common";
 import {PlatformExpress} from "@tsed/platform-express";
 import {Server} from "./Server.js";
-import {dataSource} from "./db/datasource.js";
 import {DataSource, type Logger as TypeOrmLogger} from "typeorm";
 import {SQLITE_DATA_SOURCE} from "./model/di/tokens.js";
+import path from "path";
+import {fileURLToPath} from "node:url";
+
+
+export const dataSource = new DataSource({
+    type: "better-sqlite3",
+    entities: [`${path.dirname(fileURLToPath(import.meta.url))}/model/db/**/*.model.{ts,js}`],
+    synchronize: false,
+    migrations: [`${path.dirname(fileURLToPath(import.meta.url))}/migrations/*`],
+    database: "main.sqlite"
+});
 
 async function bootstrap(): Promise<void> {
 
