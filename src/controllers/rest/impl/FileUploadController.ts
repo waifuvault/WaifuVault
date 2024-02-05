@@ -7,6 +7,7 @@ import {MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Re
 import {BodyParams} from "@tsed/platform-params";
 import {FileEngine} from "../../../engine/FileEngine.js";
 import {FileUploadService} from "../../../services/FileUploadService.js";
+import {NetworkUtils} from "../../../utils/Utils.js";
 
 @Controller("/")
 @Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
@@ -66,7 +67,7 @@ export class FileUploadController {
             }
         }
 
-        const ip = req.ip.replace(/:\d+[^:]*$/, '');
+        const ip = NetworkUtils.getIp(req);
         const uploadModelResponse = await this.fileUploadService.processUpload(ip, url || file!, expires);
         res.location(uploadModelResponse.url);
         return uploadModelResponse;
