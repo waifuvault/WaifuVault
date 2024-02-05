@@ -101,7 +101,7 @@ export class FileUtils {
 export class NetworkUtils {
 
     public static getIp(req: Req): string {
-        const useCf = process.env.USE_CLOUDFLARE;
+        const useCf = process.env.USE_CLOUDFLARE === "true";
         let ip: string;
         if (useCf) {
             ip = req.headers['cf-connecting-ip'] as string;
