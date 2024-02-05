@@ -38,6 +38,9 @@ Optional Settings
 
 # install dependencies
     npm install
+    
+# build database
+    npm run runmigration
 
 # serve
     npm run start
