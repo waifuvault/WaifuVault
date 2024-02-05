@@ -11,6 +11,7 @@ import "./engine/impl/HttpErrorRenderers/index.js";
 import * as rest from "./controllers/rest/index.js";
 import "./services/FileCleaner.js";
 import * as views from "./controllers/views/index.js";
+import {FileServerController} from "./controllers/serve/FileServerController.js";
 // import * as secureViews from "./controllers/secureViews";
 // custom index imports end
 import {config} from "./config/index.js";
@@ -72,13 +73,16 @@ const opts: Partial<TsED.Configuration> = {
         "/": [
             ...Object.values(views)
         ],
+        "/f": [
+            FileServerController
+        ]
     },
     statics: {
-        "/f": [
+        /* "/f": [
             {
                 root: filesDir
             }
-        ],
+        ], */
         "/assets": [
             {
                 root: `${path.dirname(fileURLToPath(import.meta.url))}/public/assets`

@@ -37,6 +37,13 @@ export class FileUploadModel extends AbstractModel {
     public ip: string;
 
     @Column({
+        nullable: true,
+        type: "text",
+        unique: false
+    })
+    public originalFileName: string;
+
+    @Column({
         nullable: false,
         type: "integer",
         unique: false

@@ -1,7 +1,7 @@
 import {Inject, type OnInit, Service} from "@tsed/di";
 import {FileRepo} from "../db/repo/FileRepo.js";
 import {ScheduleService} from "./ScheduleService.js";
-import {FileUploadService} from "./FileUploadService.js";
+import {FileService} from "./FileService.js";
 import {FileUtils} from "../utils/Utils.js";
 
 @Service()
@@ -14,7 +14,7 @@ export class FileCleaner implements OnInit {
     private scheduleService: ScheduleService;
 
     @Inject()
-    private fileUploadService: FileUploadService;
+    private fileUploadService: FileService;
 
     public async processFiles(): Promise<void> {
         const allFiles = await this.repo.getAllEntries();

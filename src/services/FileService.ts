@@ -18,7 +18,7 @@ import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 
 @Service()
-export class FileUploadService {
+export class FileService {
 
     @Inject()
     private repo: FileRepo;
@@ -40,18 +40,21 @@ export class FileUploadService {
 
     public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, expires?: string): Promise<FileUploadModelResponse> {
         const token = crypto.randomUUID();
+        let originalFileName: string;
         const uploadEntry = Builder(FileUploadModel)
             .ip(ip)
             .token(token);
         let resourcePath: string;
         if (typeof source === "string") {
-            const filePath = await this.fileUrlService.getFile(source);
-            const fileName = path.basename(filePath);
+            const [filePath, originalFileNameRes] = await this.fileUrlService.getFile(source);
+            const fileName = path.parse(filePath).name;
             uploadEntry.fileName(fileName);
             resourcePath = filePath;
+            originalFileName = originalFileNameRes;
         } else {
             uploadEntry.fileName(source.filename);
             resourcePath = source.path;
+            originalFileName = source.originalname;
         }
 
         await this.scanFile(resourcePath);
@@ -67,6 +70,7 @@ export class FileUploadService {
             this.deleteUploadedFile(resourcePath);
             return FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true);
         }
+        uploadEntry.originalFileName(originalFileName);
         uploadEntry.checksum(checksum);
         if (expires) {
             this.calculateCustomExpires(uploadEntry, expires);
@@ -74,6 +78,10 @@ export class FileUploadService {
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
 
         return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true);
+    }
+
+    public async validateFileNameFromResource(resource: string): Promise<boolean> {
+        const entry = this.repo.getEntry();
     }
 
     public async getFileInfo(token: string, humanReadable: boolean): Promise<FileUploadModelResponse> {

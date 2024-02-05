@@ -6,7 +6,7 @@ import {BadRequest, Forbidden} from "@tsed/exceptions";
 import {MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res} from "@tsed/common";
 import {BodyParams} from "@tsed/platform-params";
 import {FileEngine} from "../../../engine/FileEngine.js";
-import {FileUploadService} from "../../../services/FileUploadService.js";
+import {FileService} from "../../../services/FileService.js";
 import {NetworkUtils} from "../../../utils/Utils.js";
 
 @Controller("/")
@@ -19,7 +19,7 @@ export class FileUploadController {
     private fileEngine: FileEngine;
 
     @Inject()
-    private fileUploadService: FileUploadService;
+    private fileUploadService: FileService;
 
     @Put()
     @Returns(StatusCodes.CREATED, FileUploadModelResponse)
