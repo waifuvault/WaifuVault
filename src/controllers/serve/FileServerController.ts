@@ -4,6 +4,8 @@ import {PathParams, Res} from "@tsed/common";
 import path from "path";
 import {filesDir} from "../../utils/Utils.js";
 import {FileService} from "../../services/FileService.js";
+import {FileEngine} from "../../engine/FileEngine.js";
+import {NotFound} from "@tsed/exceptions";
 
 @Hidden()
 @Controller("/")
@@ -11,6 +13,9 @@ export class FileServerController {
 
     @Inject()
     private fileService: FileService;
+
+    @Inject()
+    private fileEngine: FileEngine;
 
     private readonly filesDirRel = path.resolve(filesDir);
 
@@ -30,9 +35,13 @@ export class FileServerController {
 
 
     @Get("/:file(*)")
-    public getFileLegacy(@PathParams("file") resource: string, @Res() res: Res): Promise<void> {
+    public async getFileLegacy(@PathParams("file") resource: string, @Res() res: Res): Promise<void> {
         const filesDirRel = path.resolve(filesDir);
         const file = `${filesDirRel}/${resource}`;
+        const exists = await this.fileEngine.fileExists(file);
+        if (!exists) {
+            throw new NotFound(`Resource ${resource} is not found`);
+        }
         return new Promise((resolve, reject) => {
             res.sendFile(file, err => {
                 if (err) {
