@@ -323,7 +323,7 @@ $curl_options = [
 	CURLOPT_CONNECTTIMEOUT => 60,
 	CURLOPT_CUSTOMREQUEST => 'PUT',
 	CURLOPT_RETURNTRANSFER => 1,
-	CURLOPT_URL => 'https://waifuvault.moe/rest',
+	CURLOPT_URL => '<%- process.env.BASE_URL; -%>/rest',
 	CURLOPT_POSTFIELDS => [
 		'file' => new CURLFile($file_path)
 	],
@@ -343,7 +343,7 @@ $curl_options = [
 	CURLOPT_CONNECTTIMEOUT => 60,
 	CURLOPT_CUSTOMREQUEST => 'PUT',
 	CURLOPT_RETURNTRANSFER => 1,
-	CURLOPT_URL => 'https://waifuvault.moe/rest',
+	CURLOPT_URL => '<%- process.env.BASE_URL; -%>/rest',
 	CURLOPT_POSTFIELDS => [
 		'url' => $file_url
 	],
