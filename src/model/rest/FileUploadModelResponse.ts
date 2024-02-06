@@ -31,7 +31,7 @@ export class FileUploadModelResponse {
     }
 
     private static getUrl(fileUploadModel: FileUploadModel, baseUrl: string): string {
-        if (fileUploadModel.settings?.hideFilename) {
+        if (fileUploadModel.settings?.hideFilename || !fileUploadModel.originalFileName) {
             return `${baseUrl}/f/${fileUploadModel.fullFileNameOnSystem}`;
         }
         // filename might still contain an extension from legacy uploads
