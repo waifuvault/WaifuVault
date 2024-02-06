@@ -34,7 +34,6 @@ export class FileUploadModelResponse {
         if (fileUploadModel.settings?.hideFilename || !fileUploadModel.originalFileName) {
             return `${baseUrl}/f/${fileUploadModel.fullFileNameOnSystem}`;
         }
-        // filename might still contain an extension from legacy uploads
-        return `${baseUrl}/f/${fileUploadModel.fileName.split(".").shift()}/${fileUploadModel.originalFileName}`;
+        return `${baseUrl}/f/${fileUploadModel.fileName}/${fileUploadModel.originalFileName}`;
     }
 }

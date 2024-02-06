@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import type { MigrationInterface, QueryRunner } from "typeorm";
 
 export class ModifyFileUploadModelAddSettings1707249971981 implements MigrationInterface {
     name = 'ModifyFileUploadModelAddSettings1707249971981'
