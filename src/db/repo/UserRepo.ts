@@ -8,8 +8,9 @@ import {Builder} from "builder-pattern";
 })
 export class UserRepo {
 
-    @Inject()
-    private userDao: UserDao;
+    public constructor(
+        @Inject() private userDao: UserDao
+    ) {}
 
     public getUser(email: string): Promise<UserModel | null> {
         return this.userDao.getUser(email);

@@ -6,8 +6,9 @@ import {Builder} from "builder-pattern";
 @Injectable()
 export class IpBlackListRepo {
 
-    @Inject()
-    private fileDao: IpBlackListDao;
+    public constructor(
+        @Inject() private fileDao: IpBlackListDao
+    ) {}
 
     public addIpBlock(ip: string): Promise<IpBlackListModel> {
         return this.fileDao.addIpBlock(Builder(IpBlackListModel).ip(ip).build());

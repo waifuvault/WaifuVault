@@ -165,7 +165,7 @@ const opts: Partial<TsED.Configuration> = {
 export class Server implements BeforeRoutesInit {
 
     public constructor(
-        @Inject() protected app: PlatformApplication,
+        @Inject() private app: PlatformApplication,
         @Inject(SQLITE_DATA_SOURCE) private ds: DataSource
     ) {}
 
