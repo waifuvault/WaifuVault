@@ -67,12 +67,10 @@ export class FileService {
             this.deleteUploadedFile(resourcePath);
             return FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true);
         }
-        const fileNameSplit = originalFileName.split(".")?.filter(v => !!v);
-        if (fileNameSplit.length > 1) {
-            const extension = fileNameSplit.pop() ?? null;
-            if (extension) {
-                uploadEntry.fileExtension(extension);
-            }
+
+        const ext = FileUtils.getExtension(originalFileName);
+        if (ext) {
+            uploadEntry.fileExtension(ext);
         }
         uploadEntry.originalFileName(originalFileName);
         uploadEntry.checksum(checksum);

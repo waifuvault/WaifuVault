@@ -35,7 +35,7 @@ import path from "path";
 import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware.js";
 import rateLimit from "express-rate-limit";
 import {LRUCache} from "lru-cache";
-import {filesDir, NetworkUtils} from "./utils/Utils.js";
+import {filesDir, FileUtils, NetworkUtils} from "./utils/Utils.js";
 import {fileURLToPath} from "node:url";
 
 const opts: Partial<TsED.Configuration> = {
@@ -58,7 +58,9 @@ const opts: Partial<TsED.Configuration> = {
                 cb(null, filesDir);
             },
             filename: function (req, file, cb) {
-                cb(null, `${Date.now()}${path.extname(file.originalname)}`);
+                const ext = FileUtils.getExtension(file.originalname);
+                const fileName = ext ? `${Date.now()}.${ext}` : `${Date.now()}`;
+                return cb(null, fileName);
             }
         }),
         preservePath: true
