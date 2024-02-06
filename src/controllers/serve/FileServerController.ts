@@ -16,10 +16,7 @@ export class FileServerController {
     public async getFile(@PathParams("file") requestedFileName: string, @PathParams("t") resource: string, @Res() res: Res): Promise<void> {
         const filesDirRel = path.resolve(filesDir);
         const entry = await this.fileService.getEntryFromFileName(resource, requestedFileName);
-        let file = `${filesDirRel}/${entry.fileName}`;
-        if (entry.fileExtension) {
-            file = `${file}.${entry.fileExtension}`;
-        }
+        const file = `${filesDirRel}/${entry.fullFileNameOnSystem}`;
         return new Promise((resolve, reject) => {
             res.sendFile(file, err => {
                 if (err) {

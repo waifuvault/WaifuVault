@@ -128,7 +128,7 @@ export class FileService {
             return false;
         }
         try {
-            await this.fileEngine.deleteFile(entry.fileName);
+            await this.fileEngine.deleteFile(entry.fullFileNameOnSystem);
             deleted = await this.repo.deleteEntry(token);
         } catch (e) {
             this.logger.error(e);
