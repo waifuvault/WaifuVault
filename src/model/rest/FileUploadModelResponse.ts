@@ -21,7 +21,7 @@ export class FileUploadModelResponse {
     public static fromModel(fileUploadModel: FileUploadModel, baseUrl: string, format = false): FileUploadModelResponse {
         const builder = Builder(FileUploadModelResponse)
             .token(fileUploadModel.token)
-            .url(`${baseUrl}/f/${fileUploadModel.fileName}`);
+            .url(`${baseUrl}/f/${fileUploadModel.fileName.split(".").shift()}/${fileUploadModel.originalFileName}`);
         if (format) {
             builder.retentionPeriod(ObjectUtils.timeToHuman(fileUploadModel.expiresIn));
         } else {

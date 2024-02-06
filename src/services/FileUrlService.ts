@@ -20,7 +20,7 @@ export class FileUrlService {
     private readonly MAX_SIZE: string;
 
 
-    public async getFile(url: string): Promise<string> {
+    public async getFile(url: string): Promise<[string, string]> {
 
         const isLocalUrl = await this.isLocalhost(url);
         if (isLocalUrl) {
@@ -56,15 +56,15 @@ export class FileUrlService {
             throw new BadRequest(`Unable to get response ${response.statusText}`);
         }
         const now = Date.now();
-        const fileName = `${now}${url.substring(url.lastIndexOf('/') + 1)}`;
-        const ext = fileName.split('.').pop();
+        const originalFileName = url.substring(url.lastIndexOf('/') + 1);
+        const ext = originalFileName.split('.').pop();
         const destination = path.resolve(`${filesDir}/${now}.${ext}`);
         const fileStream = fs.createWriteStream(destination);
         return new Promise((resolve, reject) => {
             response.body!.pipe(fileStream);
             response.body!.on("error", reject);
             fileStream.on("finish", resolve);
-        }).then(() => destination);
+        }).then(() => [destination, originalFileName]);
     }
 
     private isLocalhost(url: string): Promise<boolean> {

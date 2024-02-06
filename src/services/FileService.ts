@@ -13,12 +13,12 @@ import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse.js"
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {Logger} from "@tsed/logger";
 import type {XOR} from "../utils/typeings.js";
-import {BadRequest} from "@tsed/exceptions";
+import {BadRequest, NotFound} from "@tsed/exceptions";
 import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 
 @Service()
-export class FileUploadService {
+export class FileService {
 
     @Inject()
     private repo: FileRepo;
@@ -40,20 +40,20 @@ export class FileUploadService {
 
     public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, expires?: string): Promise<FileUploadModelResponse> {
         const token = crypto.randomUUID();
+        let originalFileName: string;
         const uploadEntry = Builder(FileUploadModel)
             .ip(ip)
             .token(token);
         let resourcePath: string;
         if (typeof source === "string") {
-            const filePath = await this.fileUrlService.getFile(source);
-            const fileName = path.basename(filePath);
-            uploadEntry.fileName(fileName);
+            const [filePath, originalFileNameRes] = await this.fileUrlService.getFile(source);
             resourcePath = filePath;
+            originalFileName = originalFileNameRes;
         } else {
-            uploadEntry.fileName(source.filename);
             resourcePath = source.path;
+            originalFileName = source.originalname;
         }
-
+        uploadEntry.fileName(path.parse(resourcePath).name);
         await this.scanFile(resourcePath);
         await this.checkMime(resourcePath);
 
@@ -67,6 +67,14 @@ export class FileUploadService {
             this.deleteUploadedFile(resourcePath);
             return FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true);
         }
+        const fileNameSplit = originalFileName.split(".")?.filter(v => !!v);
+        if (fileNameSplit.length > 1) {
+            const extension = fileNameSplit.pop() ?? null;
+            if (extension) {
+                uploadEntry.fileExtension(extension);
+            }
+        }
+        uploadEntry.originalFileName(originalFileName);
         uploadEntry.checksum(checksum);
         if (expires) {
             this.calculateCustomExpires(uploadEntry, expires);
@@ -74,6 +82,14 @@ export class FileUploadService {
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
 
         return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true);
+    }
+
+    public async getEntryFromFileName(fileNameOnSystem: string, requestedFileName: string): Promise<FileUploadModel> {
+        const entry = await this.repo.getEntryFileName(fileNameOnSystem);
+        if (entry === null || entry.originalFileName !== requestedFileName) {
+            throw new NotFound(`resource ${requestedFileName} is not found`);
+        }
+        return entry;
     }
 
     public async getFileInfo(token: string, humanReadable: boolean): Promise<FileUploadModelResponse> {

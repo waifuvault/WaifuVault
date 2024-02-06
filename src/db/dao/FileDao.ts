@@ -21,6 +21,10 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         });
     }
 
+    public getEntryFromEpoch(epoch: number, transaction?: EntityManager): Promise<FileUploadModel | null> {
+        return this.getEntityManager(transaction).findOneBy({});
+    }
+
     public getEntriesFromChecksum(checksum: string, transaction?: EntityManager): Promise<FileUploadModel[]> {
         return this.getEntityManager(transaction).findBy({
             checksum
@@ -38,4 +42,9 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         return this.getEntityManager(transaction).find();
     }
 
+    public getEntryFileName(fileName: string, transaction?: EntityManager): Promise<FileUploadModel | null> {
+        return this.getEntityManager(transaction).findOneBy({
+            fileName
+        });
+    }
 }
