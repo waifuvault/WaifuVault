@@ -2,7 +2,7 @@ import {Controller, Inject} from "@tsed/di";
 import {Delete, Description, Example, Examples, Get, Name, Put, Returns} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
-import {BadRequest, Forbidden} from "@tsed/exceptions";
+import {BadRequest, Forbidden, UnsupportedMediaType} from "@tsed/exceptions";
 import {MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res} from "@tsed/common";
 import {BodyParams} from "@tsed/platform-params";
 import {FileEngine} from "../../../engine/FileEngine.js";
@@ -24,6 +24,7 @@ export class FileUploadController {
     @Put()
     @Returns(StatusCodes.CREATED, FileUploadModelResponse)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    @Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, UnsupportedMediaType)
     @Example({
         description: "foo",
         summary: "bnar"

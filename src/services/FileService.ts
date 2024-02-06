@@ -13,7 +13,7 @@ import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse.js"
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {Logger} from "@tsed/logger";
 import type {XOR} from "../utils/typeings.js";
-import {BadRequest, NotFound} from "@tsed/exceptions";
+import {BadRequest, NotFound, UnsupportedMediaType} from "@tsed/exceptions";
 import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 
@@ -128,7 +128,7 @@ export class FileService {
             return false;
         }
         try {
-            await this.fileEngine.deleteFile(entry.fullFileNameOnSystem);
+            await this.fileEngine.deleteFile(entry.fullFileNameOnSystem, false);
             deleted = await this.repo.deleteEntry(token);
         } catch (e) {
             this.logger.error(e);
@@ -170,7 +170,7 @@ export class FileService {
 
         if (failedMime) {
             this.deleteUploadedFile(resourcePath);
-            throw new BadRequest("Failed to store file due to blocked file type");
+            throw new UnsupportedMediaType(`MIME type not supported`);
         }
     }
 

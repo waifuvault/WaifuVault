@@ -1,7 +1,7 @@
 import {Constant, Service} from "@tsed/di";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import fetch, {Response} from 'node-fetch';
-import {BadRequest} from "@tsed/exceptions";
+import {BadRequest, Forbidden, RequestURITooLong} from "@tsed/exceptions";
 import path from "path";
 import fs from "node:fs";
 import {filesDir} from "../utils/Utils.js";
@@ -19,8 +19,22 @@ export class FileUrlService {
     @Constant(GlobalEnv.FILE_SIZE_UPLOAD_LIMIT_MB)
     private readonly MAX_SIZE: string;
 
+    @Constant(GlobalEnv.MAX_URL_LENGTH)
+    private readonly MAX_URL_LENGTH: string;
+
 
     public async getFile(url: string): Promise<[string, string]> {
+
+        let maxUrlLength = Number.parseInt(this.MAX_URL_LENGTH);
+        if (Number.isNaN(maxUrlLength)) {
+            maxUrlLength = -1;
+        }
+
+        if (maxUrlLength <= 0) {
+            throw new Forbidden("Feature unavailable"); // URL feature disabled
+        } else if (url.length > maxUrlLength) {
+            throw new RequestURITooLong(`URL supplied is too long. the max is ${maxUrlLength}`);
+        }
 
         const isLocalUrl = await this.isLocalhost(url);
         if (isLocalUrl) {

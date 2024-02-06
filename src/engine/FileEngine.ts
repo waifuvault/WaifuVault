@@ -19,9 +19,9 @@ export class FileEngine {
     @Inject()
     private logger: Logger;
 
-    public deleteFile(file: string | PlatformMulterFile): Promise<void> {
+    public deleteFile(file: string | PlatformMulterFile, force = true): Promise<void> {
         const toDelete = this.getFilePath(file);
-        return fs.rm(toDelete, {recursive: true, force: true});
+        return fs.rm(toDelete, {recursive: true, force});
     }
 
     public async getFileSize(file: string | PlatformMulterFile): Promise<number> {

@@ -7,3 +7,4 @@ BASE_URL=http://localhost:8081
 FILE_SIZE_UPLOAD_LIMIT_MB=512
 BLOCKED_MIME_TYPES=application/x-dosexec,application/x-executable,application/x-hdf5,application/x-java-archive,application/vnd.rar
 USE_CLOUDFLARE=false
+MAX_URL_LENGTH=4096
