@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "tsc": "tsc --project tsconfig.compile.json",
-    "build": "npm run tsc && npm run barrels && babel src --out-dir dist --extensions \".ts,.tsx,.js\" --copy-files",
+    "build": "node fixmigrations.cjs && npm run tsc && npm run barrels && babel src --out-dir dist --extensions \".ts,.tsx,.js\" --copy-files",
     "barrels": "barrelsby --config .barrelsby.json && node fixbarrels.cjs",
     "start_js": "node dist/index.js",
     "start": "node --loader ts-node/esm src/index.ts",

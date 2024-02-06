@@ -14,7 +14,8 @@ export class FileServerController {
     public constructor(
         @Inject() private fileService: FileService,
         @Inject() private fileEngine: FileEngine
-    ) {}
+    ) {
+    }
 
     private readonly filesDirRel = path.resolve(filesDir);
 
@@ -34,7 +35,7 @@ export class FileServerController {
 
 
     @Get("/:file(*)")
-    public async getFileLegacy(@PathParams("file") resource: string, @Res() res: Res): Promise<void> {
+    public async getFileHiddenFilename(@PathParams("file") resource: string, @Res() res: Res): Promise<void> {
         const filesDirRel = path.resolve(filesDir);
         const file = `${filesDirRel}/${resource}`;
         const exists = await this.fileEngine.fileExists(file);

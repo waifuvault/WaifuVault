@@ -21,7 +21,8 @@ export class LoginLocalProtocol implements OnVerify {
 
     public constructor(
         @Inject() private usersService: UserService
-    ) {}
+    ) {
+    }
 
     public async $onVerify(@Req() request: Req, @BodyParams() credentials: UserModel): Promise<UserModel | false> {
         const {email, password} = credentials;

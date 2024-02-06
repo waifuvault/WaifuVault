@@ -8,7 +8,8 @@ export class IpBlackListRepo {
 
     public constructor(
         @Inject() private fileDao: IpBlackListDao
-    ) {}
+    ) {
+    }
 
     public addIpBlock(ip: string): Promise<IpBlackListModel> {
         return this.fileDao.addIpBlock(Builder(IpBlackListModel).ip(ip).build());

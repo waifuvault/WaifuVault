@@ -10,7 +10,8 @@ export class PassportExceptionFilter implements ExceptionFilterMethods<PassportE
 
     public constructor(
         @Inject() private httpExceptionFilter: HttpExceptionFilter
-    ) {}
+    ) {
+    }
 
     public catch(exception: PassportException, ctx: PlatformContext): unknown {
         if (exception.name === "AuthenticationError") {

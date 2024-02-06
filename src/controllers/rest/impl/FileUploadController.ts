@@ -1,5 +1,5 @@
 import {Controller, Inject} from "@tsed/di";
-import {Delete, Description, Example, Examples, Get, Name, Put, Returns} from "@tsed/schema";
+import {Delete, Description, Example, Examples, Get, Name, Put, Returns, Summary} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
 import {BadRequest, Forbidden, UnsupportedMediaType} from "@tsed/exceptions";
@@ -15,9 +15,10 @@ import {NetworkUtils} from "../../../utils/Utils.js";
 @Name("File Uploader")
 export class FileUploadController {
     public constructor(
-      @Inject() private fileEngine: FileEngine,
-      @Inject() private fileUploadService: FileService
-    ) {}
+        @Inject() private fileEngine: FileEngine,
+        @Inject() private fileUploadService: FileService
+    ) {
+    }
 
     @Put()
     @Returns(StatusCodes.CREATED, FileUploadModelResponse)
@@ -27,6 +28,7 @@ export class FileUploadController {
         description: "foo",
         summary: "bnar"
     })
+    @Summary("Upload a file or send URL")
     @Description("Upload a file or specify URL to a file. Use the location header in the response or the url prop in the JSON to get the URL of the file")
     public async addEntry(@Req()
                               req: Req,
@@ -47,6 +49,9 @@ export class FileUploadController {
                           })
                           @Description("a string containing a number and a letter of `m` for mins, `h` for hours, `d` for days. For example: `1h` would be 1 hour and `1d` would be 1 day. leave this blank if you want the file to exist according to the retention policy")
                               expires?: string,
+                          @QueryParams("hide_filename")
+                          @Description("if set to true, then your filename will not appear in the URL. if false, then it will appear in the URL. defaults to false")
+                              hideFileName?: boolean,
                           @MultipartFile("file") file?: PlatformMulterFile,
                           @BodyParams("url") url?: string): Promise<unknown> {
         if (file && url) {
@@ -65,9 +70,8 @@ export class FileUploadController {
                 throw new BadRequest("bad expire string format");
             }
         }
-
         const ip = NetworkUtils.getIp(req);
-        const uploadModelResponse = await this.fileUploadService.processUpload(ip, url || file!, expires);
+        const uploadModelResponse = await this.fileUploadService.processUpload(ip, url || file!, expires, hideFileName);
         res.location(uploadModelResponse.url);
         return uploadModelResponse;
     }
@@ -76,7 +80,8 @@ export class FileUploadController {
     @Get("/:token")
     @Returns(StatusCodes.OK, FileUploadModelResponse)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
-    @Description("Get file info")
+    @Description("Get entry info such as when it will expire and the URL")
+    @Summary("Get entry info via token")
     public getInfo(
         @PathParams("token")
             token: string,
@@ -94,6 +99,7 @@ export class FileUploadController {
     @Returns(StatusCodes.OK, Boolean)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
     @Description("Delete a file via the token")
+    @Summary("Delete a file from a token")
     public async deleteEntry(@PathParams("token") token: string): Promise<unknown> {
         if (!token) {
             throw new BadRequest("no token provided");

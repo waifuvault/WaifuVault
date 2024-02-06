@@ -1,6 +1,7 @@
 import {Column, Entity, Index} from "typeorm";
 import {AbstractModel} from "./AbstractModel.js";
 import {FileUtils} from "../../utils/Utils.js";
+import type {EntrySettings} from "../../utils/typeings.js";
 
 @Entity()
 @Index(["token"], {
@@ -64,6 +65,13 @@ export class FileUploadModel extends AbstractModel {
         unique: false
     })
     public customExpires: number | null;
+
+    @Column({
+        nullable: true,
+        type: "simple-json",
+        unique: false
+    })
+    public settings: EntrySettings | null;
 
     public get expiresIn(): number {
         return FileUtils.getTImeLeft(this);

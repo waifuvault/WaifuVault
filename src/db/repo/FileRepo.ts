@@ -7,7 +7,8 @@ export class FileRepo {
 
     public constructor(
         @Inject() private fileDao: FileDao
-    ) {}
+    ) {
+    }
 
     public saveEntry(entry: FileUploadModel): Promise<FileUploadModel> {
         return this.fileDao.saveEntry(entry);
