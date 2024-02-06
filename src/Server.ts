@@ -78,11 +78,6 @@ const opts: Partial<TsED.Configuration> = {
         ]
     },
     statics: {
-        /* "/f": [
-            {
-                root: filesDir
-            }
-        ], */
         "/assets": [
             {
                 root: `${path.dirname(fileURLToPath(import.meta.url))}/public/assets`

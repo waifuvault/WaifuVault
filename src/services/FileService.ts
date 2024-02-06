@@ -13,7 +13,7 @@ import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse.js"
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {Logger} from "@tsed/logger";
 import type {XOR} from "../utils/typeings.js";
-import {BadRequest} from "@tsed/exceptions";
+import {BadRequest, NotFound} from "@tsed/exceptions";
 import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 
@@ -70,6 +70,13 @@ export class FileService {
             this.deleteUploadedFile(resourcePath);
             return FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true);
         }
+        const fileNameSplit = originalFileName.split(".")?.filter(v => !!v);
+        if (fileNameSplit.length > 1) {
+            const extension = fileNameSplit.pop() ?? null;
+            if (extension) {
+                uploadEntry.fileExtension(extension);
+            }
+        }
         uploadEntry.originalFileName(originalFileName);
         uploadEntry.checksum(checksum);
         if (expires) {
@@ -80,8 +87,12 @@ export class FileService {
         return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true);
     }
 
-    public async validateFileNameFromResource(resource: string): Promise<boolean> {
-        const entry = this.repo.getEntry();
+    public async getEntryFromFileName(fileNameOnSystem: string, requestedFileName: string): Promise<FileUploadModel> {
+        const entry = await this.repo.getEntryFileName(fileNameOnSystem);
+        if (entry === null || entry.originalFileName !== requestedFileName) {
+            throw new NotFound(`resource ${requestedFileName} is not found`);
+        }
+        return entry;
     }
 
     public async getFileInfo(token: string, humanReadable: boolean): Promise<FileUploadModelResponse> {

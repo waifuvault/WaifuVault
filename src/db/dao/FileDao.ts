@@ -42,4 +42,9 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         return this.getEntityManager(transaction).find();
     }
 
+    public getEntryFileName(fileName: string, transaction?: EntityManager): Promise<FileUploadModel | null> {
+        return this.getEntityManager(transaction).findOneBy({
+            fileName
+        });
+    }
 }

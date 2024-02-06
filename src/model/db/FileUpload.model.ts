@@ -37,11 +37,19 @@ export class FileUploadModel extends AbstractModel {
     public ip: string;
 
     @Column({
+        nullable: false,
+        type: "text",
+        default: "",
+        unique: false
+    })
+    public originalFileName: string;
+
+    @Column({
         nullable: true,
         type: "text",
         unique: false
     })
-    public originalFileName: string;
+    public fileExtension: string | null;
 
     @Column({
         nullable: false,
@@ -55,7 +63,7 @@ export class FileUploadModel extends AbstractModel {
         type: "integer",
         unique: false
     })
-    public customExpires: number;
+    public customExpires: number | null;
 
     public get expiresIn(): number {
         return FileUtils.getTImeLeft(this);
