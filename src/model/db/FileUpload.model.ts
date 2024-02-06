@@ -69,4 +69,15 @@ export class FileUploadModel extends AbstractModel {
         return FileUtils.getTImeLeft(this);
     }
 
+    /**
+     * Get the file and the extension if one exists. the result will be the exact filename that appears in your upload file dir
+     * @returns {string}
+     */
+    public get fullFileNameOnSystem(): string {
+        if (this.fileExtension) {
+            return `${this.fileName}.${this.fileExtension}`;
+        }
+        return this.fileName;
+    }
+
 }
