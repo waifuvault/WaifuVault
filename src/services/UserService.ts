@@ -10,7 +10,8 @@ export class UserService {
 
     public constructor(
         @Inject() private userRepo: UserRepo
-    ) {}
+    ) {
+    }
 
     public async getUser(email: string, password: string): Promise<UserModel | null> {
         const userObject = await this.userRepo.getUser(email);

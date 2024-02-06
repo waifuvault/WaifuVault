@@ -10,7 +10,8 @@ export class UserRepo {
 
     public constructor(
         @Inject() private userDao: UserDao
-    ) {}
+    ) {
+    }
 
     public getUser(email: string): Promise<UserModel | null> {
         return this.userDao.getUser(email);

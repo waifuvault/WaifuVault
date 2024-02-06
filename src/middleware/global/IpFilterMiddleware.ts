@@ -10,7 +10,8 @@ export class IpFilterMiddleware implements MiddlewareMethods {
 
     public constructor(
         @Inject() private ipRepo: IpBlackListRepo
-    ) {}
+    ) {
+    }
 
     public async use(@Req() req: Req): Promise<void> {
         const ip = NetworkUtils.getIp(req);

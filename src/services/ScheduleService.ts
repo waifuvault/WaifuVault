@@ -8,7 +8,8 @@ import {ObjectUtils} from "../utils/Utils.js";
 export class ScheduleService {
     public constructor(
         @Inject() private logger: Logger
-    ) {}
+    ) {
+    }
 
     private static readonly scheduler = new ToadScheduler();
 

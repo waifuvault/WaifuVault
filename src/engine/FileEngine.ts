@@ -18,7 +18,8 @@ export class FileEngine {
 
     public constructor(
         @Inject() private logger: Logger
-    ) {};
+    ) {
+    };
 
     public deleteFile(file: string | PlatformMulterFile, force = true): Promise<void> {
         const toDelete = this.getFilePath(file);

@@ -14,7 +14,8 @@ export class FileServerController {
     public constructor(
         @Inject() private fileService: FileService,
         @Inject() private fileEngine: FileEngine
-    ) {}
+    ) {
+    }
 
     private readonly filesDirRel = path.resolve(filesDir);
 

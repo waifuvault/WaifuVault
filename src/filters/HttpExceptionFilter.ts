@@ -11,7 +11,8 @@ export class HttpExceptionFilter implements ExceptionFilterMethods<Exception> {
     public constructor(
         @Inject()
         private httpErrorFactory: HttpErrorFactory
-    ) {}
+    ) {
+    }
 
     public async catch(exception: Exception, ctx: PlatformContext): Promise<void> {
         const renderEngine = this.httpErrorFactory.getRenderEngine(exception);
