@@ -19,8 +19,9 @@ import {UserService} from "../services/UserService.js";
 })
 export class LoginLocalProtocol implements OnVerify {
 
-    @Inject()
-    private usersService: UserService;
+    public constructor(
+        @Inject() private usersService: UserService
+    ) {}
 
     public async $onVerify(@Req() request: Req, @BodyParams() credentials: UserModel): Promise<UserModel | false> {
         const {email, password} = credentials;

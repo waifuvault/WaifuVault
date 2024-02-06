@@ -6,13 +6,13 @@ import {ObjectUtils} from "../utils/Utils.js";
 
 @Service()
 export class ScheduleService {
+    public constructor(
+        @Inject() private logger: Logger
+    ) {}
 
     private static readonly scheduler = new ToadScheduler();
 
     private static readonly dateSchedules: DateJob[] = [];
-
-    @Inject()
-    private logger: Logger;
 
     public scheduleJobInterval<T>(schedule: SimpleIntervalSchedule, jobHandler: (this: T) => Promise<void>, jobName: string, context: T): void {
         jobHandler = jobHandler.bind(context);

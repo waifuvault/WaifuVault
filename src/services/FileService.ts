@@ -20,23 +20,16 @@ import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 @Service()
 export class FileService {
 
-    @Inject()
-    private repo: FileRepo;
-
-    @Inject()
-    private fileEngine: FileEngine;
-
-    @Inject()
-    private fileUrlService: FileUrlService;
-
-    @Inject()
-    private mimeService: MimeService;
+    public constructor(
+        @Inject() private repo: FileRepo,
+        @Inject() private fileEngine: FileEngine,
+        @Inject() private fileUrlService: FileUrlService,
+        @Inject() private mimeService: MimeService,
+        @Inject() private logger: Logger
+    ) {}
 
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
-
-    @Inject()
-    private logger: Logger;
 
     public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, expires?: string): Promise<FileUploadModelResponse> {
         const token = crypto.randomUUID();

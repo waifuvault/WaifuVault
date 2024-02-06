@@ -11,7 +11,9 @@ export class HttpErrorFactory {
 
     private readonly defaultRenderEngine: IHttpErrorRenderEngine<unknown>;
 
-    public constructor(@Inject(HTTP_RENDER_ENGINE) private readonly engines: IHttpErrorRenderEngine<unknown>[]) {
+    public constructor(
+        @Inject(HTTP_RENDER_ENGINE) private readonly engines: IHttpErrorRenderEngine<unknown>[]
+    ) {
         this.defaultRenderEngine = engines.find(engine => engine instanceof DefaultHttpRenderEngine)!;
     }
 

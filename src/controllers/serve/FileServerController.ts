@@ -11,11 +11,10 @@ import {NotFound} from "@tsed/exceptions";
 @Controller("/")
 export class FileServerController {
 
-    @Inject()
-    private fileService: FileService;
-
-    @Inject()
-    private fileEngine: FileEngine;
+    public constructor(
+        @Inject() private fileService: FileService,
+        @Inject() private fileEngine: FileEngine
+    ) {}
 
     private readonly filesDirRel = path.resolve(filesDir);
 

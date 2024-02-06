@@ -16,8 +16,9 @@ export class FileEngine {
     @Constant(GlobalEnv.CLAM_PATH)
     private readonly clamPath: string;
 
-    @Inject()
-    private logger: Logger;
+    public constructor(
+        @Inject() private logger: Logger
+    ) {};
 
     public deleteFile(file: string | PlatformMulterFile, force = true): Promise<void> {
         const toDelete = this.getFilePath(file);

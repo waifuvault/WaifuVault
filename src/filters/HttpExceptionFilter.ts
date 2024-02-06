@@ -8,8 +8,10 @@ import type {HttpErrorRenderObj} from "../utils/typeings.js";
 @Catch(Exception)
 export class HttpExceptionFilter implements ExceptionFilterMethods<Exception> {
 
-    @Inject()
-    private httpErrorFactory: HttpErrorFactory;
+    public constructor(
+        @Inject()
+        private httpErrorFactory: HttpErrorFactory
+    ) {}
 
     public async catch(exception: Exception, ctx: PlatformContext): Promise<void> {
         const renderEngine = this.httpErrorFactory.getRenderEngine(exception);

@@ -164,14 +164,13 @@ const opts: Partial<TsED.Configuration> = {
 @Configuration(opts)
 export class Server implements BeforeRoutesInit {
 
-    @Inject()
-    protected app: PlatformApplication;
+    public constructor(
+        @Inject() private app: PlatformApplication,
+        @Inject(SQLITE_DATA_SOURCE) private ds: DataSource
+    ) {}
 
     @Configuration()
     protected settings: Configuration;
-
-    @Inject(SQLITE_DATA_SOURCE)
-    private ds: DataSource;
 
     @Constant(GlobalEnv.SESSION_KEY)
     private readonly sessionKey: string;

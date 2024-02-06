@@ -14,12 +14,10 @@ import {NetworkUtils} from "../../../utils/Utils.js";
 @Description("This is the API documentation for uploading and sharing files.")
 @Name("File Uploader")
 export class FileUploadController {
-
-    @Inject()
-    private fileEngine: FileEngine;
-
-    @Inject()
-    private fileUploadService: FileService;
+    public constructor(
+      @Inject() private fileEngine: FileEngine,
+      @Inject() private fileUploadService: FileService
+    ) {}
 
     @Put()
     @Returns(StatusCodes.CREATED, FileUploadModelResponse)

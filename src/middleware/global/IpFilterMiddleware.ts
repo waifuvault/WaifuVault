@@ -8,8 +8,9 @@ import {NetworkUtils} from "../../utils/Utils.js";
 @Middleware()
 export class IpFilterMiddleware implements MiddlewareMethods {
 
-    @Inject()
-    private ipRepo: IpBlackListRepo;
+    public constructor(
+        @Inject() private ipRepo: IpBlackListRepo
+    ) {}
 
     public async use(@Req() req: Req): Promise<void> {
         const ip = NetworkUtils.getIp(req);

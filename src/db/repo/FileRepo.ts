@@ -5,8 +5,9 @@ import {FileUploadModel} from "../../model/db/FileUpload.model.js";
 @Service()
 export class FileRepo {
 
-    @Inject()
-    private fileDao: FileDao;
+    public constructor(
+        @Inject() private fileDao: FileDao
+    ) {}
 
     public saveEntry(entry: FileUploadModel): Promise<FileUploadModel> {
         return this.fileDao.saveEntry(entry);
