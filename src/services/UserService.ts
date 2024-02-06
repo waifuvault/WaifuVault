@@ -8,8 +8,9 @@ import {UserRepo} from "../db/repo/UserRepo.js";
 @Service()
 export class UserService {
 
-    @Inject()
-    private userRepo: UserRepo;
+    public constructor(
+        @Inject() private userRepo: UserRepo
+    ) {}
 
     public async getUser(email: string, password: string): Promise<UserModel | null> {
         const userObject = await this.userRepo.getUser(email);

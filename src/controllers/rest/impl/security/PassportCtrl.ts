@@ -14,8 +14,12 @@ import {UserService} from "../../../../services/UserService.js";
 @Hidden()
 export class PassportCtrl extends BaseRestController {
 
-    @Inject()
-    private usersService: UserService;
+    public constructor(
+        @Inject() private usersService: UserService
+    ) {
+        super();
+    };
+
 
     @Post("/login")
     @Authenticate("login", {failWithError: true})

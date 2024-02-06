@@ -7,14 +7,11 @@ import {FileUtils} from "../utils/Utils.js";
 @Service()
 export class FileCleaner implements OnInit {
 
-    @Inject()
-    private repo: FileRepo;
-
-    @Inject()
-    private scheduleService: ScheduleService;
-
-    @Inject()
-    private fileUploadService: FileService;
+    public constructor(
+        @Inject() private repo: FileRepo,
+        @Inject() private scheduleService: ScheduleService,
+        @Inject() private fileUploadService: FileService
+    ) {}
 
     public async processFiles(): Promise<void> {
         const allFiles = await this.repo.getAllEntries();

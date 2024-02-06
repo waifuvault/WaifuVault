@@ -8,8 +8,9 @@ import {Unauthorized} from "@tsed/exceptions";
 @Catch(PassportException)
 export class PassportExceptionFilter implements ExceptionFilterMethods<PassportException> {
 
-    @Inject()
-    private httpExceptionFilter: HttpExceptionFilter;
+    public constructor(
+        @Inject() private httpExceptionFilter: HttpExceptionFilter
+    ) {}
 
     public catch(exception: PassportException, ctx: PlatformContext): unknown {
         if (exception.name === "AuthenticationError") {

@@ -11,8 +11,9 @@ import {UserService} from "../services/UserService.js";
 })
 export class BasicProtocol implements OnVerify {
 
-    @Inject()
-    private usersService: UserService;
+    public constructor(
+        @Inject() private usersService: UserService
+    ) {}
 
     public async $onVerify(@Arg(0) email: string, @Arg(1) password: string): Promise<UserModel | false> {
         const user = await this.usersService.getUser(email, password);
