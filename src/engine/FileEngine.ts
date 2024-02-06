@@ -52,4 +52,13 @@ export class FileEngine {
         return typeof file === "string" ? `${filesDir}/${file}` : file.path;
     }
 
+    public async fileExists(file: string): Promise<boolean> {
+        try {
+            await fs.access(file, fs.constants.F_OK);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
 }
