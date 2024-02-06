@@ -12,11 +12,12 @@ export class FileServerController {
     @Inject()
     private fileService: FileService;
 
+    private readonly filesDirRel = path.resolve(filesDir);
+
     @Get("/:t/:file(*)")
     public async getFile(@PathParams("file") requestedFileName: string, @PathParams("t") resource: string, @Res() res: Res): Promise<void> {
-        const filesDirRel = path.resolve(filesDir);
         const entry = await this.fileService.getEntryFromFileName(resource, requestedFileName);
-        const file = `${filesDirRel}/${entry.fullFileNameOnSystem}`;
+        const file = `${this.filesDirRel}/${entry.fullFileNameOnSystem}`;
         return new Promise((resolve, reject) => {
             res.sendFile(file, err => {
                 if (err) {

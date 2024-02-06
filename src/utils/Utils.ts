@@ -84,6 +84,14 @@ export class FileUtils {
         return FileUtils.getTImeLeft(entry) <= 0;
     }
 
+    public static getExtension(file: string): string {
+        return file
+            .split('.')
+            .filter(Boolean)
+            .slice(1)
+            .join('.');
+    }
+
     public static getTImeLeft(entry: FileUploadModel): number {
         const maxLifespan: number = this.getTimeLeftBySize(entry.fileSize);
         const customLifespan: number = entry.customExpires ?? 0;
