@@ -47,16 +47,13 @@ export class FileService {
         let resourcePath: string;
         if (typeof source === "string") {
             const [filePath, originalFileNameRes] = await this.fileUrlService.getFile(source);
-            const fileName = path.parse(filePath).name;
-            uploadEntry.fileName(fileName);
             resourcePath = filePath;
             originalFileName = originalFileNameRes;
         } else {
-            uploadEntry.fileName(source.filename);
             resourcePath = source.path;
             originalFileName = source.originalname;
         }
-
+        uploadEntry.fileName(path.parse(resourcePath).name);
         await this.scanFile(resourcePath);
         await this.checkMime(resourcePath);
 
