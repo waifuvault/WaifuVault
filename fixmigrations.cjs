@@ -1,4 +1,4 @@
-// Build script to fix barrelsby for ESM
+// Build script to fix migrations for ESM
 const fs = require('fs');
 const path = require('path');
 const config = require('./.barrelsby.json');
