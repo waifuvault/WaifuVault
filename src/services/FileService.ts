@@ -12,7 +12,7 @@ import crypto from "crypto";
 import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {Logger} from "@tsed/logger";
-import type {XOR} from "../utils/typeings.js";
+import type {EntrySettings, XOR} from "../utils/typeings.js";
 import {BadRequest, NotFound, UnsupportedMediaType} from "@tsed/exceptions";
 import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
@@ -26,12 +26,13 @@ export class FileService {
         @Inject() private fileUrlService: FileUrlService,
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger
-    ) {}
+    ) {
+    }
 
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
-    public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, expires?: string): Promise<FileUploadModelResponse> {
+    public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, expires?: string, maskFilename = false): Promise<FileUploadModelResponse> {
         const token = crypto.randomUUID();
         let originalFileName: string;
         const uploadEntry = Builder(FileUploadModel)
@@ -61,6 +62,8 @@ export class FileService {
             return FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true);
         }
 
+        uploadEntry.settings(this.buildEntrySettings(maskFilename));
+
         const ext = FileUtils.getExtension(originalFileName);
         if (ext) {
             uploadEntry.fileExtension(ext);
@@ -73,6 +76,12 @@ export class FileService {
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
 
         return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true);
+    }
+
+    private buildEntrySettings(hideFilename: boolean): EntrySettings {
+        return {
+            hideFilename
+        };
     }
 
     public async getEntryFromFileName(fileNameOnSystem: string, requestedFileName: string): Promise<FileUploadModel> {
