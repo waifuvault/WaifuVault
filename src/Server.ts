@@ -105,6 +105,9 @@ const opts: Partial<TsED.Configuration> = {
     middlewares: [
         helmet({
             contentSecurityPolicy: false,
+            crossOriginResourcePolicy: {
+                policy: "cross-origin"
+            },
             crossOriginEmbedderPolicy: {
                 policy: "credentialless"
             }
