@@ -114,7 +114,7 @@ export class NetworkUtils {
         if (useCf) {
             ip = req.headers['cf-connecting-ip'] as string;
         } else {
-            ip = req.ip;
+            ip = req.ip as string;
         }
         return ip.replace(/:\d+[^:]*$/, '');
     }
