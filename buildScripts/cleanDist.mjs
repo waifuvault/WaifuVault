@@ -1,26 +1,22 @@
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 import fs from "node:fs/promises";
+import {exec} from "child_process";
+import {promisify} from "util";
+import * as Path from "path";
 
 const to = `${path.dirname(fileURLToPath(import.meta.url))}/../dist`;
 
-async function deleteEverythingExceptSrc(directoryPath) {
+async function deleteBuild(directoryPath) {
     try {
-        const items = await fs.readdir(directoryPath, { withFileTypes: true });
-        for (const item of items) {
-            const itemPath = path.join(directoryPath, item.name);
-            if (item.name !== 'src') {
-                if (item.isDirectory()) {
-                    await fs.rm(itemPath, { recursive: true, force: true });
-                } else {
-                    await fs.unlink(itemPath);
-                }
-                console.log(`${itemPath} has been removed.`);
-            }
+        if (process.platform === "win32") {
+            const execPromise = promisify(exec);
+            return await execPromise(`rmdir /s /q ${Path.resolve(to)}`);
         }
+        await fs.rm(to, {recursive: true, force: true});
     } catch (error) {
         console.error(`Error while deleting items in ${directoryPath}: ${error}`);
     }
 }
 
-await deleteEverythingExceptSrc(to);
+await deleteBuild(to);
