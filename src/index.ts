@@ -17,7 +17,6 @@ export const dataSource = new DataSource({
 });
 
 async function bootstrap(): Promise<void> {
-
     registerProvider<DataSource>({
         provide: SQLITE_DATA_SOURCE,
         type: "typeorm:datasource",
