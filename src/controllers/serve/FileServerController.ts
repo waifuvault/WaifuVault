@@ -6,6 +6,7 @@ import {filesDir} from "../../utils/Utils.js";
 import {FileService} from "../../services/FileService.js";
 import {FileEngine} from "../../engine/FileEngine.js";
 import {NotFound} from "@tsed/exceptions";
+import {sanitize} from "sanitize-filename-ts";
 
 @Hidden()
 @Controller("/")
@@ -39,8 +40,9 @@ export class FileServerController {
         if (!resource) {
             throw new NotFound(`Resource is not found`);
         }
+        const sanitized = sanitize(resource);
         const filesDirRel = path.resolve(filesDir);
-        const file = `${filesDirRel}/${resource}`;
+        const file = `${filesDirRel}/${sanitized}`;
         const exists = await this.fileEngine.fileExists(file);
         if (!exists) {
             throw new NotFound(`Resource ${resource} is not found`);
