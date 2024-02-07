@@ -1,6 +1,13 @@
 {
   "isModule": true,
+  "minify": true,
   "jsc": {
+    "minify": {
+      "compress": {
+        "unused": true
+      },
+      "mangle": true
+    },
     "target": "es2021",
     "parser": {
       "syntax": "typescript",
