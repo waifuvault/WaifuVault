@@ -2,8 +2,8 @@ import {fileURLToPath} from 'node:url';
 import path from "node:path";
 import type {FileUploadModel} from "../model/db/FileUpload.model.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
-import {Req} from "@tsed/common";
 import process from "process";
+import type {Request} from "express";
 
 export class ObjectUtils {
 
@@ -108,7 +108,7 @@ export class FileUtils {
 
 export class NetworkUtils {
 
-    public static getIp(req: Req): string {
+    public static getIp(req: Request): string {
         const useCf = process.env.USE_CLOUDFLARE === "true";
         let ip: string;
         if (useCf) {
