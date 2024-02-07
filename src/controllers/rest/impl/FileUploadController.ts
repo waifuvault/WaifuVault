@@ -21,9 +21,10 @@ export class FileUploadController {
     }
 
     @Put()
-    @Returns(StatusCodes.CREATED, FileUploadModelResponse)
-    @Returns(StatusCodes.BAD_REQUEST, BadRequest)
-    @Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, UnsupportedMediaType)
+    @Returns(StatusCodes.CREATED, FileUploadModelResponse).Description("If the file was stored successfully")
+    @Returns(StatusCodes.BAD_REQUEST, BadRequest).Description("If the request was malformed")
+    @Returns(StatusCodes.OK, FileUploadModelResponse).Description("If the file already exists")
+    @Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, UnsupportedMediaType).Description("If the media type of the file specified was blocked")
     @Example({
         description: "foo",
         summary: "bnar"
@@ -71,8 +72,13 @@ export class FileUploadController {
             }
         }
         const ip = NetworkUtils.getIp(req);
-        const uploadModelResponse = await this.fileUploadService.processUpload(ip, url || file!, expires, hideFileName);
-        res.location(uploadModelResponse.url);
+        const [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(ip, url || file!, expires, hideFileName);
+        if (alreadyExists) {
+            res.status(StatusCodes.OK);
+        } else {
+            res.status(StatusCodes.CREATED);
+            res.location(uploadModelResponse.url);
+        }
         return uploadModelResponse;
     }
 

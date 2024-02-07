@@ -36,6 +36,9 @@ export class FileServerController {
 
     @Get("/:file(*)")
     public async getFileHiddenFilename(@PathParams("file") resource: string, @Res() res: Res): Promise<void> {
+        if (!resource) {
+            throw new NotFound(`Resource is not found`);
+        }
         const filesDirRel = path.resolve(filesDir);
         const file = `${filesDirRel}/${resource}`;
         const exists = await this.fileEngine.fileExists(file);

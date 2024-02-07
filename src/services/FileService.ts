@@ -32,34 +32,23 @@ export class FileService {
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
-    public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, expires?: string, maskFilename = false): Promise<FileUploadModelResponse> {
+    public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, expires?: string, maskFilename = false): Promise<[FileUploadModelResponse, boolean]> {
         const token = crypto.randomUUID();
-        let originalFileName: string;
         const uploadEntry = Builder(FileUploadModel)
             .ip(ip)
             .token(token);
-        let resourcePath: string;
-        if (typeof source === "string") {
-            const [filePath, originalFileNameRes] = await this.fileUrlService.getFile(source);
-            resourcePath = filePath;
-            originalFileName = originalFileNameRes;
-        } else {
-            resourcePath = source.path;
-            originalFileName = source.originalname;
-        }
+
+        const [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
         uploadEntry.fileName(path.parse(resourcePath).name);
         await this.scanFile(resourcePath);
         await this.checkMime(resourcePath);
-
         const fileSize = await this.fileEngine.getFileSize(path.basename(resourcePath));
         uploadEntry.fileSize(fileSize);
         const checksum = await this.getFileHash(resourcePath);
-        const existingFileModels = await this.repo.getEntriesFromChecksum(checksum);
-        const existingFileModel = existingFileModels.find(m => m.ip === ip);
+
+        const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
         if (existingFileModel) {
-            // ignore promise
-            this.deleteUploadedFile(resourcePath);
-            return FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true);
+            return [FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true), true];
         }
 
         uploadEntry.settings(this.buildEntrySettings(maskFilename));
@@ -75,7 +64,31 @@ export class FileService {
         }
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
 
-        return FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true);
+        return [FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true), false];
+    }
+
+    private async determineResourcePathAndFileName(source: XOR<PlatformMulterFile, string>): Promise<[string, string]> {
+        let resourcePath: string;
+        let originalFileName: string;
+        if (typeof source === "string") {
+            const [filePath, originalFileNameRes] = await this.fileUrlService.getFile(source);
+            resourcePath = filePath;
+            originalFileName = originalFileNameRes;
+        } else {
+            resourcePath = source.path;
+            originalFileName = source.originalname;
+        }
+        return [resourcePath, originalFileName];
+    }
+
+    private async handleExistingFileModel(resourcePath: string, checksum: string, ip: string): Promise<FileUploadModel | null> {
+        const existingFileModels = await this.repo.getEntriesFromChecksum(checksum);
+        const existingFileModel = existingFileModels.find(m => m.ip === ip);
+        if (existingFileModel) {
+            this.deleteUploadedFile(resourcePath);
+            return existingFileModel;
+        }
+        return null;
     }
 
     private buildEntrySettings(hideFilename: boolean): EntrySettings {
