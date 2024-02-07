@@ -14,8 +14,8 @@ export type DefaultRenderObj = {
     scope: ProviderScope.SINGLETON,
     type: HTTP_RENDER_ENGINE
 })
-export class DefaultHttpRenderEngine implements IHttpErrorRenderEngine<DefaultRenderObj> {
-    public render(obj: HttpErrorRenderObj): Promise<DefaultRenderObj> {
+export class DefaultHttpRenderEngine implements IHttpErrorRenderEngine<DefaultRenderObj, Exception> {
+    public render(obj: HttpErrorRenderObj<Exception>): Promise<DefaultRenderObj> {
         return Promise.resolve(this.mapError(obj.internalError));
     }
 

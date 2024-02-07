@@ -53,6 +53,9 @@ export class FileUploadController {
                           @QueryParams("hide_filename")
                           @Description("if set to true, then your filename will not appear in the URL. if false, then it will appear in the URL. defaults to false")
                               hideFileName?: boolean,
+                          @QueryParams("password")
+                              @Description("Set a password for this file, this does not encrypt the file, but rather asks for the password when someone goes to the URL. when fetching the file. you can fill out the `x-password` http header with your password to obtain the file via API")
+                                  password?: string,
                           @MultipartFile("file") file?: PlatformMulterFile,
                           @BodyParams("url") url?: string): Promise<unknown> {
         if (file && url) {
@@ -72,7 +75,13 @@ export class FileUploadController {
             }
         }
         const ip = NetworkUtils.getIp(req);
-        const [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(ip, url || file!, expires, hideFileName);
+        const [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
+            ip,
+            url || file!,
+            expires,
+            hideFileName,
+            password
+        );
         if (alreadyExists) {
             res.status(StatusCodes.OK);
         } else {

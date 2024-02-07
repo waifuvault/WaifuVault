@@ -13,9 +13,10 @@ import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse.js"
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {Logger} from "@tsed/logger";
 import type {EntrySettings, XOR} from "../utils/typeings.js";
-import {BadRequest, NotFound, UnsupportedMediaType} from "@tsed/exceptions";
+import {BadRequest, Forbidden, NotFound, UnsupportedMediaType} from "@tsed/exceptions";
 import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
+import argon2 from "argon2";
 
 @Service()
 export class FileService {
@@ -32,7 +33,13 @@ export class FileService {
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
-    public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, expires?: string, maskFilename = false): Promise<[FileUploadModelResponse, boolean]> {
+    public async processUpload(
+        ip: string,
+        source: XOR<PlatformMulterFile, string>,
+        expires?: string,
+        maskFilename = false,
+        password?: string
+    ): Promise<[FileUploadModelResponse, boolean]> {
         const token = crypto.randomUUID();
         const uploadEntry = Builder(FileUploadModel)
             .ip(ip)
@@ -51,7 +58,7 @@ export class FileService {
             return [FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true), true];
         }
 
-        uploadEntry.settings(this.buildEntrySettings(maskFilename));
+        uploadEntry.settings(await this.buildEntrySettings(maskFilename, password));
 
         const ext = FileUtils.getExtension(originalFileName);
         if (ext) {
@@ -65,6 +72,10 @@ export class FileService {
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
 
         return [FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true), false];
+    }
+
+    private hashPassword(password: string): Promise<string> {
+        return argon2.hash(password);
     }
 
     private async determineResourcePathAndFileName(source: XOR<PlatformMulterFile, string>): Promise<[string, string]> {
@@ -91,16 +102,48 @@ export class FileService {
         return null;
     }
 
-    private buildEntrySettings(hideFilename: boolean): EntrySettings {
-        return {
-            hideFilename
-        };
+    private async buildEntrySettings(hideFilename?: boolean, password?: string): Promise<EntrySettings | null> {
+        const retObj: EntrySettings = {};
+        if (password) {
+            retObj["password"] = await this.hashPassword(password);
+        }
+        if (hideFilename) {
+            retObj["hideFilename"] = hideFilename;
+        }
+        return Object.keys(retObj).length === 0 ? null : retObj;
     }
 
-    public async getEntryFromFileName(fileNameOnSystem: string, requestedFileName: string): Promise<FileUploadModel> {
+    public async requiresPassword(resource: string): Promise<boolean> {
+        const entry = await this.repo.getEntryFileName(resource);
+        if (!entry) {
+            return false;
+        }
+        return !!entry.settings?.password;
+    }
+
+
+    public async validatePassword(resource: string, password?: string): Promise<void> {
+        const entry = await this.repo.getEntryFileName(resource);
+        if (!entry || !entry.settings?.password || !password) {
+            return;
+        }
+        // use safe timings
+        const hashMatches = await argon2.verify(entry.settings.password, password);
+        if (!hashMatches) {
+            throw new Forbidden("Password is incorrect");
+        }
+    }
+
+    public async getEntry(fileNameOnSystem: string, requestedFileName: string, password?: string): Promise<FileUploadModel> {
         const entry = await this.repo.getEntryFileName(fileNameOnSystem);
         if (entry === null || entry.originalFileName !== requestedFileName) {
             throw new NotFound(`resource ${requestedFileName} is not found`);
+        }
+        if (entry.settings?.password) {
+            if (!password) {
+                throw new Forbidden("Protected file requires a password");
+            }
+            await this.validatePassword(fileNameOnSystem, password);
         }
         return entry;
     }

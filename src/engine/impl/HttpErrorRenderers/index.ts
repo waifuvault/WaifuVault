@@ -4,3 +4,4 @@
 
 export * from "./AbstractEjsHttpRenderEngine.js";
 export * from "./DefaultHttpRenderEngine.js";
+export * from "./FileProtectedRenderEngine.js";

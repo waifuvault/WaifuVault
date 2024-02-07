@@ -14,6 +14,10 @@ export class FileUploadModelResponse {
     public url: string;
 
     @Property()
+    @Description("Does this file require a password")
+    public protected: boolean;
+
+    @Property()
     @Description("How long this file will exist for")
     @Nullable(Number, String)
     public retentionPeriod: string | number | null = null;
@@ -27,6 +31,7 @@ export class FileUploadModelResponse {
         } else {
             builder.retentionPeriod(fileUploadModel.expiresIn);
         }
+        builder.protected(!!fileUploadModel.settings?.password);
         return builder.build();
     }
 

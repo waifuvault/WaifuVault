@@ -85,11 +85,7 @@ export class FileUtils {
     }
 
     public static getExtension(file: string): string {
-        return file
-            .split('.')
-            .filter(Boolean)
-            .slice(1)
-            .join('.');
+        return path.extname(file).slice(1);
     }
 
     public static getTImeLeft(entry: FileUploadModel): number {
