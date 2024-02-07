@@ -1,10 +1,10 @@
 // Build script to fix barrelsby for ESM
 const fs = require('fs');
 const path = require('path');
-const config = require('./.barrelsby.json');
+const config = require('.././.barrelsby.json');
 
 for(let barrel of config.directory) {
-    const filePath = path.join(__dirname, barrel + '/index.ts');
+    const filePath = path.join(__dirname, "../", barrel + '/index.ts');
     if (fs.existsSync(filePath)) {
         fs.readFile(filePath, 'utf8', (err, data) => {
             if (err) {

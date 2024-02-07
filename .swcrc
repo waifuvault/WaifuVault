@@ -1,0 +1,24 @@
+{
+  "isModule": true,
+  "minify": true,
+  "jsc": {
+    "minify": {
+      "compress": {
+        "unused": true
+      },
+      "mangle": true
+    },
+    "target": "es2021",
+    "parser": {
+      "syntax": "typescript",
+      "tsx": false,
+      "decorators": true,
+      "dynamicImport": true,
+      "importMeta": true
+    },
+    "transform": {
+      "legacyDecorator": true,
+      "decoratorMetadata": true
+    }
+  }
+}
