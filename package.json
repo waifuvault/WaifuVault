@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "tsc": "tsc --project tsconfig.compile.json",
-    "build": "npm run barrels && npx swc src -d dist --config-file .swcrc --copy-files && node ./buildScripts/moveFiles.mjs",
+    "build": "npm run barrels && node ./buildScripts/cleanDist.mjs && npx swc src -d dist --config-file .swcrc --copy-files && node ./buildScripts/moveFiles.mjs",
     "barrels": "barrelsby --config .barrelsby.json && node ./buildScripts/fixbarrels.cjs",
     "start_js": "node dist/index.js",
     "start": "node --loader ts-node/esm src/index.ts",
