@@ -23,6 +23,7 @@ export class FileUploadController {
     @Put()
     @Returns(StatusCodes.CREATED, FileUploadModelResponse)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    // @Returns(StatusCodes.OK, FileUploadModelResponse
     @Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, UnsupportedMediaType)
     @Example({
         description: "foo",
@@ -71,7 +72,10 @@ export class FileUploadController {
             }
         }
         const ip = NetworkUtils.getIp(req);
-        const uploadModelResponse = await this.fileUploadService.processUpload(ip, url || file!, expires, hideFileName);
+        const [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(ip, url || file!, expires, hideFileName);
+        if (alreadyExists) {
+            res.status(StatusCodes.OK);
+        }
         res.location(uploadModelResponse.url);
         return uploadModelResponse;
     }
