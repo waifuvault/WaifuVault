@@ -16,7 +16,6 @@
                 </div>
                 <div class="card-body">
                     <div class="p-lg-3">
-                        <div class="alert alert-warning mt-4">Ensure popups are allowed in order to view this content</div>
                         <div class="mb-3">
                             <div class="form-floating">
                                 <input required name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
@@ -74,7 +73,7 @@
                     window.URL.revokeObjectURL(_url);
                     a.remove();
                 } else {
-                    window.open(_url, "_blank").focus();
+                    window.location = _url;
                 }
             } catch (err) {
                 console.log(err);
