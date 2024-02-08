@@ -15,7 +15,7 @@
                     Password-protected file
                 </div>
                 <div class="card-body">
-                    <form class="p-lg-3">
+                    <div class="p-lg-3">
                         <div class="mb-3">
                             <div class="form-floating">
                                 <input required name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
@@ -23,7 +23,7 @@
                             </div>
                             <div class="alert alert-danger mt-3 hidden" id="invalidPassword">Password is incorrect</div>
                         </div>
-                    </form>
+                    </div>
                     <div class="text-center">
                         <div class="d-grid gap-2">
                             <button type="button" class="btn btn-outline-success" id="accessButton">Gain access</button>
@@ -35,8 +35,19 @@
     </div>
 </div>
 <script>
+    const passwordInput = document.getElementById("floatingPassword");
+    passwordInput.addEventListener("keypress", ev => {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            submitPassword();
+        }
+    });
     document.getElementById("accessButton")?.addEventListener("click", () => {
-        const password = document.getElementById("floatingPassword")?.value;
+        submitPassword();
+    });
+
+    function submitPassword() {
+        const password = passwordInput?.value;
         const alert = document.getElementById("invalidPassword");
         alert.classList.add("hidden");
         const openUrlInNewTab = async (url, password) => {
@@ -69,7 +80,7 @@
             }
         };
         openUrlInNewTab(window.location.toString(), password);
-    })
+    }
 </script>
 </body>
 </html>
