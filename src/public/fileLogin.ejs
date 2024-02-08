@@ -16,6 +16,7 @@
                 </div>
                 <div class="card-body">
                     <div class="p-lg-3">
+                        <div class="alert alert-warning mt-4">Ensure popups are allowed in order to view this content</div>
                         <div class="mb-3">
                             <div class="form-floating">
                                 <input required name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
@@ -61,12 +62,12 @@
                     alert.classList.remove("hidden");
                     return;
                 }
-                const a = document.createElement("a");
-                document.body.appendChild(a);
-                a.style.display = "none";
                 const blob = await response.blob();
                 const _url = window.URL.createObjectURL(blob);
                 if (blob.type === "application/octet-stream") {
+                    const a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.style.display = "none";
                     a.href = _url;
                     a.download = location.pathname.split("/").pop();
                     a.click();
