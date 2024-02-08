@@ -63,7 +63,8 @@
                 }
                 const blob = await response.blob();
                 const _url = window.URL.createObjectURL(blob);
-                if (blob.type === "application/octet-stream") {
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                if (blob.type === "application/octet-stream" || isSafari) {
                     const a = document.createElement("a");
                     document.body.appendChild(a);
                     a.style.display = "none";
@@ -73,7 +74,7 @@
                     window.URL.revokeObjectURL(_url);
                     a.remove();
                 } else {
-                    window.location = _url;
+                    window.open(_url, "_blank").focus();
                 }
             } catch (err) {
                 console.log(err);
