@@ -16,7 +16,7 @@ export class HttpExceptionFilter implements ExceptionFilterMethods<Exception> {
 
     public async catch(exception: Exception, ctx: PlatformContext): Promise<void> {
         const renderEngine = this.httpErrorFactory.getRenderEngine(exception);
-        const obj: HttpErrorRenderObj = {
+        const obj: HttpErrorRenderObj<Exception> = {
             status: exception.status,
             message: exception.message,
             internalError: exception,

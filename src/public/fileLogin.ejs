@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <%- include('snippets/head.ejs'); %>
+    <% if(!resource){ %>
+        <meta http-equiv="refresh" content="0; URL=/"/>
+    <% } %>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card my-5 border-primary">
+                <div class="card-header text-center">
+                    Password-protected file
+                </div>
+                <div class="card-body">
+                    <form class="p-lg-3">
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                <input required name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
+                                <label for="floatingPassword">Password</label>
+                            </div>
+                            <div class="alert alert-danger mt-3 hidden" id="invalidPassword">Password is incorrect</div>
+                        </div>
+                    </form>
+                    <div class="text-center">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-success" id="accessButton">Gain access</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("accessButton")?.addEventListener("click", () => {
+        const password = document.getElementById("floatingPassword")?.value;
+        const alert = document.getElementById("invalidPassword");
+        alert.classList.add("hidden");
+        const openUrlInNewTab = async (url, password) => {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        "x-password": password
+                    },
+                });
+                if (response.status === 403) {
+                    alert.classList.remove("hidden");
+                    return;
+                }
+                const a = document.createElement("a");
+                document.body.appendChild(a);
+                a.style.display = "none";
+                const blob = await response.blob();
+                const _url = window.URL.createObjectURL(blob);
+                if (blob.type === "application/octet-stream") {
+                    a.href = _url;
+                    a.download = location.pathname.split("/").pop();
+                    a.click();
+                    window.URL.revokeObjectURL(_url);
+                    a.remove();
+                } else {
+                    window.open(_url, "_blank").focus();
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        openUrlInNewTab(window.location.toString(), password);
+    })
+</script>
+</body>
+</html>
