@@ -14,3 +14,9 @@ export type EntrySettings = {
     hideFilename?: boolean,
     password?: string
 }
+
+export type AvScanResult = {
+    passed: boolean,
+    errorCode?: number
+    additionalMessage?: string
+}

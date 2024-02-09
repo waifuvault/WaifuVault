@@ -2,7 +2,7 @@ import {Inject, Injectable, ProviderScope} from "@tsed/di";
 import {Exception} from "@tsed/exceptions";
 import type {IHttpErrorRenderEngine} from "../engine/IHttpErrorRenderEngine.js";
 import {HTTP_RENDER_ENGINE} from "../model/di/tokens.js";
-import {DefaultHttpRenderEngine} from "../engine/impl/HttpErrorRenderers/index.js";
+import {DefaultHttpRenderEngine} from "../engine/impl/index.js";
 
 @Injectable({
     scope: ProviderScope.SINGLETON

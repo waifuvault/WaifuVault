@@ -5,7 +5,7 @@ import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelRespon
 import {BadRequest, Forbidden, UnsupportedMediaType} from "@tsed/exceptions";
 import {MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res} from "@tsed/common";
 import {BodyParams} from "@tsed/platform-params";
-import {FileEngine} from "../../../engine/FileEngine.js";
+import {FileEngine} from "../../../engine/impl/FileEngine.js";
 import {FileService} from "../../../services/FileService.js";
 import {NetworkUtils} from "../../../utils/Utils.js";
 

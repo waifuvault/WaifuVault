@@ -3,7 +3,7 @@
     "./src/controllers/rest",
     "./src/controllers/views",
     "./src/protocols",
-    "./src/engine/impl/HttpErrorRenderers",
+    "./src/engine/impl",
     "./src/filters"
   ],
   "exclude": [
