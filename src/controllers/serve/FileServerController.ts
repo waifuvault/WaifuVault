@@ -1,14 +1,13 @@
-import {Get, Hidden, Post} from "@tsed/schema";
+import {Get, Hidden} from "@tsed/schema";
 import {Controller, Inject} from "@tsed/di";
-import {HeaderParams, PathParams, Req, Res} from "@tsed/common";
+import {HeaderParams, PathParams, Res} from "@tsed/common";
 import path, * as Path from "path";
 import {filesDir} from "../../utils/Utils.js";
 import {FileService} from "../../services/FileService.js";
 import {FileEngine} from "../../engine/FileEngine.js";
-import {MethodNotAllowed, NotFound} from "@tsed/exceptions";
+import {NotFound} from "@tsed/exceptions";
 import {sanitize} from "sanitize-filename-ts";
 import {FileProtectedException} from "../../model/exceptions/FileProtectedException.js";
-import {BodyParams} from "@tsed/platform-params";
 
 @Hidden()
 @Controller("/")
@@ -22,21 +21,14 @@ export class FileServerController {
 
     private readonly filesDirRel = path.resolve(filesDir);
 
-    @Post("/:t/:file?")
     @Get("/:t/:file?")
     public async getFile(
         @Res() res: Res,
-        @Req() req: Req,
         @PathParams("t") resource: string,
-        @BodyParams("password") password?: string,
-        @HeaderParams("x-password") xPassword?: string,
+        @HeaderParams("x-password") password?: string,
         @PathParams("file") requestedFileName?: string
     ): Promise<void> {
-        password = password ?? xPassword;
-        const isProtected = await this.hasPassword(resource, password);
-        if (!isProtected && req.method === "POST") {
-            throw new MethodNotAllowed("Unable to get non-protected files with POST");
-        }
+        await this.hasPassword(resource, password);
         if (requestedFileName) {
             // for route `/:t/:file(*)`
             // ensure filename Matches

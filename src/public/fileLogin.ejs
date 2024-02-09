@@ -15,25 +15,139 @@
                     Password-protected file
                 </div>
                 <div class="card-body">
-                    <form class="p-lg-3" method="post" target="_blank">
+                    <div class="p-lg-3">
+                        <div class="alert alert-warning mt-4">Ensure popups are allowed in order to view this content</div>
                         <div class="mb-3">
                             <div class="form-floating">
                                 <input required name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
                                 <label for="floatingPassword">Password</label>
                             </div>
+                            <div class="alert alert-danger mt-3 hidden" id="invalidPassword">Password is incorrect</div>
                         </div>
-                        <div class="text-center">
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-outline-success" id="accessButton">Gain access</button>
-                            </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-success" id="accessButton">Gain access</button>
                         </div>
-                    </form>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressWrapper">
+                        <div id="downloadprogress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <script>
+    const progressWrapper = document.getElementById("progressWrapper");
+    const progressbar = document.getElementById("downloadprogress");
+    const passwordInput = document.getElementById("floatingPassword");
+    const downloadButton = document.getElementById("accessButton");
+    passwordInput.addEventListener("keypress", ev => {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            submitPassword();
+        }
+    });
+    downloadButton.addEventListener("click", () => {
+        submitPassword();
+    });
+
+    function progress({loaded, total}) {
+        const downloadDone = Math.round(loaded / total * 100) + '%';
+        progressbar.innerText = downloadDone;
+        progressbar.style.width = downloadDone;
+        progressWrapper.setAttribute("aria-valuenow", Math.round(loaded / total * 100).toString());
+    }
+
+    function resetProgress() {
+        progressbar.style.width = "0%";
+        progressbar.innerText = "";
+        progressWrapper.setAttribute("aria-valuenow", "0");
+    }
+
+    async function submitPassword() {
+        if (downloadButton.hasAttribute("disabled")) {
+            return;
+        }
+        const password = passwordInput?.value;
+        const alert = document.getElementById("invalidPassword");
+        alert.classList.add("hidden");
+        const openUrlInNewTab = async (url, password) => {
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        "x-password": password
+                    },
+                });
+                if (response.status === 403) {
+                    alert.classList.remove("hidden");
+                    return;
+                }
+                const contentLength = response.headers.get('content-length');
+                const total = Number.parseInt(contentLength);
+                let loaded = 0;
+                const res = new Response(
+                    new ReadableStream({
+                        async start(controller) {
+                            const reader = response.body.getReader();
+                            for (; ;) {
+                                try {
+                                    const {done, value} = await reader.read();
+                                    if (done) {
+                                        break;
+                                    }
+                                    loaded += value.byteLength;
+                                    progress({loaded, total});
+                                    controller.enqueue(value);
+                                } catch (e) {
+                                    controller.error(e);
+                                        return;
+                                    }
+                            }
+                            controller.close();
+                        },
+                        }
+                    ), {
+                        headers: response.headers,
+                        status: response.status,
+                        statusText: response
+                    }
+                );
+
+                const blob = await res.blob();
+                const _url = window.URL.createObjectURL(blob);
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                if (blob.type === "application/octet-stream" || isSafari) {
+                    const a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.style.display = "none";
+                    a.href = _url;
+                    a.download = location.pathname.split("/").pop();
+                    a.click();
+                    window.URL.revokeObjectURL(_url);
+                    a.remove();
+                } else {
+                    window.open(_url, "_blank").focus();
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        try {
+            downloadButton.classList.add("disabled");
+            downloadButton.setAttribute("disabled", "true");
+            await openUrlInNewTab(window.location.toString(), password);
+        } finally {
+            downloadButton.classList.remove("disabled");
+            downloadButton.removeAttribute("disabled");
+            resetProgress();
+        }
+
+    }
 </script>
 </body>
 </html>
