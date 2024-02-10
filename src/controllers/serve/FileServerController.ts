@@ -4,7 +4,7 @@ import {HeaderParams, PathParams, Res} from "@tsed/common";
 import path, * as Path from "path";
 import {filesDir} from "../../utils/Utils.js";
 import {FileService} from "../../services/FileService.js";
-import {FileEngine} from "../../engine/FileEngine.js";
+import {FileEngine} from "../../engine/impl/FileEngine.js";
 import {NotFound} from "@tsed/exceptions";
 import {sanitize} from "sanitize-filename-ts";
 import {FileProtectedException} from "../../model/exceptions/FileProtectedException.js";

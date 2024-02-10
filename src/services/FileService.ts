@@ -2,7 +2,7 @@ import {Constant, Inject, Service} from "@tsed/di";
 import {FileRepo} from "../db/repo/FileRepo.js";
 import type {PlatformMulterFile} from "@tsed/common";
 import {FileUploadModel} from "../model/db/FileUpload.model.js";
-import {FileEngine} from "../engine/FileEngine.js";
+import {FileEngine} from "../engine/impl/FileEngine.js";
 import {FileUrlService} from "./FileUrlService.js";
 import {MimeService} from "./MimeService.js";
 import {Builder, type IBuilder} from "builder-pattern";
@@ -17,6 +17,7 @@ import {BadRequest, Forbidden, NotFound, UnsupportedMediaType} from "@tsed/excep
 import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import argon2 from "argon2";
+import {AvManager} from "../manager/AvManager.js";
 
 @Service()
 export class FileService {
@@ -26,7 +27,8 @@ export class FileService {
         @Inject() private fileEngine: FileEngine,
         @Inject() private fileUrlService: FileUrlService,
         @Inject() private mimeService: MimeService,
-        @Inject() private logger: Logger
+        @Inject() private logger: Logger,
+        @Inject() private avManager: AvManager
     ) {
     }
 
@@ -200,19 +202,8 @@ export class FileService {
         return hashSum.digest('hex');
     }
 
-    private async scanFile(resourcePath: string): Promise<void> {
-        let didPassAvScan = false;
-        try {
-            didPassAvScan = await this.fileEngine.scanFileWithClam(path.basename(resourcePath));
-        } catch (e) {
-            this.deleteUploadedFile(resourcePath);
-            throw new BadRequest("Failed to execute AV scan on item");
-        }
-
-        if (!didPassAvScan) {
-            this.deleteUploadedFile(resourcePath);
-            throw new BadRequest("Failed to store file due to positive virus scan");
-        }
+    private scanFile(resourcePath: string): Promise<void> {
+        return this.avManager.scanFile(resourcePath);
     }
 
     private async checkMime(resourcePath: string): Promise<void> {

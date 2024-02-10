@@ -7,7 +7,7 @@ import "@tsed/swagger";
 // custom index imports
 import "./protocols/index.js";
 import "./filters/index.js";
-import "./engine/impl/HttpErrorRenderers/index.js";
+import "./engine/impl/index.js";
 import * as rest from "./controllers/rest/index.js";
 import "./services/FileCleaner.js";
 import * as views from "./controllers/views/index.js";

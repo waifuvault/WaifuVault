@@ -14,7 +14,8 @@ enum GlobalEnv {
     CLAM_PATH = `${prefix}CLAM_PATH`,
     BLOCKED_MIME_TYPES = `${prefix}BLOCKED_MIME_TYPES`,
     USE_CLOUDFLARE = `${prefix}USE_CLOUDFLARE`,
-    MAX_URL_LENGTH = `${prefix}MAX_URL_LENGTH`
+    MAX_URL_LENGTH = `${prefix}MAX_URL_LENGTH`,
+    MS_DEFENDER_PATH = `${prefix}MS_DEFENDER_PATH`
 }
 
 export default GlobalEnv;
