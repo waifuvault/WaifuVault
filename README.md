@@ -19,16 +19,19 @@ Required Settings
 
 | Setting                   | Description                                                                 |
 |---------------------------|-----------------------------------------------------------------------------|
-| FILE_SIZE_UPLOAD_LIMIT_MB | Limit on size of file allowed to be uploaded                                |
 | BLOCKED_MIME_TYPES        | Comma seperated list of MIME types that will be blocked from being uploaded |
+| FILE_SIZE_UPLOAD_LIMIT_MB | Limit on size of file allowed to be uploaded                                |
+| MAX_URL_LENGTH            | Maximum URL length that can be specified                                    |
 | SESSION_KEY               | Replace 'YourSessionKey' with a random string to use as the session key     |
 > **Note Well** the file size sets the time to live for a file, so files close to the upload limit will only be hosted for 30 days.  It is a cubic curve so files up to 50% of the size will get close to a year of hosting time.
 
 Optional Settings
 
-| Setting   | Description                                                                                  |
-|-----------|----------------------------------------------------------------------------------------------|
-| CLAM_PATH | The path to your Clam Antivirus installation - necessary to enable virus scanning of uploads |
+| Setting          | Description                                         |
+|------------------|-----------------------------------------------------|
+| CLAM_PATH        | The path to your Clam Antivirus installation        |
+| MS_DEFENDER_PATH | The path to your MS Defender Antivirus installation |
+> **Note Well** if a path to an Antivirus engine is not defined it will not be used, if no paths are defined then no antivirus scanning will be used
 
 ### Build and Run commands
 
