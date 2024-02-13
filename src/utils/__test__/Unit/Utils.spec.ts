@@ -1,7 +1,7 @@
 import {PlatformTest} from "@tsed/common";
-import {ObjectUtils} from "../Utils";
+import {ObjectUtils} from "../../Utils";
 
-describe("ObjectUtils", () => {
+describe("unit tests", () => {
     beforeEach(PlatformTest.create);
     afterEach(PlatformTest.reset);
     describe("ObjectUtils.getNumber()", () => {
