@@ -15,9 +15,9 @@
     "generatemigration": "npx typeorm-ts-node-esm migration:generate -d ./src/db/DataSource.ts",
     "runmigration": "npx typeorm-ts-node-esm migration:run -d ./src/db/DataSource.ts",
     "revertmigration": "npx typeorm-ts-node-esm migration:revert -d ./src/db/DataSource.ts",
-    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"--experimental-vm-modules\" npx jest",
-    "test:unit": "cross-env NODE_ENV=test NODE_OPTIONS=\"--experimental-vm-modules\" npx jest -t \"unit tests\"",
-    "test:int": "cross-env NODE_ENV=test NODE_OPTIONS=\"--experimental-vm-modules\" npx jest -t \"integration tests\""
+    "test": "cross-env NODE_OPTIONS=\"--experimental-vm-modules\" npx jest",
+    "test:unit": "cross-env NODE_OPTIONS=\"--experimental-vm-modules\" npx jest -t \"unit tests\"",
+    "test:int": "cross-env NODE_OPTIONS=\"--experimental-vm-modules\" npx jest -t \"integration tests\""
   },
   "dependencies": {
     "@tsed/ajv": "^7.61.0",
