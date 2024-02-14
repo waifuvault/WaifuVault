@@ -42,7 +42,7 @@ describe("unit tests", () => {
             const fileService: FileService = PlatformTest.get(FileService);
             const processDeleteSpy = jest.spyOn(fileService, "processDelete").mockResolvedValue(true);
 
-            const instance: FileCleaner = await PlatformTest.invoke(FileCleaner);
+            const instance: FileCleaner = await PlatformTest.get(FileCleaner);
             await instance.processFiles();
             expect(processDeleteSpy).toHaveBeenNthCalledWith(1, fileUploadModelMock1.token);
         });
