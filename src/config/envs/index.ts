@@ -6,3 +6,4 @@ export const envs = {
     ...dotenv.config().parsed
 };
 export const isProduction = process.env.NODE_ENV === Env.PROD;
+export const isTest = process.env.NODE_ENV === Env.TEST;
