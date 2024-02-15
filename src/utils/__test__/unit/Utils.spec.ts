@@ -194,6 +194,12 @@ describe("unit tests", () => {
                     NetworkUtils.getIp(requestMock1)
                 ).toEqual("192.168.2.2");
             });
+            it("should take a cloudflare request and return the ip", () => {
+                process.env.USE_CLOUDFLARE = "true";
+                expect(
+                    NetworkUtils.getIp(requestMock1)
+                ).toEqual("192.168.2.3");
+            });
         });
     });
 
