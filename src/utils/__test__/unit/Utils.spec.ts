@@ -1,9 +1,12 @@
 import {PlatformTest} from "@tsed/common";
-import {ObjectUtils} from "../../Utils";
+import {FileUtils, ObjectUtils} from "../../Utils";
 import TIME_UNIT from "../../../model/constants/TIME_UNIT";
 
 describe("unit tests", () => {
-    beforeEach(PlatformTest.create);
+    beforeEach(() => {
+        PlatformTest.create();
+        process.env.FILE_SIZE_UPLOAD_LIMIT_MB = "512";
+    });
     afterEach(PlatformTest.reset);
 
     describe("ObjectUtils", () => {
@@ -113,6 +116,29 @@ describe("unit tests", () => {
             it("should remove 1 element from array", () => {
                 ObjectUtils.removeObjectFromArray(arr, itm => itm === 1);
                 expect(arr).toHaveLength(2);
+            });
+        });
+    });
+
+    describe("FileUtils", () => {
+        describe("getExtension", () => {
+            it("should take a filename and return its extension", () => {
+                expect(
+                    FileUtils.getExtension("/some/path/to/filename.ext")
+                ).toEqual("ext");
+            });
+        });
+
+        describe("getTimeLeftBySize", () => {
+            it("should take a low filesize and return close to max time", () => {
+                expect(
+                    FileUtils.getTimeLeftBySize(1024)
+                ).toBeGreaterThan(300 * 24 * 60 * 60 * 1000);
+            });
+            it("should take a max filesize and return min time", () => {
+                expect(
+                    FileUtils.getTimeLeftBySize(500 * 1024 * 1024)
+                ).toEqual(30 * 24 * 60 * 60 * 1000);
             });
         });
     });
