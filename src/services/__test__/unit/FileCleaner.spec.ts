@@ -86,7 +86,7 @@ describe("unit tests", () => {
             expect(processDeleteSpy).not.toHaveBeenCalled();
         }));
 
-        it("should filter out only expired files", PlatformTest.inject([
+        it("should filter out only non-expired files", PlatformTest.inject([
             FileRepo,
             FileService,
             FileCleaner
