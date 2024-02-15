@@ -3,6 +3,7 @@ import {PlatformTest} from "@tsed/common";
 import {SQLITE_DATA_SOURCE} from "../model/di/tokens.js";
 import {jest} from "@jest/globals";
 import dotenv from 'dotenv';
+import path from "path";
 
 export function setUpDataSource(ds?: DataSource): void {
 
@@ -38,5 +39,7 @@ export function setUpDataSource(ds?: DataSource): void {
 }
 
 export function initDotEnv(): void {
-    dotenv.config();
+    dotenv.config({
+        path: path.resolve(process.cwd(), '.test.env')
+    });
 }
