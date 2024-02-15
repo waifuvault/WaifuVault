@@ -8,7 +8,9 @@ import {initDotEnv, setUpDataSource} from "../../../__test__/testUtils.spec.js";
 import {
     fileUploadModelMock500MB,
     fileUploadModelMockCustomExpire,
-    fileUploadModelMockExpired2
+    fileUploadModelMockExpired,
+    fileUploadModelMockExpired2,
+    getAllFileUploadMocks
 } from "../../../model/db/__test__/mocks/FileUploadModel.mock.js";
 
 describe("unit tests", () => {
@@ -82,6 +84,27 @@ describe("unit tests", () => {
 
             // then
             expect(processDeleteSpy).not.toHaveBeenCalled();
+        }));
+
+        it("should filter out only expired files", PlatformTest.inject([
+            FileRepo,
+            FileService,
+            FileCleaner
+        ], async (
+            fileRepo: FileRepo,
+            fileService: FileService,
+            fileCleaner: FileCleaner
+        ) => {
+            // given
+            jest.spyOn(fileRepo, "getAllEntries").mockResolvedValue(getAllFileUploadMocks());
+            const processDeleteSpy = jest.spyOn(fileService, "processDelete").mockResolvedValue(true);
+
+            // when
+            await fileCleaner.processFiles();
+
+            // then
+            expect(processDeleteSpy).toHaveBeenNthCalledWith(1, fileUploadModelMockExpired.token);
+            expect(processDeleteSpy).toHaveBeenNthCalledWith(2, fileUploadModelMockExpired2.token);
         }));
     });
 });
