@@ -24,11 +24,6 @@ export function setUpDataSource(ds?: DataSource): void {
             initialize: jest.fn(),
             getRepository: jest.fn()
         };
-        jest.mock("typeorm", () => {
-            return {
-                DataSource: jest.fn().mockImplementation(() => mockDS),
-            };
-        });
 
         PlatformTest.injector.addProvider(SQLITE_DATA_SOURCE, {
             provide: SQLITE_DATA_SOURCE,

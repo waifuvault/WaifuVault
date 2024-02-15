@@ -21,12 +21,6 @@ describe("unit tests", () => {
             scheduleJobInterval: jest.fn()
         };
 
-        jest.mock("../../ScheduleService.ts", () => {
-            return {
-                ScheduleService: jest.fn().mockImplementation(() => mockScheduleService),
-            };
-        });
-
         PlatformTest.create({
             imports: [
                 {
