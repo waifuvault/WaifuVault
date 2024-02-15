@@ -1,11 +1,13 @@
 import {PlatformTest} from "@tsed/common";
-import {FileUtils, ObjectUtils} from "../../Utils";
-import TIME_UNIT from "../../../model/constants/TIME_UNIT";
+import {FileUtils, ObjectUtils} from "../../Utils.js";
+import TIME_UNIT from "../../../model/constants/TIME_UNIT.js";
+import {initDotEnv} from "../../../__test__/testUtils.spec.js";
+import {fileUploadModelMock500MB,fileUploadModelMockExpired,fileUploadModelMockCustomExpire} from "../mocks/FileUploadModel.mock";
 
 describe("unit tests", () => {
     beforeEach(() => {
         PlatformTest.create();
-        process.env.FILE_SIZE_UPLOAD_LIMIT_MB = "512";
+        initDotEnv();
     });
     afterEach(PlatformTest.reset);
 
@@ -143,6 +145,19 @@ describe("unit tests", () => {
                 expect(
                     FileUtils.getTimeLeftBySize(FILE_SIZE_500MB)
                 ).toEqual(EXPIRATION_30DAY);
+            });
+        });
+
+        describe("isFileExpired", () => {
+            it("should take an expired fileupload and return true for expired", () => {
+                expect(
+                    FileUtils.isFileExpired(fileUploadModelMockExpired)
+                ).toEqual(true);
+            });
+            it("should take a normal fileupload and return false for expired", () => {
+                expect(
+                    FileUtils.isFileExpired(fileUploadModelMockCustomExpire)
+                ).toEqual(false);
             });
         });
     });
