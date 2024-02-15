@@ -4,9 +4,7 @@ import type {FileUploadModel} from "../model/db/FileUpload.model.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import process from "process";
 import type {Request} from "express";
-import {Injectable} from "@tsed/di";
 
-@Injectable()
 export class ObjectUtils {
 
     public static getNumber(source: string): number {
