@@ -5,7 +5,7 @@ import {jest} from '@jest/globals';
 import {ScheduleService} from "../../ScheduleService.js";
 import {fileUploadModelMock1} from "../mocks/FileUploadModel.mock.js";
 import {FileService} from "../../FileService.js";
-import {initDotEnv, setUpDataSource} from "../../../__test__/testUtils.spec";
+import {initDotEnv, setUpDataSource} from "../../../__test__/testUtils.spec.js";
 
 describe("unit tests", () => {
 

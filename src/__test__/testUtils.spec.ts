@@ -1,6 +1,6 @@
 import {DataSource} from "typeorm";
 import {PlatformTest} from "@tsed/common";
-import {SQLITE_DATA_SOURCE} from "../model/di/tokens";
+import {SQLITE_DATA_SOURCE} from "../model/di/tokens.js";
 import {jest} from "@jest/globals";
 import dotenv from 'dotenv';
 
