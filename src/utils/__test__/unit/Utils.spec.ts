@@ -160,6 +160,26 @@ describe("unit tests", () => {
                 ).toEqual(false);
             });
         });
+
+        describe("getTImeLeft", () => {
+            const TIME_LEFT_10DAYS = 10 * 24 * 60 * 60 * 1000;
+            const TIME_LEFT_30DAYS = 30 * 24 * 60 * 60 * 1000;
+            it("should take a normal expire fileupload and return slightly less than thirty days as millis", () => {
+                expect(
+                    FileUtils.getTImeLeft(fileUploadModelMock500MB)
+                ).toBeLessThanOrEqual(TIME_LEFT_30DAYS);
+            });
+            it("should take a custom expire fileupload and return slightly less than ten days as millis", () => {
+                expect(
+                    FileUtils.getTImeLeft(fileUploadModelMockCustomExpire)
+                ).toBeLessThanOrEqual(TIME_LEFT_10DAYS);
+            });
+            it("should take an expired fileupload and return 0 or less time left", () => {
+                expect(
+                    FileUtils.getTImeLeft(fileUploadModelMockExpired)
+                ).toBeLessThanOrEqual(0);
+            });
+        });
     });
 
 });
