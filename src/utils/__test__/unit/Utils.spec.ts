@@ -1,6 +1,6 @@
 import {PlatformTest} from "@tsed/common";
-import {FileUtils, ObjectUtils} from "../../Utils";
-import TIME_UNIT from "../../../model/constants/TIME_UNIT";
+import {FileUtils, ObjectUtils} from "../../Utils.js";
+import TIME_UNIT from "../../../model/constants/TIME_UNIT.js";
 
 describe("unit tests", () => {
     beforeEach(() => {

@@ -1,50 +1,63 @@
 import {PlatformTest} from "@tsed/common";
-import {FileCleaner} from "../../FileCleaner";
-import {SQLITE_DATA_SOURCE} from "../../../model/di/tokens";
-import {FileRepo} from "../../../db/repo/FileRepo";
+import {FileCleaner} from "../../FileCleaner.js";
+import {FileRepo} from "../../../db/repo/FileRepo.js";
 import {jest} from '@jest/globals';
-import {ScheduleService} from "../../ScheduleService";
-import {fileUploadModelMock1} from "../mocks/FileUploadModel.mock";
-import {FileService} from "../../FileService";
+import {ScheduleService} from "../../ScheduleService.js";
+import {fileUploadModelMock1} from "../mocks/FileUploadModel.mock.js";
+import {FileService} from "../../FileService.js";
+import {initDotEnv, setUpDataSource} from "../../../__test__/testUtils.spec";
 
 describe("unit tests", () => {
+
     beforeEach(() => {
+
+        const mockScheduleService = {
+            scheduleJobInterval: jest.fn()
+        };
+
+        jest.mock("../../ScheduleService.ts", () => {
+            return {
+                ScheduleService: jest.fn().mockImplementation(() => mockScheduleService),
+            };
+        });
+
         PlatformTest.create({
             imports: [
                 {
                     token: ScheduleService,
-                    use: {
-                        scheduleJobInterval: (): void => {
-
-                        }
-                    }
+                    use: mockScheduleService
                 }
             ],
         });
-        PlatformTest.injector.addProvider(SQLITE_DATA_SOURCE, {
-            provide: SQLITE_DATA_SOURCE,
-            type: "typeorm:datasource",
-            useValue: {
-                getRepository: () => {
-                    return null;
-                }
-            }
-        });
-        process.env.FILE_SIZE_UPLOAD_LIMIT_MB = "512";
+        setUpDataSource();
+        initDotEnv();
     });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     afterEach(PlatformTest.reset);
 
-    describe("with inject()", () => {
-        it("should do something", async () => {
-            const fileRepo = PlatformTest.get(FileRepo);
-            jest.spyOn(fileRepo, "getAllEntries").mockResolvedValue(Promise.resolve([fileUploadModelMock1]));
-
-            const fileService: FileService = PlatformTest.get(FileService);
+    describe("processFiles", () => {
+        it("should processFiles with success", PlatformTest.inject([
+            FileRepo,
+            FileService,
+            FileCleaner
+        ], async (
+            fileRepo: FileRepo,
+            fileService: FileService,
+            fileCleaner: FileCleaner
+        ) => {
+            // given
+            jest.spyOn(fileRepo, "getAllEntries").mockResolvedValue([fileUploadModelMock1]);
             const processDeleteSpy = jest.spyOn(fileService, "processDelete").mockResolvedValue(true);
 
-            const instance: FileCleaner = await PlatformTest.get(FileCleaner);
-            await instance.processFiles();
+            // when
+            await fileCleaner.processFiles();
+
+            // then
             expect(processDeleteSpy).toHaveBeenNthCalledWith(1, fileUploadModelMock1.token);
-        });
+        }));
     });
 });
