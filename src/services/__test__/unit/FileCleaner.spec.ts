@@ -39,10 +39,6 @@ describe("unit tests", () => {
         initDotEnv();
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
-
     afterEach(PlatformTest.reset);
 
     describe("processFiles", () => {
