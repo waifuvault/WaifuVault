@@ -1,7 +1,7 @@
-import {FileUploadModel} from "../../../model/db/FileUpload.model";
+import {FileUploadModel} from "../../../model/db/FileUpload.model.js";
 import {Builder} from "builder-pattern";
-import {ObjectUtils} from "../../../utils/Utils";
-import TIME_UNIT from "../../../model/constants/TIME_UNIT";
+import {ObjectUtils} from "../../../utils/Utils.js";
+import TIME_UNIT from "../../../model/constants/TIME_UNIT.js";
 
 export const fileUploadModelMock1 = Builder(FileUploadModel)
     .fileExtension("jpg")
