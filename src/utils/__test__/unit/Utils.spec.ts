@@ -2,8 +2,12 @@ import {PlatformTest} from "@tsed/common";
 import {FileUtils, NetworkUtils, ObjectUtils} from "../../Utils.js";
 import TIME_UNIT from "../../../model/constants/TIME_UNIT.js";
 import {initDotEnv} from "../../../__test__/testUtils.spec.js";
-import {fileUploadModelMock500MB,fileUploadModelMockExpired,fileUploadModelMockCustomExpire} from "../mocks/FileUploadModel.mock";
-import {requestMock1} from "../mocks/Request.mock";
+import {requestMock1} from "../../../__test__/mocks/global/Request.mock.js";
+import {
+    fileUploadModelMock500MB,
+    fileUploadModelMockCustomExpire,
+    fileUploadModelMockExpired
+} from "../../../model/db/__test__/mocks/FileUploadModel.mock.js";
 
 describe("unit tests", () => {
     beforeEach(() => {
