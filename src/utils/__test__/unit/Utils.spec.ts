@@ -1,8 +1,9 @@
 import {PlatformTest} from "@tsed/common";
-import {FileUtils, ObjectUtils} from "../../Utils.js";
+import {FileUtils, NetworkUtils, ObjectUtils} from "../../Utils.js";
 import TIME_UNIT from "../../../model/constants/TIME_UNIT.js";
 import {initDotEnv} from "../../../__test__/testUtils.spec.js";
 import {fileUploadModelMock500MB,fileUploadModelMockExpired,fileUploadModelMockCustomExpire} from "../mocks/FileUploadModel.mock";
+import {requestMock1} from "../mocks/Request.mock";
 
 describe("unit tests", () => {
     beforeEach(() => {
@@ -178,6 +179,16 @@ describe("unit tests", () => {
                 expect(
                     FileUtils.getTImeLeft(fileUploadModelMockExpired)
                 ).toBeLessThanOrEqual(0);
+            });
+        });
+    });
+
+    describe("NetworkUtils", () => {
+        describe("getIp", () => {
+            it("should take a request and return the ip", () => {
+                expect(
+                    NetworkUtils.getIp(requestMock1)
+                ).toEqual("192.168.2.2");
             });
         });
     });
