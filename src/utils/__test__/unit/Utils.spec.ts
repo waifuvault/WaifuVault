@@ -130,15 +130,19 @@ describe("unit tests", () => {
         });
 
         describe("getTimeLeftBySize", () => {
+            const FILE_SIZE_500MB = 500 * 1024 * 1024;
+            const FILE_SIZE_10MB = 10 * 1024 * 1024;
+            const EXPIRATION_300DAY = 300 * 24 * 60 * 60 * 1000;
+            const EXPIRATION_30DAY = 30 * 24 * 60 * 60 * 1000;
             it("should take a low filesize and return close to max time", () => {
                 expect(
-                    FileUtils.getTimeLeftBySize(1024)
-                ).toBeGreaterThan(300 * 24 * 60 * 60 * 1000);
+                    FileUtils.getTimeLeftBySize(FILE_SIZE_10MB)
+                ).toBeGreaterThan(EXPIRATION_300DAY);
             });
             it("should take a max filesize and return min time", () => {
                 expect(
-                    FileUtils.getTimeLeftBySize(500 * 1024 * 1024)
-                ).toEqual(30 * 24 * 60 * 60 * 1000);
+                    FileUtils.getTimeLeftBySize(FILE_SIZE_500MB)
+                ).toEqual(EXPIRATION_30DAY);
             });
         });
     });
