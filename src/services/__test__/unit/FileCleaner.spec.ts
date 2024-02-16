@@ -4,7 +4,7 @@ import {FileRepo} from "../../../db/repo/FileRepo.js";
 import {jest} from '@jest/globals';
 import {ScheduleService} from "../../ScheduleService.js";
 import {FileService} from "../../FileService.js";
-import {initDotEnv, setUpDataSource} from "../../../__test__/testUtils.spec.js";
+import {envs, initDotEnv, setUpDataSource} from "../../../__test__/testUtils.spec.js";
 import {
     fileUploadModelMock500MB,
     fileUploadModelMockCustomExpire,
@@ -28,6 +28,7 @@ describe("unit tests", () => {
                     use: mockScheduleService
                 }
             ],
+            envs
         });
         setUpDataSource();
         initDotEnv();

@@ -38,3 +38,10 @@ export function initDotEnv(): void {
         path: path.resolve(process.cwd(), '.test.env')
     });
 }
+
+export const envs = {
+    ...process.env,
+    ...dotenv.config({
+        path: path.resolve(process.cwd(), '.test.env')
+    }).parsed
+};
