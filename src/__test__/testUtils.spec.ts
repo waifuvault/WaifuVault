@@ -1,7 +1,7 @@
 import {DataSource} from "typeorm";
 import {PlatformTest} from "@tsed/common";
 import {SQLITE_DATA_SOURCE} from "../model/di/tokens.js";
-import {jest} from "@jest/globals";
+import { vi } from 'vitest';
 import dotenv from 'dotenv';
 import path from "path";
 
@@ -21,8 +21,8 @@ export function setUpDataSource(ds?: DataSource): void {
     } else {
         // mock the datasource
         const mockDS = {
-            initialize: jest.fn(),
-            getRepository: jest.fn()
+            initialize: vi.fn(),
+            getRepository: vi.fn()
         };
 
         PlatformTest.injector.addProvider(SQLITE_DATA_SOURCE, {

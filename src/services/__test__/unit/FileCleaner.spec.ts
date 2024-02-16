@@ -1,7 +1,7 @@
 import {PlatformTest} from "@tsed/common";
 import {FileCleaner} from "../../FileCleaner.js";
 import {FileRepo} from "../../../db/repo/FileRepo.js";
-import {jest} from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {ScheduleService} from "../../ScheduleService.js";
 import {FileService} from "../../FileService.js";
 import {envs, initDotEnv, setUpDataSource} from "../../../__test__/testUtils.spec.js";
@@ -18,7 +18,7 @@ describe("unit tests", () => {
     beforeEach(() => {
 
         const mockScheduleService = {
-            scheduleJobInterval: jest.fn()
+            scheduleJobInterval: vi.fn()
         };
 
         PlatformTest.create({
@@ -47,8 +47,8 @@ describe("unit tests", () => {
             fileCleaner: FileCleaner
         ) => {
             // given
-            jest.spyOn(fileRepo, "getAllEntries").mockResolvedValue([fileUploadModelMockExpired2]);
-            const processDeleteSpy = jest.spyOn(fileService, "processDelete").mockResolvedValue(true);
+            vi.spyOn(fileRepo, "getAllEntries").mockResolvedValue([fileUploadModelMockExpired2]);
+            const processDeleteSpy = vi.spyOn(fileService, "processDelete").mockResolvedValue(true);
 
             // when
             await fileCleaner.processFiles();
@@ -67,8 +67,8 @@ describe("unit tests", () => {
             fileCleaner: FileCleaner
         ) => {
             // given
-            jest.spyOn(fileRepo, "getAllEntries").mockResolvedValue([fileUploadModelMock500MB, fileUploadModelMockCustomExpire]);
-            const processDeleteSpy = jest.spyOn(fileService, "processDelete");
+            vi.spyOn(fileRepo, "getAllEntries").mockResolvedValue([fileUploadModelMock500MB, fileUploadModelMockCustomExpire]);
+            const processDeleteSpy = vi.spyOn(fileService, "processDelete");
 
             // when
             await fileCleaner.processFiles();
@@ -87,8 +87,8 @@ describe("unit tests", () => {
             fileCleaner: FileCleaner
         ) => {
             // given
-            jest.spyOn(fileRepo, "getAllEntries").mockResolvedValue(getAllFileUploadMocks());
-            const processDeleteSpy = jest.spyOn(fileService, "processDelete").mockResolvedValue(true);
+            vi.spyOn(fileRepo, "getAllEntries").mockResolvedValue(getAllFileUploadMocks());
+            const processDeleteSpy = vi.spyOn(fileService, "processDelete").mockResolvedValue(true);
 
             // when
             await fileCleaner.processFiles();

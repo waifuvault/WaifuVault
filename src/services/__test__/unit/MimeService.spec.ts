@@ -1,4 +1,4 @@
-import {jest} from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {PlatformTest} from "@tsed/common";
 import {envs, initDotEnv, setUpDataSource} from "../../../__test__/testUtils.spec.js";
 import {MimeService} from "../../MimeService.js";
@@ -6,19 +6,22 @@ import {MimeService} from "../../MimeService.js";
 // attempting to mock fileTypeFromFile
 import * as fileType from "file-type";
 
+/*
 // this just gets the error "TypeError: Cannot assign to read only property 'fileTypeFromFile' of object '[object Module]'"
 jest.spyOn(fileType, 'fileTypeFromFile').mockResolvedValue({
     mime: "application/avro",
     ext: "exe"
 });
+*/
 
 // this just does nothing inside of `MimeService` the function is still the real one
-jest.mock("file-type", () => {
+vi.mock("file-type", () => {
     return {
-        fileTypeFromFile: jest.fn(() => true)
+        fileTypeFromFile: vi.fn(() => true)
     };
 });
 
+/*
 // this does fuck all
 jest.mock("file-type", () => {
     const os = jest.requireActual('file-type');
@@ -27,7 +30,7 @@ jest.mock("file-type", () => {
         fileTypeFromFile: jest.fn(() => true)
     };
 });
-
+*/
 // i can not figure out how to mock 3rd-paty modules inside of modules
 
 describe("unit tests", () => {
