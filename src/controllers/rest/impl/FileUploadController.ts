@@ -2,22 +2,23 @@ import {Controller, Inject} from "@tsed/di";
 import {Delete, Description, Example, Examples, Get, Name, Put, Returns, Summary} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
-import {BadRequest, Forbidden, UnsupportedMediaType} from "@tsed/exceptions";
+import {BadRequest, UnsupportedMediaType} from "@tsed/exceptions";
 import {MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res} from "@tsed/common";
 import {BodyParams} from "@tsed/platform-params";
 import {FileEngine} from "../../../engine/impl/FileEngine.js";
 import {FileService} from "../../../services/FileService.js";
 import {NetworkUtils} from "../../../utils/Utils.js";
+import {BaseRestController} from "../BaseRestController.js";
 
 @Controller("/")
-@Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
 @Description("This is the API documentation for uploading and sharing files.")
 @Name("File Uploader")
-export class FileUploadController {
+export class FileUploadController extends BaseRestController {
     public constructor(
         @Inject() private fileEngine: FileEngine,
         @Inject() private fileUploadService: FileService
     ) {
+        super();
     }
 
     @Put()
@@ -49,7 +50,7 @@ export class FileUploadController {
                               }
                           })
                           @Description("a string containing a number and a letter of `m` for mins, `h` for hours, `d` for days. For example: `1h` would be 1 hour and `1d` would be 1 day. leave this blank if you want the file to exist according to the retention policy")
-                              expires?: string,
+                                  customExpiry?: string,
                           @QueryParams("hide_filename")
                           @Description("if set to true, then your filename will not appear in the URL. if false, then it will appear in the URL. defaults to false")
                               hideFileName?: boolean,
@@ -67,10 +68,10 @@ export class FileUploadController {
         if (!file && !url) {
             throw new BadRequest("Please supply a file or url");
         }
-        if (expires) {
+        if (customExpiry) {
             const checkExpires = /[mhd]/;
-            expires = expires.toLowerCase().replace(/ /g, '');
-            if (!checkExpires.test(expires)) {
+            customExpiry = customExpiry.toLowerCase().replace(/ /g, '');
+            if (!checkExpires.test(customExpiry)) {
                 throw new BadRequest("bad expire string format");
             }
         }
@@ -78,7 +79,7 @@ export class FileUploadController {
         const [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
             ip,
             url || file!,
-            expires,
+            customExpiry,
             hideFileName,
             password
         );
@@ -119,7 +120,7 @@ export class FileUploadController {
         if (!token) {
             throw new BadRequest("no token provided");
         }
-        const deleted = await this.fileUploadService.processDelete(token);
+        const deleted = await this.fileUploadService.processDelete([token]);
         if (!deleted) {
             throw new BadRequest(`Unknown token ${token}`);
         }

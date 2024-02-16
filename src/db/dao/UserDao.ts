@@ -12,16 +12,16 @@ export class UserDao extends AbstractDao<UserModel> {
     }
 
     public getUser(email: string, transaction?: EntityManager): Promise<UserModel | null> {
-        return this.getEntityManager(transaction).findOneBy({
+        return this.getRepository(transaction).findOneBy({
             email
         });
     }
 
     public getAllUsers(transaction?: EntityManager): Promise<UserModel[]> {
-        return this.getEntityManager(transaction).find();
+        return this.getRepository(transaction).find();
     }
 
     public saveOrUpdateUser(userModel: UserModel, transaction?: EntityManager): Promise<UserModel> {
-        return this.getEntityManager(transaction).save(userModel);
+        return this.getRepository(transaction).save(userModel);
     }
 }

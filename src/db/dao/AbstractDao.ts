@@ -13,7 +13,7 @@ export abstract class AbstractDao<T extends ObjectLiteral> {
         return this.ds;
     }
 
-    protected getEntityManager(transaction?: EntityManager): Dao<T> {
+    protected getRepository(transaction?: EntityManager): Dao<T> {
         return transaction ? transaction.getRepository(this.dao.target) : this.dao;
     }
 

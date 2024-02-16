@@ -4,9 +4,7 @@ import {HeaderParams, PathParams, Res} from "@tsed/common";
 import path, * as Path from "path";
 import {filesDir} from "../../utils/Utils.js";
 import {FileService} from "../../services/FileService.js";
-import {FileEngine} from "../../engine/impl/FileEngine.js";
-import {NotFound} from "@tsed/exceptions";
-import {sanitize} from "sanitize-filename-ts";
+import {FileEngine} from "../../engine/impl/index.js";
 import {FileProtectedException} from "../../model/exceptions/FileProtectedException.js";
 
 @Hidden()
@@ -29,22 +27,8 @@ export class FileServerController {
         @PathParams("file") requestedFileName?: string
     ): Promise<void> {
         await this.hasPassword(resource, password);
-        if (requestedFileName) {
-            // for route `/:t/:file(*)`
-            // ensure filename Matches
-            const entry = await this.fileService.getEntry(resource, requestedFileName, password);
-            const file = `${this.filesDirRel}/${entry.fullFileNameOnSystem}`;
-            return this.sendFile(file, res);
-        }
-        // for route `/:file(*)`
-        const sanitized = sanitize(resource);
-        const file = `${this.filesDirRel}/${sanitized}`;
-        const exists = await this.fileEngine.fileExists(file);
-        if (!exists) {
-            throw new NotFound(`Resource ${resource} is not found`);
-        }
-        const resourceWithoutExt = Path.parse(resource).name;
-        await this.fileService.validatePassword(resourceWithoutExt, password);
+        const entry = await this.fileService.getEntry(resource, requestedFileName, password);
+        const file = `${this.filesDirRel}/${entry.fullFileNameOnSystem}`;
         await this.sendFile(file, res);
     }
 

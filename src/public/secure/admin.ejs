@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head prefix="og: https://ogp.me/ns#">
+    <%- include('../snippets/head.ejs'); %>
+    <link href="assets/custom/css/index.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.0/b-3.0.0/b-colvis-3.0.0/fh-4.0.0/r-3.0.0/sc-2.4.0/sl-2.0.0/sr-1.4.0/datatables.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/custom/css/spinWheel.css">
+    <style>
+        table.dataTable td.dt-type-numeric, table.dataTable th.dt-type-numeric {
+            text-align: initial;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div id="overlay" class="hidden">
+        <div id="loader" class="hidden"></div>
+    </div>
+</div>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-primary mb-3">
+                <div class="card-header">Current Entries</div>
+                <div class="card-body">
+                    <table class="table submissionsTable datatables display nowrap" data-type="entries">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">file Name on system</th>
+                            <th scope="col">file Extension</th>
+                            <th scope="col">file Size</th>
+                            <th scope="col">Created At</th>
+                            <th scope="col">expires</th>
+                            <th scope="col">mediaType</th>
+                            <th scope="col">ip</th>
+                            <th scope="col">original FileName</th>
+                            <th scope="col">url</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-primary mb-3">
+                <div class="card-header">Blocked Ips</div>
+                <div class="card-body">
+                    <table class="table blockedIpsTable datatables display nowrap" data-type="ips">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">ip</th>
+                            <th scope="col">Blocked On</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <form method="get" action="/rest/auth/logout" class="d-inline">
+                    <button class="btn btn-outline-primary" type="submit">Logout</button>
+                </form>
+                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal"
+                        data-bs-target="#changeDetailsModel">Change Details
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--modals-->
+<div id="modals">
+    <div class="modal fade" id="changeDetailsModel" tabindex="-1" aria-labelledby="changeDetailsModelLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="changeDetailsModelLabel">Change account details</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="changeDetailsModelInfoContent">
+                    <div class="mb-3">
+                        <label for="changeEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" name="email" id="changeEmail" value="<%- user.email; -%>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="changePassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" name="password" id="changePassword">
+                    </div>
+                    <div class="mb-3">
+                        <label for="changePasswordRepeat" class="form-label">Repeat Password</label>
+                        <input type="password" class="form-control" id="changePasswordRepeat">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" id="changeDetailsModelOk">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.0/b-3.0.0/b-colvis-3.0.0/fh-4.0.0/r-3.0.0/sc-2.4.0/sl-2.0.0/sr-1.4.0/datatables.min.js"></script>
+<%- include('../snippets/scripts.ejs'); %>
+<script type="text/javascript" src="/assets/custom/js/spinWheel.js"></script>
+<script>
+    Site.loadPage(async site => {
+        const dtMap = new Map();
+
+        function loadDt() {
+
+            function sizeAsMB() {
+                return function (data, type, row) {
+                    if (type === 'display') {
+                        const sizeKB = Math.floor(data / 1024);
+                        const sizeMB = Math.floor(sizeKB / 1024);
+                        if (data < 1024) {
+                            return `${data} B`;
+                        }
+                        if (sizeKB < 1024) {
+                            return `${sizeKB} KB`;
+                        }
+                        return `${sizeMB} MB`;
+                    }
+                    return data;
+                };
+            }
+
+            function renderNullField() {
+                return function (data, type, row) {
+                    return data ?? "N/A";
+                };
+            }
+
+            function colouredIP() {
+                return function (data, type, row) {
+                    if (type === 'display') {
+                        if (row.ipBanned) {
+                            return `<span class="text-danger">${data}</span>`;
+                        }
+                    }
+                    return data;
+                }
+            }
+
+            function getDataMapping(type) {
+                switch (type) {
+                    case "ips":
+                        return [
+                            {data: 'id'},
+                            {data: 'ip'},
+                            {data: 'createdAt', render: DataTable.render.datetime(), className: "text-start"},
+                        ];
+                    case "entries":
+                        return [
+                            {data: 'id'},
+                            {data: 'fileName'},
+                            {data: 'fileExtension'},
+                            {data: 'fileSize', render: sizeAsMB()},
+                            {data: 'createdAt', render: DataTable.render.datetime()},
+                            {data: 'expires'},
+                            {data: 'mediaType', render: renderNullField()},
+                            {data: 'ip', render: colouredIP()},
+                            {data: 'originalFileName'},
+                            {data: 'url'},
+                        ];
+                }
+            }
+
+            async function unBanIps(ips) {
+                Site.loading(true);
+                let response;
+                try {
+                    response = await fetch(`${baseUrl}/admin/unblockIps`, {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(ips)
+                    });
+                } catch (e) {
+                    alert(e.message);
+                    return false;
+                } finally {
+                    Site.loading(false);
+                }
+                const responseStatus = response.status;
+                const responseJson = await response.json();
+                if (responseStatus !== 200) {
+                    alert(responseJson.message);
+                    throw new Error(responseJson.message);
+                }
+            }
+
+            async function banIp(ip, removeRelatedData = false) {
+                Site.loading(true);
+                let response;
+                try {
+                    response = await fetch(`${baseUrl}/admin/blockIp?removeRelatedData=${removeRelatedData}`, {
+                        method: "POST",
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams({ip})
+                    });
+                } catch (e) {
+                    alert(e.message);
+                    return false;
+                } finally {
+                    Site.loading(false);
+                }
+                const responseStatus = response.status;
+                const responseJson = await response.json();
+                if (responseStatus !== 200) {
+                    alert(responseJson.message);
+                    throw new Error(responseJson.message);
+                }
+            }
+
+            async function deleteEntry(ids) {
+                Site.loading(true);
+                let response;
+                try {
+                    response = await fetch(`${baseUrl}/admin/deleteEntries`, {
+                        method: "DELETE",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(ids)
+                    });
+                } catch (e) {
+                    alert(e.message);
+                    return false;
+                } finally {
+                    Site.loading(false);
+                }
+                const responseStatus = response.status;
+                const responseJson = await response.json();
+                if (responseStatus !== 200) {
+                    alert(responseJson.message);
+                    throw new Error(responseJson.message);
+                }
+            }
+
+            function getButtons(type) {
+                const buttons = []
+                if (type === "entries") {
+                    buttons.push({
+                            extend: 'selected',
+                            text: 'Delete file',
+                            attr: {id: 'deleteFilesButton'},
+                            action: async (e, dt) => {
+                                const accepted = confirm("Are you sure you want to delete these entries?, the files will also be deleted");
+                                if (!accepted) {
+                                    return;
+                                }
+                                const idArr = [];
+                                dt.rows({selected: true}).every(function () {
+                                    const data = this.data();
+                                    idArr.push(data.id);
+                                });
+                                await deleteEntry(idArr);
+                                dt.rows({selected: true}).remove().draw(false);
+                            }
+                        },
+                        {
+                            extend: 'selectedSingle',
+                            text: 'Ban IP',
+                            attr: {id: 'banIpButton'},
+                            action: async (e, dt) => {
+                                const accepted = confirm("Are you sure you want to ban this IP?");
+                                if (!accepted) {
+                                    return;
+                                }
+                                const deleteRelatedData = confirm("Do you want to also delete all related data?\nPress 'Cancel' for no and 'Ok' for Yes");
+                                const selectedRow = dt.row({selected: true}).data();
+                                const ip = selectedRow.ip;
+                                await banIp(ip, deleteRelatedData);
+                                reloadTable(["entries", "ips"]);
+                            }
+                        },
+                        {
+                            extend: 'selectedSingle',
+                            text: 'Download file',
+                            attr: {id: 'downloadFileButton'},
+                            action: async (e, dt) => {
+                                const selectedRow = dt.row({selected: true}).data();
+                                const url = selectedRow.url;
+                                window.open(url, "_blank");
+                            }
+                        })
+                } else if (type === "ips") {
+                    buttons.push({
+                        extend: 'selected',
+                        text: 'Un-ban',
+                        attr: {id: 'downloadFileButton'},
+                        action: async (e, dt) => {
+                            const accepted = confirm("Are you sure you want to remove the ban for the selected ip(s)?");
+                            if (!accepted) {
+                                return;
+                            }
+                            const ipArr = [];
+                            dt.rows({selected: true}).every(function () {
+                                const data = this.data();
+                                ipArr.push(data.ip);
+                            });
+                            await unBanIps(ipArr);
+                            dt.rows({selected: true}).remove().draw(false);
+                            reloadTable(["entries"]);
+                        }
+                    })
+                }
+                return buttons;
+            }
+
+            function reloadTable(types) {
+                for (const type of types) {
+                    dtMap.get(type)?.ajax.reload();
+                }
+            }
+
+            function initSelectListeners(type) {
+                function disableButtonsOnSelection(value, buttons) {
+                    if (value) {
+                        buttons.disable();
+                    } else {
+                        buttons.enable();
+                    }
+                }
+
+                const table = dtMap.get(type);
+                if (type === "entries") {
+                    table.on('select', function (e, dt, type, indexes) {
+                        if (type === 'row') {
+                            const data = table
+                                .rows(indexes)
+                                .data()
+                                .pluck('ipBanned');
+                            disableButtonsOnSelection(data.get(0), table.buttons(['#banIpButton']))
+                        }
+                    });
+                }
+            }
+
+            $('.datatables').each(async function () {
+                const el = $(this)[0];
+                const type = el.dataset.type;
+                let url = null;
+                switch (type) {
+                    case "ips":
+                        url = `${baseUrl}/admin/blockedIps`;
+                        break;
+                    case "entries":
+                        url = `${baseUrl}/admin/datatablesEntries`;
+                }
+                const dtOpts = {
+                    layout: {
+                        top2Start: 'buttons',
+                        topStart: {
+                            pageLength: {
+                                menu: [10, 25, 50, 100]
+                            }
+                        },
+                        topEnd: {
+                            search: {
+                                placeholder: 'Type search here'
+                            }
+                        },
+                        bottomEnd: "paging"
+                    },
+                    stateSave: true,
+                    paging: true,
+                    fixedHeader: {
+                        header: true
+                    },
+                    responsive: true,
+                    scrollY: 600,
+                    scrollX: false,
+                    scrollCollapse: true,
+                    select: {
+                        style: 'multi'
+                    },
+                    columns: getDataMapping(type),
+                    buttons: getButtons(type)
+                };
+                if (type === "entries") {
+                    dtOpts.ajax = url;
+                    dtOpts.processing = true;
+                    dtOpts.serverSide = true;
+                    dtOpts.language = {
+                        loadingRecords: 'No data available'
+                    };
+                } else if (type === "ips") {
+                    dtOpts.ajax = {
+                        url,
+                        dataSrc: ""
+                    };
+                }
+                site.loading(true);
+                const table = new DataTable(el, dtOpts);
+                site.loading(false);
+                if (dtMap.has(type)) {
+                    dtMap.get(type).push(table);
+                } else {
+                    dtMap.set(type, table);
+                }
+                initSelectListeners(type);
+            });
+        }
+
+        function loadEventListeners() {
+            ((() => {
+                document.getElementById("changeDetailsModelOk").addEventListener("click", async e => {
+                    const formData = new URLSearchParams();
+                    const email = document.getElementById("changeEmail").value;
+                    const password = document.getElementById("changePassword").value;
+                    const repeatPassword = document.getElementById("changePasswordRepeat").value;
+                    if (!email) {
+                        return alert("Please specify email.");
+                    }
+                    if (!password) {
+                        return alert("password must not be blank.");
+                    }
+                    if (password !== repeatPassword) {
+                        return alert("Passwords do not match.");
+                    }
+                    formData.append("email", email);
+                    formData.append("password", password);
+                    site.loading(true);
+                    try {
+                        await fetch(`${baseUrl}/auth/changeDetails`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                    } catch (e) {
+                        alert(e.message);
+                        return;
+                    } finally {
+                        Site.loading(false);
+                    }
+                    alert("User details changed successfully.");
+                    changeDetailsModal.hide();
+                });
+            })());
+        }
+
+        loadDt();
+        loadEventListeners();
+    });
+</script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 import {Exception} from "@tsed/exceptions";
+import {FileUploadModel} from "../model/db/FileUpload.model.js";
 
 export type HttpErrorRenderObj<T extends Exception> = {
     status: number,
@@ -20,3 +21,35 @@ export type AvScanResult = {
     errorCode?: number
     additionalMessage?: string
 }
+
+export type ReCAPTCHAResponse = {
+    "success": boolean,
+    "challenge_ts": string,
+    "hostname": string,
+    "error-codes": string[]
+};
+
+export type DatatableOrder = {
+    "column": number,
+    "dir": string,
+    "name": string,
+};
+
+export type DatatableSearch = {
+    "value": string,
+    "regex": boolean
+};
+
+export type DatatableColumn = {
+    "data": string,
+    "name": string,
+    "searchable": boolean,
+    "orderable": boolean,
+    "search": DatatableSearch
+}
+
+export type IpBlockedAwareFileEntry = {
+    entry: FileUploadModel,
+    ipBlocked: boolean
+}
+
