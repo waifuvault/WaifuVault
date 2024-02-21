@@ -2,7 +2,7 @@ import {Constant, Inject, Service} from "@tsed/di";
 import {FileRepo} from "../db/repo/FileRepo.js";
 import type {PlatformMulterFile} from "@tsed/common";
 import {FileUploadModel} from "../model/db/FileUpload.model.js";
-import {FileEngine} from "../engine/impl/FileEngine.js";
+import {FileEngine} from "../engine/impl/index.js";
 import {FileUrlService} from "./FileUrlService.js";
 import {MimeService} from "./MimeService.js";
 import {Builder, type IBuilder} from "builder-pattern";
@@ -132,7 +132,7 @@ export class FileService {
         if (!entry) {
             return false;
         }
-        return !!entry.settings?.password;
+        return this.userService.getLoggedInUser() ? false : !!entry.settings?.password;
     }
 
 
