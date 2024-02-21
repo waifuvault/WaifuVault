@@ -57,7 +57,13 @@ Optional Settings
     npm run start:prod
 ```
 
-## Admin setup
+## Admin Feature
+
+This application comes with a useful admin panel that will allow you to control the files that are uploaded, and to 
+provide security control with the ability to ban abusive IPs.
+
+
+### Setup
 
 On first startup you need to pay attention to the logs printed to screen - it will provide you with a username and 
 password that can be used to log in to the admin.  This is random and only provided once.  The line looks like this:
@@ -76,10 +82,35 @@ and password.
 > **Note Well** It is recommended you change the default username and password at first startup.  The system will not 
 > provide the default password again.
 
-## Admin
+### Usage
 
 Once in the admin, you can see what files have been uploaded and sort them by any of the available columns.
 You can also ban and unban IP addresses from here, and download any files that have been uploaded.
+
+### File Operations
+Delete a file, by selecting it and pressing Delete File.  You will be asked if you are sure.
+
+![Deleting Files](docs/images/deletefile.png)
+
+Download a file, by selecting it and pressing Download File.
+
+![Downloading Files](docs/images/downloadfile.png)
+
+### IP Operations
+Ban an IP by selecting the file and pressing Ban IP, then confirming you want to ban it and if you want to delete
+related files.
+
+![Banning IP Address](docs/images/banipdelete.png)
+
+Unban an IP by selecting the IP in the lower table and pressing Un Ban, then confirming you want to unban.
+
+![Unban IP Address](docs/images/unbanip.png)
+
+### Account Operations
+
+Click on Change Details to alter the login information for your account.
+
+![Change Account Details](docs/images/changedetails.png)
 
 ## REST Endpoints
 All application functionality is provided by a set of REST endpoints.
