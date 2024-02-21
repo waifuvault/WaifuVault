@@ -6,7 +6,7 @@
       "compress": {
         "unused": true
       },
-      "mangle": true
+      "mangle": false
     },
     "target": "es2021",
     "parser": {
