@@ -6,7 +6,9 @@
       "compress": {
         "unused": true
       },
-      "mangle": true
+      "mangle": {
+        "topLevel": false
+      }
     },
     "target": "es2021",
     "parser": {
