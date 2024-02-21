@@ -11,6 +11,7 @@ import "./engine/impl/index.js";
 import * as rest from "./controllers/rest/index.js";
 import "./services/FileCleaner.js";
 import * as views from "./controllers/views/index.js";
+import * as adminViews from './controllers/secure/index.js';
 import {FileServerController} from "./controllers/serve/FileServerController.js";
 // import * as secureViews from "./controllers/secureViews";
 // custom index imports end
@@ -77,6 +78,9 @@ const opts: Partial<TsED.Configuration> = {
         ],
         "/f": [
             FileServerController
+        ],
+        "/admin": [
+            ...Object.values(adminViews)
         ]
     },
     statics: {
@@ -130,7 +134,7 @@ const opts: Partial<TsED.Configuration> = {
             message: "You have exceeded your 1 request a second.",
             standardHeaders: true,
             skip: (request) => {
-                return !request.path.includes("/rest");
+                return request.path.includes("/admin") ? true : !request.path.includes("/rest");
             },
             keyGenerator: (request) => {
                 return NetworkUtils.getIp(request);

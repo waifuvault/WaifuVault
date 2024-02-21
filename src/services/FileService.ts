@@ -18,6 +18,7 @@ import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import argon2 from "argon2";
 import {AvManager} from "../manager/AvManager.js";
+import {UserService} from "./UserService.js";
 
 @Service()
 export class FileService {
@@ -28,7 +29,8 @@ export class FileService {
         @Inject() private fileUrlService: FileUrlService,
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
-        @Inject() private avManager: AvManager
+        @Inject() private avManager: AvManager,
+        @Inject() private userService: UserService
     ) {
     }
 
@@ -38,7 +40,7 @@ export class FileService {
     public async processUpload(
         ip: string,
         source: XOR<PlatformMulterFile, string>,
-        expires?: string,
+        customExpiry?: string,
         maskFilename = false,
         password?: string
     ): Promise<[FileUploadModelResponse, boolean]> {
@@ -51,13 +53,19 @@ export class FileService {
         uploadEntry.fileName(path.parse(resourcePath).name);
         await this.scanFile(resourcePath);
         await this.checkMime(resourcePath);
+        const mediaType = await this.mimeService.findMimeType(resourcePath);
+        uploadEntry.mediaType(mediaType);
         const fileSize = await this.fileEngine.getFileSize(path.basename(resourcePath));
         uploadEntry.fileSize(fileSize);
         const checksum = await this.getFileHash(resourcePath);
 
         const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
         if (existingFileModel) {
-            return [FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true), true];
+            if (existingFileModel.hasExpired) {
+                await this.processDelete([existingFileModel.token]);
+            } else {
+                return [FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true), true];
+            }
         }
 
         uploadEntry.settings(await this.buildEntrySettings(maskFilename, password));
@@ -68,8 +76,10 @@ export class FileService {
         }
         uploadEntry.originalFileName(originalFileName);
         uploadEntry.checksum(checksum);
-        if (expires) {
-            this.calculateCustomExpires(uploadEntry, expires);
+        if (customExpiry) {
+            this.calculateCustomExpires(uploadEntry, customExpiry);
+        } else {
+            uploadEntry.expires(FileUtils.getExpiresBySize(fileSize));
         }
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
 
@@ -98,7 +108,9 @@ export class FileService {
         const existingFileModels = await this.repo.getEntriesFromChecksum(checksum);
         const existingFileModel = existingFileModels.find(m => m.ip === ip);
         if (existingFileModel) {
-            this.deleteUploadedFile(resourcePath);
+            if (!existingFileModel.hasExpired) {
+                await this.deleteUploadedFile(resourcePath);
+            }
             return existingFileModel;
         }
         return null;
@@ -124,7 +136,7 @@ export class FileService {
     }
 
 
-    public async validatePassword(resource: string, password?: string): Promise<void> {
+    private async validatePassword(resource: string, password?: string): Promise<void> {
         const entry = await this.repo.getEntryFileName(resource);
         if (!entry || !entry.settings?.password || !password) {
             return;
@@ -136,9 +148,12 @@ export class FileService {
         }
     }
 
-    public async getEntry(fileNameOnSystem: string, requestedFileName: string, password?: string): Promise<FileUploadModel> {
-        const entry = await this.repo.getEntryFileName(fileNameOnSystem);
-        if (entry === null || entry.originalFileName !== requestedFileName) {
+    public async getEntry(fileNameOnSystem: string, requestedFileName?: string, password?: string): Promise<FileUploadModel> {
+        const entry = await this.repo.getEntryFileName(path.parse(fileNameOnSystem).name);
+        if (this.userService.getLoggedInUser() && entry) {
+            return entry;
+        }
+        if (entry === null || requestedFileName && entry.originalFileName !== requestedFileName) {
             throw new NotFound(`resource ${requestedFileName} is not found`);
         }
         if (entry.settings?.password) {
@@ -147,47 +162,63 @@ export class FileService {
             }
             await this.validatePassword(fileNameOnSystem, password);
         }
+        if (entry.hasExpired) {
+            throw new NotFound(`Resource ${requestedFileName ?? fileNameOnSystem} is not found`);
+        }
         return entry;
     }
 
     public async getFileInfo(token: string, humanReadable: boolean): Promise<FileUploadModelResponse> {
-        const entry = await this.repo.getEntry(token);
-        if (!entry) {
+        const foundEntries = await this.repo.getEntry([token]);
+        if (foundEntries.length !== 1) {
+            throw new BadRequest(`Unknown token ${token}`);
+        }
+        const entry = foundEntries[0];
+        if (entry.hasExpired) {
+            await this.processDelete([entry.token]);
             throw new BadRequest(`Unknown token ${token}`);
         }
         return FileUploadModelResponse.fromModel(entry, this.baseUrl, humanReadable);
     }
 
-    public calculateCustomExpires(entry: IBuilder<FileUploadModel>, expires: string): void {
+    private calculateCustomExpires(entry: IBuilder<FileUploadModel>, expires: string): void {
         let value: number = ObjectUtils.getNumber(expires);
-        let timefactor: TIME_UNIT = TIME_UNIT.minutes;
+        let timeFactor: TIME_UNIT = TIME_UNIT.minutes;
 
         if (value === 0) {
             throw new BadRequest(`Unable to parse expire value from ${expires}`);
         }
         if (expires.includes('d')) {
-            timefactor = TIME_UNIT.days;
+            timeFactor = TIME_UNIT.days;
         } else if (expires.includes('h')) {
-            timefactor = TIME_UNIT.hours;
+            timeFactor = TIME_UNIT.hours;
         }
-        value = ObjectUtils.convertToMilli(value, timefactor);
+        value = ObjectUtils.convertToMilli(value, timeFactor);
         const maxExp: number = FileUtils.getTimeLeftBySize(entry.fileSize());
 
         if (value > maxExp) {
             throw new BadRequest(`Cannot extend time remaining beyond ${ObjectUtils.timeToHuman(maxExp)}`);
         }
-        entry.customExpires(value);
+        entry.expires(Date.now() + value);
     }
 
-    public async processDelete(token: string): Promise<boolean> {
+    public async processDelete(tokens: string[]): Promise<boolean> {
         let deleted = false;
-        const entry = await this.repo.getEntry(token);
-        if (!entry) {
+        const entries = await this.repo.getEntry(tokens);
+        if (entries.length === 0) {
             return false;
         }
+
+        const fileDeletePArr = entries.map(entry => {
+            if (entry.hasExpired) {
+                this.fileEngine.deleteFile(entry.fullFileNameOnSystem, false);
+                return Promise.reject("Entry does not exist");
+            }
+            this.fileEngine.deleteFile(entry.fullFileNameOnSystem, false);
+        });
         try {
-            await this.fileEngine.deleteFile(entry.fullFileNameOnSystem, false);
-            deleted = await this.repo.deleteEntry(token);
+            await Promise.all(fileDeletePArr);
+            deleted = await this.repo.deleteEntries(tokens);
         } catch (e) {
             this.logger.error(e);
             return false;

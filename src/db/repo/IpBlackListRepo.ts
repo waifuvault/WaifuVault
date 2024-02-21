@@ -7,15 +7,23 @@ import {Builder} from "builder-pattern";
 export class IpBlackListRepo {
 
     public constructor(
-        @Inject() private fileDao: IpBlackListDao
+        @Inject() private ipBlackListDao: IpBlackListDao
     ) {
     }
 
     public addIpBlock(ip: string): Promise<IpBlackListModel> {
-        return this.fileDao.addIpBlock(Builder(IpBlackListModel).ip(ip).build());
+        return this.ipBlackListDao.addIpBlock(Builder(IpBlackListModel).ip(ip).build());
     }
 
     public isIpBlocked(ip: string): Promise<boolean> {
-        return this.fileDao.isIpBlocked(ip);
+        return this.ipBlackListDao.isIpBlocked(ip);
+    }
+
+    public removeBlockedIps(ips: string[]): Promise<boolean> {
+        return this.ipBlackListDao.removeBlockedIps(ips);
+    }
+
+    public getAllBlockedIps(): Promise<IpBlackListModel[]> {
+        return this.ipBlackListDao.getAllBlockedIps();
     }
 }

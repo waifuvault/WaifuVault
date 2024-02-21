@@ -89,16 +89,20 @@ export class FileUtils {
     }
 
     public static getTImeLeft(entry: FileUploadModel): number {
-        const maxLifespan: number = this.getTimeLeftBySize(entry.fileSize);
-        const customLifespan: number = entry.customExpires ?? 0;
-        const currentEpoch: number = Date.now();
-        const maxExpiration: number = (customLifespan != 0 ? customLifespan : maxLifespan) + entry.createdAt.getTime();
-        return maxExpiration - currentEpoch;
+        return entry.expires - Date.now();
     }
 
     public static getTimeLeftBySize(filesize: number): number {
         const ttl = Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow((filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1), 3));
         return ttl < FileUtils.MIN_EXPIRATION ? FileUtils.MIN_EXPIRATION : ttl;
+    }
+
+    public static getExpiresBySize(filesize: number): number {
+        return Date.now() + this.getTimeLeftBySize(filesize);
+    }
+
+    public static isFileCustomExpire(entry: FileUploadModel): boolean {
+        return FileUtils.getExpiresBySize(entry.fileSize) != entry.expires - entry.createdAt.getTime();
     }
 }
 
@@ -112,7 +116,18 @@ export class NetworkUtils {
         } else {
             ip = req.ip as string;
         }
-        return ip.replace(/:\d+[^:]*$/, '');
+        return this.extractIp(ip);
+    }
+
+    private static extractIp(ipString: string): string {
+        const ipSplit = ipString.split(':');
+        if (ipSplit.length === 1 || (ipSplit.length > 2 && !ipString.includes("]"))) {
+            return ipString;
+        }
+        if (ipSplit.length === 2) {
+            return ipSplit[0];
+        }
+        return ipSplit.slice(0, ipSplit.length - 1).join(':').replace('\[', '').replace('\]', '');
     }
 }
 

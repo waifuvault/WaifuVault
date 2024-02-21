@@ -4,4 +4,5 @@
 
 export * from "./BaseRestController.js";
 export * from "./impl/FileUploadController.js";
+export * from "./impl/security/AdminController.js";
 export * from "./impl/security/PassportCtrl.js";

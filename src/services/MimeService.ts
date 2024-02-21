@@ -22,9 +22,13 @@ export class MimeService {
     }
 
     public async findMimeType(filepath: string): Promise<string | null> {
-        const mimeType = await fileTypeFromFile(filepath);
-        if (mimeType) {
-            return mimeType.mime;
+        try {
+            const mimeType = await fileTypeFromFile(filepath);
+            if (mimeType) {
+                return mimeType.mime;
+            }
+        } catch {
+            return null;
         }
         return mime.getType(filepath);
     }
