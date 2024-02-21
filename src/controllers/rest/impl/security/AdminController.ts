@@ -1,10 +1,10 @@
-import {Delete, Get, Hidden, Post, Required} from "@tsed/schema";
+import {Delete, Get, Hidden, Post, Required, Returns} from "@tsed/schema";
 import {Controller, Inject} from "@tsed/di";
 import {AdminService} from "../../../../services/AdminService.js";
 import {Authorize} from "@tsed/passport";
 import {BodyParams} from "@tsed/platform-params";
 import {PlatformResponse, QueryParams, Res} from "@tsed/common";
-import {NotFound} from "@tsed/exceptions";
+import {Forbidden, NotFound} from "@tsed/exceptions";
 import {BaseRestController} from "../../BaseRestController.js";
 import {StatusCodes} from "http-status-codes";
 import type {DatatableColumn, DatatableOrder, DatatableSearch} from "../../../../utils/typeings.js";
@@ -12,6 +12,7 @@ import type {DatatableColumn, DatatableOrder, DatatableSearch} from "../../../..
 
 @Hidden()
 @Controller("/admin")
+@Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
 export class AdminController extends BaseRestController {
 
     public constructor(
