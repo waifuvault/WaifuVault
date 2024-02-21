@@ -6,8 +6,8 @@ import {BodyParams} from "@tsed/platform-params";
 import {PlatformResponse, QueryParams, Res} from "@tsed/common";
 import {NotFound} from "@tsed/exceptions";
 import {BaseRestController} from "../../BaseRestController.js";
-import {DatatableColumn, DatatableOrder, DatatableSearch} from "../../../../utils/typeings.js";
 import {StatusCodes} from "http-status-codes";
+import type {DatatableColumn, DatatableOrder, DatatableSearch} from "../../../../utils/typeings.js";
 
 
 @Hidden()
