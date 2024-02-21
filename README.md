@@ -57,6 +57,30 @@ Optional Settings
     npm run start:prod
 ```
 
+## Admin setup
+
+On first startup you need to pay attention to the logs printed to screen - it will provide you with a username and 
+password that can be used to log in to the admin.  This is random and only provided once.  The line looks like this:
+
+```batch
+New user created: email: "foo@example.com" password: "password" Please change this upon logging in!
+```
+> **Tip** For first startup run manually, so you can easily find the log file on screen
+
+To get to the admin interface, go to **/login**, where you will provide the 
+email and password from above.
+
+Once you are logged in, you can click on the **Change Details** button, where you can change the email address
+and password.
+
+> **Note Well** It is recommended you change the default username and password at first startup.  The system will not 
+> provide the default password again.
+
+## Admin
+
+Once in the admin, you can see what files have been uploaded and sort them by any of the available columns.
+You can also ban and unban IP addresses from here, and download any files that have been uploaded.
+
 ## REST Endpoints
 All application functionality is provided by a set of REST endpoints.
 
