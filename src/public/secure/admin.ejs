@@ -32,8 +32,8 @@
                             <th scope="col">file Size</th>
                             <th scope="col">Created At</th>
                             <th scope="col">expires</th>
-                            <th scope="col">mediaType</th>
                             <th scope="col">ip</th>
+                            <th scope="col">mediaType</th>
                             <th scope="col">original FileName</th>
                             <th scope="col">url</th>
                         </tr>
@@ -142,9 +142,24 @@
             function colouredIP() {
                 return function (data, type, row) {
                     if (type === 'display') {
-                        if (row.ipBanned) {
-                            return `<span class="text-danger">${data}</span>`;
+                        let sizedData = data;
+                        if (data.length > 15) {
+                            const splitData = data.split(':');
+                            sizedData = `${splitData[0]}: ... :${splitData[splitData.length - 1]}`;
                         }
+                        if (row.ipBanned) {
+                            return `<span class="text-danger">${sizedData}</span>`;
+                        }
+                        return sizedData;
+                    }
+                    return data;
+                }
+            }
+
+            function customDate() {
+                return function (data, type, row) {
+                    if (type === 'display') {
+                        return new Date(Date.parse(data)).toLocaleString();
                     }
                     return data;
                 }
@@ -156,18 +171,18 @@
                         return [
                             {data: 'id'},
                             {data: 'ip'},
-                            {data: 'createdAt', render: DataTable.render.datetime(), className: "text-start"},
+                            {data: 'createdAt', render: customDate()},
                         ];
                     case "entries":
                         return [
                             {data: 'id'},
-                            {data: 'fileName'},
-                            {data: 'fileExtension'},
+                            {data: 'fileName', className: 'col-filename'},
+                            {data: 'fileExtension', className: 'col-fileext'},
                             {data: 'fileSize', render: sizeAsMB()},
-                            {data: 'createdAt', render: DataTable.render.datetime()},
+                            {data: 'createdAt', render: customDate()},
                             {data: 'expires'},
+                            {data: 'ip', render: colouredIP(), className: 'col-ip'},
                             {data: 'mediaType', render: renderNullField()},
-                            {data: 'ip', render: colouredIP()},
                             {data: 'originalFileName'},
                             {data: 'url'},
                         ];
@@ -381,6 +396,7 @@
                         header: true
                     },
                     responsive: true,
+                    autoWidth: false,
                     scrollY: 600,
                     scrollX: false,
                     scrollCollapse: true,
