@@ -6,6 +6,18 @@
     user-select: none;
 }
 
+.col-filename {
+    min-width: 250px;
+}
+
+.col-fileext {
+    min-width: 50px;
+}
+
+.col-ip {
+    max-width: 150px;
+}
+
 @media (min-width: 768px) {
     .bd-placeholder-img-lg {
         font-size: 3.5rem;
