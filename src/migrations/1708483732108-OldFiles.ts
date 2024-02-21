@@ -1,5 +1,5 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
-import {filesDir, FileUtils} from "../utils/Utils.js";
+import {MigrationInterface, QueryRunner} from "typeorm";
+import {FileUtils} from "../utils/Utils.js";
 
 type fileNameResults = {
     id: number;
@@ -9,7 +9,7 @@ type fileNameResults = {
 
 export class OldFiles1708483732108 implements MigrationInterface {
     private stripExtension(filename: string): string {
-        let stripped = filename.split('.');
+        const stripped = filename.split('.');
         stripped.pop();
         return stripped.join('.');
     }
