@@ -9,10 +9,12 @@ import {BaseRestController} from "../../BaseRestController.js";
 import {CustomUserInfoModel} from "../../../../model/auth/CustomUserInfoModel.js";
 import {UserService} from "../../../../services/UserService.js";
 import {ReCAPTCHAMiddleWare} from "../../../../middleware/endpoint/ReCAPTCHAMiddleWare.js";
+import {Forbidden} from "@tsed/exceptions";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
 @Hidden()
+@Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
 export class PassportCtrl extends BaseRestController {
 
     public constructor(

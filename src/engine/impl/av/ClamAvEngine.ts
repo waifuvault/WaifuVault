@@ -25,7 +25,7 @@ export class ClamAvEngine implements IAvEngine {
         const toScan = path.resolve(`${filesDir}/${resource}`);
         const execPromise = promisify(exec);
         try {
-            await execPromise(`"${this.clamPath}/clamdscan" ${toScan}`);
+            await execPromise(`"${this.clamPath}/clamdscan" --fdpass ${toScan} `);
         } catch (e) {
             return {
                 errorCode: e.code,

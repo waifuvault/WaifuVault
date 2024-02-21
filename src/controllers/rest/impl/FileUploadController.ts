@@ -2,10 +2,10 @@ import {Controller, Inject} from "@tsed/di";
 import {Delete, Description, Example, Examples, Get, Name, Put, Returns, Summary} from "@tsed/schema";
 import {StatusCodes} from "http-status-codes";
 import {FileUploadModelResponse} from "../../../model/rest/FileUploadModelResponse.js";
-import {BadRequest, UnsupportedMediaType} from "@tsed/exceptions";
+import {BadRequest, Forbidden, UnsupportedMediaType} from "@tsed/exceptions";
 import {MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res} from "@tsed/common";
 import {BodyParams} from "@tsed/platform-params";
-import {FileEngine} from "../../../engine/impl/FileEngine.js";
+import {FileEngine} from "../../../engine/impl/index.js";
 import {FileService} from "../../../services/FileService.js";
 import {NetworkUtils} from "../../../utils/Utils.js";
 import {BaseRestController} from "../BaseRestController.js";
@@ -13,6 +13,7 @@ import {BaseRestController} from "../BaseRestController.js";
 @Controller("/")
 @Description("This is the API documentation for uploading and sharing files.")
 @Name("File Uploader")
+@Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
 export class FileUploadController extends BaseRestController {
     public constructor(
         @Inject() private fileEngine: FileEngine,
