@@ -6,7 +6,6 @@ The amount of time a given file is hosted for is determined by its size.  Files 
 with the time being shortened on a cubic curve.  This means for files up to about 50% of maximum file size will get 
 close to the maximum time.  Beyond that, the time allotted drops off sharply, with the maximum size file getting 30 days of hosting.
 
-> **Important!** this is currently in BETA and features such as admin pages will be added in the near future
 
 ## Getting started
 
