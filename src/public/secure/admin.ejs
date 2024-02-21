@@ -142,9 +142,15 @@
             function colouredIP() {
                 return function (data, type, row) {
                     if (type === 'display') {
-                        if (row.ipBanned) {
-                            return `<span class="text-danger">${data}</span>`;
+                        let sizedData = data;
+                        if (data.length > 15) {
+                            const splitData = data.split(':');
+                            sizedData = `${splitData[0]}: ... :${splitData[splitData.length - 1]}`;
                         }
+                        if (row.ipBanned) {
+                            return `<span class="text-danger">${sizedData}</span>`;
+                        }
+                        return sizedData;
                     }
                     return data;
                 }
@@ -156,7 +162,7 @@
                         return new Date(Date.parse(data)).toLocaleString();
                     }
                     return data;
-                };
+                }
             }
 
             function getDataMapping(type) {
