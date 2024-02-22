@@ -12,6 +12,7 @@ import * as rest from "./controllers/rest/index.js";
 import "./services/FileCleaner.js";
 import * as views from "./controllers/views/index.js";
 import * as adminViews from './controllers/secure/index.js';
+import * as globalMiddleware from "./middleware/global/index.js";
 import {FileServerController} from "./controllers/serve/FileServerController.js";
 // import * as secureViews from "./controllers/secureViews";
 // custom index imports end
@@ -33,7 +34,6 @@ import compression from "compression";
 import GlobalEnv from "./model/constants/GlobalEnv.js";
 import multer from "multer";
 import path from "path";
-import {IpFilterMiddleware} from "./middleware/global/IpFilterMiddleware.js";
 import rateLimit from "express-rate-limit";
 import {LRUCache} from "lru-cache";
 import {filesDir, FileUtils, NetworkUtils} from "./utils/Utils.js";
@@ -127,7 +127,6 @@ const opts: Partial<TsED.Configuration> = {
             extended: true
         }),
         compression(),
-        IpFilterMiddleware,
         rateLimit({
             windowMs: 1000,
             limit: 1,
@@ -139,7 +138,8 @@ const opts: Partial<TsED.Configuration> = {
             keyGenerator: (request) => {
                 return NetworkUtils.getIp(request);
             }
-        })
+        }),
+        ...Object.values(globalMiddleware)
     ],
     views: {
         root: `${path.dirname(fileURLToPath(import.meta.url))}/public`,
