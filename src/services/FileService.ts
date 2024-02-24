@@ -62,7 +62,7 @@ export class FileService {
         const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
         if (existingFileModel) {
             if (existingFileModel.hasExpired) {
-                await this.processDelete([existingFileModel.token]);
+                await this.processDelete([existingFileModel.token], true);
             } else {
                 return [FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true), true];
             }
@@ -175,7 +175,7 @@ export class FileService {
         }
         const entry = foundEntries[0];
         if (entry.hasExpired) {
-            await this.processDelete([entry.token]);
+            await this.processDelete([entry.token], true);
             throw new BadRequest(`Unknown token ${token}`);
         }
         return FileUploadModelResponse.fromModel(entry, this.baseUrl, humanReadable);
@@ -202,7 +202,7 @@ export class FileService {
         entry.expires(Date.now() + value);
     }
 
-    public async processDelete(tokens: string[]): Promise<boolean> {
+    public async processDelete(tokens: string[], softDelete = false): Promise<boolean> {
         let deleted = false;
         const entries = await this.repo.getEntry(tokens);
         if (entries.length === 0) {
@@ -210,11 +210,11 @@ export class FileService {
         }
 
         const fileDeletePArr = entries.map(entry => {
-            if (entry.hasExpired) {
-                this.fileEngine.deleteFile(entry.fullFileNameOnSystem, false);
+            if (entry.hasExpired && softDelete) {
+                this.fileEngine.deleteFile(entry.fullFileNameOnSystem, true);
                 return Promise.reject("Entry does not exist");
             }
-            this.fileEngine.deleteFile(entry.fullFileNameOnSystem, false);
+            this.fileEngine.deleteFile(entry.fullFileNameOnSystem, true);
         });
         try {
             await Promise.all(fileDeletePArr);
