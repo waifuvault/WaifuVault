@@ -1,6 +1,7 @@
 import {Inject, Service} from "@tsed/di";
 import {FileDao} from "../dao/FileDao.js";
 import {FileUploadModel} from "../../model/db/FileUpload.model.js";
+import * as Path from "path";
 
 @Service()
 export class FileRepo {
@@ -19,7 +20,7 @@ export class FileRepo {
     }
 
     public getEntryFileName(fileName: string): Promise<FileUploadModel | null> {
-        return this.fileDao.getEntryFileName(fileName);
+        return this.fileDao.getEntryFileName(Path.parse(fileName).name);
     }
 
     public getEntriesFromChecksum(hash: string): Promise<FileUploadModel[]> {

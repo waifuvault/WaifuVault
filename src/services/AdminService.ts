@@ -5,7 +5,6 @@ import {IpBlackListModel} from "../model/db/IpBlackList.model.js";
 import {FileService} from "./FileService.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {FileEntry} from "../model/rest/FileEntry.js";
-import {MimeService} from "./MimeService.js";
 import {FileUploadModel} from "../model/db/FileUpload.model.js";
 import {IpBlockedAwareFileEntry} from "../utils/typeings.js";
 
@@ -15,8 +14,7 @@ export class AdminService {
     public constructor(
         @Inject() private repo: FileRepo,
         @Inject() private ipBlackListRepo: IpBlackListRepo,
-        @Inject() private fileService: FileService,
-        @Inject() private mimeService: MimeService
+        @Inject() private fileService: FileService
     ) {
     }
 
