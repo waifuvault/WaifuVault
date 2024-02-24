@@ -133,6 +133,9 @@ const opts: Partial<TsED.Configuration> = {
             message: "You have exceeded your 1 request a second.",
             standardHeaders: true,
             skip: (request) => {
+                if (request?.$ctx?.request?.request?.session?.passport) {
+                    return true;
+                }
                 return request.path.includes("/admin") ? true : !request.path.includes("/rest");
             },
             keyGenerator: (request) => {

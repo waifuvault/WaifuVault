@@ -4,7 +4,6 @@ import {ScheduleService} from "./ScheduleService.js";
 import {FileService} from "./FileService.js";
 import {FileUtils} from "../utils/Utils.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import {Logger} from "@tsed/logger";
 
 @Service()
 export class FileCleaner implements OnInit {
@@ -12,12 +11,11 @@ export class FileCleaner implements OnInit {
     public constructor(
         @Inject() private repo: FileRepo,
         @Inject() private scheduleService: ScheduleService,
-        @Inject() private fileUploadService: FileService,
-        @Inject() private logger: Logger
+        @Inject() private fileUploadService: FileService
     ) {
     }
 
-    // default to every hour
+    // default to every day at 12am
     @Constant(GlobalEnv.FILE_CLEANER_CRON, "0 * * * *")
     private readonly cronToRun: string;
 

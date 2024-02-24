@@ -29,15 +29,21 @@ export class PassportCtrl extends BaseRestController {
     @Authenticate("loginAuthProvider", {failWithError: true})
     @Returns(StatusCodes.MOVED_TEMPORARILY)
     @Returns(StatusCodes.UNAUTHORIZED)
-    public login(@Req() req: Req, @Res() res: Res): void {
+    public login(@Res() res: Res): void {
         res.redirect("/admin");
     }
 
     @Get("/logout")
     @Returns(StatusCodes.MOVED_TEMPORARILY)
-    public logout(@Req() request: Req, @Res() res: Res): void {
-        request.session.destroy(function () {
-            res.redirect('/');
+    public logout(@Req() request: Req, @Res() res: Res): Promise<void> {
+        return new Promise((resolve, reject) => {
+            request.logout(err => {
+                if (err) {
+                    reject(err);
+                }
+                res.redirect('/');
+                resolve();
+            });
         });
     }
 

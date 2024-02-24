@@ -1,4 +1,3 @@
-import {Req} from "@tsed/common";
 import {Inject} from "@tsed/di";
 import {BodyParams} from "@tsed/platform-params";
 import type {OnVerify} from "@tsed/passport";
@@ -24,7 +23,7 @@ export class LoginLocalProtocol implements OnVerify {
     ) {
     }
 
-    public async $onVerify(@Req() request: Req, @BodyParams() credentials: UserModel): Promise<UserModel | false> {
+    public async $onVerify(@BodyParams() credentials: UserModel): Promise<UserModel | false> {
         const {email, password} = credentials;
         const user = await this.usersService.getUser(email, password);
         if (!user) {

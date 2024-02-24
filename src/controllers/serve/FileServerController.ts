@@ -4,7 +4,6 @@ import {HeaderParams, PathParams, Res} from "@tsed/common";
 import path, * as Path from "path";
 import {filesDir} from "../../utils/Utils.js";
 import {FileService} from "../../services/FileService.js";
-import {FileEngine} from "../../engine/impl/index.js";
 import {FileProtectedException} from "../../model/exceptions/FileProtectedException.js";
 
 @Hidden()
@@ -12,8 +11,7 @@ import {FileProtectedException} from "../../model/exceptions/FileProtectedExcept
 export class FileServerController {
 
     public constructor(
-        @Inject() private fileService: FileService,
-        @Inject() private fileEngine: FileEngine
+        @Inject() private fileService: FileService
     ) {
     }
 
