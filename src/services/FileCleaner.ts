@@ -26,12 +26,13 @@ export class FileCleaner implements OnInit {
         if (allFiles.length === 0) {
             return;
         }
-        const isExpiredPArr = allFiles.filter(file => FileUtils.isFileExpired(file));
-        if (isExpiredPArr.length === 0) {
+        const expiredTokens = allFiles
+            .filter(file => FileUtils.isFileExpired(file))
+            .map(entry => entry.token);
+        if (expiredTokens.length === 0) {
             return;
         }
-        const deletePArr = isExpiredPArr.map(file => this.fileUploadService.processDelete([file.token]));
-        await Promise.all(deletePArr);
+        await this.fileUploadService.processDelete(expiredTokens);
     }
 
     public $onInit(): void {
