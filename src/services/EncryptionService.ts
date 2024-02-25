@@ -6,13 +6,15 @@ import crypto from "node:crypto";
 import argon2 from "argon2";
 import {Forbidden} from "@tsed/exceptions";
 import * as Path from "path";
+import process from "process";
+import {FileUtils} from "../utils/Utils.js";
 
 @Service()
 export class EncryptionService {
 
     private readonly algorithm = 'aes-256-ctr';
 
-    private readonly salt = crypto.randomBytes(8);
+    private salt:Buffer;
 
     public constructor(
         @Inject() private fileEngine: FileEngine
@@ -62,5 +64,15 @@ export class EncryptionService {
 
     private validatePassword(resource: FileUploadModel, password: string): Promise<boolean> {
         return argon2.verify(resource.settings!.password!, password);
+    }
+
+    public $onInit(): void {
+        if("SALT" in process.env) {
+            this.salt = Buffer.from(process.env.SALT as string, 'hex');
+        } else {
+            this.salt = crypto.randomBytes(8);
+            process.env.SALT = this.salt.toString('hex');
+            FileUtils.setEnvValue('SALT',process.env.SALT as string);
+        }
     }
 }

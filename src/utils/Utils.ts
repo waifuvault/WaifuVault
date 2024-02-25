@@ -4,6 +4,8 @@ import type {FileUploadModel} from "../model/db/FileUpload.model.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import process from "process";
 import type {Request} from "express";
+import * as os from "os";
+import fs from "node:fs";
 
 export class ObjectUtils {
 
@@ -104,6 +106,27 @@ export class FileUtils {
     public static isFileCustomExpire(entry: FileUploadModel): boolean {
         return FileUtils.getExpiresBySize(entry.fileSize) != entry.expires - entry.createdAt.getTime();
     }
+
+    public static readEnvFile(envfilepath:string): string[] {
+        return fs.readFileSync(envfilepath,'utf-8').split(os.EOL);
+    }
+
+    public static getEnvValue(key:string): string|null {
+        const matchedLine = FileUtils.readEnvFile(`${baseDir}/.env`).find((line:string) => line.split("=")[0] === key);
+        return matchedLine !== undefined ? matchedLine.split("=")[1] : null;
+    }
+
+    public static setEnvValue(key:string, value:string) {
+        const envVars = FileUtils.readEnvFile(`${filesDir}/../.env`);
+        const targetLine = envVars.find((line) => line.split("=")[0] === key);
+        if (targetLine !== undefined) {
+            const targetLineIndex = envVars.indexOf(targetLine);
+            envVars.splice(targetLineIndex, 1, `${key}="${value}"`);
+        } else {
+            envVars.push(`${key}="${value}"`);
+        }
+        fs.writeFileSync(`${baseDir}/.env`, envVars.join(os.EOL));
+    }
 }
 
 export class NetworkUtils {
@@ -132,3 +155,4 @@ export class NetworkUtils {
 }
 
 export const filesDir = `${path.dirname(fileURLToPath(import.meta.url))}/../../files`;
+export const baseDir = `${path.dirname(fileURLToPath(import.meta.url))}/../..`;
