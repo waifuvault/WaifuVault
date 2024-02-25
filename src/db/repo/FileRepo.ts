@@ -1,7 +1,7 @@
 import {Inject, Service} from "@tsed/di";
 import {FileDao} from "../dao/FileDao.js";
 import {FileUploadModel} from "../../model/db/FileUpload.model.js";
-import * as Path from "path";
+import * as Path from "node:path";
 
 @Service()
 export class FileRepo {

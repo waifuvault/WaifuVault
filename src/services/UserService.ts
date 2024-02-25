@@ -5,7 +5,7 @@ import {CustomUserInfoModel} from "../model/auth/CustomUserInfoModel.js";
 import {Unauthorized} from "@tsed/exceptions";
 import {UserRepo} from "../db/repo/UserRepo.js";
 import {AfterInit, type PlatformContext} from "@tsed/common";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import {Logger} from "@tsed/logger";
 
 @Service()

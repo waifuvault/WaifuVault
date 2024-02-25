@@ -5,13 +5,16 @@ import {FileEngine} from "../engine/impl/index.js";
 import crypto from "node:crypto";
 import argon2 from "argon2";
 import {Forbidden} from "@tsed/exceptions";
-import * as Path from "path";
+import Path from "node:path";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
+import {promisify} from "node:util";
 
 @Service()
 export class EncryptionService implements OnInit {
 
     private readonly algorithm = 'aes-256-ctr';
+
+    private readonly promisifyRandomBytes = promisify(crypto.randomBytes);
 
     @Constant(GlobalEnv.SALT)
     private readonly salt: string | undefined;
@@ -36,7 +39,7 @@ export class EncryptionService implements OnInit {
         }
         const fileSource = this.fileEngine.getFilePath(Path.basename(filePath));
         const buffer = await fs.readFile(fileSource);
-        const iv = crypto.randomBytes(16);
+        const iv = await this.promisifyRandomBytes(16);
         const key = await this.getKey(password);
         const cipher = crypto.createCipheriv(this.algorithm, key, iv);
         const encryptedBuffer = Buffer.concat([iv, cipher.update(buffer), cipher.final()]);
@@ -46,23 +49,25 @@ export class EncryptionService implements OnInit {
 
     public async decrypt(source: FileUploadModel, password?: string): Promise<Buffer> {
         const fileSource = this.fileEngine.getFilePath(source);
+        const fileBuffer = await fs.readFile(fileSource);
+        const isEncrypted = source.encrypted;
         if (!source.settings?.password) {
             // no password, thus not encrypted, just return buffer
-            return fs.readFile(fileSource);
+            return fileBuffer;
         }
         if (!password) {
-            throw new Forbidden("Protected file requires a password");
+            throw new Forbidden(`${isEncrypted ? "Encrypted" : "Protected"} file requires a password`);
         }
         const passwordMatches = await this.validatePassword(source, password);
         if (!passwordMatches) {
             throw new Forbidden("Password is incorrect");
         }
-        if (!source.encrypted) {
+        if (!isEncrypted) {
             // the file is password protected, but not encrypted, so return it
-            return fs.readFile(fileSource);
+            return fileBuffer;
         }
         // we can now assume the password is valid
-        const encrypted = await fs.readFile(fileSource);
+        const encrypted = fileBuffer;
         const iv = encrypted.subarray(0, 16);
         const encryptedRest = encrypted.subarray(16);
         const key = await this.getKey(password);

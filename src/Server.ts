@@ -33,7 +33,7 @@ import {SessionModel} from "./model/db/Session.model.js";
 import compression from "compression";
 import GlobalEnv from "./model/constants/GlobalEnv.js";
 import multer from "multer";
-import path from "path";
+import path from "node:path";
 import rateLimit from "express-rate-limit";
 import {LRUCache} from "lru-cache";
 import {filesDir, FileUtils, NetworkUtils} from "./utils/Utils.js";
@@ -189,7 +189,7 @@ export class Server implements BeforeRoutesInit {
     @Constant(GlobalEnv.HTTPS)
     private readonly https: string;
 
-    public $beforeRoutesInit(): void | Promise<any> {
+    public $beforeRoutesInit(): void {
         if (isProduction) {
             this.app.getApp().set("trust proxy", 1);
         }

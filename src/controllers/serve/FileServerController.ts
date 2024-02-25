@@ -1,7 +1,7 @@
 import {Get, Hidden} from "@tsed/schema";
 import {Controller, Inject} from "@tsed/di";
 import {HeaderParams, PathParams, Res} from "@tsed/common";
-import * as Path from "path";
+import * as Path from "node:path";
 import {FileService} from "../../services/FileService.js";
 import {FileProtectedException} from "../../model/exceptions/FileProtectedException.js";
 import {fileTypeFromBuffer} from "file-type";

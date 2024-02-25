@@ -2,9 +2,9 @@ import {Inject, Injectable} from "@tsed/di";
 import {AvFactory} from "../factory/AvFactory.js";
 import type {PlatformMulterFile} from "@tsed/common";
 import {Logger} from "@tsed/logger";
-import {FileEngine} from "../engine/impl/FileEngine.js";
+import {FileEngine} from "../engine/impl/index.js";
 import {BadRequest} from "@tsed/exceptions";
-import path from "path";
+import path from "node:path";
 
 @Injectable()
 export class AvManager {

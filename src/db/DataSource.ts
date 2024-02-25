@@ -1,5 +1,5 @@
 import {DataSource} from "typeorm";
-import path from "path";
+import path from "node:path";
 import {fileURLToPath} from "node:url";
 
 export const dataSource = new DataSource({
