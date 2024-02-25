@@ -104,6 +104,25 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="fileDetailsModel" tabindex="-1" aria-labelledby="fileDetailsModelLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="fileDetailsModelLabel">File Details</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid" id="fileDetailsModelInfoContent">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -115,6 +134,7 @@
         const dtMap = new Map();
 
         function loadDt() {
+            const detailsModal = new bootstrap.Modal(document.getElementById('fileDetailsModel'), {keyboard: false});
 
             function sizeAsMB() {
                 return function (data, type, row) {
@@ -303,6 +323,27 @@
                         },
                         {
                             extend: 'selectedSingle',
+                            text: 'Details',
+                            attr: {id: 'detailsButton'},
+                            action: async (e, dt) => {
+                                const selectedRow = dt.row({selected: true}).data();
+                                const container = document.getElementById('fileDetailsModelInfoContent');
+                                container.innerHTML = '';
+                                addDetailInfo("ID", selectedRow.id);
+                                addDetailInfo("File Name", selectedRow.fileName);
+                                addDetailInfo("File Ext", selectedRow.fileExtension);
+                                addDetailInfo("Original Name", selectedRow.originalFileName);
+                                addDetailInfo("Media Type", selectedRow.mediaType);
+                                addDetailInfo("File Size", selectedRow.fileSize);
+                                addDetailInfo("Created At", customDate()(selectedRow.createdAt, 'display', selectedRow));
+                                addDetailInfo("Expires", selectedRow.expires);
+                                addDetailInfo("IP", selectedRow.ip);
+                                addDetailInfo("URL", selectedRow.url);
+                                detailsModal.show();
+                            }
+                        },
+                        {
+                            extend: 'selectedSingle',
                             text: 'Download file',
                             attr: {id: 'downloadFileButton'},
                             action: async (e, dt) => {
@@ -470,6 +511,22 @@
         loadDt();
         loadEventListeners();
     });
+
+    function addDetailInfo(heading, detail) {
+        const container = document.getElementById('fileDetailsModelInfoContent');
+        const rowDiv = document.createElement('div');
+        const headingDiv = document.createElement('div');
+        const detailDiv = document.createElement('div');
+        rowDiv.className = 'row';
+        headingDiv.className = 'col-md-3';
+        headingDiv.textContent = heading;
+        detailDiv.className = 'col-md-9';
+        detailDiv.textContent = detail;
+        rowDiv.appendChild(headingDiv);
+        rowDiv.appendChild(detailDiv);
+        container.appendChild(rowDiv);
+    }
+
 </script>
 </body>
 </html>
