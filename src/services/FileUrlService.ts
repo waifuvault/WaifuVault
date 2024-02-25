@@ -2,7 +2,7 @@ import {Constant, Service} from "@tsed/di";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import fetch, {Response} from 'node-fetch';
 import {BadRequest, Forbidden, RequestURITooLong} from "@tsed/exceptions";
-import path from "path";
+import path from "node:path";
 import fs from "node:fs";
 import {filesDir} from "../utils/Utils.js";
 import isLocalhost from "is-localhost-ip";

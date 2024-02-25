@@ -1,9 +1,8 @@
-import path from "node:path";
+import path, * as Path from "node:path";
 import {fileURLToPath} from "node:url";
 import fs from "node:fs/promises";
-import {exec} from "child_process";
-import {promisify} from "util";
-import * as Path from "path";
+import {exec} from "node:child_process";
+import {promisify} from "node:util";
 
 const to = `${path.dirname(fileURLToPath(import.meta.url))}/../dist`;
 

@@ -2,7 +2,7 @@ import {fileURLToPath} from 'node:url';
 import path from "node:path";
 import type {FileUploadModel} from "../model/db/FileUpload.model.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
-import process from "process";
+import process from "node:process";
 import type {Request} from "express";
 
 export class ObjectUtils {

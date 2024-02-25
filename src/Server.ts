@@ -33,7 +33,7 @@ import {SessionModel} from "./model/db/Session.model.js";
 import compression from "compression";
 import GlobalEnv from "./model/constants/GlobalEnv.js";
 import multer from "multer";
-import path from "path";
+import path from "node:path";
 import rateLimit from "express-rate-limit";
 import {LRUCache} from "lru-cache";
 import {filesDir, FileUtils, NetworkUtils} from "./utils/Utils.js";

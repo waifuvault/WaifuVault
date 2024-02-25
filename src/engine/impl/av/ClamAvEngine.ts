@@ -2,10 +2,10 @@ import {IAvEngine} from "../../IAvEngine.js";
 import {AvScanResult} from "../../../utils/typeings.js";
 import {Constant, Injectable, ProviderScope} from "@tsed/di";
 import GlobalEnv from "../../../model/constants/GlobalEnv.js";
-import path from "path";
+import path from "node:path";
 import {filesDir} from "../../../utils/Utils.js";
-import {promisify} from "util";
-import {exec} from "child_process";
+import {promisify} from "node:util";
+import {exec} from "node:child_process";
 import {AV_ENGINE} from "../../../model/di/tokens.js";
 
 @Injectable({
