@@ -29,6 +29,11 @@ Required Settings
 
 > **Google V2 Recaptcha** is required for the admin login page.  Use non invisible one.
 
+> **SALT ISSUES - IMPORTANT - PLEASE READ** <br>If you have password protected files already before setting this, you
+> will no longer be able to access them afterwards.<br>
+> If you change the salt setting after password protected files have been added, you will no longer be able to access
+> the files encrypted with the older salt.
+
 Optional Settings
 
 | Setting          | Description                                         |
