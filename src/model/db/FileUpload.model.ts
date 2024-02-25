@@ -80,6 +80,14 @@ export class FileUploadModel extends AbstractModel {
     })
     public mediaType: string | null;
 
+
+    @Column({
+        nullable: false,
+        unique: false,
+        default: false
+    })
+    public encrypted: boolean;
+
     public get expiresIn(): number {
         return FileUtils.getTImeLeft(this);
     }

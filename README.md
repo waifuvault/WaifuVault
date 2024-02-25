@@ -16,17 +16,22 @@ close to the maximum time.  Beyond that, the time allotted drops off sharply, wi
 ### Env file settings
 Required Settings
 
-| Setting                   | Description                                                                 |
-|---------------------------|-----------------------------------------------------------------------------|
-| BLOCKED_MIME_TYPES        | Comma seperated list of MIME types that will be blocked from being uploaded |
-| FILE_SIZE_UPLOAD_LIMIT_MB | Limit on size of file allowed to be uploaded                                |
-| MAX_URL_LENGTH            | Maximum URL length that can be specified                                    |
-| RECAPTCHA_SITE_KEY        | Replace this with your Google V2 Recaptcha Site Key                         |
-| RECAPTCHA_SECRET_KEY      | Replace this with your Google V2 Recaptcha Secret Key                       |
-| SESSION_KEY               | Replace 'YourSessionKey' with a random string to use as the session key     |
+| Setting                   | Description                                                                   |
+|---------------------------|-------------------------------------------------------------------------------|
+| BLOCKED_MIME_TYPES        | Comma seperated list of MIME types that will be blocked from being uploaded   |
+| FILE_SIZE_UPLOAD_LIMIT_MB | Limit on size of file allowed to be uploaded                                  |
+| MAX_URL_LENGTH            | Maximum URL length that can be specified                                      |
+| RECAPTCHA_SITE_KEY        | Replace this with your Google V2 Recaptcha Site Key                           |
+| RECAPTCHA_SECRET_KEY      | Replace this with your Google V2 Recaptcha Secret Key                         |
+| SALT                      | 8 Characters defining salt for encryption (if not set encryption is disabled) |
+| SESSION_KEY               | Replace 'YourSessionKey' with a random string to use as the session key       |
 > **Note Well** the file size sets the time to live for a file, so files close to the upload limit will only be hosted for 30 days.  It is a cubic curve so files up to 50% of the size will get close to a year of hosting time.
 
 > **Google V2 Recaptcha** is required for the admin login page.  Use non invisible one.
+
+> **SALT ISSUES - IMPORTANT - PLEASE READ** <br>
+> If you change the salt setting after password protected files have been added, you will no longer be able to access
+> the files encrypted with the older salt.
 
 Optional Settings
 

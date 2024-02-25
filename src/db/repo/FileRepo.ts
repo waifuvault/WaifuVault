@@ -35,7 +35,7 @@ export class FileRepo {
         return this.fileDao.getAllEntriesForIp(ip);
     }
 
-    public getAllEntriesOrdered(start:number, records:number, sortColumn?: string, sortDir?: string, search?: string): Promise<FileUploadModel[]> {
+    public getAllEntriesOrdered(start: number, records: number, sortColumn?: string, sortDir?: string, search?: string): Promise<FileUploadModel[]> {
         return this.fileDao.getAllEntriesOrdered(start, records, sortColumn, sortDir, search);
     }
 
