@@ -58,7 +58,7 @@ export class FileUploadController extends BaseRestController {
                           @Description("if set to true, then your filename will not appear in the URL. if false, then it will appear in the URL. defaults to false")
                               hideFileName?: boolean,
                           @QueryParams("password")
-                              @Description("Set a password for this file, this does not encrypt the file, but rather asks for the password when someone goes to the URL. when fetching the file. you can fill out the `x-password` http header with your password to obtain the file via API")
+                              @Description("Set a password for this file, this will encrypt the file on the server that not even the server owner can obtain it, when fetching the file. you can fill out the `x-password` http header with your password to obtain the file via API")
                                   password?: string,
                           @MultipartFile("file") file?: PlatformMulterFile,
                           @BodyParams("url") url?: string): Promise<unknown> {
