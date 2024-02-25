@@ -189,7 +189,7 @@ export class Server implements BeforeRoutesInit {
     @Constant(GlobalEnv.HTTPS)
     private readonly https: string;
 
-    public $beforeRoutesInit(): void | Promise<any> {
+    public $beforeRoutesInit(): void {
         if (isProduction) {
             this.app.getApp().set("trust proxy", 1);
         }
