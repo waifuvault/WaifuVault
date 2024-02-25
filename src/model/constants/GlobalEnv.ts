@@ -18,7 +18,8 @@ enum GlobalEnv {
     MS_DEFENDER_PATH = `${prefix}MS_DEFENDER_PATH`,
     RECAPTCHA_SITE_KEY = `${prefix}RECAPTCHA_SITE_KEY`,
     RECAPTCHA_SECRET_KEY = `${prefix}RECAPTCHA_SECRET_KEY`,
-    FILE_CLEANER_CRON = `${prefix}FILE_CLEANER_CRON`
+    FILE_CLEANER_CRON = `${prefix}FILE_CLEANER_CRON`,
+    SALT = `${prefix}SALT`
 }
 
 export default GlobalEnv;

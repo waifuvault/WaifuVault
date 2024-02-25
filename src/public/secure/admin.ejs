@@ -173,7 +173,7 @@
                         return sizedData;
                     }
                     return data;
-                }
+                };
             }
 
             function customDate() {
@@ -182,7 +182,7 @@
                         return new Date(Date.parse(data)).toLocaleString();
                     }
                     return data;
-                }
+                };
             }
 
             function getDataMapping(type) {
@@ -285,7 +285,7 @@
             }
 
             function getButtons(type) {
-                const buttons = []
+                const buttons = [];
                 if (type === "entries") {
                     buttons.push({
                             extend: 'selected',
@@ -351,7 +351,7 @@
                                 const url = selectedRow.url;
                                 window.open(url, "_blank");
                             }
-                        })
+                        });
                 } else if (type === "ips") {
                     buttons.push({
                         extend: 'selected',
@@ -371,7 +371,7 @@
                             dt.rows({selected: true}).remove().draw(false);
                             reloadTable(["entries"]);
                         }
-                    })
+                    });
                 }
                 return buttons;
             }
@@ -399,7 +399,7 @@
                                 .rows(indexes)
                                 .data()
                                 .pluck('ipBanned');
-                            disableButtonsOnSelection(data.get(0), table.buttons(['#banIpButton']))
+                            disableButtonsOnSelection(data.get(0), table.buttons(['#banIpButton']));
                         }
                     });
                 }

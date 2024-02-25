@@ -4,8 +4,6 @@ import type {FileUploadModel} from "../model/db/FileUpload.model.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import process from "process";
 import type {Request} from "express";
-import * as os from "os";
-import fs from "node:fs";
 
 export class ObjectUtils {
 

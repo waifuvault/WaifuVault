@@ -1,4 +1,4 @@
-import {Inject, OnInit, Service} from "@tsed/di";
+import {Constant, Inject, OnInit, Service} from "@tsed/di";
 import {FileUploadModel} from "../model/db/FileUpload.model.js";
 import fs from "node:fs/promises";
 import {FileEngine} from "../engine/impl/index.js";
@@ -6,15 +6,15 @@ import crypto from "node:crypto";
 import argon2 from "argon2";
 import {Forbidden} from "@tsed/exceptions";
 import * as Path from "path";
-import process from "process";
-import {FileUtils} from "../utils/Utils.js";
+import GlobalEnv from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class EncryptionService implements OnInit {
 
     private readonly algorithm = 'aes-256-ctr';
 
-    private salt:Buffer;
+    @Constant(GlobalEnv.SALT)
+    private readonly salt: string | undefined;
 
     public constructor(
         @Inject() private fileEngine: FileEngine
@@ -25,7 +25,7 @@ export class EncryptionService implements OnInit {
         return argon2.hash(password, {
             hashLength: 32,
             raw: true,
-            salt: this.salt,
+            salt: Buffer.from(this.salt!),
             saltLength: 8
         });
     }
@@ -74,12 +74,8 @@ export class EncryptionService implements OnInit {
     }
 
     public $onInit(): void {
-        if("SALT" in process.env) {
-            const saltString = (process.env.SALT as string).slice(0, 8);
-            if (saltString.length < 8) {
-                return;
-            }
-            this.salt = Buffer.from(saltString);
+        if (this.salt && this.salt.length !== 8) {
+            throw new Error("Salt must be 8 characters");
         }
     }
 }
