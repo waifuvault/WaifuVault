@@ -107,15 +107,18 @@
 
     <div class="modal fade" id="fileDetailsModel" tabindex="-1" aria-labelledby="fileDetailsModelLabel"
          aria-hidden="true">
-        <div class="modal-dialog" style="max-width:50% !important;">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="fileDetailsModelLabel">File Details</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" id="fileDetailsModelInfoContent">
+                <div class="modal-body">
+                    <div class="container-fluid" id="fileDetailsModelInfoContent">
+                    </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -131,6 +134,7 @@
         const dtMap = new Map();
 
         function loadDt() {
+            const detailsModal = new bootstrap.Modal(document.getElementById('fileDetailsModel'), {keyboard: false});
 
             function sizeAsMB() {
                 return function (data, type, row) {
@@ -335,7 +339,6 @@
                                 addDetailInfo("Expires", selectedRow.expires);
                                 addDetailInfo("IP", selectedRow.ip);
                                 addDetailInfo("URL", selectedRow.url);
-                                const detailsModal = new bootstrap.Modal(document.getElementById('fileDetailsModel'), {keyboard: false});
                                 detailsModal.show();
                             }
                         },
