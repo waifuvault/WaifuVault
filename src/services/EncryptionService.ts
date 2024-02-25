@@ -1,4 +1,4 @@
-import {Inject, Service} from "@tsed/di";
+import {Inject, OnInit, Service} from "@tsed/di";
 import {FileUploadModel} from "../model/db/FileUpload.model.js";
 import fs from "node:fs/promises";
 import {FileEngine} from "../engine/impl/index.js";
@@ -10,7 +10,7 @@ import process from "process";
 import {FileUtils} from "../utils/Utils.js";
 
 @Service()
-export class EncryptionService {
+export class EncryptionService implements OnInit {
 
     private readonly algorithm = 'aes-256-ctr';
 
@@ -31,6 +31,9 @@ export class EncryptionService {
     }
 
     public async encrypt(filePath: string, password: string): Promise<void> {
+        if (!this.salt) {
+            return;
+        }
         const fileSource = this.fileEngine.getFilePath(Path.basename(filePath));
         const buffer = await fs.readFile(fileSource);
         const iv = crypto.randomBytes(16);
@@ -53,6 +56,10 @@ export class EncryptionService {
         if (!passwordMatches) {
             throw new Forbidden("Password is incorrect");
         }
+        if (!this.salt) {
+            // password matches, but no salt set
+            return fs.readFile(fileSource);
+        }
         // we can now assume the password is valid
         const encrypted = await fs.readFile(fileSource);
         const iv = encrypted.subarray(0, 16);
@@ -68,11 +75,11 @@ export class EncryptionService {
 
     public $onInit(): void {
         if("SALT" in process.env) {
-            this.salt = Buffer.from(process.env.SALT as string, 'hex');
-        } else {
-            this.salt = crypto.randomBytes(8);
-            process.env.SALT = this.salt.toString('hex');
-            FileUtils.setEnvValue('SALT',process.env.SALT as string);
+            const saltString = (process.env.SALT as string).slice(0, 8);
+            if (saltString.length < 8) {
+                return;
+            }
+            this.salt = Buffer.from(saltString);
         }
     }
 }
