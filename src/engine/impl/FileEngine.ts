@@ -2,6 +2,7 @@ import {Injectable, ProviderScope} from "@tsed/di";
 import fs from 'node:fs/promises';
 import type {PlatformMulterFile} from "@tsed/common";
 import {filesDir} from "../../utils/Utils.js";
+import {FileUploadModel} from "../../model/db/FileUpload.model.js";
 
 @Injectable({
     scope: ProviderScope.SINGLETON
@@ -20,7 +21,10 @@ export class FileEngine {
     }
 
 
-    private getFilePath(file: string | PlatformMulterFile): string {
+    public getFilePath(file: string | PlatformMulterFile | FileUploadModel): string {
+        if (file instanceof FileUploadModel) {
+            return `${filesDir}/${file.fullFileNameOnSystem}`;
+        }
         return typeof file === "string" ? `${filesDir}/${file}` : file.path;
     }
 
