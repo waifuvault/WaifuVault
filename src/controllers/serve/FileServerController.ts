@@ -1,10 +1,10 @@
 import {Get, Hidden} from "@tsed/schema";
 import {Controller, Inject} from "@tsed/di";
 import {HeaderParams, PathParams, Res} from "@tsed/common";
-import path, * as Path from "path";
-import {filesDir} from "../../utils/Utils.js";
+import * as Path from "path";
 import {FileService} from "../../services/FileService.js";
 import {FileProtectedException} from "../../model/exceptions/FileProtectedException.js";
+import {fileTypeFromBuffer} from "file-type";
 
 @Hidden()
 @Controller("/")
@@ -15,8 +15,6 @@ export class FileServerController {
     ) {
     }
 
-    private readonly filesDirRel = path.resolve(filesDir);
-
     @Get("/:t/:file?")
     public async getFile(
         @Res() res: Res,
@@ -25,20 +23,15 @@ export class FileServerController {
         @PathParams("file") requestedFileName?: string
     ): Promise<void> {
         await this.hasPassword(resource, password);
-        const entry = await this.fileService.getEntry(resource, requestedFileName, password);
-        const file = `${this.filesDirRel}/${entry.fullFileNameOnSystem}`;
-        await this.sendFile(file, res);
-    }
-
-    private sendFile(file: string, res: Res): Promise<void> {
-        return new Promise((resolve, reject) => {
-            res.sendFile(file, err => {
-                if (err) {
-                    return reject(err);
-                }
-                return resolve();
-            });
-        });
+        const buff = await this.fileService.getEntry(resource, requestedFileName, password);
+        const mimeType = await fileTypeFromBuffer(buff);
+        if (mimeType) {
+            res.contentType(mimeType.mime);
+        } else {
+            // unknown> just send an octet stream and let the client figure it out
+            res.contentType("application/octet-stream");
+        }
+        res.send(buff);
     }
 
     private async hasPassword(resource: string, password?: string): Promise<boolean> {

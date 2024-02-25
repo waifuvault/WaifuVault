@@ -9,6 +9,7 @@ import {FileEngine} from "../../../engine/impl/index.js";
 import {FileService} from "../../../services/FileService.js";
 import {NetworkUtils} from "../../../utils/Utils.js";
 import {BaseRestController} from "../BaseRestController.js";
+import {Logger} from "@tsed/logger";
 
 @Controller("/")
 @Description("This is the API documentation for uploading and sharing files.")
@@ -17,7 +18,8 @@ import {BaseRestController} from "../BaseRestController.js";
 export class FileUploadController extends BaseRestController {
     public constructor(
         @Inject() private fileEngine: FileEngine,
-        @Inject() private fileUploadService: FileService
+        @Inject() private fileUploadService: FileService,
+        @Inject() private logger: Logger,
     ) {
         super();
     }
@@ -77,13 +79,25 @@ export class FileUploadController extends BaseRestController {
             }
         }
         const ip = NetworkUtils.getIp(req);
-        const [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
-            ip,
-            url || file!,
-            customExpiry,
-            hideFileName,
-            password
-        );
+        let uploadModelResponse: FileUploadModelResponse;
+        let alreadyExists: boolean;
+        try {
+            [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
+                ip,
+                url || file!,
+                customExpiry,
+                hideFileName,
+                password
+            );
+        } catch (e) {
+            this.logger.error(e.message);
+            if (file) {
+                // this will delete files if something goes wrong, but not urls...
+                // TODO: fix
+                await this.fileEngine.deleteFile(file, true);
+            }
+            throw e;
+        }
         if (alreadyExists) {
             res.status(StatusCodes.OK);
         } else {

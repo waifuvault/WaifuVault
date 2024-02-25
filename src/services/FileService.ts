@@ -13,15 +13,19 @@ import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse.js"
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {Logger} from "@tsed/logger";
 import type {EntrySettings, XOR} from "../utils/typeings.js";
-import {BadRequest, Forbidden, NotFound, UnsupportedMediaType} from "@tsed/exceptions";
+import {BadRequest, InternalServerError, NotFound, UnsupportedMediaType} from "@tsed/exceptions";
 import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import argon2 from "argon2";
 import {AvManager} from "../manager/AvManager.js";
 import {UserService} from "./UserService.js";
+import {EncryptionService} from "./EncryptionService.js";
 
 @Service()
 export class FileService {
+
+    @Constant(GlobalEnv.BASE_URL)
+    private readonly baseUrl: string;
 
     public constructor(
         @Inject() private repo: FileRepo,
@@ -30,12 +34,10 @@ export class FileService {
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
         @Inject() private avManager: AvManager,
-        @Inject() private userService: UserService
+        @Inject() private userService: UserService,
+        @Inject() private encryptionService: EncryptionService
     ) {
     }
-
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
 
     public async processUpload(
         ip: string,
@@ -81,6 +83,17 @@ export class FileService {
         } else {
             uploadEntry.expires(FileUtils.getExpiresBySize(fileSize));
         }
+
+        if (password) {
+            try {
+                await this.encryptionService.encrypt(resourcePath, password);
+            } catch (e) {
+                await this.deleteUploadedFile(resourcePath);
+                this.logger.error(e.message);
+                throw new InternalServerError(e.message);
+            }
+        }
+
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
 
         return [FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true), false];
@@ -132,40 +145,19 @@ export class FileService {
         if (!entry) {
             return false;
         }
-        return this.userService.getLoggedInUser() ? false : !!entry.settings?.password;
+        return !!entry.settings?.password;
     }
 
 
-    private async validatePassword(resource: string, password?: string): Promise<void> {
-        const entry = await this.repo.getEntryFileName(resource);
-        if (!entry || !entry.settings?.password || !password) {
-            return;
-        }
-        // use safe timings
-        const hashMatches = await argon2.verify(entry.settings.password, password);
-        if (!hashMatches) {
-            throw new Forbidden("Password is incorrect");
-        }
-    }
-
-    public async getEntry(fileNameOnSystem: string, requestedFileName?: string, password?: string): Promise<FileUploadModel> {
+    public async getEntry(fileNameOnSystem: string, requestedFileName?: string, password?: string): Promise<Buffer> {
         const entry = await this.repo.getEntryFileName(path.parse(fileNameOnSystem).name);
-        if (this.userService.getLoggedInUser() && entry) {
-            return entry;
-        }
         if (entry === null || requestedFileName && entry.originalFileName !== requestedFileName) {
             throw new NotFound(`resource ${requestedFileName} is not found`);
-        }
-        if (entry.settings?.password) {
-            if (!password) {
-                throw new Forbidden("Protected file requires a password");
-            }
-            await this.validatePassword(fileNameOnSystem, password);
         }
         if (entry.hasExpired) {
             throw new NotFound(`Resource ${requestedFileName ?? fileNameOnSystem} is not found`);
         }
-        return entry;
+        return this.encryptionService.decrypt(entry, password);
     }
 
     public async getFileInfo(token: string, humanReadable: boolean): Promise<FileUploadModelResponse> {
