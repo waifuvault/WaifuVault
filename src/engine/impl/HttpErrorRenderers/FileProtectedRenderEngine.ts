@@ -20,10 +20,10 @@ export class FileProtectedRenderEngine implements IHttpErrorRenderEngine<string,
     }
 
     public render(obj: HttpErrorRenderObj<FileProtectedException>, response: PlatformResponse): Promise<string> {
-        const resource = obj.internalError.resource;
+        const isEncrypted = obj.internalError.isEncrypted;
         return response.render("fileLogin.ejs", {
             ...obj,
-            resource
+            isEncrypted
         });
     }
 }

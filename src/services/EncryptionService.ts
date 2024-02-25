@@ -30,9 +30,9 @@ export class EncryptionService implements OnInit {
         });
     }
 
-    public async encrypt(filePath: string, password: string): Promise<void> {
+    public async encrypt(filePath: string, password: string): Promise<boolean> {
         if (!this.salt) {
-            return;
+            return false;
         }
         const fileSource = this.fileEngine.getFilePath(Path.basename(filePath));
         const buffer = await fs.readFile(fileSource);
@@ -41,6 +41,7 @@ export class EncryptionService implements OnInit {
         const cipher = crypto.createCipheriv(this.algorithm, key, iv);
         const encryptedBuffer = Buffer.concat([iv, cipher.update(buffer), cipher.final()]);
         await fs.writeFile(fileSource, encryptedBuffer);
+        return true;
     }
 
     public async decrypt(source: FileUploadModel, password?: string): Promise<Buffer> {
@@ -56,8 +57,8 @@ export class EncryptionService implements OnInit {
         if (!passwordMatches) {
             throw new Forbidden("Password is incorrect");
         }
-        if (!this.salt) {
-            // password matches, but no salt set
+        if (!source.encrypted) {
+            // the file is password protected, but not encrypted, so return it
             return fs.readFile(fileSource);
         }
         // we can now assume the password is valid

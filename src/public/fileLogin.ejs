@@ -2,9 +2,6 @@
 <html lang="en" data-bs-theme="dark">
 <head>
     <%- include('snippets/head.ejs'); %>
-    <% if(!resource){ %>
-        <meta http-equiv="refresh" content="0; URL=/"/>
-    <% } %>
 </head>
 <body>
 <div class="container">
@@ -12,7 +9,7 @@
         <div class="col-md-6 offset-md-3">
             <div class="card my-5 border-primary">
                 <div class="card-header text-center">
-                    Encrypted file
+                    <%- isEncrypted ? "Encrypted file" : "Password-protected file" -%>
                 </div>
                 <div class="card-body">
                     <div class="p-lg-3">

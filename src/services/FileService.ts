@@ -86,7 +86,8 @@ export class FileService {
 
         if (password) {
             try {
-                await this.encryptionService.encrypt(resourcePath, password);
+                const didEncrypt = await this.encryptionService.encrypt(resourcePath, password);
+                uploadEntry.encrypted(didEncrypt);
             } catch (e) {
                 await this.deleteUploadedFile(resourcePath);
                 this.logger.error(e.message);
@@ -138,6 +139,14 @@ export class FileService {
             retObj["hideFilename"] = hideFilename;
         }
         return Object.keys(retObj).length === 0 ? null : retObj;
+    }
+
+    public async isFileEncrypted(resource: string): Promise<boolean> {
+        const entry = await this.repo.getEntryFileName(resource);
+        if (!entry) {
+            return false;
+        }
+        return entry.encrypted;
     }
 
     public async requiresPassword(resource: string): Promise<boolean> {
