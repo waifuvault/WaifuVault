@@ -117,7 +117,7 @@ export class FileUtils {
     }
 
     public static setEnvValue(key:string, value:string) {
-        const envVars = FileUtils.readEnvFile(`${filesDir}/../.env`);
+        const envVars = FileUtils.readEnvFile(`${baseDir}/.env`);
         const targetLine = envVars.find((line) => line.split("=")[0] === key);
         if (targetLine !== undefined) {
             const targetLineIndex = envVars.indexOf(targetLine);
