@@ -1,5 +1,4 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
-import {FileUploadModel} from "../model/db/FileUpload.model.js";
 import {MimeService} from "../services/MimeService.js";
 import {filesDir} from "../utils/Utils.js";
 
