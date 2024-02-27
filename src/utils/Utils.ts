@@ -127,7 +127,7 @@ export class NetworkUtils {
         if (ipSplit.length === 2) {
             return ipSplit[0];
         }
-        return ipSplit.slice(0, ipSplit.length - 1).join(':').replace('\[', '').replace('\]', '');
+        return ipSplit.slice(0, ipSplit.length - 1).join(':').replace(/\[/, '').replace(/]/, '');
     }
 }
 

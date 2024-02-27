@@ -21,7 +21,7 @@ export class PassportCtrl extends BaseRestController {
         @Inject() private usersService: UserService
     ) {
         super();
-    };
+    }
 
 
     @Post("/login")

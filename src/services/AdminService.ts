@@ -59,15 +59,11 @@ export class AdminService {
     }
 
     public async blockIp(ip: string, removeRelatedData: boolean): Promise<void> {
-        try {
-            await this.ipBlackListRepo.addIpBlock(ip);
-            if (removeRelatedData) {
-                const matchingEntries = await this.repo.getAllEntriesForIp(ip);
-                const tokens = matchingEntries.map(entry => entry.token);
-                await this.fileService.processDelete(tokens);
-            }
-        } catch (e) {
-            throw e;
+        await this.ipBlackListRepo.addIpBlock(ip);
+        if (removeRelatedData) {
+            const matchingEntries = await this.repo.getAllEntriesForIp(ip);
+            const tokens = matchingEntries.map(entry => entry.token);
+            await this.fileService.processDelete(tokens);
         }
     }
 
