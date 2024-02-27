@@ -3,6 +3,7 @@ import {AbstractDao} from "./AbstractDao.js";
 import {FileUploadModel} from "../../model/db/FileUpload.model.js";
 import {SQLITE_DATA_SOURCE} from "../../model/di/tokens.js";
 import {DataSource, EntityManager, In, Like} from "typeorm";
+import {FindOperator} from "typeorm/find-options/FindOperator.js";
 
 @Injectable()
 export class FileDao extends AbstractDao<FileUploadModel> {
@@ -50,12 +51,8 @@ export class FileDao extends AbstractDao<FileUploadModel> {
     public getAllEntriesOrdered(start: number, records: number, sortColumn?: string, sortOrder?: string, search?: string, transaction?: EntityManager): Promise<FileUploadModel[]> {
         const orderOptions = sortColumn ? {[sortColumn]: sortOrder} : {};
         if (search) {
-            search = '%' + search + '%';
             return this.getRepository(transaction).find({
-                where: [{fileName: Like(search)},
-                    {fileExtension: Like(search)},
-                    {ip: Like(search)},
-                    {originalFileName: Like(search)}],
+                where: this.getSearchQuery(search),
                 order: orderOptions,
                 skip: start,
                 take: records
@@ -79,13 +76,19 @@ export class FileDao extends AbstractDao<FileUploadModel> {
     }
 
     public getSearchRecordCount(search: string, transaction?: EntityManager): Promise<number> {
-        search = '%' + search + '%';
         return this.getRepository(transaction).count({
-            where: [{fileName: Like(search)},
-                {fileExtension: Like(search)},
-                {ip: Like(search)},
-                {originalFileName: Like(search)}]
+            where: this.getSearchQuery(search)
         });
+    }
+
+    private getSearchQuery(search: string): Record<string, FindOperator<string>>[] {
+        search = `%${search}%`;
+        return [
+            {fileName: Like(search)},
+            {fileExtension: Like(search)},
+            {ip: Like(search)},
+            {originalFileName: Like(search)}
+        ];
     }
 
     public getAllEntriesForIp(ip: string, transaction?: EntityManager): Promise<FileUploadModel[]> {
