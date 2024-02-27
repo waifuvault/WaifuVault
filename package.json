@@ -4,7 +4,7 @@
   "description": "Temp file hosting for nerds",
   "type": "module",
   "scripts": {
-    "lint": "npx eslint src/**",
+    "lint": "npx eslint --no-error-on-unmatched-pattern src/**",
     "lint:fix": "npx eslint --fix src/**",
     "tsc": "tsc --project tsconfig.compile.json",
     "build": "npm run lint && npm run barrels && node ./buildScripts/cleanDist.mjs && npx swc src -d dist --config-file .swcrc --copy-files && node ./buildScripts/moveFiles.mjs",
