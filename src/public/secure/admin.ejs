@@ -536,6 +536,15 @@
         const icon = document.getElementById(target + '-icon');
         icon.className = '';
         icon.classList.add('bi', 'bi-clipboard-check-fill');
+        setTimeout(() => {
+            resetClipIcon(target);
+        }, 2000);
+    }
+
+    function resetClipIcon(target) {
+        const icon = document.getElementById(target + '-icon');
+        icon.className = '';
+        icon.classList.add('bi', 'bi-clipboard');
     }
 
 </script>
