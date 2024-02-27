@@ -41,6 +41,9 @@ export class FileEntry {
     @Nullable(String)
     public mediaType: string | null = null;
 
+    @Property()
+    public fileProtectionLevel: string;
+
     public static fromModel({entry, ipBlocked}: IpBlockedAwareFileEntry, baseUrl: string): FileEntry {
         const fileEntryBuilder = Builder(FileEntry)
             .url(FileEntry.getUrl(entry, baseUrl))
@@ -53,6 +56,7 @@ export class FileEntry {
             .mediaType(entry.mediaType)
             .expires(ObjectUtils.timeToHuman(entry.expiresIn))
             .ipBanned(ipBlocked)
+            .fileProtectionLevel(entry.fileProtectionLevel)
             .ip(entry.ip);
 
         return fileEntryBuilder.build();

@@ -335,6 +335,7 @@
                                 addDetailInfo("Original Name", selectedRow.originalFileName);
                                 addDetailInfo("Media Type", selectedRow.mediaType);
                                 addDetailInfo("File Size", selectedRow.fileSize);
+                                addDetailInfo("File Protection Level", selectedRow.fileProtectionLevel);
                                 addDetailInfo("Created At", customDate()(selectedRow.createdAt, 'display', selectedRow));
                                 addDetailInfo("Expires", selectedRow.expires);
                                 addDetailInfo("IP", selectedRow.ip);
@@ -538,7 +539,7 @@
         icon.classList.add('bi', 'bi-clipboard-check-fill');
         setTimeout(() => {
             resetClipIcon(target);
-        }, 2000);
+        }, 1000);
     }
 
     function resetClipIcon(target) {

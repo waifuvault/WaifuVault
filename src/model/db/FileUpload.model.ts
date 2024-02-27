@@ -96,6 +96,16 @@ export class FileUploadModel extends AbstractModel {
         return FileUtils.isFileExpired(this);
     }
 
+    public get fileProtectionLevel(): string {
+        if (this.encrypted) {
+            return "Encrypted";
+        }
+        if (this.settings?.password != null) {
+            return "Password";
+        }
+        return "None";
+    }
+
     /**
      * Get the file and the extension if one exists. the result will be the exact filename that appears in your upload file dir
      * @returns {string}
