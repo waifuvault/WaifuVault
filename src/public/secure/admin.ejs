@@ -517,14 +517,25 @@
         const rowDiv = document.createElement('div');
         const headingDiv = document.createElement('div');
         const detailDiv = document.createElement('div');
+        const copyButtons = ['IP', 'URL', 'Original Name'];
         rowDiv.className = 'row';
         headingDiv.className = 'col-md-3';
         headingDiv.textContent = heading;
         detailDiv.className = 'col-md-9';
-        detailDiv.textContent = detail;
+        detailDiv.innerHTML = `<span id='detail-${heading}'>${detail}</span>`;
+        if (copyButtons.includes(heading)) {
+            detailDiv.innerHTML += `&nbsp;<i id='detail-${heading}-icon' class='bi bi-clipboard' onclick='copyToClip("detail-${heading}");'></i>`;
+        }
         rowDiv.appendChild(headingDiv);
         rowDiv.appendChild(detailDiv);
         container.appendChild(rowDiv);
+    }
+
+    function copyToClip(target) {
+        navigator.clipboard.writeText(document.getElementById(target).innerText);
+        const icon = document.getElementById(target + '-icon');
+        icon.className = '';
+        icon.classList.add('bi', 'bi-clipboard-check-fill');
     }
 
 </script>
