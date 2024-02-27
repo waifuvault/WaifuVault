@@ -9,6 +9,10 @@
         table.dataTable td.dt-type-numeric, table.dataTable th.dt-type-numeric {
             text-align: initial;
         }
+
+        #WSConnectedLabel, #WSNotConnectedLabel {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -21,7 +25,10 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card border-primary mb-3">
-                <div class="card-header">Current Entries</div>
+                <div class="card-header">Current Entries
+                    <span class="badge text-bg-success float-end hidden" id="WSConnectedLabel" title="Disable auto-update">Auto-update enabled</span>
+                    <span class="badge text-bg-danger float-end" id="WSNotConnectedLabel" title="Enable auto-update">Auto-update disabled</span>
+                </div>
                 <div class="card-body">
                     <table class="table submissionsTable datatables display nowrap" data-type="entries">
                         <thead>
@@ -127,11 +134,19 @@
 
 
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.0/b-3.0.0/b-colvis-3.0.0/fh-4.0.0/r-3.0.0/sc-2.4.0/sl-2.0.0/sr-1.4.0/datatables.min.js"></script>
+<script src="<%- process.env.BASE_URL; -%>/socket.io/socket.io.min.js"></script>
 <%- include('../snippets/scripts.ejs'); %>
 <script type="text/javascript" src="/assets/custom/js/spinWheel.js"></script>
 <script>
     Site.loadPage(async site => {
         const dtMap = new Map();
+        const socket = io(`${mainRul}/entry`, {path: '/socket.io/entry/'});
+
+        function reloadTable(types, reset = true) {
+            for (const type of types) {
+                dtMap.get(type)?.ajax.reload(null, reset);
+            }
+        }
 
         function loadDt() {
             const detailsModal = new bootstrap.Modal(document.getElementById('fileDetailsModel'), {keyboard: false});
@@ -376,12 +391,6 @@
                 return buttons;
             }
 
-            function reloadTable(types) {
-                for (const type of types) {
-                    dtMap.get(type)?.ajax.reload();
-                }
-            }
-
             function initSelectListeners(type) {
                 function disableButtonsOnSelection(value, buttons) {
                     if (value) {
@@ -508,6 +517,37 @@
             })());
         }
 
+        function initWs() {
+
+            const connectedLabel = document.getElementById("WSConnectedLabel");
+            const disconnectedLabel = document.getElementById("WSNotConnectedLabel");
+
+            socket.on("connect", () => {
+                disconnectedLabel?.classList.add("hidden");
+                connectedLabel?.classList.remove("hidden");
+            });
+
+            socket.on("disconnect", () => {
+                disconnectedLabel?.classList.remove("hidden");
+                connectedLabel?.classList.add("hidden");
+            });
+
+            socket.on("entry", () => {
+                // entry uploaded or deleted, doesn't matter, just reload DB
+                reloadTable(["entries"], false);
+            });
+
+            connectedLabel?.addEventListener("click", () => {
+                socket.disconnect();
+            });
+
+            disconnectedLabel?.addEventListener("click", () => {
+                socket.connect();
+            });
+
+        }
+
+        initWs();
         loadDt();
         loadEventListeners();
     });

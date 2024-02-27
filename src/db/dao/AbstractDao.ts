@@ -9,10 +9,6 @@ export abstract class AbstractDao<T extends ObjectLiteral> {
         this.dao = ds.getRepository(model);
     }
 
-    public get dataSource(): DataSource {
-        return this.ds;
-    }
-
     protected getRepository(transaction?: EntityManager): Dao<T> {
         return transaction ? transaction.getRepository(this.dao.target) : this.dao;
     }

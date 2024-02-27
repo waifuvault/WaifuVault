@@ -180,9 +180,6 @@ export class Server implements BeforeRoutesInit {
     ) {
     }
 
-    @Configuration()
-    protected settings: Configuration;
-
     @Constant(GlobalEnv.SESSION_KEY)
     private readonly sessionKey: string;
 

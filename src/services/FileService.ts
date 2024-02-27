@@ -18,8 +18,8 @@ import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import argon2 from "argon2";
 import {AvManager} from "../manager/AvManager.js";
-import {UserService} from "./UserService.js";
 import {EncryptionService} from "./EncryptionService.js";
+import {EntrySocketService} from "./socket/EntrySocketService.js";
 
 @Service()
 export class FileService {
@@ -34,8 +34,8 @@ export class FileService {
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
         @Inject() private avManager: AvManager,
-        @Inject() private userService: UserService,
-        @Inject() private encryptionService: EncryptionService
+        @Inject() private encryptionService: EncryptionService,
+        @Inject() private entrySocketService: EntrySocketService
     ) {
     }
 
@@ -97,7 +97,9 @@ export class FileService {
 
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
 
-        return [FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true), false];
+        const retEntry: [FileUploadModelResponse, boolean] = [FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true), false];
+        this.entrySocketService.emitEntry();
+        return retEntry;
     }
 
     private hashPassword(password: string): Promise<string> {
@@ -224,6 +226,7 @@ export class FileService {
             this.logger.error(e);
             return false;
         }
+        this.entrySocketService.emitEntry();
         return deleted;
     }
 

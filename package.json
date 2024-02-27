@@ -39,7 +39,9 @@
     "@tsed/platform-response-filter": "^7.61.2",
     "@tsed/platform-views": "^7.61.2",
     "@tsed/schema": "^7.61.2",
+    "@tsed/socketio": "^7.61.2",
     "@tsed/swagger": "^7.61.2",
+    "@types/socket.io": "^3.0.2",
     "adm-zip": "^0.5.10",
     "ajv": "^8.12.0",
     "argon2": "^0.31.2",
@@ -75,6 +77,7 @@
     "passport-local": "^1.0.0",
     "punycode": "^2.3.1",
     "sanitize-filename-ts": "^1.0.2",
+    "socket.io": "^4.7.4",
     "toad-scheduler": "^3.0.1",
     "typeorm": "^0.3.20",
     "xss": "^1.0.14"
