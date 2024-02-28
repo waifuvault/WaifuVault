@@ -1,7 +1,7 @@
 import {Nullable, Property} from "@tsed/schema";
 import {Builder} from "builder-pattern";
 import {ObjectUtils} from "../../utils/Utils.js";
-import {IpBlockedAwareFileEntry, ProtectionLevel} from "../../utils/typeings.js";
+import type {IpBlockedAwareFileEntry, ProtectionLevel} from "../../utils/typeings.js";
 import {FileUploadModel} from "../db/FileUpload.model.js";
 
 export class FileEntry {
