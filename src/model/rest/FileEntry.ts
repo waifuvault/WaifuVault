@@ -1,7 +1,7 @@
 import {Nullable, Property} from "@tsed/schema";
 import {Builder} from "builder-pattern";
 import {ObjectUtils} from "../../utils/Utils.js";
-import {IpBlockedAwareFileEntry} from "../../utils/typeings.js";
+import {IpBlockedAwareFileEntry, ProtectionLevel} from "../../utils/typeings.js";
 import {FileUploadModel} from "../db/FileUpload.model.js";
 
 export class FileEntry {
@@ -42,7 +42,7 @@ export class FileEntry {
     public mediaType: string | null = null;
 
     @Property()
-    public fileProtectionLevel: string;
+    public fileProtectionLevel: ProtectionLevel;
 
     public static fromModel({entry, ipBlocked}: IpBlockedAwareFileEntry, baseUrl: string): FileEntry {
         const fileEntryBuilder = Builder(FileEntry)
