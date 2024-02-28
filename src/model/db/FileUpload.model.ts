@@ -100,7 +100,7 @@ export class FileUploadModel extends AbstractModel {
         if (this.encrypted) {
             return "Encrypted";
         }
-        if (this.settings?.password != null) {
+        if (this.settings?.password) {
             return "Password";
         }
         return "None";
