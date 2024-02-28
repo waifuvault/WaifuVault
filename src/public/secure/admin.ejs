@@ -180,7 +180,7 @@
                     const header = details[0];
                     let data = details[1];
                     if (header === "URL") {
-                        data = `<a href='${data}' target='_blank'><span id='detail-${header}'>${data}</span></a>`;
+                        data = `<a href='${data}' target='_blank'><span>${data}</span></a>`;
                     } else {
                         data = `<span>${data}</span>`;
                     }
