@@ -535,7 +535,11 @@
         headingDiv.className = 'col-md-3';
         headingDiv.textContent = heading;
         detailDiv.className = 'col-md-9';
-        detailDiv.innerHTML = `<span id='detail-${heading}'>${detail}</span>`;
+        if (heading === 'URL') {
+            detailDiv.innerHTML = `<a href='${detail}' target='_blank'><span id='detail-${heading}'>${detail}</span></a>`;
+        } else {
+            detailDiv.innerHTML = `<span id='detail-${heading}'>${detail}</span>`;
+        }
         if (copyButtons.includes(heading)) {
             detailDiv.innerHTML += `<i title="Copy value to clipboard" id='detail-${heading}-icon' class='bi bi-clipboard ms-1' onclick='copyToClip("detail-${heading}");'></i>`;
         }
