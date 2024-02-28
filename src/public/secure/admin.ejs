@@ -9,6 +9,18 @@
         table.dataTable td.dt-type-numeric, table.dataTable th.dt-type-numeric {
             text-align: initial;
         }
+
+        #detailsTableBody span {
+            word-wrap: break-word;
+        }
+
+        #detailsTableBody .bi-clipboard {
+            cursor: pointer;
+        }
+
+        #detailsTableBody .bi-clipboard:active {
+            color: #9aabee;
+        }
     </style>
 </head>
 <body>
@@ -107,14 +119,23 @@
 
     <div class="modal fade" id="fileDetailsModel" tabindex="-1" aria-labelledby="fileDetailsModelLabel"
          aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="fileDetailsModelLabel">File Details</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="container-fluid" id="fileDetailsModelInfoContent">
+                <div class="modal-body" id="fileDetailsModelInfoContent">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12 table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <tbody id="detailsTableBody">
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -151,6 +172,23 @@
                     }
                     return data;
                 };
+            }
+
+            function addDetailInfo(detailArr) {
+                const copyButtons = ['IP', 'URL', 'Original Name'];
+                document.getElementById("detailsTableBody").innerHTML = detailArr.map(details => {
+                    const header = details[0];
+                    let data = details[1];
+                    if (header === "URL") {
+                        data = `<a href='${data}' target='_blank'><span>${data}</span></a>`;
+                    } else {
+                        data = `<span>${data}</span>`;
+                    }
+                    if (copyButtons.includes(header)) {
+                        data += `<i title="Copy value to clipboard" class='bi bi-clipboard ms-1' onclick='navigator.clipboard.writeText("${details[1]}");'></i>`;
+                    }
+                    return `<tr><th>${header}</th><td>${data}</td></tr>`;
+                }).join('');
             }
 
             function renderNullField() {
@@ -327,18 +365,20 @@
                             attr: {id: 'detailsButton'},
                             action: async (e, dt) => {
                                 const selectedRow = dt.row({selected: true}).data();
-                                const container = document.getElementById('fileDetailsModelInfoContent');
-                                container.innerHTML = '';
-                                addDetailInfo("ID", selectedRow.id);
-                                addDetailInfo("File Name", selectedRow.fileName);
-                                addDetailInfo("File Ext", selectedRow.fileExtension);
-                                addDetailInfo("Original Name", selectedRow.originalFileName);
-                                addDetailInfo("Media Type", selectedRow.mediaType);
-                                addDetailInfo("File Size", selectedRow.fileSize);
-                                addDetailInfo("Created At", customDate()(selectedRow.createdAt, 'display', selectedRow));
-                                addDetailInfo("Expires", selectedRow.expires);
-                                addDetailInfo("IP", selectedRow.ip);
-                                addDetailInfo("URL", selectedRow.url);
+                                const detailArr = [
+                                    ["ID", selectedRow.id],
+                                    ["File Name", selectedRow.fileName],
+                                    ["File Ext", selectedRow.fileExtension],
+                                    ["Original Name", selectedRow.originalFileName],
+                                    ["Media Type", selectedRow.mediaType],
+                                    ["File Size", selectedRow.fileSize],
+                                    ["File Protection Level", selectedRow.fileProtectionLevel],
+                                    ["Created At", customDate()(selectedRow.createdAt, 'display', selectedRow)],
+                                    ["Expires", selectedRow.expires],
+                                    ["IP", selectedRow.ip],
+                                    ["URL", selectedRow.url],
+                                ];
+                                addDetailInfo(detailArr);
                                 detailsModal.show();
                             }
                         },
@@ -511,22 +551,6 @@
         loadDt();
         loadEventListeners();
     });
-
-    function addDetailInfo(heading, detail) {
-        const container = document.getElementById('fileDetailsModelInfoContent');
-        const rowDiv = document.createElement('div');
-        const headingDiv = document.createElement('div');
-        const detailDiv = document.createElement('div');
-        rowDiv.className = 'row';
-        headingDiv.className = 'col-md-3';
-        headingDiv.textContent = heading;
-        detailDiv.className = 'col-md-9';
-        detailDiv.textContent = detail;
-        rowDiv.appendChild(headingDiv);
-        rowDiv.appendChild(detailDiv);
-        container.appendChild(rowDiv);
-    }
-
 </script>
 </body>
 </html>

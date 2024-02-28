@@ -1,7 +1,7 @@
 import {Column, Entity, Index} from "typeorm";
 import {AbstractModel} from "./AbstractModel.js";
 import {FileUtils} from "../../utils/Utils.js";
-import type {EntrySettings} from "../../utils/typeings.js";
+import type {EntrySettings, ProtectionLevel} from "../../utils/typeings.js";
 
 @Entity()
 @Index(["token"], {
@@ -94,6 +94,16 @@ export class FileUploadModel extends AbstractModel {
 
     public get hasExpired(): boolean {
         return FileUtils.isFileExpired(this);
+    }
+
+    public get fileProtectionLevel(): ProtectionLevel {
+        if (this.encrypted) {
+            return "Encrypted";
+        }
+        if (this.settings?.password) {
+            return "Password";
+        }
+        return "None";
     }
 
     /**
