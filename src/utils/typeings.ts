@@ -53,3 +53,4 @@ export type IpBlockedAwareFileEntry = {
     ipBlocked: boolean
 }
 
+export type ProtectionLevel = "Encrypted" | "Password" | "None";
