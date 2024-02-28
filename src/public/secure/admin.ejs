@@ -9,6 +9,18 @@
         table.dataTable td.dt-type-numeric, table.dataTable th.dt-type-numeric {
             text-align: initial;
         }
+
+        #fileDetailsModelInfoContent span {
+            word-wrap: break-word;
+        }
+
+        #fileDetailsModelInfoContent .bi-clipboard {
+            cursor: pointer;
+        }
+
+        #fileDetailsModelInfoContent .bi-clipboard:active {
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -525,7 +537,7 @@
         detailDiv.className = 'col-md-9';
         detailDiv.innerHTML = `<span id='detail-${heading}'>${detail}</span>`;
         if (copyButtons.includes(heading)) {
-            detailDiv.innerHTML += `&nbsp;<i id='detail-${heading}-icon' class='bi bi-clipboard' onclick='copyToClip("detail-${heading}");'></i>`;
+            detailDiv.innerHTML += `<i title="Copy value to clipboard" id='detail-${heading}-icon' class='bi bi-clipboard ms-1' onclick='copyToClip("detail-${heading}");'></i>`;
         }
         rowDiv.appendChild(headingDiv);
         rowDiv.appendChild(detailDiv);
@@ -534,18 +546,6 @@
 
     function copyToClip(target) {
         navigator.clipboard.writeText(document.getElementById(target).innerText);
-        const icon = document.getElementById(target + '-icon');
-        icon.className = '';
-        icon.classList.add('bi', 'bi-clipboard-check-fill');
-        setTimeout(() => {
-            resetClipIcon(target);
-        }, 1000);
-    }
-
-    function resetClipIcon(target) {
-        const icon = document.getElementById(target + '-icon');
-        icon.className = '';
-        icon.classList.add('bi', 'bi-clipboard');
     }
 
 </script>
