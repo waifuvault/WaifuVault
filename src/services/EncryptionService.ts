@@ -28,8 +28,7 @@ export class EncryptionService implements OnInit {
         return argon2.hash(password, {
             hashLength: 32,
             raw: true,
-            salt: Buffer.from(this.salt!),
-            saltLength: 8
+            salt: Buffer.from(this.salt!)
         });
     }
 
