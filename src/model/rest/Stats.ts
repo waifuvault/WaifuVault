@@ -1,8 +1,6 @@
 import {Property} from "@tsed/schema";
 import {Builder} from "builder-pattern";
-import {FileDao} from "../../db/dao/FileDao.js";
-import type {ChartData} from "../../utils/typeings.js";
-import {dataSource} from "../../db/DataSource.js";
+import {FileEntry} from "./FileEntry.js";
 
 export class Stats {
 
@@ -13,30 +11,14 @@ export class Stats {
     public totalFileSize: number;
 
     @Property()
-    public protectionLevels: ChartData[];
+    public entries: FileEntry[];
 
-    @Property()
-    public fileSizes: ChartData[];
-
-    @Property()
-    public topMimeTypes: ChartData[];
-
-    @Property()
-    public uploadVelocity: ChartData[];
-
-    public static async buildStats(): Promise<Stats> {
-        const fileDao = new FileDao(dataSource);
-        const totalFileCount = await fileDao.getRawSQL('SELECT COUNT(*) FROM file_upload_model') as string;
-        const totalFileSize = await fileDao.getRawSQL('SELECT SUM(fileSize) FROM file_upload_model') as string;
-        const protectionLevels = await fileDao.getRawSQL('select case when encrypted=1 then \'Encrypted\' else \'None\' end as category, count(*) as value from file_upload_model group by category') as ChartData[];
-        const topMediaTypes = await fileDao.getRawSQL('select mediaType as category, count(*) as value from file_upload_model group by mediaType order by value desc limit 10') as ChartData[];
-        const uploadVelocity = await fileDao.getRawSQL('select date(createdAt) as category, count(*) as value from file_upload_model where createdAt >= datetime(\'now\', \'-30 days\') group by date(createdAt) order by date(createdAt) asc') as ChartData[];
+    public static buildStats(entries: FileEntry[]): Stats {
+        const fileSizes = entries.reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
         const statsBuilder = Builder(Stats)
-            .totalFileCount(parseInt(totalFileCount))
-            .totalFileSize(parseInt(totalFileSize))
-            .protectionLevels(protectionLevels)
-            .topMimeTypes(topMediaTypes)
-            .uploadVelocity(uploadVelocity);
+            .totalFileCount(entries.length)
+            .totalFileSize(fileSizes)
+            .entries(entries);
         return statsBuilder.build();
     }
 }

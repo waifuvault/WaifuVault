@@ -22,8 +22,8 @@ export class AdminService {
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
-    public getStatsData(): Promise<Stats> {
-        return Stats.buildStats();
+    public getStatsData(entries: FileEntry[]): Stats {
+        return Stats.buildStats(entries);
     }
 
     public async getAllEntries(): Promise<FileEntry[]> {
