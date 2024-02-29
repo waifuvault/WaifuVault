@@ -18,7 +18,6 @@ import {FileUtils, ObjectUtils} from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import argon2 from "argon2";
 import {AvManager} from "../manager/AvManager.js";
-import {UserService} from "./UserService.js";
 import {EncryptionService} from "./EncryptionService.js";
 
 @Service()
@@ -34,7 +33,6 @@ export class FileService {
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
         @Inject() private avManager: AvManager,
-        @Inject() private userService: UserService,
         @Inject() private encryptionService: EncryptionService
     ) {
     }
@@ -158,7 +156,7 @@ export class FileService {
     }
 
 
-    public async getEntry(fileNameOnSystem: string, requestedFileName?: string, password?: string): Promise<Buffer> {
+    public async getEntry(fileNameOnSystem: string, requestedFileName?: string, password?: string): Promise<[Buffer, FileUploadModel]> {
         const entry = await this.repo.getEntryFileName(path.parse(fileNameOnSystem).name);
         if (entry === null || requestedFileName && entry.originalFileName !== requestedFileName) {
             throw new NotFound(`resource ${requestedFileName} is not found`);
@@ -166,7 +164,7 @@ export class FileService {
         if (entry.hasExpired) {
             throw new NotFound(`Resource ${requestedFileName ?? fileNameOnSystem} is not found`);
         }
-        return this.encryptionService.decrypt(entry, password);
+        return Promise.all([this.encryptionService.decrypt(entry, password), entry]);
     }
 
     public async getFileInfo(token: string, humanReadable: boolean): Promise<FileUploadModelResponse> {

@@ -1,7 +1,7 @@
 import {Constant, Service} from "@tsed/di";
 import mime from 'mime';
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import {fileTypeFromFile} from 'file-type';
+import {fileTypeFromBuffer, fileTypeFromFile} from 'file-type';
 
 @Service()
 export class MimeService {
@@ -19,6 +19,21 @@ export class MimeService {
             return false;
         }
         return this.blockedMimeTypes.split(',').includes(detected);
+    }
+
+
+    public async findMimeTypeFromBuffer(buff: Buffer, resourceName?: string): Promise<string | null> {
+        let mimeValue: string | null = null;
+        if (resourceName) {
+            mimeValue = mime.getType(resourceName);
+        }
+        if (!mimeValue) {
+            const resolvedMime = await fileTypeFromBuffer(buff);
+            if (resolvedMime) {
+                mimeValue = resolvedMime.mime;
+            }
+        }
+        return mimeValue;
     }
 
     public async findMimeType(filepath: string): Promise<string | null> {
