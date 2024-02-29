@@ -7,6 +7,7 @@ import GlobalEnv from "../model/constants/GlobalEnv.js";
 import {FileEntry} from "../model/rest/FileEntry.js";
 import {FileUploadModel} from "../model/db/FileUpload.model.js";
 import {IpBlockedAwareFileEntry} from "../utils/typeings.js";
+import {Stats} from "../model/rest/Stats.js";
 
 @Service()
 export class AdminService {
@@ -20,6 +21,10 @@ export class AdminService {
 
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
+
+    public getStatsData(): Promise<Stats> {
+        return Stats.buildStats();
+    }
 
     public async getAllEntries(): Promise<FileEntry[]> {
         const allEntries = await this.repo.getAllEntries();

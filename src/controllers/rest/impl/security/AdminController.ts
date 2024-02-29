@@ -54,6 +54,12 @@ export class AdminController extends BaseRestController {
     }
 
     @Authorize("loginAuthProvider")
+    @Get("/statsData")
+    public getStatsData(): Promise<unknown> {
+        return this.adminService.getStatsData();
+    }
+
+    @Authorize("loginAuthProvider")
     @Get("/blockedIps")
     public getAllBlockedIps(): Promise<unknown> {
         return this.adminService.getAllBlockedIps();

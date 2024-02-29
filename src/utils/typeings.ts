@@ -53,4 +53,9 @@ export type IpBlockedAwareFileEntry = {
     ipBlocked: boolean
 }
 
+export type ChartData = {
+    category: string,
+    value: number
+}
+
 export type ProtectionLevel = "Encrypted" | "Password" | "None";
