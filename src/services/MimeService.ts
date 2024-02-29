@@ -23,17 +23,14 @@ export class MimeService {
 
 
     public async findMimeTypeFromBuffer(buff: Buffer, resourceName?: string): Promise<string | null> {
-        let mimeValue: string | null = null;
+        const mimeFromBuffer = await fileTypeFromBuffer(buff);
+        if (mimeFromBuffer) {
+            return mimeFromBuffer.mime;
+        }
         if (resourceName) {
-            mimeValue = mime.getType(resourceName);
+            return mime.getType(resourceName);
         }
-        if (!mimeValue) {
-            const resolvedMime = await fileTypeFromBuffer(buff);
-            if (resolvedMime) {
-                mimeValue = resolvedMime.mime;
-            }
-        }
-        return mimeValue;
+        return null;
     }
 
     public async findMimeType(filepath: string): Promise<string | null> {
