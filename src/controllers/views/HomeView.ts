@@ -15,7 +15,7 @@ export class HomeView {
     @View("login.ejs")
     public showLogin(@Req() req: Req, @Res() res: Res): unknown {
         if (req.user) {
-            res.redirect("/admin");
+            res.redirect("/admin/files");
         }
         return null;
     }
