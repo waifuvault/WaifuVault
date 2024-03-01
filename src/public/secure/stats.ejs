@@ -8,14 +8,127 @@
 <body>
 <div class="container mt-4">
     <%- include('../snippets/navbar.ejs'); %>
-    <h1>Stats Page Goes Here</h1>
+    <div class="row mb-4">
+        <div class="col-md-6"><h2>Total Files:&nbsp;<span id="totalFiles"></span></h2></div>
+        <div class="col-md-6"><h2>Total Size:&nbsp;<span id="totalSize"></span></h2></div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <h2>File Size</h2>
+            <div id="chartSizeDistribution" style="width:90%; height:300px;"></div>
+        </div>
+        <div class="col-md-4">
+            <h2>Media Types</h2>
+            <div id="chartMimeDistribution" style="width:90%; height:300px;"></div>
+        </div>
+        <div class="col-md-4">
+            <h2>File Protection</h2>
+            <div id="chartProtectionDistribution" style="width:90%; height:300px;"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Upload Velocity</h2>
+            <div id="chartUploadVelocity" style="width:90%; height:400px;"></div>
+        </div>
+    </div>
 </div>
 
 <%- include('../snippets/scripts.ejs'); %>
 <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
 <script>
+    function sizeAsMB(data) {
+        const sizeKB = Math.floor(data / 1024);
+        const sizeMB = Math.floor(sizeKB / 1024);
+        if (data < 1024) {
+            return `${data} B`;
+        }
+        if (sizeKB < 1024) {
+            return `${sizeKB} KB`;
+        }
+        return `${sizeMB} MB`;
+    }
+
+    function fileProtectionStats(entries) {
+        const counts = entries.reduce((acc, {fileProtectionLevel}) => {
+            acc[fileProtectionLevel] = (acc[fileProtectionLevel] || 0) + 1;
+            return acc;
+        }, {});
+
+        return Object.entries(counts).map(([category, value]) => ({
+            category, value
+        }));
+    }
+
+    function mediaTypeStats(entries) {
+        const counts = entries.reduce((acc, {mediaType}) => {
+            acc[mediaType] = (acc[mediaType] || 0) + 1;
+            return acc;
+        }, {});
+
+        return Object.entries(counts).map(([category, value]) => ({
+            category, value
+        }));
+    }
+
+    async function getStats() {
+        try {
+            const resp = await fetch('/rest/admin/statsData');
+            if (!resp.ok) {
+                throw new Error(`Network response wrong - ${resp.statusText}`);
+            }
+            return await resp.json()
+        } catch (err) {
+            console.error(`Fetch failed: ${err}`);
+            return null;
+        }
+    }
+
+    am5.ready(function () {
+        getStats().then(stats => {
+            document.getElementById('totalFiles').innerText = stats.totalFileCount;
+            document.getElementById('totalSize').innerText = sizeAsMB(stats.totalFileSize);
+
+            //File Protection
+            var rootProt = am5.Root.new("chartProtectionDistribution");
+            var chartProt = rootProt.container.children.push(am5percent.PieChart.new(rootProt, {
+                layout: rootProt.verticalHorizontal
+            }));
+            var seriesProt = chartProt.series.push(am5percent.PieSeries.new(rootProt, {
+                name: "Protection Level",
+                valueField: "value",
+                categoryField: "category"
+            }));
+            seriesProt.data.setAll(fileProtectionStats(stats.entries));
+
+            //File Size
+            var rootSize = am5.Root.new("chartSizeDistribution");
+            var chartSize = rootSize.container.children.push(am5percent.PieChart.new(rootSize, {
+                layout: rootSize.verticalHorizontal
+            }));
+            var seriesSize = chartSize.series.push(am5percent.PieSeries.new(rootSize, {
+                name: "Sizes",
+                valueField: "value",
+                categoryField: "category"
+            }));
+            seriesSize.data.setAll(fileProtectionStats(stats.entries));
+
+            //Media Type
+            var rootMedia = am5.Root.new("chartMimeDistribution");
+            var chartMedia = rootMedia.container.children.push(am5percent.PieChart.new(rootMedia, {
+                layout: rootMedia.verticalHorizontal
+            }));
+            var seriesMedia = chartMedia.series.push(am5percent.PieSeries.new(rootMedia, {
+                name: "Media Types",
+                valueField: "value",
+                categoryField: "category"
+            }));
+            seriesMedia.data.setAll(mediaTypeStats(stats.entries));
+        });
+    });
 </script>
 </body>
 </html>
