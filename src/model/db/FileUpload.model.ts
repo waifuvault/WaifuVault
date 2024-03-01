@@ -1,39 +1,38 @@
-import {Column, Entity, Index} from "typeorm";
-import {AbstractModel} from "./AbstractModel.js";
-import {FileUtils} from "../../utils/Utils.js";
-import type {EntrySettings, ProtectionLevel} from "../../utils/typeings.js";
+import { Column, Entity, Index } from "typeorm";
+import { AbstractModel } from "./AbstractModel.js";
+import { FileUtils } from "../../utils/Utils.js";
+import type { EntrySettings, ProtectionLevel } from "../../utils/typeings.js";
 
 @Entity()
 @Index(["token"], {
-    unique: true
+    unique: true,
 })
 export class FileUploadModel extends AbstractModel {
-
     @Column({
         nullable: false,
         type: "text",
-        unique: false
+        unique: false,
     })
     public fileName: string;
 
     @Column({
         nullable: false,
         type: "text",
-        unique: false
+        unique: false,
     })
     public token: string;
 
     @Column({
         nullable: false,
         type: "text",
-        unique: false
+        unique: false,
     })
     public checksum: string;
 
     @Column({
         nullable: false,
         type: "text",
-        unique: false
+        unique: false,
     })
     public ip: string;
 
@@ -41,50 +40,49 @@ export class FileUploadModel extends AbstractModel {
         nullable: false,
         type: "text",
         default: "",
-        unique: false
+        unique: false,
     })
     public originalFileName: string;
 
     @Column({
         nullable: true,
         type: "text",
-        unique: false
+        unique: false,
     })
     public fileExtension: string | null;
 
     @Column({
         nullable: false,
         type: "integer",
-        unique: false
+        unique: false,
     })
     public fileSize: number;
 
     @Column({
         nullable: false,
         type: "integer",
-        unique: false
+        unique: false,
     })
     public expires: number;
 
     @Column({
         nullable: true,
         type: "simple-json",
-        unique: false
+        unique: false,
     })
     public settings: EntrySettings | null;
 
     @Column({
         nullable: true,
         type: "text",
-        unique: false
+        unique: false,
     })
     public mediaType: string | null;
-
 
     @Column({
         nullable: false,
         unique: false,
-        default: false
+        default: false,
     })
     public encrypted: boolean;
 
@@ -116,5 +114,4 @@ export class FileUploadModel extends AbstractModel {
         }
         return this.fileName;
     }
-
 }

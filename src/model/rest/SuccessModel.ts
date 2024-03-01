@@ -1,7 +1,6 @@
-import {Description, Name} from "@tsed/schema";
+import { Description, Name } from "@tsed/schema";
 
 export class SuccessModel {
-
     @Name("success")
     public success: boolean;
 

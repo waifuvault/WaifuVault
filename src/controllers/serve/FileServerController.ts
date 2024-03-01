@@ -1,28 +1,21 @@
-import {Get, Hidden} from "@tsed/schema";
-import {Controller, Inject} from "@tsed/di";
-import {HeaderParams, PathParams, Res} from "@tsed/common";
+import { Get, Hidden } from "@tsed/schema";
+import { Controller, Inject } from "@tsed/di";
+import { HeaderParams, PathParams, Res } from "@tsed/common";
 import * as Path from "node:path";
-import {FileService} from "../../services/FileService.js";
-import {FileProtectedException} from "../../model/exceptions/FileProtectedException.js";
-import {MimeService} from "../../services/MimeService.js";
+import { FileService } from "../../services/FileService.js";
+import { FileProtectedException } from "../../model/exceptions/FileProtectedException.js";
+import { MimeService } from "../../services/MimeService.js";
 
 @Hidden()
 @Controller("/")
 export class FileServerController {
-
     public constructor(
         @Inject() private fileService: FileService,
-        @Inject() private mimeService: MimeService
-    ) {
-    }
+        @Inject() private mimeService: MimeService,
+    ) {}
 
     @Get("/:t/:file?")
-    public async getFile(
-        @Res() res: Res,
-        @PathParams("t") resource: string,
-        @HeaderParams("x-password") password?: string,
-        @PathParams("file") requestedFileName?: string
-    ): Promise<void> {
+    public async getFile(@Res() res: Res, @PathParams("t") resource: string, @HeaderParams("x-password") password?: string, @PathParams("file") requestedFileName?: string): Promise<void> {
         await this.hasPassword(resource, password);
         const [buff, entry] = await this.fileService.getEntry(resource, requestedFileName, password);
         const mimeType = await this.mimeService.findMimeTypeFromBuffer(buff, entry.fullFileNameOnSystem);
