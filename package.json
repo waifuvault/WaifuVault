@@ -17,7 +17,10 @@
     "blankmigration": "npx typeorm-ts-node-esm migration:create",
     "generatemigration": "npx typeorm-ts-node-esm migration:generate -d ./src/db/DataSource.ts",
     "runmigration": "npx typeorm-ts-node-esm migration:run -d ./src/db/DataSource.ts",
-    "revertmigration": "npx typeorm-ts-node-esm migration:revert -d ./src/db/DataSource.ts"
+    "revertmigration": "npx typeorm-ts-node-esm migration:revert -d ./src/db/DataSource.ts",
+    "prettier": "npx prettier ./src --check",
+    "prettier:fix": "npx prettier ./src --write",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@tsed/ajv": "^7.62.0",
@@ -98,8 +101,11 @@
     "@types/punycode": "^2.1.4",
     "barrelsby": "^2.8.1",
     "eslint": "^8.57.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
     "mv": "^2.1.1",
     "nodemon": "^3.1.0",
+    "prettier": "3.2.5",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
@@ -115,5 +121,11 @@
     "packageManager": "npm",
     "convention": "default",
     "architecture": "default"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "eslint --cache --fix",
+      "prettier --write"
+    ]
   }
 }

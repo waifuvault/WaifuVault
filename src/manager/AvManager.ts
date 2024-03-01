@@ -1,20 +1,18 @@
-import {Inject, Injectable} from "@tsed/di";
-import {AvFactory} from "../factory/AvFactory.js";
-import type {PlatformMulterFile} from "@tsed/common";
-import {Logger} from "@tsed/logger";
-import {FileEngine} from "../engine/impl/index.js";
-import {BadRequest} from "@tsed/exceptions";
+import { Inject, Injectable } from "@tsed/di";
+import { AvFactory } from "../factory/AvFactory.js";
+import type { PlatformMulterFile } from "@tsed/common";
+import { Logger } from "@tsed/logger";
+import { FileEngine } from "../engine/impl/index.js";
+import { BadRequest } from "@tsed/exceptions";
 import path from "node:path";
 
 @Injectable()
 export class AvManager {
-
     public constructor(
         @Inject() private readonly avFactory: AvFactory,
         @Inject() private logger: Logger,
-        @Inject() private fileEngine: FileEngine
-    ) {
-    }
+        @Inject() private fileEngine: FileEngine,
+    ) {}
 
     public async scanFile(file: string | PlatformMulterFile): Promise<void> {
         const avEngineToUse = this.avFactory.getFirstAvailableAvEngine();

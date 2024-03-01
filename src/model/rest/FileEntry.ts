@@ -1,11 +1,10 @@
-import {Nullable, Property} from "@tsed/schema";
-import {Builder} from "builder-pattern";
-import {ObjectUtils} from "../../utils/Utils.js";
-import type {IpBlockedAwareFileEntry, ProtectionLevel} from "../../utils/typeings.js";
-import {FileUploadModel} from "../db/FileUpload.model.js";
+import { Nullable, Property } from "@tsed/schema";
+import { Builder } from "builder-pattern";
+import { ObjectUtils } from "../../utils/Utils.js";
+import type { IpBlockedAwareFileEntry, ProtectionLevel } from "../../utils/typeings.js";
+import { FileUploadModel } from "../db/FileUpload.model.js";
 
 export class FileEntry {
-
     @Property()
     public id: number;
 
@@ -44,7 +43,7 @@ export class FileEntry {
     @Property()
     public fileProtectionLevel: ProtectionLevel;
 
-    public static fromModel({entry, ipBlocked}: IpBlockedAwareFileEntry, baseUrl: string): FileEntry {
+    public static fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry, baseUrl: string): FileEntry {
         const fileEntryBuilder = Builder(FileEntry)
             .url(FileEntry.getUrl(entry, baseUrl))
             .fileExtension(entry.fileExtension)
@@ -68,5 +67,4 @@ export class FileEntry {
         }
         return `${baseUrl}/f/${fileUploadModel.fileName}/${fileUploadModel.originalFileName}`;
     }
-
 }

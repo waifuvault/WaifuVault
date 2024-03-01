@@ -1,34 +1,30 @@
-import {Constant, Inject, OnInit, Service} from "@tsed/di";
-import {FileUploadModel} from "../model/db/FileUpload.model.js";
+import { Constant, Inject, OnInit, Service } from "@tsed/di";
+import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import fs from "node:fs/promises";
-import {FileEngine} from "../engine/impl/index.js";
+import { FileEngine } from "../engine/impl/index.js";
 import crypto from "node:crypto";
 import argon2 from "argon2";
-import {Forbidden} from "@tsed/exceptions";
+import { Forbidden } from "@tsed/exceptions";
 import Path from "node:path";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import {promisify} from "node:util";
+import { promisify } from "node:util";
 
 @Service()
 export class EncryptionService implements OnInit {
-
-    private readonly algorithm = 'aes-256-ctr';
+    private readonly algorithm = "aes-256-ctr";
 
     private readonly promisifyRandomBytes = promisify(crypto.randomBytes);
 
     @Constant(GlobalEnv.SALT)
     private readonly salt: string | undefined;
 
-    public constructor(
-        @Inject() private fileEngine: FileEngine
-    ) {
-    }
+    public constructor(@Inject() private fileEngine: FileEngine) {}
 
     private getKey(password: string): Promise<Buffer> {
         return argon2.hash(password, {
             hashLength: 32,
             raw: true,
-            salt: Buffer.from(this.salt!)
+            salt: Buffer.from(this.salt!),
         });
     }
 

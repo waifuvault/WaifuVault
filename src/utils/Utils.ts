@@ -1,12 +1,11 @@
-import {fileURLToPath} from 'node:url';
+import { fileURLToPath } from "node:url";
 import path from "node:path";
-import type {FileUploadModel} from "../model/db/FileUpload.model.js";
+import type { FileUploadModel } from "../model/db/FileUpload.model.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import process from "node:process";
-import type {Request} from "express";
+import type { Request } from "express";
 
 export class ObjectUtils {
-
     public static getNumber(source: string): number {
         const matches = source.match(/-?\d+/g);
         return matches && matches[0] ? parseInt(matches[0]) : 0;
@@ -29,7 +28,7 @@ export class ObjectUtils {
             [Math.floor((seconds % 31536000) / 86400), "days"],
             [Math.floor(((seconds % 31536000) % 86400) / 3600), "hours"],
             [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), "minutes"],
-            [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"]
+            [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"],
         ];
         let returnText = "";
 
@@ -93,7 +92,7 @@ export class FileUtils {
     }
 
     public static getTimeLeftBySize(filesize: number): number {
-        const ttl = Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow((filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1), 3));
+        const ttl = Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow(filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1, 3));
         return ttl < FileUtils.MIN_EXPIRATION ? FileUtils.MIN_EXPIRATION : ttl;
     }
 
@@ -107,12 +106,11 @@ export class FileUtils {
 }
 
 export class NetworkUtils {
-
     public static getIp(req: Request): string {
         const useCf = process.env.USE_CLOUDFLARE === "true";
         let ip: string;
         if (useCf) {
-            ip = req.headers['cf-connecting-ip'] as string;
+            ip = req.headers["cf-connecting-ip"] as string;
         } else {
             ip = req.ip as string;
         }
@@ -120,14 +118,18 @@ export class NetworkUtils {
     }
 
     private static extractIp(ipString: string): string {
-        const ipSplit = ipString.split(':');
+        const ipSplit = ipString.split(":");
         if (ipSplit.length === 1 || (ipSplit.length > 2 && !ipString.includes("]"))) {
             return ipString;
         }
         if (ipSplit.length === 2) {
             return ipSplit[0];
         }
-        return ipSplit.slice(0, ipSplit.length - 1).join(':').replace(/\[/, '').replace(/]/, '');
+        return ipSplit
+            .slice(0, ipSplit.length - 1)
+            .join(":")
+            .replace(/\[/, "")
+            .replace(/]/, "");
     }
 }
 

@@ -1,19 +1,18 @@
-import {Inject, Injectable} from "@tsed/di";
-import {AbstractDao} from "./AbstractDao.js";
-import {UserModel} from "../../model/db/User.model.js";
-import {SQLITE_DATA_SOURCE} from "../../model/di/tokens.js";
-import {DataSource, EntityManager} from "typeorm";
+import { Inject, Injectable } from "@tsed/di";
+import { AbstractDao } from "./AbstractDao.js";
+import { UserModel } from "../../model/db/User.model.js";
+import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
+import { DataSource, EntityManager } from "typeorm";
 
 @Injectable()
 export class UserDao extends AbstractDao<UserModel> {
-
     public constructor(@Inject(SQLITE_DATA_SOURCE) ds: DataSource) {
         super(ds, UserModel);
     }
 
     public getUser(email: string, transaction?: EntityManager): Promise<UserModel | null> {
         return this.getRepository(transaction).findOneBy({
-            email
+            email,
         });
     }
 

@@ -1,10 +1,9 @@
-import {Column, Entity} from "typeorm";
-import {Description, Example, Format, Name, Required} from "@tsed/schema";
-import {AbstractModel} from "./AbstractModel.js";
+import { Column, Entity } from "typeorm";
+import { Description, Example, Format, Name, Required } from "@tsed/schema";
+import { AbstractModel } from "./AbstractModel.js";
 
 @Entity()
 export class UserModel extends AbstractModel {
-
     @Column()
     @Description("User password")
     @Example("/5gftuD/")
@@ -19,5 +18,4 @@ export class UserModel extends AbstractModel {
     @Name("email")
     @Required()
     public email: string;
-
 }

@@ -1,56 +1,56 @@
-import {Exception} from "@tsed/exceptions";
-import {FileUploadModel} from "../model/db/FileUpload.model.js";
+import { Exception } from "@tsed/exceptions";
+import { FileUploadModel } from "../model/db/FileUpload.model.js";
 
 export type HttpErrorRenderObj<T extends Exception> = {
-    status: number,
-    title: string | null,
-    message: string,
-    internalError: T
+    status: number;
+    title: string | null;
+    message: string;
+    internalError: T;
 };
 
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
-export type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U;
+export type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U;
 
 export type EntrySettings = {
-    hideFilename?: boolean,
-    password?: string
-}
+    hideFilename?: boolean;
+    password?: string;
+};
 
 export type AvScanResult = {
-    passed: boolean,
-    errorCode?: number
-    additionalMessage?: string
-}
+    passed: boolean;
+    errorCode?: number;
+    additionalMessage?: string;
+};
 
 export type ReCAPTCHAResponse = {
-    "success": boolean,
-    "challenge_ts": string,
-    "hostname": string,
-    "error-codes": string[]
+    success: boolean;
+    challenge_ts: string;
+    hostname: string;
+    "error-codes": string[];
 };
 
 export type DatatableOrder = {
-    "column": number,
-    "dir": string,
-    "name": string,
+    column: number;
+    dir: string;
+    name: string;
 };
 
 export type DatatableSearch = {
-    "value": string,
-    "regex": boolean
+    value: string;
+    regex: boolean;
 };
 
 export type DatatableColumn = {
-    "data": string,
-    "name": string,
-    "searchable": boolean,
-    "orderable": boolean,
-    "search": DatatableSearch
-}
+    data: string;
+    name: string;
+    searchable: boolean;
+    orderable: boolean;
+    search: DatatableSearch;
+};
 
 export type IpBlockedAwareFileEntry = {
-    entry: FileUploadModel,
-    ipBlocked: boolean
-}
+    entry: FileUploadModel;
+    ipBlocked: boolean;
+};
 
 export type ProtectionLevel = "Encrypted" | "Password" | "None";

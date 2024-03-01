@@ -1,11 +1,10 @@
-import {Constant, Service} from "@tsed/di";
-import mime from 'mime';
+import { Constant, Service } from "@tsed/di";
+import mime from "mime";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import {fileTypeFromBuffer, fileTypeFromFile} from 'file-type';
+import { fileTypeFromBuffer, fileTypeFromFile } from "file-type";
 
 @Service()
 export class MimeService {
-
     @Constant(GlobalEnv.BLOCKED_MIME_TYPES)
     private readonly blockedMimeTypes: string;
 
@@ -18,9 +17,8 @@ export class MimeService {
             // if the media type can't be calculated, just allow it
             return false;
         }
-        return this.blockedMimeTypes.split(',').includes(detected);
+        return this.blockedMimeTypes.split(",").includes(detected);
     }
-
 
     public async findMimeTypeFromBuffer(buff: Buffer, resourceName?: string): Promise<string | null> {
         const mimeFromBuffer = await fileTypeFromBuffer(buff);

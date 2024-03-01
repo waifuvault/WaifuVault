@@ -1,6 +1,6 @@
-import {Get, Hidden, View} from "@tsed/schema";
-import {Controller} from "@tsed/di";
-import {Req, Res} from "@tsed/common";
+import { Get, Hidden, View } from "@tsed/schema";
+import { Controller } from "@tsed/di";
+import { Req, Res } from "@tsed/common";
 
 @Controller("/")
 @Hidden()
