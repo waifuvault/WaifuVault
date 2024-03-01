@@ -75,6 +75,34 @@
         }));
     }
 
+    function summarizeInBands(entries, propName, bands) {
+        const bandCounts = bands.map((band, index) => ({
+            band: index === 0 ? `0-${band}` : `${bands[index - 1] + 1}-${band}`,
+            count: 0
+        })).concat([{ band: `${bands[bands.length - 1] + 1}+`, count: 0 }]);
+
+        // Place entry based on band
+        entries.forEach(entry => {
+            const value = entry[propName];
+            let placed = false;
+
+            for (let i = 0; i < bands.length; i++) {
+                if (Math.floor(value/(1024*1024)) <= bands[i]) {
+                    bandCounts[i].count += 1;
+                    placed = true;
+                    break;
+                }
+            }
+
+            // If the value is greater than the highest band limit, place it in the last band
+            if (!placed) {
+                bandCounts[bandCounts.length - 1].count += 1;
+            }
+        });
+
+        return bandCounts;
+    }
+
     async function getStats() {
         try {
             const resp = await fetch('/rest/admin/statsData');
@@ -106,16 +134,17 @@
             seriesProt.data.setAll(summarizeProperty(stats.entries, 'fileProtectionLevel'));
 
             //File Size
+            const sizeBands = [1,10,100,250,450];
             var rootSize = am5.Root.new("chartSizeDistribution");
             var chartSize = rootSize.container.children.push(am5percent.PieChart.new(rootSize, {
                 layout: rootSize.verticalHorizontal
             }));
             var seriesSize = chartSize.series.push(am5percent.PieSeries.new(rootSize, {
                 name: "Sizes",
-                valueField: "value",
-                categoryField: "category"
+                valueField: "count",
+                categoryField: "band"
             }));
-            seriesSize.data.setAll(summarizeProperty(stats.entries, 'fileProtectionLevel'));
+            seriesSize.data.setAll(summarizeInBands(stats.entries,'fileSize',sizeBands).filter(i => i.count !== 0));
 
             //Media Type
             var rootMedia = am5.Root.new("chartMimeDistribution");
