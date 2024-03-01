@@ -147,11 +147,12 @@ export class FileService {
 
     public async getEntry(fileNameOnSystem: string, requestedFileName?: string, password?: string): Promise<[Buffer, FileUploadModel]> {
         const entry = await this.repo.getEntryFileName(path.parse(fileNameOnSystem).name);
+        const resource = requestedFileName ?? fileNameOnSystem;
         if (entry === null || (requestedFileName && entry.originalFileName !== requestedFileName)) {
-            throw new NotFound(`resource ${requestedFileName} is not found`);
+            throw new NotFound(`resource ${resource} is not found`);
         }
         if (entry.hasExpired) {
-            throw new NotFound(`Resource ${requestedFileName ?? fileNameOnSystem} is not found`);
+            throw new NotFound(`Resource ${resource} is not found`);
         }
         return Promise.all([this.encryptionService.decrypt(entry, password), entry]);
     }
