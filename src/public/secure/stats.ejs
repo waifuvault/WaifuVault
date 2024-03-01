@@ -52,20 +52,10 @@
         return `${sizeMB} MB`;
     }
 
-    function fileProtectionStats(entries) {
-        const counts = entries.reduce((acc, {fileProtectionLevel}) => {
-            acc[fileProtectionLevel] = (acc[fileProtectionLevel] || 0) + 1;
-            return acc;
-        }, {});
-
-        return Object.entries(counts).map(([category, value]) => ({
-            category, value
-        }));
-    }
-
-    function mediaTypeStats(entries) {
-        const counts = entries.reduce((acc, {mediaType}) => {
-            acc[mediaType] = (acc[mediaType] || 0) + 1;
+    function summarizeProperty(entries, property) {
+        const counts = entries.reduce((acc, entry) => {
+            const key = entry[property];
+            acc[key] = (acc[key] || 0) + 1;
             return acc;
         }, {});
 
@@ -102,7 +92,7 @@
                 valueField: "value",
                 categoryField: "category"
             }));
-            seriesProt.data.setAll(fileProtectionStats(stats.entries));
+            seriesProt.data.setAll(summarizeProperty(stats.entries, 'fileProtectionLevel'));
 
             //File Size
             var rootSize = am5.Root.new("chartSizeDistribution");
@@ -114,7 +104,7 @@
                 valueField: "value",
                 categoryField: "category"
             }));
-            seriesSize.data.setAll(fileProtectionStats(stats.entries));
+            seriesSize.data.setAll(summarizeProperty(stats.entries, 'fileProtectionLevel'));
 
             //Media Type
             var rootMedia = am5.Root.new("chartMimeDistribution");
@@ -126,7 +116,7 @@
                 valueField: "value",
                 categoryField: "category"
             }));
-            seriesMedia.data.setAll(mediaTypeStats(stats.entries));
+            seriesMedia.data.setAll(summarizeProperty(stats.entries, 'mediaType'));
         });
     });
 </script>
