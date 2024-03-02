@@ -1,18 +1,18 @@
-import type {IHttpErrorRenderEngine} from "../../IHttpErrorRenderEngine.js";
-import {Exception} from "@tsed/exceptions";
-import type {HttpErrorRenderObj} from "../../../utils/typeings.js";
-import {Injectable, ProviderScope} from "@tsed/di";
-import {HTTP_RENDER_ENGINE} from "../../../model/di/tokens.js";
+import type { IHttpErrorRenderEngine } from "../../IHttpErrorRenderEngine.js";
+import { Exception } from "@tsed/exceptions";
+import type { HttpErrorRenderObj } from "../../../utils/typeings.js";
+import { Injectable, ProviderScope } from "@tsed/di";
+import { HTTP_RENDER_ENGINE } from "../../../model/di/tokens.js";
 
 export type DefaultRenderObj = {
     name: string;
     message: string;
-    status: number
-}
+    status: number;
+};
 
 @Injectable({
     scope: ProviderScope.SINGLETON,
-    type: HTTP_RENDER_ENGINE
+    type: HTTP_RENDER_ENGINE,
 })
 export class DefaultHttpRenderEngine implements IHttpErrorRenderEngine<DefaultRenderObj, Exception> {
     public render(obj: HttpErrorRenderObj<Exception>): Promise<DefaultRenderObj> {
@@ -27,12 +27,11 @@ export class DefaultHttpRenderEngine implements IHttpErrorRenderEngine<DefaultRe
         return {
             name: error.origin?.name ?? error.name,
             message: error.message,
-            status: error.status ?? 500
+            status: error.status ?? 50,
         };
     }
 
     public getTitle(): string | null {
         return null;
     }
-
 }

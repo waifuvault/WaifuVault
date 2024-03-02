@@ -1,28 +1,27 @@
-import {Constant, Inject, Service} from "@tsed/di";
-import {FileRepo} from "../db/repo/FileRepo.js";
-import type {PlatformMulterFile} from "@tsed/common";
-import {FileUploadModel} from "../model/db/FileUpload.model.js";
-import {FileEngine} from "../engine/impl/index.js";
-import {FileUrlService} from "./FileUrlService.js";
-import {MimeService} from "./MimeService.js";
-import {Builder, type IBuilder} from "builder-pattern";
+import { Constant, Inject, Service } from "@tsed/di";
+import { FileRepo } from "../db/repo/FileRepo.js";
+import type { PlatformMulterFile } from "@tsed/common";
+import { FileUploadModel } from "../model/db/FileUpload.model.js";
+import { FileEngine } from "../engine/impl/index.js";
+import { FileUrlService } from "./FileUrlService.js";
+import { MimeService } from "./MimeService.js";
+import { Builder, type IBuilder } from "builder-pattern";
 import path from "node:path";
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
-import {FileUploadModelResponse} from "../model/rest/FileUploadModelResponse.js";
+import { FileUploadModelResponse } from "../model/rest/FileUploadModelResponse.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import {Logger} from "@tsed/logger";
-import type {EntrySettings, XOR} from "../utils/typeings.js";
-import {BadRequest, InternalServerError, NotFound, UnsupportedMediaType} from "@tsed/exceptions";
-import {FileUtils, ObjectUtils} from "../utils/Utils.js";
+import { Logger } from "@tsed/logger";
+import type { EntrySettings, XOR } from "../utils/typeings.js";
+import { BadRequest, InternalServerError, NotFound, UnsupportedMediaType } from "@tsed/exceptions";
+import { FileUtils, ObjectUtils } from "../utils/Utils.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import argon2 from "argon2";
-import {AvManager} from "../manager/AvManager.js";
-import {EncryptionService} from "./EncryptionService.js";
+import { AvManager } from "../manager/AvManager.js";
+import { EncryptionService } from "./EncryptionService.js";
 
 @Service()
 export class FileService {
-
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
@@ -33,21 +32,12 @@ export class FileService {
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
         @Inject() private avManager: AvManager,
-        @Inject() private encryptionService: EncryptionService
-    ) {
-    }
+        @Inject() private encryptionService: EncryptionService,
+    ) {}
 
-    public async processUpload(
-        ip: string,
-        source: XOR<PlatformMulterFile, string>,
-        customExpiry?: string,
-        maskFilename = false,
-        password?: string
-    ): Promise<[FileUploadModelResponse, boolean]> {
+    public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, customExpiry?: string, maskFilename = false, password?: string): Promise<[FileUploadModelResponse, boolean]> {
         const token = crypto.randomUUID();
-        const uploadEntry = Builder(FileUploadModel)
-            .ip(ip)
-            .token(token);
+        const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
 
         const [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
         uploadEntry.fileName(path.parse(resourcePath).name);
@@ -155,14 +145,14 @@ export class FileService {
         return !!entry.settings?.password;
     }
 
-
     public async getEntry(fileNameOnSystem: string, requestedFileName?: string, password?: string): Promise<[Buffer, FileUploadModel]> {
         const entry = await this.repo.getEntryFileName(path.parse(fileNameOnSystem).name);
-        if (entry === null || requestedFileName && entry.originalFileName !== requestedFileName) {
-            throw new NotFound(`resource ${requestedFileName} is not found`);
+        const resource = requestedFileName ?? fileNameOnSystem;
+        if (entry === null || (requestedFileName && entry.originalFileName !== requestedFileName)) {
+            throw new NotFound(`resource ${resource} is not found`);
         }
         if (entry.hasExpired) {
-            throw new NotFound(`Resource ${requestedFileName ?? fileNameOnSystem} is not found`);
+            throw new NotFound(`Resource ${resource} is not found`);
         }
         return Promise.all([this.encryptionService.decrypt(entry, password), entry]);
     }
@@ -187,9 +177,9 @@ export class FileService {
         if (value === 0) {
             throw new BadRequest(`Unable to parse expire value from ${expires}`);
         }
-        if (expires.includes('d')) {
+        if (expires.includes("d")) {
             timeFactor = TIME_UNIT.days;
-        } else if (expires.includes('h')) {
+        } else if (expires.includes("h")) {
             timeFactor = TIME_UNIT.hours;
         }
         value = ObjectUtils.convertToMilli(value, timeFactor);
@@ -227,9 +217,9 @@ export class FileService {
 
     private async getFileHash(resourcePath: string): Promise<string> {
         const fileBuffer = await fs.readFile(resourcePath);
-        const hashSum = crypto.createHash('md5');
+        const hashSum = crypto.createHash("md5");
         hashSum.update(fileBuffer);
-        return hashSum.digest('hex');
+        return hashSum.digest("hex");
     }
 
     private scanFile(resourcePath: string): Promise<void> {
@@ -254,5 +244,4 @@ export class FileService {
     private deleteUploadedFile(resource: string): Promise<void> {
         return this.fileEngine.deleteFile(path.basename(resource));
     }
-
 }

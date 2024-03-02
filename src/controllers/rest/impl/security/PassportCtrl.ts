@@ -1,32 +1,28 @@
-import {Controller, Inject, ProviderScope, Scope} from "@tsed/di";
-import {Authenticate, Authorize} from "@tsed/passport";
-import {Get, Hidden, Post, Returns, Security} from "@tsed/schema";
-import {PlatformResponse, Req, Res, UseBefore} from "@tsed/common";
-import {StatusCodes} from "http-status-codes";
-import {BodyParams} from "@tsed/platform-params";
-import {UserModel} from "../../../../model/db/User.model.js";
-import {BaseRestController} from "../../BaseRestController.js";
-import {CustomUserInfoModel} from "../../../../model/auth/CustomUserInfoModel.js";
-import {UserService} from "../../../../services/UserService.js";
-import {ReCAPTCHAMiddleWare} from "../../../../middleware/endpoint/ReCAPTCHAMiddleWare.js";
-import {Forbidden} from "@tsed/exceptions";
+import { Controller, Inject, ProviderScope, Scope } from "@tsed/di";
+import { Authenticate, Authorize } from "@tsed/passport";
+import { Get, Hidden, Post, Returns, Security } from "@tsed/schema";
+import { PlatformResponse, Req, Res, UseBefore } from "@tsed/common";
+import { StatusCodes } from "http-status-codes";
+import { BodyParams } from "@tsed/platform-params";
+import { UserModel } from "../../../../model/db/User.model.js";
+import { BaseRestController } from "../../BaseRestController.js";
+import { CustomUserInfoModel } from "../../../../model/auth/CustomUserInfoModel.js";
+import { UserService } from "../../../../services/UserService.js";
+import { ReCAPTCHAMiddleWare } from "../../../../middleware/endpoint/ReCAPTCHAMiddleWare.js";
+import { Forbidden } from "@tsed/exceptions";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
 @Hidden()
 @Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
 export class PassportCtrl extends BaseRestController {
-
-    public constructor(
-        @Inject() private usersService: UserService
-    ) {
+    public constructor(@Inject() private usersService: UserService) {
         super();
     }
 
-
     @Post("/login")
     @UseBefore(ReCAPTCHAMiddleWare)
-    @Authenticate("loginAuthProvider", {failWithError: true})
+    @Authenticate("loginAuthProvider", { failWithError: true })
     @Returns(StatusCodes.MOVED_TEMPORARILY)
     @Returns(StatusCodes.UNAUTHORIZED)
     public login(@Res() res: Res): void {
@@ -41,7 +37,7 @@ export class PassportCtrl extends BaseRestController {
                 if (err) {
                     reject(err);
                 }
-                res.redirect('/');
+                res.redirect("/");
                 resolve();
             });
         });

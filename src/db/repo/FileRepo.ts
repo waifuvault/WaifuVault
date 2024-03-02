@@ -1,15 +1,11 @@
-import {Inject, Service} from "@tsed/di";
-import {FileDao} from "../dao/FileDao.js";
-import {FileUploadModel} from "../../model/db/FileUpload.model.js";
+import { Inject, Service } from "@tsed/di";
+import { FileDao } from "../dao/FileDao.js";
+import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import * as Path from "node:path";
 
 @Service()
 export class FileRepo {
-
-    public constructor(
-        @Inject() private fileDao: FileDao
-    ) {
-    }
+    public constructor(@Inject() private fileDao: FileDao) {}
 
     public saveEntry(entry: FileUploadModel): Promise<FileUploadModel> {
         return this.fileDao.saveEntry(entry);
@@ -50,5 +46,4 @@ export class FileRepo {
     public getSearchRecordCount(search: string): Promise<number> {
         return this.fileDao.getSearchRecordCount(search);
     }
-
 }

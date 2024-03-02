@@ -19,7 +19,7 @@ enum GlobalEnv {
     RECAPTCHA_SITE_KEY = `${prefix}RECAPTCHA_SITE_KEY`,
     RECAPTCHA_SECRET_KEY = `${prefix}RECAPTCHA_SECRET_KEY`,
     FILE_CLEANER_CRON = `${prefix}FILE_CLEANER_CRON`,
-    SALT = `${prefix}SALT`
+    SALT = `${prefix}SALT`,
 }
 
 export default GlobalEnv;

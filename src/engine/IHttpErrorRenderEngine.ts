@@ -1,6 +1,6 @@
-import type {HttpErrorRenderObj} from "../utils/typeings.js";
-import {Exception} from "@tsed/exceptions";
-import {PlatformResponse} from "@tsed/common";
+import type { HttpErrorRenderObj } from "../utils/typeings.js";
+import { Exception } from "@tsed/exceptions";
+import { PlatformResponse } from "@tsed/common";
 
 export interface IHttpErrorRenderEngine<T, E extends Exception> {
     /**

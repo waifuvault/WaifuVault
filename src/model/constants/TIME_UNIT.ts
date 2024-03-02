@@ -7,7 +7,7 @@ enum TIME_UNIT {
     weeks,
     months,
     years,
-    decades
+    decades,
 }
 
 export default TIME_UNIT;

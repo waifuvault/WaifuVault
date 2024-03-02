@@ -1,7 +1,7 @@
-import {PlatformResponse} from "@tsed/common";
-import {StatusCodes} from "http-status-codes";
-import {ErrorModel} from "../../model/rest/ErrorModel.js";
-import {SuccessModel} from "../../model/rest/SuccessModel.js";
+import { PlatformResponse } from "@tsed/common";
+import { StatusCodes } from "http-status-codes";
+import { ErrorModel } from "../../model/rest/ErrorModel.js";
+import { SuccessModel } from "../../model/rest/SuccessModel.js";
 
 export abstract class BaseRestController {
     protected doError(res: PlatformResponse, message: string, status: StatusCodes): PlatformResponse {
