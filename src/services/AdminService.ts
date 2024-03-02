@@ -79,11 +79,7 @@ export class AdminService {
 
         const tokensToDelete = matchingEntries.map(entry => entry.token);
 
-        try {
-            await this.fileService.processDelete(tokensToDelete);
-        } catch (e) {
-            throw new e();
-        }
+        await this.fileService.processDelete(tokensToDelete);
 
         return true;
     }
