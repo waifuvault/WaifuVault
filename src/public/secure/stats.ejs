@@ -103,6 +103,42 @@
         return bandCounts;
     }
 
+    function showEmptyModal(ev,seriesobj,modal,ticks) {
+        const series = ev.target;
+        if (ev.target.data.length < 1) {
+            // Generate placeholder data
+            const categoryField = series.get("categoryField");
+            const valueField = series.get("valueField");
+            const placeholder = [];
+            for (i = 0; i < 3; i++) {
+                let item = {};
+                item[categoryField] = "";
+                item[valueField] = 1;
+                placeholder.push(item)
+            }
+            seriesobj.data.setAll(placeholder);
+
+            // Disable ticks/labels
+            if (ticks) {
+                seriesobj.labels.template.set("forceHidden", true);
+                seriesobj.ticks.template.set("forceHidden", true);
+            }
+
+            // Show modal
+            modal.open();
+        }
+        else {
+            // Re-enable ticks/labels
+            if (ticks) {
+                seriesobj.labels.template.set("forceHidden", false);
+                seriesobj.ticks.template.set("forceHidden", false);
+            }
+
+            // Hide modal
+            modal.close();
+        }
+    }
+
     async function getStats() {
         try {
             const resp = await fetch('/rest/admin/statsData');
@@ -138,39 +174,11 @@
                 alignLabels: false
             }));
             seriesProt.events.on("datavalidated", function(ev) {
-                const series = ev.target;
-                if (ev.target.data.length < 1) {
-                    // Generate placeholder data
-                    const categoryField = series.get("categoryField");
-                    const valueField = series.get("valueField");
-                    const placeholder = [];
-                    for (i = 0; i < 3; i++) {
-                        let item = {};
-                        item[categoryField] = "";
-                        item[valueField] = 1;
-                        placeholder.push(item)
-                    }
-                    seriesProt.data.setAll(placeholder);
-
-                    // Disable ticks/labels
-                    seriesProt.labels.template.set("forceHidden", true);
-                    seriesProt.ticks.template.set("forceHidden", true);
-
-                    // Show modal
-                    modalProt.open();
-                }
-                else {
-                    // Re-enable ticks/labels
-                    seriesProt.labels.template.set("forceHidden", false);
-                    seriesProt.ticks.template.set("forceHidden", false);
-
-                    // Hide modal
-                    modalProt.close();
-                }
+                showEmptyModal(ev,seriesProt,modalProt,true);
             });
             seriesProt.data.setAll(summarizeProperty(stats.entries, 'fileProtectionLevel'));
 
-            //File Size
+            //File Size:q
             const sizeBands = [1,10,100,250,450];
             const rootSize = am5.Root.new("chartSizeDistribution");
             rootSize.interfaceColors.set("grid", am5.color(0xffffff));
@@ -188,35 +196,7 @@
                 alignLabels: false
             }));
             seriesSize.events.on("datavalidated", function(ev) {
-                const series = ev.target;
-                if (ev.target.data.length < 1) {
-                    // Generate placeholder data
-                    const categoryField = series.get("categoryField");
-                    const valueField = series.get("valueField");
-                    const placeholder = [];
-                    for (i = 0; i < 3; i++) {
-                        let item = {};
-                        item[categoryField] = "";
-                        item[valueField] = 1;
-                        placeholder.push(item)
-                    }
-                    seriesSize.data.setAll(placeholder);
-
-                    // Disable ticks/labels
-                    seriesSize.labels.template.set("forceHidden", true);
-                    seriesSize.ticks.template.set("forceHidden", true);
-
-                    // Show modal
-                    modalSize.open();
-                }
-                else {
-                    // Re-enable ticks/labels
-                    seriesSize.labels.template.set("forceHidden", false);
-                    seriesSize.ticks.template.set("forceHidden", false);
-
-                    // Hide modal
-                    modalSize.close();
-                }
+                showEmptyModal(ev,seriesSize,modalSize,true);
             });
             seriesSize.data.setAll(summarizeInBands(stats.entries,'fileSize',sizeBands).filter(i => i.count !== 0));
 
@@ -239,35 +219,7 @@
                 alignLabels: false
             }));
             seriesMedia.events.on("datavalidated", function(ev) {
-                const series = ev.target;
-                if (ev.target.data.length < 1) {
-                    // Generate placeholder data
-                    const categoryField = series.get("categoryField");
-                    const valueField = series.get("valueField");
-                    const placeholder = [];
-                    for (i = 0; i < 3; i++) {
-                        let item = {};
-                        item[categoryField] = "";
-                        item[valueField] = 1;
-                        placeholder.push(item)
-                    }
-                    seriesMedia.data.setAll(placeholder);
-
-                    // Disable ticks/labels
-                    seriesMedia.labels.template.set("forceHidden", true);
-                    seriesMedia.ticks.template.set("forceHidden", true);
-
-                    // Show modal
-                    modalMedia.open();
-                }
-                else {
-                    // Re-enable ticks/labels
-                    seriesMedia.labels.template.set("forceHidden", false);
-                    seriesMedia.ticks.template.set("forceHidden", false);
-
-                    // Hide modal
-                    modalMedia.close();
-                }
+                showEmptyModal(ev,seriesMedia,modalMedia,true);
             });
             seriesMedia.data.setAll(summarizeProperty(stats.entries, 'mediaType'));
 
@@ -323,26 +275,7 @@
                 })
             }));
             seriesUpload.events.on("datavalidated", function(ev) {
-                const series = ev.target;
-                if (ev.target.data.length < 1) {
-                    // Generate placeholder data
-                    const valueXField = series.get("valueXField");
-                    const valueYField = series.get("valueYField");
-                    const placeholder = [];
-                    for (i = 0; i < 3; i++) {
-                        let item = {};
-                        item[valueXField] = 0;
-                        item[valueYField] = 1;
-                        placeholder.push(item)
-                    }
-                    seriesUpload.data.setAll(placeholder);
-                    // Show modal
-                    modalUpload.open();
-                }
-                else {
-                    // Hide modal
-                    modalUpload.close();
-                }
+                showEmptyModal(ev,seriesUpload,modalUpload,false);
             });
             seriesUpload.columns.template.setAll({ strokeOpacity: 0 })
             seriesUpload.data.setAll(summarizeProperty(stats.entries, 'createdAt', true));
