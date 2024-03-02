@@ -21,6 +21,10 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         });
     }
 
+    public getRawSQL(query: string, transaction?: EntityManager): Promise<unknown> {
+        return this.getRepository(transaction).query(query);
+    }
+
     public getEntryFromEpoch(epoch: number, transaction?: EntityManager): Promise<FileUploadModel | null> {
         return this.getRepository(transaction).findOneBy({});
     }

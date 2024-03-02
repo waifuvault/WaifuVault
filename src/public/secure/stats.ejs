@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head prefix="og: https://ogp.me/ns#">
+    <%- include('../snippets/head.ejs'); %>
+    <link href="/assets/custom/css/index.css" rel="stylesheet">
+    <title>Statistics</title>
+</head>
+<body>
+<div class="container mt-4">
+    <%- include('../snippets/navbar.ejs'); %>
+    <div class="row mb-4">
+        <div class="col-md-6"><h2>Total Files:&nbsp;<span id="totalFiles"></span></h2></div>
+        <div class="col-md-6"><h2>Total Size:&nbsp;<span id="totalSize"></span></h2></div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <h2>File Size</h2>
+            <div id="chartSizeDistribution" style="width:100%; height:400px;"></div>
+        </div>
+        <div class="col-md-4">
+            <h2>Media Types</h2>
+            <div id="chartMimeDistribution" style="width:100%; height:400px;"></div>
+        </div>
+        <div class="col-md-4">
+            <h2>File Protection</h2>
+            <div id="chartProtectionDistribution" style="width:100%; height:400px;"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Upload Velocity</h2>
+            <div id="chartUploadVelocity" style="width:100%; height:400px;"></div>
+        </div>
+    </div>
+</div>
+
+<%- include('../snippets/scripts.ejs'); %>
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Responsive.js"></script>
+<script>
+    function sizeReadable(data) {
+        const sizeKB = Math.floor(data / 1024);
+        const sizeMB = Math.floor(sizeKB / 1024);
+        const sizeGB = Math.floor(sizeMB / 1024);
+        if (data < 1024) {
+            return `${data} B`;
+        }
+        if (sizeKB < 1024) {
+            return `${sizeKB} KB`;
+        }
+        if (sizeMB < 1024) {
+            return `${sizeMB} MB`;
+        }
+        return `${sizeGB} GB`;
+    }
+
+    function summarizeProperty(entries, property, isDate = false) {
+        const counts = entries.reduce((acc, entry) => {
+            const key = isDate ? new Date(entry[property].split('T')[0]).getTime() : entry[property];
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+        }, {});
+
+        if(isDate) {
+            return Object.entries(counts).map(([date, value]) => ({
+                date:Number(date), value
+            }));
+        }
+
+        return Object.entries(counts).map(([category, value]) => ({
+            category, value
+        }));
+    }
+
+    function summarizeInBands(entries, propName, bands) {
+        const bandCounts = bands.map((band, index) => ({
+            band: index === 0 ? `0-${band}` : `${bands[index - 1] + 1}-${band}`,
+            count: 0
+        })).concat([{ band: `${bands[bands.length - 1] + 1}+`, count: 0 }]);
+
+        // Place entry based on band
+        entries.forEach(entry => {
+            const value = entry[propName];
+            let placed = false;
+
+            for (let i = 0; i < bands.length; i++) {
+                if (Math.floor(value/(1024*1024)) <= bands[i]) {
+                    bandCounts[i].count += 1;
+                    placed = true;
+                    break;
+                }
+            }
+
+            // If the value is greater than the highest band limit, place it in the last band
+            if (!placed) {
+                bandCounts[bandCounts.length - 1].count += 1;
+            }
+        });
+
+        return bandCounts;
+    }
+
+    function showEmptyModal(ev,seriesobj,modal,ticks) {
+        const series = ev.target;
+        if (ev.target.data.length < 1) {
+            // Generate placeholder data
+            const categoryField = series.get("categoryField");
+            const valueField = series.get("valueField");
+            const placeholder = [];
+            for (i = 0; i < 3; i++) {
+                let item = {};
+                item[categoryField] = "";
+                item[valueField] = 1;
+                placeholder.push(item)
+            }
+            seriesobj.data.setAll(placeholder);
+
+            // Disable ticks/labels
+            if (ticks) {
+                seriesobj.labels.template.set("forceHidden", true);
+                seriesobj.ticks.template.set("forceHidden", true);
+            }
+
+            // Show modal
+            modal.open();
+        }
+        else {
+            // Re-enable ticks/labels
+            if (ticks) {
+                seriesobj.labels.template.set("forceHidden", false);
+                seriesobj.ticks.template.set("forceHidden", false);
+            }
+
+            // Hide modal
+            modal.close();
+        }
+    }
+
+    async function getStats() {
+        try {
+            const resp = await fetch('/rest/admin/statsData');
+            if (!resp.ok) {
+                throw new Error(`Network response wrong - ${resp.statusText}`);
+            }
+            return await resp.json()
+        } catch (err) {
+            console.error(`Fetch failed: ${err}`);
+            return null;
+        }
+    }
+
+    am5.ready(function () {
+        getStats().then(stats => {
+            document.getElementById('totalFiles').innerText = stats.totalFileCount;
+            document.getElementById('totalSize').innerText = sizeReadable(stats.totalFileSize);
+
+            //File Protection
+            const rootProt = am5.Root.new("chartProtectionDistribution");
+            rootProt.interfaceColors.set("grid", am5.color(0xffffff));
+            rootProt.interfaceColors.set("text", am5.color(0xffffff));
+            const chartProt = rootProt.container.children.push(am5percent.PieChart.new(rootProt, {
+                layout: rootProt.verticalHorizontal
+            }));
+            const modalProt = am5.Modal.new(rootProt, {
+                content: "The chart has no data"
+            });
+            const seriesProt = chartProt.series.push(am5percent.PieSeries.new(rootProt, {
+                name: "Protection Level",
+                valueField: "value",
+                categoryField: "category",
+                alignLabels: false
+            }));
+            seriesProt.events.on("datavalidated", function(ev) {
+                showEmptyModal(ev,seriesProt,modalProt,true);
+            });
+            seriesProt.data.setAll(summarizeProperty(stats.entries, 'fileProtectionLevel'));
+
+            //File Size:q
+            const sizeBands = [1,10,100,250,450];
+            const rootSize = am5.Root.new("chartSizeDistribution");
+            rootSize.interfaceColors.set("grid", am5.color(0xffffff));
+            rootSize.interfaceColors.set("text", am5.color(0xffffff));
+            const chartSize = rootSize.container.children.push(am5percent.PieChart.new(rootSize, {
+                layout: rootSize.verticalHorizontal
+            }));
+            const modalSize = am5.Modal.new(rootSize, {
+                content: "The chart has no data"
+            });
+            const seriesSize = chartSize.series.push(am5percent.PieSeries.new(rootSize, {
+                name: "Sizes",
+                valueField: "count",
+                categoryField: "band",
+                alignLabels: false
+            }));
+            seriesSize.events.on("datavalidated", function(ev) {
+                showEmptyModal(ev,seriesSize,modalSize,true);
+            });
+            seriesSize.data.setAll(summarizeInBands(stats.entries,'fileSize',sizeBands).filter(i => i.count !== 0));
+
+            //Media Type
+            const rootMedia = am5.Root.new("chartMimeDistribution");
+            rootMedia.interfaceColors.set("grid", am5.color(0xffffff));
+            rootMedia.interfaceColors.set("text", am5.color(0xffffff));
+            const chartMedia = rootMedia.container.children.push(am5percent.PieChart.new(rootMedia, {
+                layout:rootMedia.horizontalLayout
+            }));
+            const legendMedia = chartMedia.children.push(am5.Legend.new(rootMedia, {}));
+            legendMedia.data.setAll(chartMedia.series.values);
+            const modalMedia = am5.Modal.new(rootMedia, {
+                content: "The chart has no data"
+            });
+            const seriesMedia = chartMedia.series.push(am5percent.PieSeries.new(rootMedia, {
+                name: "Media Types",
+                valueField: "value",
+                categoryField: "category",
+                alignLabels: false
+            }));
+            seriesMedia.events.on("datavalidated", function(ev) {
+                showEmptyModal(ev,seriesMedia,modalMedia,true);
+            });
+            seriesMedia.data.setAll(summarizeProperty(stats.entries, 'mediaType'));
+
+            //Upload velocity
+            const rootUpload = am5.Root.new("chartUploadVelocity");
+            rootUpload.interfaceColors.set("grid", am5.color(0xffffff));
+            rootUpload.interfaceColors.set("text", am5.color(0xffffff));
+            const uploadTheme = am5.Theme.new(rootUpload);
+            uploadTheme.rule("AxisLabel",["minor"]).setAll({dy:1});
+            rootUpload.setThemes([
+                am5themes_Animated.new(rootUpload),
+                uploadTheme,
+                am5themes_Responsive.new(rootUpload)
+            ]);
+            const chartUpload = rootUpload.container.children.push(am5xy.XYChart.new(rootUpload, {
+                panX: false,
+                panY: false,
+                wheelX: "panX",
+                wheelY: "zoomX",
+                paddingLeft: 0,
+                paddingRight: 0
+            }));
+            const xAxis = chartUpload.xAxes.push(am5xy.DateAxis.new(rootUpload, {
+                maxDeviation: 0,
+                baseInterval: {
+                    timeUnit: "day",
+                    count: 1
+                },
+                renderer: am5xy.AxisRendererX.new(rootUpload, {
+                    minorGridEnabled:true,
+                    minorLabelsEnabled:true
+                }),
+                tooltip: am5.Tooltip.new(rootUpload, {})
+            }));
+            xAxis.set("minorDateFormats", {
+                "day":"dd",
+                "month":"MM"
+            });
+            const yAxis = chartUpload.yAxes.push(am5xy.ValueAxis.new(rootUpload, {
+                renderer: am5xy.AxisRendererY.new(rootUpload, {})
+            }));
+            const modalUpload = am5.Modal.new(rootUpload, {
+                content: "The chart has no data"
+            });
+            const seriesUpload = chartUpload.series.push(am5xy.ColumnSeries.new(rootUpload, {
+                name: "Upload Velocity",
+                xAxis: xAxis,
+                yAxis: yAxis,
+                valueYField: "value",
+                valueXField: "date",
+                tooltip: am5.Tooltip.new(rootUpload, {
+                    labelText: "{valueY}"
+                })
+            }));
+            seriesUpload.events.on("datavalidated", function(ev) {
+                showEmptyModal(ev,seriesUpload,modalUpload,false);
+            });
+            seriesUpload.columns.template.setAll({ strokeOpacity: 0 })
+            seriesUpload.data.setAll(summarizeProperty(stats.entries, 'createdAt', true));
+            seriesUpload.appear(1000);
+            chartUpload.appear(1000, 100);
+        });
+    });
+</script>
+</body>
+</html>

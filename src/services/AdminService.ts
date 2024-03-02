@@ -7,6 +7,7 @@ import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { FileEntry } from "../model/rest/FileEntry.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { IpBlockedAwareFileEntry } from "../utils/typeings.js";
+import { Stats } from "../model/rest/Stats.js";
 
 @Service()
 export class AdminService {
@@ -18,6 +19,10 @@ export class AdminService {
 
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
+
+    public getStatsData(entries: FileEntry[]): Stats {
+        return Stats.buildStats(entries);
+    }
 
     public async getAllEntries(): Promise<FileEntry[]> {
         const allEntries = await this.repo.getAllEntries();
@@ -74,11 +79,7 @@ export class AdminService {
 
         const tokensToDelete = matchingEntries.map(entry => entry.token);
 
-        try {
-            await this.fileService.processDelete(tokensToDelete);
-        } catch (e) {
-            throw new e();
-        }
+        await this.fileService.processDelete(tokensToDelete);
 
         return true;
     }
