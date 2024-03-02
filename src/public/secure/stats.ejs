@@ -122,13 +122,13 @@
             document.getElementById('totalSize').innerText = sizeReadable(stats.totalFileSize);
 
             //File Protection
-            var rootProt = am5.Root.new("chartProtectionDistribution");
+            const rootProt = am5.Root.new("chartProtectionDistribution");
             rootProt.interfaceColors.set("grid", am5.color(0xffffff));
             rootProt.interfaceColors.set("text", am5.color(0xffffff));
-            var chartProt = rootProt.container.children.push(am5percent.PieChart.new(rootProt, {
+            const chartProt = rootProt.container.children.push(am5percent.PieChart.new(rootProt, {
                 layout: rootProt.verticalHorizontal
             }));
-            var seriesProt = chartProt.series.push(am5percent.PieSeries.new(rootProt, {
+            const seriesProt = chartProt.series.push(am5percent.PieSeries.new(rootProt, {
                 name: "Protection Level",
                 valueField: "value",
                 categoryField: "category",
@@ -138,13 +138,13 @@
 
             //File Size
             const sizeBands = [1,10,100,250,450];
-            var rootSize = am5.Root.new("chartSizeDistribution");
+            const rootSize = am5.Root.new("chartSizeDistribution");
             rootSize.interfaceColors.set("grid", am5.color(0xffffff));
             rootSize.interfaceColors.set("text", am5.color(0xffffff));
-            var chartSize = rootSize.container.children.push(am5percent.PieChart.new(rootSize, {
+            const chartSize = rootSize.container.children.push(am5percent.PieChart.new(rootSize, {
                 layout: rootSize.verticalHorizontal
             }));
-            var seriesSize = chartSize.series.push(am5percent.PieSeries.new(rootSize, {
+            const seriesSize = chartSize.series.push(am5percent.PieSeries.new(rootSize, {
                 name: "Sizes",
                 valueField: "count",
                 categoryField: "band",
@@ -153,16 +153,16 @@
             seriesSize.data.setAll(summarizeInBands(stats.entries,'fileSize',sizeBands).filter(i => i.count !== 0));
 
             //Media Type
-            var rootMedia = am5.Root.new("chartMimeDistribution");
+            const rootMedia = am5.Root.new("chartMimeDistribution");
             rootMedia.interfaceColors.set("grid", am5.color(0xffffff));
             rootMedia.interfaceColors.set("text", am5.color(0xffffff));
-            var chartMedia = rootMedia.container.children.push(am5percent.PieChart.new(rootMedia, {
+            const chartMedia = rootMedia.container.children.push(am5percent.PieChart.new(rootMedia, {
                 layout:rootMedia.horizontalLayout
             }));
-            var legendMedia = chartMedia.children.push(am5.Legend.new(rootMedia, {}));
+            const legendMedia = chartMedia.children.push(am5.Legend.new(rootMedia, {}));
             legendMedia.data.setAll(chartMedia.series.values);
             console.table(chartMedia.series.values);
-            var seriesMedia = chartMedia.series.push(am5percent.PieSeries.new(rootMedia, {
+            const seriesMedia = chartMedia.series.push(am5percent.PieSeries.new(rootMedia, {
                 name: "Media Types",
                 valueField: "value",
                 categoryField: "category",
@@ -171,7 +171,7 @@
             seriesMedia.data.setAll(summarizeProperty(stats.entries, 'mediaType'));
 
             //Upload velocity
-            var rootUpload = am5.Root.new("chartUploadVelocity");
+            const rootUpload = am5.Root.new("chartUploadVelocity");
             rootUpload.interfaceColors.set("grid", am5.color(0xffffff));
             rootUpload.interfaceColors.set("text", am5.color(0xffffff));
             const uploadTheme = am5.Theme.new(rootUpload);
@@ -181,7 +181,7 @@
                 uploadTheme,
                 am5themes_Responsive.new(rootUpload)
             ]);
-            var chartUpload = rootUpload.container.children.push(am5xy.XYChart.new(rootUpload, {
+            const chartUpload = rootUpload.container.children.push(am5xy.XYChart.new(rootUpload, {
                 panX: false,
                 panY: false,
                 wheelX: "panX",
@@ -189,7 +189,7 @@
                 paddingLeft: 0,
                 paddingRight: 0
             }));
-            var xAxis = chartUpload.xAxes.push(am5xy.DateAxis.new(rootUpload, {
+            const xAxis = chartUpload.xAxes.push(am5xy.DateAxis.new(rootUpload, {
                 maxDeviation: 0,
                 baseInterval: {
                     timeUnit: "day",
@@ -205,10 +205,10 @@
                 "day":"dd",
                 "month":"MM"
             });
-            var yAxis = chartUpload.yAxes.push(am5xy.ValueAxis.new(rootUpload, {
+            const yAxis = chartUpload.yAxes.push(am5xy.ValueAxis.new(rootUpload, {
                 renderer: am5xy.AxisRendererY.new(rootUpload, {})
             }));
-            var seriesUpload = chartUpload.series.push(am5xy.ColumnSeries.new(rootUpload, {
+            const seriesUpload = chartUpload.series.push(am5xy.ColumnSeries.new(rootUpload, {
                 name: "Upload Velocity",
                 xAxis: xAxis,
                 yAxis: yAxis,
