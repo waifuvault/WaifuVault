@@ -128,12 +128,46 @@
             const chartProt = rootProt.container.children.push(am5percent.PieChart.new(rootProt, {
                 layout: rootProt.verticalHorizontal
             }));
+            const modalProt = am5.Modal.new(rootProt, {
+                content: "The chart has no data"
+            });
             const seriesProt = chartProt.series.push(am5percent.PieSeries.new(rootProt, {
                 name: "Protection Level",
                 valueField: "value",
                 categoryField: "category",
                 alignLabels: false
             }));
+            seriesProt.events.on("datavalidated", function(ev) {
+                const series = ev.target;
+                if (ev.target.data.length < 1) {
+                    // Generate placeholder data
+                    const categoryField = series.get("categoryField");
+                    const valueField = series.get("valueField");
+                    const placeholder = [];
+                    for (i = 0; i < 3; i++) {
+                        let item = {};
+                        item[categoryField] = "";
+                        item[valueField] = 1;
+                        placeholder.push(item)
+                    }
+                    seriesProt.data.setAll(placeholder);
+
+                    // Disable ticks/labels
+                    seriesProt.labels.template.set("forceHidden", true);
+                    seriesProt.ticks.template.set("forceHidden", true);
+
+                    // Show modal
+                    modalProt.open();
+                }
+                else {
+                    // Re-enable ticks/labels
+                    seriesProt.labels.template.set("forceHidden", false);
+                    seriesProt.ticks.template.set("forceHidden", false);
+
+                    // Hide modal
+                    modalProt.close();
+                }
+            });
             seriesProt.data.setAll(summarizeProperty(stats.entries, 'fileProtectionLevel'));
 
             //File Size
@@ -144,12 +178,46 @@
             const chartSize = rootSize.container.children.push(am5percent.PieChart.new(rootSize, {
                 layout: rootSize.verticalHorizontal
             }));
+            const modalSize = am5.Modal.new(rootSize, {
+                content: "The chart has no data"
+            });
             const seriesSize = chartSize.series.push(am5percent.PieSeries.new(rootSize, {
                 name: "Sizes",
                 valueField: "count",
                 categoryField: "band",
                 alignLabels: false
             }));
+            seriesSize.events.on("datavalidated", function(ev) {
+                const series = ev.target;
+                if (ev.target.data.length < 1) {
+                    // Generate placeholder data
+                    const categoryField = series.get("categoryField");
+                    const valueField = series.get("valueField");
+                    const placeholder = [];
+                    for (i = 0; i < 3; i++) {
+                        let item = {};
+                        item[categoryField] = "";
+                        item[valueField] = 1;
+                        placeholder.push(item)
+                    }
+                    seriesSize.data.setAll(placeholder);
+
+                    // Disable ticks/labels
+                    seriesSize.labels.template.set("forceHidden", true);
+                    seriesSize.ticks.template.set("forceHidden", true);
+
+                    // Show modal
+                    modalSize.open();
+                }
+                else {
+                    // Re-enable ticks/labels
+                    seriesSize.labels.template.set("forceHidden", false);
+                    seriesSize.ticks.template.set("forceHidden", false);
+
+                    // Hide modal
+                    modalSize.close();
+                }
+            });
             seriesSize.data.setAll(summarizeInBands(stats.entries,'fileSize',sizeBands).filter(i => i.count !== 0));
 
             //Media Type
@@ -161,13 +229,46 @@
             }));
             const legendMedia = chartMedia.children.push(am5.Legend.new(rootMedia, {}));
             legendMedia.data.setAll(chartMedia.series.values);
-            console.table(chartMedia.series.values);
+            const modalMedia = am5.Modal.new(rootMedia, {
+                content: "The chart has no data"
+            });
             const seriesMedia = chartMedia.series.push(am5percent.PieSeries.new(rootMedia, {
                 name: "Media Types",
                 valueField: "value",
                 categoryField: "category",
                 alignLabels: false
             }));
+            seriesMedia.events.on("datavalidated", function(ev) {
+                const series = ev.target;
+                if (ev.target.data.length < 1) {
+                    // Generate placeholder data
+                    const categoryField = series.get("categoryField");
+                    const valueField = series.get("valueField");
+                    const placeholder = [];
+                    for (i = 0; i < 3; i++) {
+                        let item = {};
+                        item[categoryField] = "";
+                        item[valueField] = 1;
+                        placeholder.push(item)
+                    }
+                    seriesMedia.data.setAll(placeholder);
+
+                    // Disable ticks/labels
+                    seriesMedia.labels.template.set("forceHidden", true);
+                    seriesMedia.ticks.template.set("forceHidden", true);
+
+                    // Show modal
+                    modalMedia.open();
+                }
+                else {
+                    // Re-enable ticks/labels
+                    seriesMedia.labels.template.set("forceHidden", false);
+                    seriesMedia.ticks.template.set("forceHidden", false);
+
+                    // Hide modal
+                    modalMedia.close();
+                }
+            });
             seriesMedia.data.setAll(summarizeProperty(stats.entries, 'mediaType'));
 
             //Upload velocity
@@ -208,6 +309,9 @@
             const yAxis = chartUpload.yAxes.push(am5xy.ValueAxis.new(rootUpload, {
                 renderer: am5xy.AxisRendererY.new(rootUpload, {})
             }));
+            const modalUpload = am5.Modal.new(rootUpload, {
+                content: "The chart has no data"
+            });
             const seriesUpload = chartUpload.series.push(am5xy.ColumnSeries.new(rootUpload, {
                 name: "Upload Velocity",
                 xAxis: xAxis,
@@ -218,6 +322,28 @@
                     labelText: "{valueY}"
                 })
             }));
+            seriesUpload.events.on("datavalidated", function(ev) {
+                const series = ev.target;
+                if (ev.target.data.length < 1) {
+                    // Generate placeholder data
+                    const valueXField = series.get("valueXField");
+                    const valueYField = series.get("valueYField");
+                    const placeholder = [];
+                    for (i = 0; i < 3; i++) {
+                        let item = {};
+                        item[valueXField] = 0;
+                        item[valueYField] = 1;
+                        placeholder.push(item)
+                    }
+                    seriesUpload.data.setAll(placeholder);
+                    // Show modal
+                    modalUpload.open();
+                }
+                else {
+                    // Hide modal
+                    modalUpload.close();
+                }
+            });
             seriesUpload.columns.template.setAll({ strokeOpacity: 0 })
             seriesUpload.data.setAll(summarizeProperty(stats.entries, 'createdAt', true));
             seriesUpload.appear(1000);
