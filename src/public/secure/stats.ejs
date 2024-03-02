@@ -13,23 +13,23 @@
         <div class="col-md-6 border border-primary rounded-2"><h2>Total Size:&nbsp;<span id="totalSize"></span></h2></div>
     </div>
     <div class="row mb-4">
-        <div class="col-md-4 border border-primary rounded-2">
+        <div class="col-md-6 border border-primary rounded-2">
             <h2>File Size</h2>
-            <div id="chartSizeDistribution" style="width:90%; height:300px;"></div>
+            <div id="chartSizeDistribution" style="width:100%; height:300px;"></div>
         </div>
-        <div class="col-md-4 border border-primary rounded-2">
+        <div class="col-md-6 border border-primary rounded-2">
             <h2>Media Types</h2>
-            <div id="chartMimeDistribution" style="width:90%; height:300px;"></div>
-        </div>
-        <div class="col-md-4 border border-primary rounded-2">
-            <h2>File Protection</h2>
-            <div id="chartProtectionDistribution" style="width:90%; height:300px;"></div>
+            <div id="chartMimeDistribution" style="width:100%; height:300px;"></div>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12 border border-primary rounded-2">
+        <div class="col-md-6 border border-primary rounded-2">
             <h2>Upload Velocity</h2>
-            <div id="chartUploadVelocity" style="width:90%; height:400px;"></div>
+            <div id="chartUploadVelocity" style="width:100%; height:400px;"></div>
+        </div>
+        <div class="col-md-6 border border-primary rounded-2">
+            <h2>File Protection</h2>
+            <div id="chartProtectionDistribution" style="width:100%; height:300px;"></div>
         </div>
     </div>
 </div>
@@ -123,6 +123,8 @@
 
             //File Protection
             var rootProt = am5.Root.new("chartProtectionDistribution");
+            rootProt.interfaceColors.set("grid", am5.color(0xffffff));
+            rootProt.interfaceColors.set("text", am5.color(0xffffff));
             var chartProt = rootProt.container.children.push(am5percent.PieChart.new(rootProt, {
                 layout: rootProt.verticalHorizontal
             }));
@@ -136,6 +138,8 @@
             //File Size
             const sizeBands = [1,10,100,250,450];
             var rootSize = am5.Root.new("chartSizeDistribution");
+            rootSize.interfaceColors.set("grid", am5.color(0xffffff));
+            rootSize.interfaceColors.set("text", am5.color(0xffffff));
             var chartSize = rootSize.container.children.push(am5percent.PieChart.new(rootSize, {
                 layout: rootSize.verticalHorizontal
             }));
@@ -148,9 +152,14 @@
 
             //Media Type
             var rootMedia = am5.Root.new("chartMimeDistribution");
+            rootMedia.interfaceColors.set("grid", am5.color(0xffffff));
+            rootMedia.interfaceColors.set("text", am5.color(0xffffff));
             var chartMedia = rootMedia.container.children.push(am5percent.PieChart.new(rootMedia, {
-                layout: rootMedia.verticalHorizontal
+                layout:rootMedia.horizontalLayout
             }));
+            var legendMedia = chartMedia.children.push(am5.Legend.new(rootMedia, {}));
+            legendMedia.data.setAll(chartMedia.series.values);
+            console.table(chartMedia.series.values);
             var seriesMedia = chartMedia.series.push(am5percent.PieSeries.new(rootMedia, {
                 name: "Media Types",
                 valueField: "value",
@@ -160,6 +169,8 @@
 
             //Upload velocity
             var rootUpload = am5.Root.new("chartUploadVelocity");
+            rootUpload.interfaceColors.set("grid", am5.color(0xffffff));
+            rootUpload.interfaceColors.set("text", am5.color(0xffffff));
             const uploadTheme = am5.Theme.new(rootUpload);
             uploadTheme.rule("AxisLabel",["minor"]).setAll({dy:1});
             rootUpload.setThemes([
@@ -172,7 +183,8 @@
                 panY: false,
                 wheelX: "panX",
                 wheelY: "zoomX",
-                paddingLeft: 0
+                paddingLeft: 0,
+                paddingRight: 0
             }));
             var xAxis = chartUpload.xAxes.push(am5xy.DateAxis.new(rootUpload, {
                 maxDeviation: 0,
