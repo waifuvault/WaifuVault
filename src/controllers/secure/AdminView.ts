@@ -28,9 +28,7 @@ export class AdminView {
     @Get("/stats")
     @Authorize("loginAuthProvider")
     @View("/secure/stats.ejs")
-    public showStatistics(@Req() req: Req): unknown {
-        return {
-            user: req.user as CustomUserInfoModel,
-        };
+    public showStatistics(): unknown {
+        return null;
     }
 }
