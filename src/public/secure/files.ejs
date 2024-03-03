@@ -74,50 +74,9 @@
             </div>
         </div>
     </div>
-    <div class="row mt-4">
-        <div class="col-md-12 text-center">
-            <div class="btn-group" role="group" aria-label="Basic example">
-                <form method="get" action="/rest/auth/logout" class="d-inline">
-                    <button class="btn btn-outline-primary" type="submit">Logout</button>
-                </form>
-                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal"
-                        data-bs-target="#changeDetailsModel">Change Details
-                </button>
-            </div>
-        </div>
-    </div>
 </div>
 <!--modals-->
 <div id="modals">
-    <div class="modal fade" id="changeDetailsModel" tabindex="-1" aria-labelledby="changeDetailsModelLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="changeDetailsModelLabel">Change account details</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="changeDetailsModelInfoContent">
-                    <div class="mb-3">
-                        <label for="changeEmail" class="form-label">Email address</label>
-                        <input type="email" class="form-control" name="email" id="changeEmail" value="<%- user.email; -%>">
-                    </div>
-                    <div class="mb-3">
-                        <label for="changePassword" class="form-label">New Password</label>
-                        <input type="password" class="form-control" name="password" id="changePassword">
-                    </div>
-                    <div class="mb-3">
-                        <label for="changePasswordRepeat" class="form-label">Repeat Password</label>
-                        <input type="password" class="form-control" id="changePasswordRepeat">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-primary" id="changeDetailsModelOk">Ok</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="modal fade" id="fileDetailsModel" tabindex="-1" aria-labelledby="fileDetailsModelLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -154,6 +113,8 @@
 <script>
     Site.loadPage(async site => {
         const dtMap = new Map();
+
+        document.getElementById("filesNav").classList.add("active");
 
         function loadDt() {
             const detailsModal = new bootstrap.Modal(document.getElementById('fileDetailsModel'), {keyboard: false});
@@ -513,44 +474,7 @@
             });
         }
 
-        function loadEventListeners() {
-            ((() => {
-                document.getElementById("changeDetailsModelOk").addEventListener("click", async e => {
-                    const formData = new URLSearchParams();
-                    const email = document.getElementById("changeEmail").value;
-                    const password = document.getElementById("changePassword").value;
-                    const repeatPassword = document.getElementById("changePasswordRepeat").value;
-                    if (!email) {
-                        return alert("Please specify email.");
-                    }
-                    if (!password) {
-                        return alert("password must not be blank.");
-                    }
-                    if (password !== repeatPassword) {
-                        return alert("Passwords do not match.");
-                    }
-                    formData.append("email", email);
-                    formData.append("password", password);
-                    site.loading(true);
-                    try {
-                        await fetch(`${baseUrl}/auth/changeDetails`, {
-                            method: 'POST',
-                            body: formData
-                        });
-                    } catch (e) {
-                        alert(e.message);
-                        return;
-                    } finally {
-                        Site.loading(false);
-                    }
-                    alert("User details changed successfully.");
-                    changeDetailsModal.hide();
-                });
-            })());
-        }
-
         loadDt();
-        loadEventListeners();
     });
 </script>
 </body>
