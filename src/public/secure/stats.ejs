@@ -59,7 +59,8 @@
         return `${sizeGB} GB`;
     }
 
-    function summarizeProperty(entries, property, isDate = false) {
+    function summarizeProperty(entries, property, isDate = false, includeNull = false) {
+        entries = includeNull ? entries : entries.filter(entry => entry[property]);
         const counts = entries.reduce((acc, entry) => {
             const key = isDate ? new Date(entry[property].split('T')[0]).getTime() : entry[property];
             acc[key] = (acc[key] || 0) + 1;
@@ -226,7 +227,7 @@
             seriesMedia.events.on("datavalidated", function(ev) {
                 showEmptyModal(ev,seriesMedia,modalMedia,true);
             });
-            const mediaItems = summarizeProperty(stats.entries, 'mediaType').filter(entry => entry.category!=='null');
+            const mediaItems = summarizeProperty(stats.entries, 'mediaType');
             mediaItems.sort((a,b) => b.value - a.value);
             seriesMedia.data.setAll(mediaItems.slice(0,10));
 
