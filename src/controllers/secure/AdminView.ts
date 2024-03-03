@@ -19,10 +19,8 @@ export class AdminView {
     @Get("/files")
     @Authorize("loginAuthProvider")
     @View("/secure/files.ejs")
-    public showFileAdmin(@Req() req: Req): unknown {
-        return {
-            user: req.user as CustomUserInfoModel,
-        };
+    public showFileAdmin(): unknown {
+        return null;
     }
 
     @Get("/stats")
@@ -30,5 +28,14 @@ export class AdminView {
     @View("/secure/stats.ejs")
     public showStatistics(): unknown {
         return null;
+    }
+
+    @Get("/user")
+    @Authorize("loginAuthProvider")
+    @View("/secure/user.ejs")
+    public showUserAdmin(@Req() req: Req): unknown {
+        return {
+            user: req.user as CustomUserInfoModel,
+        };
     }
 }
