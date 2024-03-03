@@ -41,6 +41,8 @@
 <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/themes/Responsive.js"></script>
 <script>
+    document.getElementById("statsNav").classList.add("active");
+
     function sizeReadable(data) {
         const sizeKB = Math.floor(data / 1024);
         const sizeMB = Math.floor(sizeKB / 1024);
