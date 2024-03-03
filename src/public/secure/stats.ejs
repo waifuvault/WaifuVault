@@ -164,7 +164,8 @@
             rootProt.interfaceColors.set("grid", am5.color(0xffffff));
             rootProt.interfaceColors.set("text", am5.color(0xffffff));
             const chartProt = rootProt.container.children.push(am5percent.PieChart.new(rootProt, {
-                layout: rootProt.verticalHorizontal
+                layout: rootProt.verticalHorizontal,
+                radius:am5.percent(70)
             }));
             const modalProt = am5.Modal.new(rootProt, {
                 content: "The chart has no data"
@@ -186,7 +187,8 @@
             rootSize.interfaceColors.set("grid", am5.color(0xffffff));
             rootSize.interfaceColors.set("text", am5.color(0xffffff));
             const chartSize = rootSize.container.children.push(am5percent.PieChart.new(rootSize, {
-                layout: rootSize.verticalHorizontal
+                layout: rootSize.verticalHorizontal,
+                radius:am5.percent(70)
             }));
             const modalSize = am5.Modal.new(rootSize, {
                 content: "The chart has no data"
@@ -207,7 +209,8 @@
             rootMedia.interfaceColors.set("grid", am5.color(0xffffff));
             rootMedia.interfaceColors.set("text", am5.color(0xffffff));
             const chartMedia = rootMedia.container.children.push(am5percent.PieChart.new(rootMedia, {
-                layout:rootMedia.horizontalLayout
+                layout:rootMedia.horizontalLayout,
+                radius:am5.percent(70)
             }));
             const legendMedia = chartMedia.children.push(am5.Legend.new(rootMedia, {}));
             legendMedia.data.setAll(chartMedia.series.values);
