@@ -21,10 +21,17 @@ export class FileUploadModelResponse {
     @Nullable(Number, String)
     public retentionPeriod: string | number | null = null;
 
-    public static fromModel(fileUploadModel: FileUploadModel, baseUrl: string, format = false): FileUploadModelResponse {
-        const builder = Builder(FileUploadModelResponse).token(fileUploadModel.token).url(FileUploadModelResponse.getUrl(fileUploadModel, baseUrl));
-        if (format) {
-            builder.retentionPeriod(ObjectUtils.timeToHuman(fileUploadModel.expiresIn));
+    public static fromModel(
+        fileUploadModel: FileUploadModel,
+        baseUrl: string,
+        format = false,
+    ): FileUploadModelResponse {
+        const builder = Builder(FileUploadModelResponse)
+            .token(fileUploadModel.token)
+            .url(FileUploadModelResponse.getUrl(fileUploadModel, baseUrl));
+        const expiresIn = fileUploadModel.expiresIn;
+        if (format && expiresIn !== null) {
+            builder.retentionPeriod(ObjectUtils.timeToHuman(expiresIn));
         } else {
             builder.retentionPeriod(fileUploadModel.expiresIn);
         }

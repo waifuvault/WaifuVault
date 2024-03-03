@@ -10,7 +10,9 @@ import { DefaultHttpRenderEngine } from "../engine/impl/index.js";
 export class HttpErrorFactory {
     private readonly defaultRenderEngine: IHttpErrorRenderEngine<unknown, Exception>;
 
-    public constructor(@Inject(HTTP_RENDER_ENGINE) private readonly engines: IHttpErrorRenderEngine<unknown, Exception>[]) {
+    public constructor(
+        @Inject(HTTP_RENDER_ENGINE) private readonly engines: IHttpErrorRenderEngine<unknown, Exception>[],
+    ) {
         this.defaultRenderEngine = engines.find(engine => engine instanceof DefaultHttpRenderEngine)!;
     }
 

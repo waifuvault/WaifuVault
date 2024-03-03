@@ -59,11 +59,11 @@ export class FileUploadModel extends AbstractModel {
     public fileSize: number;
 
     @Column({
-        nullable: false,
+        nullable: true,
         type: "integer",
         unique: false,
     })
-    public expires: number;
+    public expires: number | null;
 
     @Column({
         nullable: true,
@@ -86,7 +86,10 @@ export class FileUploadModel extends AbstractModel {
     })
     public encrypted: boolean;
 
-    public get expiresIn(): number {
+    public get expiresIn(): number | null {
+        if (this.expires === null) {
+            return null;
+        }
         return FileUtils.getTImeLeft(this);
     }
 

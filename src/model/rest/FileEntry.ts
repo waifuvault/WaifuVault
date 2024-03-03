@@ -25,7 +25,8 @@ export class FileEntry {
     public createdAt: Date;
 
     @Property()
-    public expires: string;
+    @Nullable(String)
+    public expires: string | null;
 
     @Property()
     public url: string;
@@ -53,11 +54,13 @@ export class FileEntry {
             .fileSize(entry.fileSize)
             .fileName(entry.fileName)
             .mediaType(entry.mediaType)
-            .expires(ObjectUtils.timeToHuman(entry.expiresIn))
             .ipBanned(ipBlocked)
             .fileProtectionLevel(entry.fileProtectionLevel)
             .ip(entry.ip);
-
+        const expiresIn = entry.expiresIn;
+        if (expiresIn !== null) {
+            fileEntryBuilder.expires(ObjectUtils.timeToHuman(expiresIn));
+        }
         return fileEntryBuilder.build();
     }
 

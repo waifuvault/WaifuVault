@@ -25,6 +25,9 @@ export class FileService {
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
+    @Constant(GlobalEnv.UPLOAD_SECRET)
+    private readonly secret?: string;
+
     public constructor(
         @Inject() private repo: FileRepo,
         @Inject() private fileEngine: FileEngine,
@@ -35,10 +38,16 @@ export class FileService {
         @Inject() private encryptionService: EncryptionService,
     ) {}
 
-    public async processUpload(ip: string, source: XOR<PlatformMulterFile, string>, customExpiry?: string, maskFilename = false, password?: string): Promise<[FileUploadModelResponse, boolean]> {
+    public async processUpload(
+        ip: string,
+        source: XOR<PlatformMulterFile, string>,
+        customExpiry?: string,
+        maskFilename = false,
+        password?: string,
+        secretToken?: string,
+    ): Promise<[FileUploadModelResponse, boolean]> {
         const token = crypto.randomUUID();
         const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
-
         const [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
         uploadEntry.fileName(path.parse(resourcePath).name);
         await this.scanFile(resourcePath);
@@ -67,8 +76,8 @@ export class FileService {
         uploadEntry.originalFileName(originalFileName);
         uploadEntry.checksum(checksum);
         if (customExpiry) {
-            this.calculateCustomExpires(uploadEntry, customExpiry);
-        } else {
+            this.calculateCustomExpires(uploadEntry, customExpiry, secretToken);
+        } else if (secretToken !== this.secret) {
             uploadEntry.expires(FileUtils.getExpiresBySize(fileSize));
         }
 
@@ -106,7 +115,11 @@ export class FileService {
         return [resourcePath, originalFileName];
     }
 
-    private async handleExistingFileModel(resourcePath: string, checksum: string, ip: string): Promise<FileUploadModel | null> {
+    private async handleExistingFileModel(
+        resourcePath: string,
+        checksum: string,
+        ip: string,
+    ): Promise<FileUploadModel | null> {
         const existingFileModels = await this.repo.getEntriesFromChecksum(checksum);
         const existingFileModel = existingFileModels.find(m => m.ip === ip);
         if (existingFileModel) {
@@ -145,7 +158,11 @@ export class FileService {
         return !!entry.settings?.password;
     }
 
-    public async getEntry(fileNameOnSystem: string, requestedFileName?: string, password?: string): Promise<[Buffer, FileUploadModel]> {
+    public async getEntry(
+        fileNameOnSystem: string,
+        requestedFileName?: string,
+        password?: string,
+    ): Promise<[Buffer, FileUploadModel]> {
         const entry = await this.repo.getEntryFileName(path.parse(fileNameOnSystem).name);
         const resource = requestedFileName ?? fileNameOnSystem;
         if (entry === null || (requestedFileName && entry.originalFileName !== requestedFileName)) {
@@ -170,7 +187,7 @@ export class FileService {
         return FileUploadModelResponse.fromModel(entry, this.baseUrl, humanReadable);
     }
 
-    private calculateCustomExpires(entry: IBuilder<FileUploadModel>, expires: string): void {
+    private calculateCustomExpires(entry: IBuilder<FileUploadModel>, expires: string, secretToken?: string): void {
         let value: number = ObjectUtils.getNumber(expires);
         let timeFactor: TIME_UNIT = TIME_UNIT.minutes;
 
@@ -183,9 +200,10 @@ export class FileService {
             timeFactor = TIME_UNIT.hours;
         }
         value = ObjectUtils.convertToMilli(value, timeFactor);
-        const maxExp: number = FileUtils.getTimeLeftBySize(entry.fileSize());
+        const maxExp: number | null =
+            this.secret === secretToken ? null : FileUtils.getTimeLeftBySize(entry.fileSize());
 
-        if (value > maxExp) {
+        if (maxExp !== null && value > maxExp) {
             throw new BadRequest(`Cannot extend time remaining beyond ${ObjectUtils.timeToHuman(maxExp)}`);
         }
         entry.expires(Date.now() + value);

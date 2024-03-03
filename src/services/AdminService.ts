@@ -29,7 +29,13 @@ export class AdminService {
         return this.buildFileEntryDtos(allEntries);
     }
 
-    public async getPagedEntries(start: number, length: number, sortColumn = "id", sortDir = "ASC", search?: string): Promise<FileEntry[]> {
+    public async getPagedEntries(
+        start: number,
+        length: number,
+        sortColumn = "id",
+        sortDir = "ASC",
+        search?: string,
+    ): Promise<FileEntry[]> {
         const entries = await this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search);
         return this.buildFileEntryDtos(entries);
     }

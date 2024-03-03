@@ -80,28 +80,28 @@ export class FileUtils {
     private static readonly MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
 
     public static isFileExpired(entry: FileUploadModel): boolean {
-        return FileUtils.getTImeLeft(entry) <= 0;
+        const expired = FileUtils.getTImeLeft(entry);
+        return expired === null ? false : expired <= 0;
     }
 
     public static getExtension(file: string): string {
         return path.extname(file).slice(1);
     }
 
-    public static getTImeLeft(entry: FileUploadModel): number {
-        return entry.expires - Date.now();
+    public static getTImeLeft(entry: FileUploadModel): number | null {
+        return entry.expires === null ? null : entry.expires - Date.now();
     }
 
     public static getTimeLeftBySize(filesize: number): number {
-        const ttl = Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow(filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1, 3));
+        const ttl = Math.floor(
+            (FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) *
+                Math.pow(filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1, 3),
+        );
         return ttl < FileUtils.MIN_EXPIRATION ? FileUtils.MIN_EXPIRATION : ttl;
     }
 
     public static getExpiresBySize(filesize: number): number {
         return Date.now() + this.getTimeLeftBySize(filesize);
-    }
-
-    public static isFileCustomExpire(entry: FileUploadModel): boolean {
-        return FileUtils.getExpiresBySize(entry.fileSize) != entry.expires - entry.createdAt.getTime();
     }
 }
 

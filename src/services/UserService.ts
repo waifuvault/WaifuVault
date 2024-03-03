@@ -48,7 +48,9 @@ export class UserService implements AfterInit {
             const newPassword = this.generatePassword();
             const hashedPassword = await argon2.hash(newPassword);
             await this.userRepo.createUser(email, hashedPassword);
-            this.logger.info(`New user created: email: "${email}" password: "${newPassword}" Please change this upon logging in!`);
+            this.logger.info(
+                `New user created: email: "${email}" password: "${newPassword}" Please change this upon logging in!`,
+            );
             return;
         }
         const entry = allUsers[0];

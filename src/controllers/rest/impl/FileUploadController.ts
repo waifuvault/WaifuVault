@@ -28,18 +28,20 @@ export class FileUploadController extends BaseRestController {
     @Returns(StatusCodes.CREATED, FileUploadModelResponse).Description("If the file was stored successfully")
     @Returns(StatusCodes.BAD_REQUEST, BadRequest).Description("If the request was malformed")
     @Returns(StatusCodes.OK, FileUploadModelResponse).Description("If the file already exists")
-    @Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, UnsupportedMediaType).Description("If the media type of the file specified was blocked")
+    @Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, UnsupportedMediaType).Description(
+        "If the media type of the file specified was blocked",
+    )
     @Example({
         description: "foo",
         summary: "bnar",
     })
     @Summary("Upload a file or send URL")
-    @Description("Upload a file or specify URL to a file. Use the location header in the response or the url prop in the JSON to get the URL of the file")
+    @Description(
+        "Upload a file or specify URL to a file. Use the location header in the response or the url prop in the JSON to get the URL of the file",
+    )
     public async addEntry(
-        @Req()
-        req: Req,
-        @Res()
-        res: Res,
+        @Req() req: Req,
+        @Res() res: Res,
         @QueryParams("expires")
         @Examples({
             empty: {
@@ -58,7 +60,9 @@ export class FileUploadController extends BaseRestController {
         )
         customExpiry?: string,
         @QueryParams("hide_filename")
-        @Description("if set to true, then your filename will not appear in the URL. if false, then it will appear in the URL. defaults to false")
+        @Description(
+            "if set to true, then your filename will not appear in the URL. if false, then it will appear in the URL. defaults to false",
+        )
         hideFileName?: boolean,
         @QueryParams("password")
         @Description(
@@ -67,6 +71,7 @@ export class FileUploadController extends BaseRestController {
         password?: string,
         @MultipartFile("file") file?: PlatformMulterFile,
         @BodyParams("url") url?: string,
+        @QueryParams("secret_token") @Description("Shh, it's a secret ;)") secretToken?: string,
     ): Promise<unknown> {
         if (file && url) {
             if (file) {
@@ -88,7 +93,14 @@ export class FileUploadController extends BaseRestController {
         let uploadModelResponse: FileUploadModelResponse;
         let alreadyExists: boolean;
         try {
-            [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(ip, url || file!, customExpiry, hideFileName, password);
+            [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
+                ip,
+                url || file!,
+                customExpiry,
+                hideFileName,
+                password,
+                secretToken,
+            );
         } catch (e) {
             this.logger.error(e.message);
             if (file) {
@@ -116,7 +128,9 @@ export class FileUploadController extends BaseRestController {
         @PathParams("token")
         token: string,
         @QueryParams("formatted")
-        @Description("If true, this will format the time remaining to a human readable string instead of an epoch if set to false")
+        @Description(
+            "If true, this will format the time remaining to a human readable string instead of an epoch if set to false",
+        )
         humanReadable: boolean,
     ): Promise<unknown> {
         if (!token) {

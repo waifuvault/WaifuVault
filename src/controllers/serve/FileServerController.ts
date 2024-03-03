@@ -15,7 +15,12 @@ export class FileServerController {
     ) {}
 
     @Get("/:t/:file?")
-    public async getFile(@Res() res: Res, @PathParams("t") resource: string, @HeaderParams("x-password") password?: string, @PathParams("file") requestedFileName?: string): Promise<void> {
+    public async getFile(
+        @Res() res: Res,
+        @PathParams("t") resource: string,
+        @HeaderParams("x-password") password?: string,
+        @PathParams("file") requestedFileName?: string,
+    ): Promise<void> {
         await this.hasPassword(resource, password);
         const [buff, entry] = await this.fileService.getEntry(resource, requestedFileName, password);
         const mimeType = await this.mimeService.findMimeTypeFromBuffer(buff, entry.fullFileNameOnSystem);

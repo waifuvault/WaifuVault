@@ -12,18 +12,17 @@ import type { DatatableColumn, DatatableOrder, DatatableSearch } from "../../../
 @Hidden()
 @Controller("/admin")
 @Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
+@Authorize("loginAuthProvider")
 export class AdminController extends BaseRestController {
     public constructor(@Inject() private adminService: AdminService) {
         super();
     }
 
-    @Authorize("loginAuthProvider")
     @Get("/allEntries")
     public getAllEntries(): Promise<unknown> {
         return this.adminService.getAllEntries();
     }
 
-    @Authorize("loginAuthProvider")
     @Get("/datatablesEntries")
     public async getDatatablesEntries(
         @QueryParams("draw") draw: number,
@@ -41,7 +40,9 @@ export class AdminController extends BaseRestController {
             sortColumn = columns[order[0]?.column ?? 0]?.data;
         }
         const data = await this.adminService.getPagedEntries(start, length, sortColumn, sortOrder, searchVal);
-        const records = searchVal ? await this.adminService.getFileSearchRecordCount(search.value) : await this.adminService.getFileRecordCount();
+        const records = searchVal
+            ? await this.adminService.getFileSearchRecordCount(search.value)
+            : await this.adminService.getFileRecordCount();
         return {
             draw: draw,
             recordsTotal: records,
@@ -50,26 +51,26 @@ export class AdminController extends BaseRestController {
         };
     }
 
-    @Authorize("loginAuthProvider")
     @Get("/statsData")
     public async getStatsData(): Promise<unknown> {
         return this.adminService.getStatsData(await this.adminService.getAllEntries());
     }
 
-    @Authorize("loginAuthProvider")
     @Get("/blockedIps")
     public getAllBlockedIps(): Promise<unknown> {
         return this.adminService.getAllBlockedIps();
     }
 
-    @Authorize("loginAuthProvider")
     @Post("/blockIp")
-    public async blockIp(@Res() res: PlatformResponse, @QueryParams("removeRelatedData", Boolean) removeRelatedData = false, @Required() @BodyParams("ip") ip: string): Promise<unknown> {
+    public async blockIp(
+        @Res() res: PlatformResponse,
+        @QueryParams("removeRelatedData", Boolean) removeRelatedData = false,
+        @Required() @BodyParams("ip") ip: string,
+    ): Promise<unknown> {
         await this.adminService.blockIp(ip, removeRelatedData);
         return super.doSuccess(res, "IP blocked");
     }
 
-    @Authorize("loginAuthProvider")
     @Post("/unblockIps")
     public async unblockIps(@Res() res: PlatformResponse, @BodyParams() ips: string[]): Promise<unknown> {
         const success = await this.adminService.removeBlockedIps(ips);
@@ -79,7 +80,6 @@ export class AdminController extends BaseRestController {
         return super.doSuccess(res, "IP un-blocked");
     }
 
-    @Authorize("loginAuthProvider")
     @Delete("/deleteEntries")
     public async deleteEntries(@Res() res: PlatformResponse, @BodyParams() ids: number[]): Promise<unknown> {
         const result = await this.adminService.deleteEntries(ids);

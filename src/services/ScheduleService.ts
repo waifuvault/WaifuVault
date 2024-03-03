@@ -13,7 +13,13 @@ export class ScheduleService {
 
     private static readonly dateSchedules: DateJob[] = [];
 
-    public scheduleCronJob<T>(cronExpression: string, jobHandler: (this: T) => Promise<void>, jobName: string, context: T, runImmediately = false): void {
+    public scheduleCronJob<T>(
+        cronExpression: string,
+        jobHandler: (this: T) => Promise<void>,
+        jobName: string,
+        context: T,
+        runImmediately = false,
+    ): void {
         jobHandler = jobHandler.bind(context);
         const task = new AsyncTask(jobName, jobHandler);
         const job = new CronJob(
@@ -33,7 +39,12 @@ export class ScheduleService {
         }
     }
 
-    public scheduleJobInterval<T>(schedule: SimpleIntervalSchedule, jobHandler: (this: T) => Promise<void>, jobName: string, context: T): void {
+    public scheduleJobInterval<T>(
+        schedule: SimpleIntervalSchedule,
+        jobHandler: (this: T) => Promise<void>,
+        jobName: string,
+        context: T,
+    ): void {
         jobHandler = jobHandler.bind(context);
         const task = new AsyncTask(jobName, jobHandler);
         const job = new SimpleIntervalJob(schedule, task, {

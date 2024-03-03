@@ -4,5 +4,5 @@
   "bracketSpacing": true,
   "arrowParens": "avoid",
   "proseWrap": "never",
-  "printWidth": 250
+  "printWidth": 120
 }
