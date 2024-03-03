@@ -35,10 +35,11 @@ Required Settings
 
 Optional Settings
 
-| Setting          | Description                                         |
-|------------------|-----------------------------------------------------|
-| CLAM_PATH        | The path to your Clam Antivirus installation        |
-| MS_DEFENDER_PATH | The path to your MS Defender Antivirus installation |
+| Setting          | Description                                                                                                                                          |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CLAM_PATH        | The path to your Clam Antivirus installation                                                                                                         |
+| MS_DEFENDER_PATH | The path to your MS Defender Antivirus installation                                                                                                  |
+| UPLOAD_SECRET    | A secret passcode you can set, when used as on the upload as a query paramater `secret_token`, the file will have no expiry and will persist forever |
 > **Note Well** if a path to an Antivirus engine is not defined it will not be used, if no paths are defined then no antivirus scanning will be used
 
 ### Build and Run commands

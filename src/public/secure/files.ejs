@@ -375,7 +375,7 @@
                                     ["File Size", selectedRow.fileSize],
                                     ["File Protection Level", selectedRow.fileProtectionLevel],
                                     ["Created At", customDate()(selectedRow.createdAt, 'display', selectedRow)],
-                                    ["Expires", selectedRow.expires],
+                                    ["Expires", selectedRow.expires ?? "N/A"],
                                     ["IP", selectedRow.ip],
                                     ["URL", selectedRow.url],
                                 ];

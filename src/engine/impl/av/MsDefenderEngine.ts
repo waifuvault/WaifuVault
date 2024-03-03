@@ -24,7 +24,9 @@ export class MsDefenderEngine implements IAvEngine {
         const toScan = path.resolve(`${filesDir}/${resource}`);
         const execPromise = promisify(exec);
         try {
-            await execPromise(`"${this.msDefenderPath}/MpCmdRun.exe" -scan -scantype 3 -file ${toScan} -DisableRemediation`);
+            await execPromise(
+                `"${this.msDefenderPath}/MpCmdRun.exe" -scan -scantype 3 -file ${toScan} -DisableRemediation`,
+            );
         } catch (e) {
             return {
                 errorCode: e.code,

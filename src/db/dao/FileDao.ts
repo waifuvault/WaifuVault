@@ -51,7 +51,14 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         return this.getRepository(transaction).find();
     }
 
-    public getAllEntriesOrdered(start: number, records: number, sortColumn?: string, sortOrder?: string, search?: string, transaction?: EntityManager): Promise<FileUploadModel[]> {
+    public getAllEntriesOrdered(
+        start: number,
+        records: number,
+        sortColumn?: string,
+        sortOrder?: string,
+        search?: string,
+        transaction?: EntityManager,
+    ): Promise<FileUploadModel[]> {
         const orderOptions = sortColumn ? { [sortColumn]: sortOrder } : {};
         if (search) {
             return this.getRepository(transaction).find({
@@ -86,7 +93,12 @@ export class FileDao extends AbstractDao<FileUploadModel> {
 
     private getSearchQuery(search: string): Record<string, FindOperator<string>>[] {
         search = `%${search}%`;
-        return [{ fileName: Like(search) }, { fileExtension: Like(search) }, { ip: Like(search) }, { originalFileName: Like(search) }];
+        return [
+            { fileName: Like(search) },
+            { fileExtension: Like(search) },
+            { ip: Like(search) },
+            { originalFileName: Like(search) },
+        ];
     }
 
     public getAllEntriesForIp(ip: string, transaction?: EntityManager): Promise<FileUploadModel[]> {

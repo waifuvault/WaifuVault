@@ -47,7 +47,11 @@ export class PassportCtrl extends BaseRestController {
     @Authorize("loginAuthProvider")
     @Security("loginAuthProvider")
     @Returns(StatusCodes.OK)
-    public async changeDetails(@Res() res: PlatformResponse, @Req() req: Req, @BodyParams() userDetails: UserModel): Promise<PlatformResponse> {
+    public async changeDetails(
+        @Res() res: PlatformResponse,
+        @Req() req: Req,
+        @BodyParams() userDetails: UserModel,
+    ): Promise<PlatformResponse> {
         const loggedInUser = req.user as CustomUserInfoModel;
         await this.usersService.changeDetails(userDetails, loggedInUser);
         return this.doSuccess(res, "User details changed");
