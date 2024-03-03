@@ -223,7 +223,7 @@
             seriesMedia.events.on("datavalidated", function(ev) {
                 showEmptyModal(ev,seriesMedia,modalMedia,true);
             });
-            const mediaItems = summarizeProperty(stats.entries, 'mediaType');
+            const mediaItems = summarizeProperty(stats.entries, 'mediaType').filter(entry => entry.category!=='null');
             mediaItems.sort((a,b) => b.value - a.value);
             seriesMedia.data.setAll(mediaItems.slice(0,10));
 
