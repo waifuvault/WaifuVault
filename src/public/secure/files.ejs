@@ -45,7 +45,6 @@
                             <th scope="col">file Size</th>
                             <th scope="col">Created At</th>
                             <th scope="col">expires</th>
-                            <th scope="col">ip</th>
                             <th scope="col">mediaType</th>
                             <th scope="col">original FileName</th>
                             <th scope="col">url</th>
@@ -201,7 +200,6 @@
                             {data: 'fileSize', render: sizeAsMB()},
                             {data: 'createdAt', render: customDate()},
                             {data: 'expires'},
-                            {data: 'ip', render: colouredIP(), className: 'col-ip'},
                             {data: 'mediaType', render: renderNullField()},
                             {data: 'originalFileName'},
                             {data: 'url'},
