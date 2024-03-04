@@ -7,10 +7,14 @@ export class AvFactory {
     public constructor(@Inject(AV_ENGINE) private readonly engines: IAvEngine[]) {}
 
     /**
-     * Get the first enabled AV engine
-     * @returns {IAvEngine | null}
+     * Get all enabled av engines
+     * @returns {IAvEngine[]}
      */
-    public getFirstAvailableAvEngine(): IAvEngine | null {
-        return this.engines.find(e => e.enabled) ?? null;
+    public async getAvEngines(): Promise<IAvEngine[]> {
+        const enabledEngines = await Promise.all(
+            this.engines.map(async engine => ((await engine.enabled) ? engine : null)),
+        );
+
+        return enabledEngines.filter(engine => engine !== null) as IAvEngine[];
     }
 }

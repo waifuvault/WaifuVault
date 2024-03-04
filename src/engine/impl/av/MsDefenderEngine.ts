@@ -31,11 +31,17 @@ export class MsDefenderEngine implements IAvEngine {
             return {
                 errorCode: e.code,
                 passed: false,
-                additionalMessage: e.messag,
+                additionalMessage: e.message,
+                engineName: this.name,
             };
         }
         return {
             passed: true,
+            engineName: this.name,
         };
+    }
+
+    public get name(): string {
+        return "MsDefender";
     }
 }
