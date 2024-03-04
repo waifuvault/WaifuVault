@@ -26,7 +26,7 @@ export class FileEntry {
 
     @Property()
     @Nullable(String)
-    public expires: string | null;
+    public expires: string | null = null;
 
     @Property()
     public url: string;
@@ -60,8 +60,6 @@ export class FileEntry {
         const expiresIn = entry.expiresIn;
         if (expiresIn !== null) {
             fileEntryBuilder.expires(ObjectUtils.timeToHuman(expiresIn));
-        } else {
-            fileEntryBuilder.expires(null);
         }
         return fileEntryBuilder.build();
     }
