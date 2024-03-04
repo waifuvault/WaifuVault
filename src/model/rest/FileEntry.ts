@@ -60,6 +60,8 @@ export class FileEntry {
         const expiresIn = entry.expiresIn;
         if (expiresIn !== null) {
             fileEntryBuilder.expires(ObjectUtils.timeToHuman(expiresIn));
+        } else {
+            fileEntryBuilder.expires("N/A");
         }
         return fileEntryBuilder.build();
     }
