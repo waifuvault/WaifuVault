@@ -64,9 +64,10 @@ Optional Settings
 
 ## Admin Feature
 
-This application comes with a useful admin panel that will allow you to control the files that are uploaded, and to 
+This application comes with a useful admin site that will allow you to control the files that are uploaded, and to 
 provide security control with the ability to ban abusive IPs.
 
+The site also features statistics to allow you to at-a-glance see information on the files that have been uploaded.
 
 ### Setup
 
@@ -90,32 +91,55 @@ and password.
 ### Usage
 
 Once in the admin, you can see what files have been uploaded and sort them by any of the available columns.
-You can also ban and unban IP addresses from here, and download any files that have been uploaded.
+You can also ban and unban IP addresses from here, and download any files that have been uploaded.  You can change your 
+username and password, and can view overall stats on the files that have been uploaded.
 
-### File Operations
+### File Management Operations
+On the navigation bar at the top, select **File Management** to get to the file management page.
+
 Delete a file, by selecting it and pressing Delete File.  You will be asked if you are sure.
 
-![Deleting Files](docs/images/deletefile.png)
+![Deleting Files](https://waifuvault.moe/f/1709504564466/DeleteFile.png)
 
 Download a file, by selecting it and pressing Download File.
 
-![Downloading Files](docs/images/downloadfile.png)
+![Downloading Files](https://waifuvault.moe/f/1709504647173/DownloadFile.png)
+
+Details on a file, by selecting it and pressing Details.  The longer fields have copy buttons on them in the details 
+panel.
+
+![File Details](https://waifuvault.moe/f/1709504743287/FileDetails.png)
 
 ### IP Operations
 Ban an IP by selecting the file and pressing Ban IP, then confirming you want to ban it and if you want to delete
 related files.
 
-![Banning IP Address](docs/images/banipdelete.png)
+![Banning IP Address](https://waifuvault.moe/f/1709504936554/BanIP.png)
 
 Unban an IP by selecting the IP in the lower table and pressing Un Ban, then confirming you want to unban.
 
-![Unban IP Address](docs/images/unbanip.png)
+![Unban IP Address](https://waifuvault.moe/f/1709504995039/UnBanIP.png)
 
-### Account Operations
+### Statistics 
 
-Click on Change Details to alter the login information for your account.
+On the navigation bar at the top, select **Statistics** to get to the statistics page.
 
-![Change Account Details](docs/images/changedetails.png)
+This page shows overall statistics for the files uploaded to the site:
+* Total Number of Files Uploaded
+* Total Size of Files Uploaded
+* File Size Distribution of Files Uploaded
+* Top 10 Media Types of Files Uploaded
+* File Protection Level Distribution
+
+![Statistics](https://waifuvault.moe/f/1709505507674/Stats.png)
+
+### User Account Operations
+
+On the navigation bar at the top, select **User** to get to the user account control page.
+
+You can change the username and password from here.
+
+![Change Account Details](https://waifuvault.moe/f/1709505880404/UserControl.png)
 
 ## REST Endpoints
 All application functionality is provided by a set of REST endpoints.
