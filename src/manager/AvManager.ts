@@ -69,7 +69,6 @@ export class AvManager implements OnInit {
     }
 
     private doScan(resource: string): Promise<AvScanResult[]> {
-        const pArr = this.avEngines.map(engine => engine.scan(resource));
-        return Promise.all(pArr);
+        return Promise.all(this.avEngines.map(engine => engine.scan(resource)));
     }
 }
