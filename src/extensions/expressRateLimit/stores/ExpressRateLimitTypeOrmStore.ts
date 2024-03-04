@@ -72,18 +72,14 @@ export class ExpressRateLimitTypeOrmStore implements Store {
         client.resetTime.setTime(now + this.windowMs);
         return client;
     }
+
     public async decrement(key: string): Promise<void> {
         const fromDb = await this.getFromDb(key);
         if (!fromDb) {
             return;
         }
-        if (--fromDb.totalHits <= 0) {
-            await this.repo.delete({
-                key,
-            });
-        } else {
-            await this.repo.save(fromDb);
-        }
+        fromDb.totalHits--;
+        await this.repo.save(fromDb);
     }
 
     public async resetKey(key: string): Promise<void> {
@@ -93,8 +89,7 @@ export class ExpressRateLimitTypeOrmStore implements Store {
     }
 
     public async resetAll(): Promise<void> {
-        // does this delete everything?
-        await this.repo.delete({});
+        await this.repo.clear();
     }
 
     private transform(model: ExpressRateLimitStoreModel): ClientRateLimitInfo {
@@ -108,5 +103,9 @@ export class ExpressRateLimitTypeOrmStore implements Store {
         return this.repo.findOneBy({
             key,
         });
+    }
+
+    public get localKeys(): boolean {
+        return false;
     }
 }
