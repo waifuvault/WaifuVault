@@ -18,6 +18,7 @@ export type EntrySettings = {
 
 export type AvScanResult = {
     passed: boolean;
+    engineName: string;
     errorCode?: number;
     additionalMessage?: string;
 };
@@ -54,3 +55,5 @@ export type IpBlockedAwareFileEntry = {
 };
 
 export type ProtectionLevel = "Encrypted" | "Password" | "None";
+
+export type Awaitable<T> = Promise<T> | T;
