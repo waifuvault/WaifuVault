@@ -38,6 +38,7 @@ import rateLimit from "express-rate-limit";
 import { LRUCache } from "lru-cache";
 import { filesDir, FileUtils, NetworkUtils } from "./utils/Utils.js";
 import { fileURLToPath } from "node:url";
+import { ExpressRateLimitTypeOrmStore } from "./extensions/expressRateLimit/stores/ExpressRateLimitTypeOrmStore.js";
 
 const opts: Partial<TsED.Configuration> = {
     ...config,
@@ -119,21 +120,6 @@ const opts: Partial<TsED.Configuration> = {
             extended: true,
         }),
         compression(),
-        rateLimit({
-            windowMs: 1000,
-            limit: 1,
-            message: "You have exceeded your 1 request a second.",
-            standardHeaders: true,
-            skip: request => {
-                if (request?.$ctx?.request?.request?.session?.passport) {
-                    return true;
-                }
-                return request.path.includes("/admin") ? true : !request.path.includes("/rest");
-            },
-            keyGenerator: request => {
-                return NetworkUtils.getIp(request);
-            },
-        }),
         ...Object.values(globalMiddleware),
     ],
     views: {
@@ -166,6 +152,7 @@ export class Server implements BeforeRoutesInit {
     public constructor(
         @Inject() private app: PlatformApplication,
         @Inject(SQLITE_DATA_SOURCE) private ds: DataSource,
+        @Inject() private expressRateLimitTypeOrmStore: ExpressRateLimitTypeOrmStore,
     ) {}
 
     @Configuration()
@@ -200,5 +187,22 @@ export class Server implements BeforeRoutesInit {
                 }),
             );
         }
+        this.app.use(
+            rateLimit({
+                windowMs: 1000,
+                limit: 1,
+                standardHeaders: true,
+                skip: request => {
+                    if (request?.$ctx?.request?.request?.session?.passport) {
+                        return true;
+                    }
+                    return request.path.includes("/admin") ? true : !request.path.includes("/rest");
+                },
+                keyGenerator: request => {
+                    return NetworkUtils.getIp(request);
+                },
+                store: this.expressRateLimitTypeOrmStore,
+            }),
+        );
     }
 }
