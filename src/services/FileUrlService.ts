@@ -80,6 +80,7 @@ export class FileUrlService {
         const fileStream = fs.createWriteStream(destination);
         return new Promise((resolve, reject) => {
             if (!response.body) {
+                reject("Response has no body");
                 return;
             }
             response.body.pipe(fileStream);
