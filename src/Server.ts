@@ -38,7 +38,8 @@ import rateLimit from "express-rate-limit";
 import { LRUCache } from "lru-cache";
 import { filesDir, FileUtils, NetworkUtils } from "./utils/Utils.js";
 import { fileURLToPath } from "node:url";
-import { ExpressRateLimitTypeOrmStore } from "./extensions/expressRateLimit/stores/ExpressRateLimitTypeOrmStore.js";
+import { ExpressRateLimitTypeOrmStore } from "typeorm-rate-limit-store";
+import { ExpressRateLimitStoreModel } from "./model/db/ExpressRateLimitStore.model.js";
 
 const opts: Partial<TsED.Configuration> = {
     ...config,
@@ -152,7 +153,6 @@ export class Server implements BeforeRoutesInit {
     public constructor(
         @Inject() private app: PlatformApplication,
         @Inject(SQLITE_DATA_SOURCE) private ds: DataSource,
-        @Inject() private expressRateLimitTypeOrmStore: ExpressRateLimitTypeOrmStore,
     ) {}
 
     @Configuration()
@@ -201,7 +201,7 @@ export class Server implements BeforeRoutesInit {
                 keyGenerator: request => {
                     return NetworkUtils.getIp(request);
                 },
-                store: this.expressRateLimitTypeOrmStore,
+                store: new ExpressRateLimitTypeOrmStore(this.ds.getRepository(ExpressRateLimitStoreModel)),
             }),
         );
     }

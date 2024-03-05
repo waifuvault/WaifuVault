@@ -1,7 +1,8 @@
 import { Column, Entity, PrimaryColumn } from "typeorm";
+import type { IExpressRateLimitModel } from "typeorm-rate-limit-store";
 
 @Entity()
-export class ExpressRateLimitStoreModel {
+export class ExpressRateLimitStoreModel implements IExpressRateLimitModel {
     @PrimaryColumn()
     public key: string;
 

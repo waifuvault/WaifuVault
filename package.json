@@ -79,6 +79,7 @@
     "sanitize-filename-ts": "^1.0.2",
     "toad-scheduler": "^3.0.1",
     "typeorm": "^0.3.20",
+    "typeorm-rate-limit-store": "^1.0.0",
     "xss": "^1.0.14"
   },
   "devDependencies": {
