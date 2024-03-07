@@ -61,6 +61,14 @@
                         </div>
                     </form>
                 </div>
+                <% if(typeof internalError !== "undefined") { %>
+                    <div class="card-footer">
+                        <div class="alert alert-danger alert-dismissible" role="alert">
+                            <%-message-%>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                <% } %>
             </div>
         </div>
     </div>

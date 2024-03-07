@@ -3,7 +3,6 @@ import { FileUploadModel } from "../model/db/FileUpload.model.js";
 
 export type HttpErrorRenderObj<T extends Exception> = {
     status: number;
-    title: string | null;
     message: string;
     internalError: T;
 };

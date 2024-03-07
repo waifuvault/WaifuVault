@@ -3,6 +3,7 @@ import { Inject } from "@tsed/di";
 import { ReCAPTCHAService } from "../../services/ReCAPTCHAService.js";
 import { BadRequest } from "@tsed/exceptions";
 import { BodyParams } from "@tsed/platform-params";
+import { ReCAPTCHAException } from "../../model/exceptions/ReCAPTCHAException.js";
 
 @Middleware()
 export class ReCAPTCHAMiddleWare implements MiddlewareMethods {
@@ -15,7 +16,7 @@ export class ReCAPTCHAMiddleWare implements MiddlewareMethods {
         }
         const reCAPTCHAResp = await this.reCAPTCHAService.validateResponse(reCAPTCHA);
         if (!reCAPTCHAResp) {
-            throw new BadRequest("reCAPTCHA response invalid.");
+            throw new ReCAPTCHAException("reCAPTCHA response invalid.");
         }
     }
 }

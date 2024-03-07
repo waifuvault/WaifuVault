@@ -15,10 +15,6 @@ export class FileProtectedRenderEngine implements IHttpErrorRenderEngine<string,
         return exception instanceof FileProtectedException;
     }
 
-    public getTitle(): string {
-        return "Please enter a password for this file..";
-    }
-
     public render(obj: HttpErrorRenderObj<FileProtectedException>, response: PlatformResponse): Promise<string> {
         const isEncrypted = obj.internalError.isEncrypted;
         return response.render("fileLogin.ejs", {

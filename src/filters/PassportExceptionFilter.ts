@@ -3,7 +3,7 @@ import { Catch } from "@tsed/common";
 import { PassportException } from "@tsed/passport";
 import { Inject } from "@tsed/di";
 import { HttpExceptionFilter } from "./HttpExceptionFilter.js";
-import { Unauthorized } from "@tsed/exceptions";
+import { AuthenticationError } from "../model/exceptions/AuthenticationError.js";
 
 @Catch(PassportException)
 export class PassportExceptionFilter implements ExceptionFilterMethods<PassportException> {
@@ -11,7 +11,7 @@ export class PassportExceptionFilter implements ExceptionFilterMethods<PassportE
 
     public catch(exception: PassportException, ctx: PlatformContext): unknown {
         if (exception.name === "AuthenticationError") {
-            return this.httpExceptionFilter.catch(new Unauthorized("Unauthorized", exception.origin), ctx);
+            return this.httpExceptionFilter.catch(new AuthenticationError(exception.message, exception.origin), ctx);
         }
         return this.httpExceptionFilter.catch(exception, ctx);
     }

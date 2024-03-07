@@ -19,7 +19,8 @@ export class DefaultHttpRenderEngine implements IHttpErrorRenderEngine<DefaultRe
         return Promise.resolve(this.mapError(obj.internalError));
     }
 
-    public supportsError(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public supportsError(_: Exception): boolean {
         return false;
     }
 
@@ -27,11 +28,7 @@ export class DefaultHttpRenderEngine implements IHttpErrorRenderEngine<DefaultRe
         return {
             name: error.origin?.name ?? error.name,
             message: error.message,
-            status: error.status ?? 50,
+            status: error.status ?? 500,
         };
-    }
-
-    public getTitle(): string | null {
-        return null;
     }
 }
