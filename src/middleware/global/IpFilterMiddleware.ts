@@ -13,7 +13,7 @@ export class IpFilterMiddleware implements MiddlewareMethods {
         const ip = NetworkUtils.getIp(req);
         const isBlocked = await this.ipRepo.isIpBlocked(ip);
         if (isBlocked) {
-            throw new Forbidden("Your IP has been blocked");
+            throw new Forbidden("");
         }
     }
 }

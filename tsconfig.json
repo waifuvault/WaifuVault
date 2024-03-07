@@ -24,6 +24,8 @@
     "noEmit": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "noImplicitOverride": true,
+    "skipLibCheck": true,
     "lib": [
       "es7",
       "dom",
