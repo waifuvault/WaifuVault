@@ -17,7 +17,7 @@ export class FileCleaner implements OnInit {
         @Inject() private fileEngine: FileEngine,
     ) {}
 
-    // default to every day at 12am
+    // default to every hour at :00
     @Constant(GlobalEnv.FILE_CLEANER_CRON, "0 * * * *")
     private readonly cronToRun: string;
 

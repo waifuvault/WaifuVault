@@ -13,7 +13,7 @@ import { promisify } from "node:util";
 export class EncryptionService implements OnInit {
     private readonly algorithm = "aes-256-ctr";
 
-    private readonly promisifyRandomBytes = promisify(crypto.randomBytes);
+    private readonly randomBytes = promisify(crypto.randomBytes);
 
     @Constant(GlobalEnv.SALT)
     private readonly salt: string | undefined;
@@ -34,7 +34,7 @@ export class EncryptionService implements OnInit {
         }
         const fileSource = this.fileEngine.getFilePath(Path.basename(filePath));
         const buffer = await fs.readFile(fileSource);
-        const iv = await this.promisifyRandomBytes(16);
+        const iv = await this.randomBytes(16);
         const key = await this.getKey(password);
         const cipher = crypto.createCipheriv(this.algorithm, key, iv);
         const encryptedBuffer = Buffer.concat([iv, cipher.update(buffer), cipher.final()]);

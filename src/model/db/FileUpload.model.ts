@@ -1,7 +1,8 @@
 import { Column, Entity, Index } from "typeorm";
 import { AbstractModel } from "./AbstractModel.js";
-import { FileUtils } from "../../utils/Utils.js";
+import { filesDir, FileUtils } from "../../utils/Utils.js";
 import type { EntrySettings, ProtectionLevel } from "../../utils/typeings.js";
+import path from "node:path";
 
 @Entity()
 @Index(["token"], {
@@ -116,5 +117,13 @@ export class FileUploadModel extends AbstractModel {
             return `${this.fileName}.${this.fileExtension}`;
         }
         return this.fileName;
+    }
+
+    /**
+     * Get the full absolute location on disk
+     * @returns {string}
+     */
+    public get fullLocationOnDisk(): string {
+        return path.resolve(`${filesDir}/${this.fullFileNameOnSystem}`);
     }
 }
