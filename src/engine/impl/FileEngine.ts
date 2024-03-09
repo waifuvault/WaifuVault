@@ -21,7 +21,7 @@ export class FileEngine {
 
     public getFilePath(file: string | PlatformMulterFile | FileUploadModel): string {
         if (file instanceof FileUploadModel) {
-            return `${filesDir}/${file.fullFileNameOnSystem}`;
+            return file.fullLocationOnDisk;
         }
         return typeof file === "string" ? `${filesDir}/${file}` : file.path;
     }

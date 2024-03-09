@@ -163,13 +163,10 @@ export class FileService {
         requestedFileName?: string,
         password?: string,
     ): Promise<[Buffer, FileUploadModel]> {
-        const entry = await this.repo.getEntryFileName(path.parse(fileNameOnSystem).name);
+        const entry = await this.repo.getEntryFileName(fileNameOnSystem);
         const resource = requestedFileName ?? fileNameOnSystem;
-        if (entry === null || (requestedFileName && entry.originalFileName !== requestedFileName)) {
+        if (entry === null || (requestedFileName && entry.originalFileName !== requestedFileName) || entry.hasExpired) {
             throw new NotFound(`resource ${resource} is not found`);
-        }
-        if (entry.hasExpired) {
-            throw new NotFound(`Resource ${resource} is not found`);
         }
         return Promise.all([this.encryptionService.decrypt(entry, password), entry]);
     }
@@ -221,7 +218,7 @@ export class FileService {
                 this.fileEngine.deleteFile(entry.fullFileNameOnSystem, true);
                 return Promise.reject("Entry does not exist");
             }
-            this.fileEngine.deleteFile(entry.fullFileNameOnSystem, true);
+            return this.fileEngine.deleteFile(entry.fullFileNameOnSystem, true);
         });
         try {
             await Promise.all(fileDeletePArr);
