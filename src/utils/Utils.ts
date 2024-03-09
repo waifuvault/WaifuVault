@@ -108,17 +108,7 @@ export class FileUtils {
     public static async getFilesCount(): Promise<number> {
         try {
             const realFiles = await fs.readdir(filesDir, { withFileTypes: true });
-            const fileCount = (
-                await Promise.all(
-                    realFiles.map(item => {
-                        if (item.isDirectory()) {
-                            return 0;
-                        }
-                        return 1;
-                    }),
-                )
-            ).reduce((acc, cur) => acc + cur, 0);
-            return fileCount;
+            return realFiles.length;
         } catch {
             return 0;
         }
