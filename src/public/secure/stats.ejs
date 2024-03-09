@@ -162,7 +162,12 @@
 
     am5.ready(function () {
         getStats().then(stats => {
-            document.getElementById('totalFiles').innerText = stats.totalFileCount;
+            if(stats.totalFileCount === stats.realFileCount) {
+                document.getElementById('totalFiles').innerText = stats.totalFileCount;
+            } else {
+                document.getElementById('totalFiles').innerText = `${stats.totalFileCount} (${stats.realFileCount} on filesystem)`;
+                document.getElementById('totalFiles').className = "text-danger";
+            }
             document.getElementById('totalSize').innerText = sizeReadable(stats.totalFileSize);
 
             //File Protection
