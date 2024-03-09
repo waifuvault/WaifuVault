@@ -4,6 +4,7 @@ import type { FileUploadModel } from "../model/db/FileUpload.model.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import process from "node:process";
 import type { Request } from "express";
+import fs from "node:fs/promises";
 
 export class ObjectUtils {
     public static getNumber(source: string): number {
@@ -102,6 +103,15 @@ export class FileUtils {
 
     public static getExpiresBySize(filesize: number): number {
         return Date.now() + this.getTimeLeftBySize(filesize);
+    }
+
+    public static async getFilesCount(): Promise<number> {
+        try {
+            const realFiles = await fs.readdir(filesDir, { withFileTypes: true });
+            return realFiles.length;
+        } catch {
+            return 0;
+        }
     }
 }
 

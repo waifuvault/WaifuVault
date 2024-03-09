@@ -20,7 +20,7 @@ export class AdminService {
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
-    public getStatsData(entries: FileEntry[]): Stats {
+    public getStatsData(entries: FileEntry[]): Promise<Stats> {
         return Stats.buildStats(entries);
     }
 
