@@ -2,7 +2,6 @@ import { Constant, Inject, Service } from "@tsed/di";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import type { PlatformMulterFile } from "@tsed/common";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
-import { FileEngine } from "../engine/impl/index.js";
 import { FileUrlService } from "./FileUrlService.js";
 import { MimeService } from "./MimeService.js";
 import { Builder, type IBuilder } from "builder-pattern";
@@ -30,7 +29,6 @@ export class FileService {
 
     public constructor(
         @Inject() private repo: FileRepo,
-        @Inject() private fileEngine: FileEngine,
         @Inject() private fileUrlService: FileUrlService,
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
@@ -54,7 +52,7 @@ export class FileService {
         await this.checkMime(resourcePath);
         const mediaType = await this.mimeService.findMimeType(resourcePath);
         uploadEntry.mediaType(mediaType);
-        const fileSize = await this.fileEngine.getFileSize(path.basename(resourcePath));
+        const fileSize = await FileUtils.getFileSize(path.basename(resourcePath));
         uploadEntry.fileSize(fileSize);
         const checksum = await this.getFileHash(resourcePath);
 
@@ -215,10 +213,10 @@ export class FileService {
 
         const fileDeletePArr = entries.map(entry => {
             if (entry.hasExpired && softDelete) {
-                this.fileEngine.deleteFile(entry.fullFileNameOnSystem, true);
+                FileUtils.deleteFile(entry.fullFileNameOnSystem, true);
                 return Promise.reject("Entry does not exist");
             }
-            return this.fileEngine.deleteFile(entry.fullFileNameOnSystem, true);
+            return FileUtils.deleteFile(entry.fullFileNameOnSystem, true);
         });
         try {
             await Promise.all(fileDeletePArr);
@@ -257,6 +255,6 @@ export class FileService {
     }
 
     private deleteUploadedFile(resource: string): Promise<void> {
-        return this.fileEngine.deleteFile(path.basename(resource));
+        return FileUtils.deleteFile(path.basename(resource));
     }
 }

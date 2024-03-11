@@ -1,13 +1,13 @@
-import { Constant, Inject, OnInit, Service } from "@tsed/di";
+import { Constant, OnInit, Service } from "@tsed/di";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import fs from "node:fs/promises";
-import { FileEngine } from "../engine/impl/index.js";
 import crypto from "node:crypto";
 import argon2 from "argon2";
 import { Forbidden } from "@tsed/exceptions";
 import Path from "node:path";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { promisify } from "node:util";
+import { FileUtils } from "../utils/Utils.js";
 
 @Service()
 export class EncryptionService implements OnInit {
@@ -17,8 +17,6 @@ export class EncryptionService implements OnInit {
 
     @Constant(GlobalEnv.SALT)
     private readonly salt: string | undefined;
-
-    public constructor(@Inject() private fileEngine: FileEngine) {}
 
     private getKey(password: string): Promise<Buffer> {
         return argon2.hash(password, {
@@ -32,7 +30,7 @@ export class EncryptionService implements OnInit {
         if (!this.salt) {
             return false;
         }
-        const fileSource = this.fileEngine.getFilePath(Path.basename(filePath));
+        const fileSource = FileUtils.getFilePath(Path.basename(filePath));
         const buffer = await fs.readFile(fileSource);
         const iv = await this.randomBytes(16);
         const key = await this.getKey(password);
@@ -43,7 +41,7 @@ export class EncryptionService implements OnInit {
     }
 
     public async decrypt(source: FileUploadModel, password?: string): Promise<Buffer> {
-        const fileSource = this.fileEngine.getFilePath(source);
+        const fileSource = FileUtils.getFilePath(source);
         const fileBuffer = await fs.readFile(fileSource);
         const isEncrypted = source.encrypted;
         if (!source.settings?.password) {

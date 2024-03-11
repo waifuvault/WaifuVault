@@ -4,7 +4,6 @@
     <%- include('../snippets/head.ejs'); %>
     <link href="/assets/custom/css/index.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.0/b-3.0.0/b-colvis-3.0.0/fh-4.0.0/r-3.0.0/sc-2.4.0/sl-2.0.0/sr-1.4.0/datatables.min.css">
-    <link rel="stylesheet" type="text/css" href="/assets/custom/css/spinWheel.css">
     <style>
         table.dataTable td.dt-type-numeric, table.dataTable th.dt-type-numeric {
             text-align: initial;
@@ -108,7 +107,6 @@
 
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.0/b-3.0.0/b-colvis-3.0.0/fh-4.0.0/r-3.0.0/sc-2.4.0/sl-2.0.0/sr-1.4.0/datatables.min.js"></script>
 <%- include('../snippets/scripts.ejs'); %>
-<script type="text/javascript" src="/assets/custom/js/spinWheel.js"></script>
 <script>
     Site.loadPage(async site => {
         const dtMap = new Map();
@@ -116,11 +114,11 @@
         document.getElementById("filesNav").classList.add("active");
 
         function loadDt() {
-            const detailsModal = new bootstrap.Modal(document.getElementById('fileDetailsModel'), {keyboard: false});
+            const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
 
             function sizeAsMB() {
-                return function (data, type, row) {
-                    if (type === 'display') {
+                return function(data, type, row) {
+                    if (type === "display") {
                         const sizeKB = Math.floor(data / 1024);
                         const sizeMB = Math.floor(sizeKB / 1024);
                         if (data < 1024) {
@@ -136,7 +134,7 @@
             }
 
             function addDetailInfo(detailArr) {
-                const copyButtons = ['IP', 'URL', 'Original Name'];
+                const copyButtons = ["IP", "URL", "Original Name"];
                 document.getElementById("detailsTableBody").innerHTML = detailArr.map(details => {
                     const header = details[0];
                     let data = details[1];
@@ -149,21 +147,21 @@
                         data += `<i title="Copy value to clipboard" class='bi bi-clipboard ms-1' onclick='navigator.clipboard.writeText("${details[1]}");'></i>`;
                     }
                     return `<tr><th>${header}</th><td>${data}</td></tr>`;
-                }).join('');
+                }).join("");
             }
 
             function renderNullField() {
-                return function (data, type, row) {
+                return function(data, type, row) {
                     return data ?? "N/A";
                 };
             }
 
             function colouredIP() {
-                return function (data, type, row) {
-                    if (type === 'display') {
+                return function(data, type, row) {
+                    if (type === "display") {
                         let sizedData = data;
                         if (data.length > 15) {
-                            const splitData = data.split(':');
+                            const splitData = data.split(":");
                             sizedData = `${splitData[0]}: ... :${splitData[splitData.length - 1]}`;
                         }
                         if (row.ipBanned) {
@@ -176,8 +174,8 @@
             }
 
             function customDate() {
-                return function (data, type, row) {
-                    if (type === 'display') {
+                return function(data, type, row) {
+                    if (type === "display") {
                         return new Date(Date.parse(data)).toLocaleString();
                     }
                     return data;
@@ -188,21 +186,21 @@
                 switch (type) {
                     case "ips":
                         return [
-                            {data: 'id'},
-                            {data: 'ip'},
-                            {data: 'createdAt', render: customDate()},
+                            { data: "id" },
+                            { data: "ip" },
+                            { data: "createdAt", render: customDate() }
                         ];
                     case "entries":
                         return [
-                            {data: 'id'},
-                            {data: 'fileName', className: 'col-filename'},
-                            {data: 'fileExtension', className: 'col-fileext'},
-                            {data: 'fileSize', render: sizeAsMB()},
-                            {data: 'createdAt', render: customDate()},
-                            {data: 'expires', render: renderNullField()},
-                            {data: 'mediaType', render: renderNullField()},
-                            {data: 'originalFileName'},
-                            {data: 'url'},
+                            { data: "id" },
+                            { data: "fileName", className: "col-filename" },
+                            { data: "fileExtension", className: "col-fileext" },
+                            { data: "fileSize", render: sizeAsMB() },
+                            { data: "createdAt", render: customDate() },
+                            { data: "expires", render: renderNullField() },
+                            { data: "mediaType", render: renderNullField() },
+                            { data: "originalFileName" },
+                            { data: "url" }
                         ];
                 }
             }
@@ -214,8 +212,8 @@
                     response = await fetch(`${baseUrl}/admin/unblockIps`, {
                         method: "POST",
                         headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
+                            "Accept": "application/json",
+                            "Content-Type": "application/json"
                         },
                         body: JSON.stringify(ips)
                     });
@@ -239,8 +237,8 @@
                 try {
                     response = await fetch(`${baseUrl}/admin/blockIp?removeRelatedData=${removeRelatedData}`, {
                         method: "POST",
-                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                        body: new URLSearchParams({ip})
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: new URLSearchParams({ ip })
                     });
                 } catch (e) {
                     alert(e.message);
@@ -263,8 +261,8 @@
                     response = await fetch(`${baseUrl}/admin/deleteEntries`, {
                         method: "DELETE",
                         headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
+                            "Accept": "application/json",
+                            "Content-Type": "application/json"
                         },
                         body: JSON.stringify(ids)
                     });
@@ -286,45 +284,45 @@
                 const buttons = [];
                 if (type === "entries") {
                     buttons.push({
-                            extend: 'selected',
-                            text: 'Delete file',
-                            attr: {id: 'deleteFilesButton'},
+                            extend: "selected",
+                            text: "Delete file",
+                            attr: { id: "deleteFilesButton" },
                             action: async (e, dt) => {
                                 const accepted = confirm("Are you sure you want to delete these entries?, the files will also be deleted");
                                 if (!accepted) {
                                     return;
                                 }
                                 const idArr = [];
-                                dt.rows({selected: true}).every(function () {
+                                dt.rows({ selected: true }).every(function() {
                                     const data = this.data();
                                     idArr.push(data.id);
                                 });
                                 await deleteEntry(idArr);
-                                dt.rows({selected: true}).remove().draw(false);
+                                dt.rows({ selected: true }).remove().draw(false);
                             }
                         },
                         {
-                            extend: 'selectedSingle',
-                            text: 'Ban IP',
-                            attr: {id: 'banIpButton'},
+                            extend: "selectedSingle",
+                            text: "Ban IP",
+                            attr: { id: "banIpButton" },
                             action: async (e, dt) => {
                                 const accepted = confirm("Are you sure you want to ban this IP?");
                                 if (!accepted) {
                                     return;
                                 }
                                 const deleteRelatedData = confirm("Do you want to also delete all related data?\nPress 'Cancel' for no and 'Ok' for Yes");
-                                const selectedRow = dt.row({selected: true}).data();
+                                const selectedRow = dt.row({ selected: true }).data();
                                 const ip = selectedRow.ip;
                                 await banIp(ip, deleteRelatedData);
                                 reloadTable(["entries", "ips"]);
                             }
                         },
                         {
-                            extend: 'selectedSingle',
-                            text: 'Details',
-                            attr: {id: 'detailsButton'},
+                            extend: "selectedSingle",
+                            text: "Details",
+                            attr: { id: "detailsButton" },
                             action: async (e, dt) => {
-                                const selectedRow = dt.row({selected: true}).data();
+                                const selectedRow = dt.row({ selected: true }).data();
                                 const detailArr = [
                                     ["ID", selectedRow.id],
                                     ["File Name", selectedRow.fileName],
@@ -333,42 +331,42 @@
                                     ["Media Type", selectedRow.mediaType],
                                     ["File Size", selectedRow.fileSize],
                                     ["File Protection Level", selectedRow.fileProtectionLevel],
-                                    ["Created At", customDate()(selectedRow.createdAt, 'display', selectedRow)],
+                                    ["Created At", customDate()(selectedRow.createdAt, "display", selectedRow)],
                                     ["Expires", selectedRow.expires ?? "N/A"],
                                     ["IP", selectedRow.ip],
-                                    ["URL", selectedRow.url],
+                                    ["URL", selectedRow.url]
                                 ];
                                 addDetailInfo(detailArr);
                                 detailsModal.show();
                             }
                         },
                         {
-                            extend: 'selectedSingle',
-                            text: 'Download file',
-                            attr: {id: 'downloadFileButton'},
+                            extend: "selectedSingle",
+                            text: "Download file",
+                            attr: { id: "downloadFileButton" },
                             action: async (e, dt) => {
-                                const selectedRow = dt.row({selected: true}).data();
+                                const selectedRow = dt.row({ selected: true }).data();
                                 const url = selectedRow.url;
                                 window.open(url, "_blank");
                             }
                         });
                 } else if (type === "ips") {
                     buttons.push({
-                        extend: 'selected',
-                        text: 'Un-ban',
-                        attr: {id: 'downloadFileButton'},
+                        extend: "selected",
+                        text: "Un-ban",
+                        attr: { id: "downloadFileButton" },
                         action: async (e, dt) => {
                             const accepted = confirm("Are you sure you want to remove the ban for the selected ip(s)?");
                             if (!accepted) {
                                 return;
                             }
                             const ipArr = [];
-                            dt.rows({selected: true}).every(function () {
+                            dt.rows({ selected: true }).every(function() {
                                 const data = this.data();
                                 ipArr.push(data.ip);
                             });
                             await unBanIps(ipArr);
-                            dt.rows({selected: true}).remove().draw(false);
+                            dt.rows({ selected: true }).remove().draw(false);
                             reloadTable(["entries"]);
                         }
                     });
@@ -393,19 +391,19 @@
 
                 const table = dtMap.get(type);
                 if (type === "entries") {
-                    table.on('select', function (e, dt, type, indexes) {
-                        if (type === 'row') {
+                    table.on("select", function(e, dt, type, indexes) {
+                        if (type === "row") {
                             const data = table
                                 .rows(indexes)
                                 .data()
-                                .pluck('ipBanned');
-                            disableButtonsOnSelection(data.get(0), table.buttons(['#banIpButton']));
+                                .pluck("ipBanned");
+                            disableButtonsOnSelection(data.get(0), table.buttons(["#banIpButton"]));
                         }
                     });
                 }
             }
 
-            $('.datatables').each(async function () {
+            $(".datatables").each(async function() {
                 const el = $(this)[0];
                 const type = el.dataset.type;
                 let url = null;
@@ -418,7 +416,7 @@
                 }
                 const dtOpts = {
                     layout: {
-                        top2Start: 'buttons',
+                        top2Start: "buttons",
                         topStart: {
                             pageLength: {
                                 menu: [10, 25, 50, 100]
@@ -426,7 +424,7 @@
                         },
                         topEnd: {
                             search: {
-                                placeholder: 'Type search here'
+                                placeholder: "Type search here"
                             }
                         },
                         bottomEnd: "paging"
@@ -442,7 +440,7 @@
                     scrollX: false,
                     scrollCollapse: true,
                     select: {
-                        style: 'multi'
+                        style: "multi"
                     },
                     columns: getDataMapping(type),
                     buttons: getButtons(type)
@@ -452,7 +450,7 @@
                     dtOpts.processing = true;
                     dtOpts.serverSide = true;
                     dtOpts.language = {
-                        loadingRecords: 'No data available'
+                        loadingRecords: "No data available"
                     };
                 } else if (type === "ips") {
                     dtOpts.ajax = {

@@ -2,11 +2,11 @@ import { Inject, Injectable, OnInit } from "@tsed/di";
 import { AvFactory } from "../factory/AvFactory.js";
 import type { PlatformMulterFile } from "@tsed/common";
 import { Logger } from "@tsed/logger";
-import { FileEngine } from "../engine/impl/index.js";
 import { BadRequest } from "@tsed/exceptions";
 import path from "node:path";
 import { IAvEngine } from "../engine/IAvEngine.js";
 import { AvScanResult } from "../utils/typeings.js";
+import { FileUtils } from "../utils/Utils.js";
 
 @Injectable()
 export class AvManager implements OnInit {
@@ -15,7 +15,6 @@ export class AvManager implements OnInit {
     public constructor(
         @Inject() private avFactory: AvFactory,
         @Inject() private logger: Logger,
-        @Inject() private fileEngine: FileEngine,
     ) {}
 
     public async $onInit(): Promise<void> {
@@ -42,10 +41,10 @@ export class AvManager implements OnInit {
             if (scanResult.passed) {
                 continue;
             }
-            const fileExists = await this.fileEngine.fileExists(resource);
+            const fileExists = await FileUtils.fileExists(resource);
             if (fileExists) {
                 try {
-                    await this.fileEngine.deleteFile(file, false);
+                    await FileUtils.deleteFile(file, false);
                 } catch (e) {
                     // this basically means we could not delete the virus...
                     this.logger.error(`Unable to delete resource ${resource} after positive AV detection`);

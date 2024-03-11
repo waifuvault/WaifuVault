@@ -1,4 +1,4 @@
-const Site = (function () {
+const Site = (function() {
     let isInit = false;
 
     const loading = function loading(show) {
@@ -52,14 +52,14 @@ const Site = (function () {
         // eslint-disable-next-line require-await
         anon.call(this, Site).then(async () => {
             function initTooltips() {
-                document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+                document.querySelectorAll("[data-bs-toggle=\"tooltip\"]").forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
             }
 
             function initTabs() {
-                const triggerTabList = document.querySelectorAll('#resultTabs button');
+                const triggerTabList = document.querySelectorAll("#resultTabs button");
                 triggerTabList.forEach(triggerEl => {
                     const tabTrigger = new bootstrap.Tab(triggerEl);
-                    triggerEl.addEventListener('click', event => {
+                    triggerEl.addEventListener("click", event => {
                         event.preventDefault();
                         tabTrigger.show();
                     });
@@ -76,6 +76,6 @@ const Site = (function () {
         loading,
         display,
         showSuccess,
-        showError,
+        showError
     };
 }());

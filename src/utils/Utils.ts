@@ -1,10 +1,11 @@
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import type { FileUploadModel } from "../model/db/FileUpload.model.js";
 import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import process from "node:process";
 import type { Request } from "express";
 import fs from "node:fs/promises";
+import type { PlatformMulterFile } from "@tsed/common";
+import { FileUploadModel } from "../model/db/FileUpload.model.js";
 
 export class ObjectUtils {
     public static getNumber(source: string): number {
@@ -111,6 +112,33 @@ export class FileUtils {
             return realFiles.length;
         } catch {
             return 0;
+        }
+    }
+
+    public static deleteFile(file: string | PlatformMulterFile, force = true): Promise<void> {
+        const toDelete = this.getFilePath(file);
+        return fs.rm(toDelete, { recursive: true, force });
+    }
+
+    public static async getFileSize(file: string | PlatformMulterFile): Promise<number> {
+        const f = this.getFilePath(file);
+        const stat = await fs.stat(f);
+        return stat.size;
+    }
+
+    public static getFilePath(file: string | PlatformMulterFile | FileUploadModel): string {
+        if (file instanceof FileUploadModel) {
+            return file.fullLocationOnDisk;
+        }
+        return typeof file === "string" ? `${filesDir}/${file}` : file.path;
+    }
+
+    public static async fileExists(file: string): Promise<boolean> {
+        try {
+            await fs.access(file, fs.constants.F_OK);
+            return true;
+        } catch {
+            return false;
         }
     }
 }

@@ -52,8 +52,8 @@
         submitPassword();
     });
 
-    function progress({loaded, total}) {
-        const downloadDone = Math.round(loaded / total * 100) + '%';
+    function progress({ loaded, total }) {
+        const downloadDone = Math.round(loaded / total * 100) + "%";
         progressbar.innerText = downloadDone;
         progressbar.style.width = downloadDone;
         progressWrapper.setAttribute("aria-valuenow", Math.round(loaded / total * 100).toString());
@@ -78,35 +78,35 @@
                 const response = await fetch(url, {
                     headers: {
                         "x-password": password
-                    },
+                    }
                 });
                 if (response.status === 403) {
                     alert.classList.remove("hidden");
                     return;
                 }
-                const contentLength = response.headers.get('content-length');
+                const contentLength = response.headers.get("content-length");
                 const total = Number.parseInt(contentLength);
                 let loaded = 0;
                 const res = new Response(
                     new ReadableStream({
-                        async start(controller) {
-                            const reader = response.body.getReader();
-                            for (; ;) {
-                                try {
-                                    const {done, value} = await reader.read();
-                                    if (done) {
-                                        break;
-                                    }
-                                    loaded += value.byteLength;
-                                    progress({loaded, total});
-                                    controller.enqueue(value);
-                                } catch (e) {
-                                    controller.error(e);
+                            async start(controller) {
+                                const reader = response.body.getReader();
+                                for (; ;) {
+                                    try {
+                                        const { done, value } = await reader.read();
+                                        if (done) {
+                                            break;
+                                        }
+                                        loaded += value.byteLength;
+                                        progress({ loaded, total });
+                                        controller.enqueue(value);
+                                    } catch (e) {
+                                        controller.error(e);
                                         return;
                                     }
+                                }
+                                controller.close();
                             }
-                            controller.close();
-                        },
                         }
                     ), {
                         headers: response.headers,
