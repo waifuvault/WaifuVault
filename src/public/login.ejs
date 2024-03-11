@@ -62,12 +62,12 @@
                     </form>
                 </div>
                 <% if(typeof internalError !== "undefined") { %>
-                    <div class="card-footer">
-                        <div class="alert alert-danger alert-dismissible" role="alert">
-                            <%-message-%>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
+                <div class="card-footer">
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <%- message -%>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+                </div>
                 <% } %>
             </div>
         </div>
@@ -76,10 +76,10 @@
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <%- include('snippets/scripts.ejs'); %>
 <script>
-    window.addEventListener('load', () => {
-        const $recaptcha = document.querySelector('#g-recaptcha-response');
+    window.addEventListener("load", () => {
+        const $recaptcha = document.querySelector("#g-recaptcha-response");
         if ($recaptcha) {
-            $recaptcha.setAttribute('required', 'required');
+            $recaptcha.setAttribute("required", "required");
         }
     });
 </script>

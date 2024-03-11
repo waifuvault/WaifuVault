@@ -5,7 +5,6 @@ import { FileService } from "./FileService.js";
 import { filesDir, FileUtils } from "../utils/Utils.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import fs from "node:fs/promises";
-import { FileEngine } from "../engine/impl/index.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 
 @Service()
@@ -14,7 +13,6 @@ export class FileCleaner implements OnInit {
         @Inject() private repo: FileRepo,
         @Inject() private scheduleService: ScheduleService,
         @Inject() private fileUploadService: FileService,
-        @Inject() private fileEngine: FileEngine,
     ) {}
 
     // default to every hour at :00
@@ -51,7 +49,7 @@ export class FileCleaner implements OnInit {
         const allFilesFromSystem = await fs.readdir(filesDir);
         const deleteFilesPromises = allFilesFromSystem
             .filter(fileOnSystem => !this.isFileInDb(allFilesFromDb, fileOnSystem))
-            .map(fileToDelete => this.fileEngine.deleteFile(fileToDelete));
+            .map(fileToDelete => FileUtils.deleteFile(fileToDelete));
         await Promise.all(deleteFilesPromises);
     }
 

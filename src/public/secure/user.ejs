@@ -12,7 +12,7 @@
     </div>
 </div>
 <div class="container mt-4">
-<%- include('../snippets/navbar.ejs'); %>
+    <%- include('../snippets/navbar.ejs'); %>
     <div class="row">
         <div class="col-md-6 offset-md-3">
             <div class="card border-primary mb-3">
@@ -63,7 +63,7 @@
                     Site.loading(true);
                     try {
                         await fetch(`${baseUrl}/auth/changeDetails`, {
-                            method: 'POST',
+                            method: "POST",
                             body: formData
                         });
                     } catch (e) {

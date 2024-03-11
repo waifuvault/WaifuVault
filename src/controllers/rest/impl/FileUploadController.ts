@@ -5,9 +5,8 @@ import { FileUploadModelResponse } from "../../../model/rest/FileUploadModelResp
 import { BadRequest, Forbidden, UnsupportedMediaType } from "@tsed/exceptions";
 import { MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res } from "@tsed/common";
 import { BodyParams } from "@tsed/platform-params";
-import { FileEngine } from "../../../engine/impl/index.js";
 import { FileService } from "../../../services/FileService.js";
-import { NetworkUtils } from "../../../utils/Utils.js";
+import { FileUtils, NetworkUtils } from "../../../utils/Utils.js";
 import { BaseRestController } from "../BaseRestController.js";
 import { Logger } from "@tsed/logger";
 
@@ -17,7 +16,6 @@ import { Logger } from "@tsed/logger";
 @Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
 export class FileUploadController extends BaseRestController {
     public constructor(
-        @Inject() private fileEngine: FileEngine,
         @Inject() private fileUploadService: FileService,
         @Inject() private logger: Logger,
     ) {
@@ -75,7 +73,7 @@ export class FileUploadController extends BaseRestController {
     ): Promise<unknown> {
         if (file && url) {
             if (file) {
-                await this.fileEngine.deleteFile(file);
+                await FileUtils.deleteFile(file);
             }
             throw new BadRequest("Unable to upload both a file and a url");
         }
@@ -106,7 +104,7 @@ export class FileUploadController extends BaseRestController {
             if (file) {
                 // this will delete files if something goes wrong, but not urls...
                 // TODO: fix
-                await this.fileEngine.deleteFile(file, true);
+                await FileUtils.deleteFile(file, true);
             }
             throw e;
         }
