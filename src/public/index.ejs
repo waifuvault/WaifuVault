@@ -185,7 +185,7 @@
                             <button class="nav-link active" id="curl-tab" data-bs-toggle="tab" data-bs-target="#curl-tab-pane" type="button" role="tab" aria-controls="curl-tab-pane" aria-selected="true">Curl</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="node-tab" data-bs-toggle="tab" data-bs-target="#node-tab-pane" type="button" role="tab" aria-controls="node-tab-pane" aria-selected="false">Node (node-fetch)</button>
+                            <button class="nav-link" id="node-tab" data-bs-toggle="tab" data-bs-target="#node-tab-pane" type="button" role="tab" aria-controls="node-tab-pane" aria-selected="false">Node</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="go-tab" data-bs-toggle="tab" data-bs-target="#go-tab-pane" type="button" role="tab" aria-controls="go-tab-pane" aria-selected="false">Go</button>
@@ -218,27 +218,29 @@ curl --request PUT --url <%- process.env.BASE_URL; -%>/rest --header 'Content-Ty
 </pre>
                         </div>
                         <div class="tab-pane fade" id="node-tab-pane" role="tabpanel" aria-labelledby="node-tab" tabindex="0">
-<pre><code class="language-ts">
-import fetch, {fileFrom, FormData} from 'node-fetch';
+                            <p>For Node, there is an official SDK that provides access to all of the features of the site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://www.npmjs.com/package/waifuvault-node-api" target="_blank">WaifuVault Node API</a>
+                            <pre><code class="language-ts">
+import Waifuvault from "waifuvault-node-api";
 
 // upload file
-const formData = new FormData();
-const blob = await fileFrom('./src/input.txt');
-formData.set('file', blob);
-const response = await fetch("<%- process.env.BASE_URL; -%>/rest", {
-    method: 'PUT',
-    body: formData
+const resp = await Waifuvault.uploadFile({
+    file: "./files/aCoolFile.jpg"
 });
-const data = await response.json(); // object
+console.log(resp.url); // the file download URL
 
 // upload via URL
-const encodedParams = new URLSearchParams();
-encodedParams.set('url', 'https://victorique.moe/img/slider/Quotes.jpg');
-const response = await fetch("<%- process.env.BASE_URL; -%>/rest", {
-    method: 'PUT',
-    body: encodedParams
+const resp = await Waifuvault.uploadFile({
+    url: "https://waifuvault.moe/assets/custom/images/08.png"
 });
-const data = await response.json(); // object
+console.log(resp.url); // the file download URL
+
+// upload a buffer
+const resp = await Waifuvault.uploadFile({
+    file: Buffer.from("someData"),
+    filename: "aCoolFile.jpg"
+});
+console.log(resp.url); // the file download URL
 </code>
 </pre>
                         </div>
@@ -303,25 +305,29 @@ func main() {
 </pre>
                         </div>
                         <div class="tab-pane fade" id="python-tab-pane" role="tabpanel" aria-labelledby="python-tab" tabindex="0">
+                            <p>For Python, there is an official SDK that provides access to all of the features of the site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://pypi.org/project/waifuvault/" target="_blank">WaifuVault Python API</a>
 <pre><code class="language-python">
-import requests
-from requests_toolbelt import MultipartEncoder
+import waifuvault
+import io
 
 # upload file
-multipart_data = MultipartEncoder(
-    fields={
-        'file': ('input.txt', open('./src/input.txt', 'rb'), 'text/plain')
-    }
-)
-response = requests.put("<%- process.env.BASE_URL; -%>/rest", data=multipart_data, headers={'Content-Type': multipart_data.content_type})
-data = response.json()
+upload_file = waifuvault.FileUpload("./files/aCoolFile.png")
+upload_res = waifuvault.upload_file(upload_file)
+print(f"{upload_res.url}")
 
 # upload via URL
-response = requests.put(
-    "<%- process.env.BASE_URL; -%>/rest",
-    data={'url': 'https://victorique.moe/img/slider/Quotes.jpg'}
-)
-data = response.json()
+upload_file = waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png")
+upload_res = waifuvault.upload_file(upload_file)
+print(f"{upload_res.url}")
+
+# upload a buffer
+with open("./files/aCoolFile.png", "rb") as fh:
+    buf = io.BytesIO(fh.read())
+
+upload_file = waifuvault.FileUpload(buf, "aCoolFile.png")
+upload_res = waifuvault.upload_file(upload_file)
+print(f"{upload_res.url}")
 </code>
 </pre>
                         </div>

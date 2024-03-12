@@ -120,3 +120,7 @@
 .am5-modal-content {
     color: #000000 !important;
 }
+
+.tab-pane > p{
+    padding-top: 15px;
+}
