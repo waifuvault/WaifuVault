@@ -245,62 +245,83 @@ console.log(resp.url); // the file download URL
 </pre>
                         </div>
                         <div class="tab-pane fade" id="go-tab-pane" role="tabpanel" aria-labelledby="go-tab" tabindex="0">
+                            <p>For Go, there is an official SDK that provides access to all of the features of the site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://github.com/waifuvault/waifuVault-go-api" target="_blank">WaifuVault Go API</a>
 <pre><code class="language-go">
 //upload via URL
 package main
 
 import (
-	"bytes"
-	"net/http"
+	"fmt"
+	"github.com/waifuvault/waifuVault-go-api/pkg"
+	waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod" // namespace mod
 )
 
 func main() {
-	url := "<%- process.env.BASE_URL; -%>/rest"
-	data := []byte(`{"url": "https://victorique.moe/img/slider/Quotes.jpg"}`)
-	req, _ := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(data))
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, _ := client.Do(req)
-	defer resp.Body.Close()
+	api := waifuVault.Api{}
+	file, err := api.UploadFile(waifuMod.WaifuvaultPutOpts{
+		Url: "https://waifuvault.moe/assets/custom/images/08.png",
+	})
+	if err != nil {
+		return
+	}
+	fmt.Printf(file.URL) // the URL
 }
 
 // upload file
 package main
 
 import (
-	"bytes"
-	"io"
-	"mime/multipart"
-	"net/http"
+	"fmt"
+	"github.com/waifuvault/waifuVault-go-api/pkg"
+	waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod"
 	"os"
-	"path"
-	"path/filepath"
 )
 
 func main() {
-	fileDir, _ := os.Getwd()
-	fileName := "main.go"
-	filePath := path.Join(fileDir, fileName)
+	api := waifuVault.Api{}
 
-	file, _ := os.Open(filePath)
-	defer file.Close()
-
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	part, _ := writer.CreateFormFile("file", filepath.Base(file.Name()))
-	io.Copy(part, file)
-	writer.Close()
-
-	r, _ := http.NewRequest("PUT", "<%- process.env.BASE_URL; -%>/rest", body)
-	r.Header.Add("Content-Type", writer.FormDataContentType())
-	client := &http.Client{}
-	resp, err := client.Do(r)
+	fileStruc, err := os.Open("myCoolFile.jpg")
 	if err != nil {
-		// handle error
+		fmt.Print(err)
 	}
-	defer resp.Body.Close()
+
+	file, err := api.UploadFile(waifuMod.WaifuvaultPutOpts{
+		File: fileStruc,
+	})
+	if err != nil {
+		return
+	}
+	fmt.Printf(file.URL) // the URL
 }
 
+// upload buffer
+package main
+
+import (
+	"fmt"
+	"github.com/waifuvault/waifuVault-go-api/pkg"
+	waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod"
+	"os"
+)
+
+func main() {
+	api := waifuVault.Api{}
+
+	b, err := os.ReadFile("myCoolFile.jpg")
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	file, err := api.UploadFile(waifuMod.WaifuvaultPutOpts{
+		Bytes:    &b,
+		FileName: "myCoolFile.jpg", // make sure you supply the extension
+	})
+	if err != nil {
+		return
+	}
+	fmt.Printf(file.URL) // the URL
+}
 </code>
 </pre>
                         </div>
@@ -332,25 +353,27 @@ print(f"{upload_res.url}")
 </pre>
                         </div>
                         <div class="tab-pane fade" id="cs-tab-pane" role="tabpanel" aria-labelledby="cs-tab" tabindex="0">
+                            <p>For C#, there is an official SDK that provides access to all of the features of the site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://www.nuget.org/packages/Waifuvault" target="_blank">WaifuVault C# API</a>
 <pre><code class="language-cs">
-var client = new HttpClient();
+using Waifuvault;
+using System.IO;
 
 // Upload file
-var filePath = "./src/input.txt";
-var content = new MultipartFormDataContent();
-var fileStream = new FileStream(filePath, FileMode.Open);
-content.Add(new StreamContent(fileStream), "file", Path.GetFileName(filePath));
-var fileResponse = await client.PutAsync("<%- process.env.BASE_URL; -%>/rest", content);
-var fileResponseData = await fileResponse.Content.ReadAsStringAsync();
-fileStream.Close();
+var upload_file = new Waifuvault.FileUpload("./aCoolFile.png");
+var upload_resp = await Waifuvault.Api.uploadFile(upload_file);
+Console.WriteLine(upload_resp.url);
 
 // Upload via URL
-var urlContent = new FormUrlEncodedContent(new []
-{
-    new KeyValuePair<string, string>("url", "https://victorique.moe/img/slider/Quotes.jpg")
-});
-var urlResponse = await client.PutAsync("<%- process.env.BASE_URL; -%>/rest", urlContent);
-var urlResponseData = await urlResponse.Content.ReadAsStringAsync();
+var upload_file = new Waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png");
+var upload_resp = await Waifuvault.Api.uploadFile(upload_file);
+Console.WriteLine(upload_resp.url);
+
+// Upload via Buffer
+byte[] buffer = File.ReadAllBytes("./aCoolFile.png");
+var upload_file = new Waifuvault.FileUpload(buffer,"aCoolFile.png");
+var upload_resp = await Waifuvault.Api.uploadFile(upload_file);
+Console.WriteLine(upload_resp.url);
 </code>
 </pre>
                         </div>
