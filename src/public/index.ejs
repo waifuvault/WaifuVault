@@ -17,7 +17,7 @@
 
         <div class="p-5 mb-4 bg-body-tertiary rounded-3 border border-primary-subtle position-relative">
             <div class="container-fluid py-5 ">
-                <h1 class="display-5 fw-bold">No BS temp file hosting</h1>
+                <h1 class="display-5 fw-bold">No nonsense temporary file hosting</h1>
                 <p class="col-md-8 fs-4">Inspired by
                     <a href="https://0x0.st" target="_blank">https://0x0.st</a>, WaifuVault is a temporary file hosting service that allows for file uploads that are hosted for a set amount of time.
                 </p>
@@ -66,7 +66,7 @@
         <div class="row align-items-md-stretch mb-4">
             <div class="col-md-12">
                 <div class="h-100 p-5 text-bg-dark rounded-3 border border-warning-subtle bg-body-tertiary">
-                    <h2 class="mb-4">Features</h2>
+                    <h2 class="mb-4 text-center">Features</h2>
                     <div class="row align-items-md-stretch mb-4">
                         <div class="col-md-4">
                             <div class="card text-center border-0 bg-transparent">
@@ -103,14 +103,69 @@
                         </div>
                     </div>
                     <div class="row align-items-md-stretch mb-4">
-                        <div class="col-md-12">
-                            <div class="card text-center border-0 bg-transparent">
-                                <i class="bi bi-info-circle"></i>
-                                <div class="card-body text-center">
-                                    <h5 class="card-title">File info service</h5>
-                                    <p class="card-text">
-                                        With your token you get when uploading, you can query info about your upload to get useful into like how long the file has left to expire, the URl of your file and other related info.
-                                    </p>
+                        <div class="col-md-12 text-center">
+                            <div class="card bg-transparent">
+                                <div class="card-body">
+                                    <h5 class="card-title">Bespoke SDKs</h5>
+                                    <h6 class="card-subtitle mb-2 text-body-secondary mb-4">Official SDKs for interacting with waifuvault</h6>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="card border-0 bg-transparent">
+                                                <img class="img-fluid ms-auto me-auto customIcon" src="assets/custom/icons/icons8-nodejs.svg" />
+                                                <div class="card-body text-center">
+                                                    <h5 class="card-title">Node.js</h5>
+                                                    <p class="card-text">
+                                                        The official Node.js SDK
+                                                    </p>
+                                                    <div class="d-grid">
+                                                        <a class="btn btn-primary btn-sm" href="https://www.npmjs.com/package/waifuvault-node-api" target="_blank">Node SDK</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card border-0 bg-transparent">
+                                                <img class="img-fluid ms-auto me-auto customIcon" src="assets/custom/icons/icons8-python.svg" />
+                                                <div class="card-body text-center">
+                                                    <h5 class="card-title">Python</h5>
+                                                    <p class="card-text">
+                                                        The official Python SDK
+                                                    </p>
+                                                    <div class="d-grid">
+                                                        <a class="btn btn-primary btn-sm mb-3" href="https://pypi.org/project/waifuvault/" target="_blank">Python SDK</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card border-0 bg-transparent">
+                                                <img class="img-fluid ms-auto me-auto customIcon" style="width: 35px;" src="assets/custom/icons/gopher.svg" />
+                                                <div class="card-body text-center">
+                                                    <h5 class="card-title">Go</h5>
+                                                    <p class="card-text">
+                                                        The official Go SDK
+                                                    </p>
+                                                    <div class="d-grid">
+                                                        <a class="btn btn-primary btn-sm mb-3" href="https://pkg.go.dev/github.com/waifuvault/waifuVault-go-api" target="_blank">Go SDK</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card border-0 bg-transparent">
+                                                <img class="img-fluid ms-auto me-auto customIcon" src="assets/custom/icons/icons8-c-sharp-logo.svg" />
+                                                <div class="card-body text-center">
+                                                    <h5 class="card-title">C#</h5>
+                                                    <p class="card-text">
+                                                        The official C# SDK
+                                                    </p>
+                                                    <div class="d-grid">
+                                                        <a class="btn btn-primary btn-sm mb-3" href="https://www.nuget.org/packages/Waifuvault" target="_blank">C# SDK</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -131,13 +186,6 @@
                         <li class="list-group-item">Crypto shit</li>
                         <li class="list-group-item">Anything illegal under British Law</li>
                         <li class="list-group-item">File Limit: <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</li>
-                        <li class="list-group-item">Blocked MIME types:
-                            <ul>
-                                <% for(const blockedMime of process.env.BLOCKED_MIME_TYPES.split(",")){ %>
-                                    <li><%- blockedMime; -%></li>
-                                <% } %>
-                            </ul>
-                        </li>
                     </ul>
                     <p>The amount of time a given file is hosted for is determined by its size. Files are hosted for a maximum of 365 days, with the time being shortened on a cubic curve.</p>
                     <p>This means for files up to about 50% of the maximum file size will get close to the maximum time. All files will be retained for at LEAST 30 days</p>
@@ -246,7 +294,7 @@ console.log(resp.url); // the file download URL
                         </div>
                         <div class="tab-pane fade" id="go-tab-pane" role="tabpanel" aria-labelledby="go-tab" tabindex="0">
                             <p>For Go, there is an official SDK that provides access to all of the features of the site.</p>
-                            <a class="btn btn-primary btn-sm mb-3" href="https://github.com/waifuvault/waifuVault-go-api" target="_blank">WaifuVault Go API</a>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://pkg.go.dev/github.com/waifuvault/waifuVault-go-api" target="_blank">WaifuVault Go API</a>
 <pre><code class="language-go">
 //upload via URL
 package main
