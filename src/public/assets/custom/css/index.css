@@ -124,3 +124,7 @@
 .tab-pane > p{
     padding-top: 15px;
 }
+
+.customIcon{
+    width: 48px;
+}
