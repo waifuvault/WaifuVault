@@ -40,6 +40,8 @@ import { filesDir, FileUtils, NetworkUtils } from "./utils/Utils.js";
 import { fileURLToPath } from "node:url";
 import { ExpressRateLimitTypeOrmStore } from "typeorm-rate-limit-store";
 import { ExpressRateLimitStoreModel } from "./model/db/ExpressRateLimitStore.model.js";
+import { Exception, TooManyRequests } from "@tsed/exceptions";
+import { DefaultRenderObj } from "./engine/impl/index.js";
 
 const opts: Partial<TsED.Configuration> = {
     ...config,
@@ -192,6 +194,7 @@ export class Server implements BeforeRoutesInit {
                 windowMs: 1000,
                 limit: 1,
                 standardHeaders: true,
+                message: this.parseError(new TooManyRequests("Too many requests, try again later")),
                 skip: request => {
                     if (request?.$ctx?.request?.request?.session?.passport) {
                         return true;
@@ -204,5 +207,13 @@ export class Server implements BeforeRoutesInit {
                 store: new ExpressRateLimitTypeOrmStore(this.ds.getRepository(ExpressRateLimitStoreModel)),
             }),
         );
+    }
+
+    private parseError(error: Exception): DefaultRenderObj {
+        return {
+            name: error.origin?.name ?? error.name,
+            message: error.message,
+            status: error.status ?? 500,
+        };
     }
 }
