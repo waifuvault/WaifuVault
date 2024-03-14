@@ -1,6 +1,5 @@
 import { Constant, Inject, Service } from "@tsed/di";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import fetch, { Response } from "node-fetch";
 import { BadRequest, Forbidden, HTTPException, RequestURITooLong } from "@tsed/exceptions";
 import path from "node:path";
 import fs from "node:fs";
@@ -8,6 +7,9 @@ import { filesDir } from "../utils/Utils.js";
 import isLocalhost from "is-localhost-ip";
 import Module from "node:module";
 import { Logger } from "@tsed/logger";
+import { Readable } from "node:stream";
+import { finished } from "node:stream/promises";
+import type { ReadableStream } from "stream/web";
 
 const require = Module.createRequire(import.meta.url);
 
@@ -78,15 +80,8 @@ export class FileUrlService {
         const ext = originalFileName.split(".").pop();
         const destination = path.resolve(`${filesDir}/${now}.${ext}`);
         const fileStream = fs.createWriteStream(destination);
-        return new Promise((resolve, reject) => {
-            if (!response.body) {
-                reject("Response has no body");
-                return;
-            }
-            response.body.pipe(fileStream);
-            response.body.on("error", reject);
-            fileStream.on("finish", resolve);
-        }).then(() => [destination, originalFileName]);
+        await finished(Readable.fromWeb(response.body! as ReadableStream).pipe(fileStream));
+        return [destination, originalFileName];
     }
 
     private isLocalhost(url: string): Promise<boolean> {
