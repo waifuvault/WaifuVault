@@ -1,14 +1,23 @@
 import { Get, Hidden, View } from "@tsed/schema";
-import { Controller } from "@tsed/di";
+import { Controller, Inject } from "@tsed/di";
 import { Req, Res } from "@tsed/common";
+import { FileService } from "../../services/FileService.js";
+import { ObjectUtils } from "../../utils/Utils.js";
 
 @Controller("/")
 @Hidden()
 export class HomeView {
+    public constructor(@Inject() private fileService: FileService) {}
+
     @Get()
     @View("index.ejs")
-    public showRoot(): unknown {
-        return null;
+    public async showRoot(): Promise<unknown> {
+        const records = await this.fileService.getRecordCount();
+        const size = await this.fileService.getRecordSize();
+        return {
+            recordCount: records.toLocaleString(),
+            recordSize: ObjectUtils.sizeToHuman(size),
+        };
     }
 
     @Get("/login")

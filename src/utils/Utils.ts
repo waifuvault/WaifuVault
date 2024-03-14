@@ -13,6 +13,22 @@ export class ObjectUtils {
         return matches && matches[0] ? parseInt(matches[0]) : 0;
     }
 
+    public static sizeToHuman(value: number): string {
+        const sizeKB = Math.floor(value / 1024);
+        const sizeMB = Math.floor(sizeKB / 1024);
+        const sizeGB = Math.floor(sizeMB / 1024);
+        if (value < 1024) {
+            return `${value} B`;
+        }
+        if (sizeKB < 1024) {
+            return `${sizeKB} KB`;
+        }
+        if (sizeMB < 1024) {
+            return `${sizeMB} MB`;
+        }
+        return `${sizeGB} GB`;
+    }
+
     public static timeToHuman(value: number, timeUnit: TIME_UNIT = TIME_UNIT.milliseconds): string {
         let seconds: number;
         if (timeUnit === TIME_UNIT.milliseconds) {
