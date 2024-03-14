@@ -228,6 +228,15 @@ export class FileService {
         return deleted;
     }
 
+    public getRecordCount(): Promise<number> {
+        return this.repo.getRecordCount();
+    }
+
+    public async getRecordSize(): Promise<number> {
+        const entries = await this.repo.getAllEntries();
+        return entries.reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
+    }
+
     private async getFileHash(resourcePath: string): Promise<string> {
         const fileBuffer = await fs.readFile(resourcePath);
         const hashSum = crypto.createHash("md5");
