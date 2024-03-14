@@ -1,6 +1,5 @@
 import { Constant, Inject, Service } from "@tsed/di";
 import { ReCAPTCHAResponse } from "../utils/typeings.js";
-import fetch, { FormData } from "node-fetch";
 import { Logger } from "@tsed/common";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 
