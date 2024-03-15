@@ -42,6 +42,7 @@ import { ExpressRateLimitTypeOrmStore } from "typeorm-rate-limit-store";
 import { ExpressRateLimitStoreModel } from "./model/db/ExpressRateLimitStore.model.js";
 import { Exception, TooManyRequests } from "@tsed/exceptions";
 import { DefaultRenderObj } from "./engine/impl/index.js";
+import { Logger } from "@tsed/logger";
 
 const opts: Partial<TsED.Configuration> = {
     ...config,
@@ -155,6 +156,7 @@ export class Server implements BeforeRoutesInit {
     public constructor(
         @Inject() private app: PlatformApplication,
         @Inject(SQLITE_DATA_SOURCE) private ds: DataSource,
+        @Inject() private logger: Logger,
     ) {}
 
     @Configuration()
@@ -165,6 +167,12 @@ export class Server implements BeforeRoutesInit {
 
     @Constant(GlobalEnv.HTTPS)
     private readonly https: string;
+
+    @Constant(GlobalEnv.RATE_LIMIT_MS)
+    private readonly rateLimitMs: string;
+
+    @Constant(GlobalEnv.RATE_LIMIT)
+    private readonly rateLimit: string;
 
     public $beforeRoutesInit(): void {
         if (isProduction) {
@@ -189,24 +197,35 @@ export class Server implements BeforeRoutesInit {
                 }),
             );
         }
-        this.app.use(
-            rateLimit({
-                windowMs: 1000,
-                limit: 1,
-                standardHeaders: true,
-                message: this.parseError(new TooManyRequests("Too many requests, try again later")),
-                skip: request => {
-                    if (request?.$ctx?.request?.request?.session?.passport) {
-                        return true;
-                    }
-                    return request.path.includes("/admin") ? true : !request.path.includes("/rest");
-                },
-                keyGenerator: request => {
-                    return NetworkUtils.getIp(request);
-                },
-                store: new ExpressRateLimitTypeOrmStore(this.ds.getRepository(ExpressRateLimitStoreModel)),
-            }),
-        );
+        if (this.rateLimit) {
+            const howManyRequests = Number.parseInt(this.rateLimit);
+            if (Number.isNaN(howManyRequests)) {
+                throw new Error("RATE_LIMIT is not a number");
+            }
+            const rateLimitTimePeriod = Number.parseInt(this.rateLimitMs);
+            if (Number.isNaN(rateLimitTimePeriod)) {
+                throw new Error("RATE_LIMIT_MS not a number");
+            }
+            this.logger.info(`Enable rate limiting: ${howManyRequests} requests every ${rateLimitTimePeriod}ms`);
+            this.app.use(
+                rateLimit({
+                    windowMs: rateLimitTimePeriod,
+                    limit: howManyRequests,
+                    standardHeaders: true,
+                    message: this.parseError(new TooManyRequests("Too many requests, try again later")),
+                    skip: request => {
+                        if (request?.$ctx?.request?.request?.session?.passport) {
+                            return true;
+                        }
+                        return request.path.includes("/admin") ? true : !request.path.includes("/rest");
+                    },
+                    keyGenerator: request => {
+                        return NetworkUtils.getIp(request);
+                    },
+                    store: new ExpressRateLimitTypeOrmStore(this.ds.getRepository(ExpressRateLimitStoreModel)),
+                }),
+            );
+        }
     }
 
     private parseError(error: Exception): DefaultRenderObj {
