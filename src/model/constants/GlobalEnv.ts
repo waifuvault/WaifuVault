@@ -21,6 +21,8 @@ enum GlobalEnv {
     FILE_CLEANER_CRON = `${prefix}FILE_CLEANER_CRON`,
     SALT = `${prefix}SALT`,
     UPLOAD_SECRET = `${prefix}UPLOAD_SECRET`,
+    RATE_LIMIT = `${prefix}RATE_LIMIT`,
+    RATE_LIMIT_MS = `${prefix}RATE_LIMIT_MS`,
 }
 
 export default GlobalEnv;
