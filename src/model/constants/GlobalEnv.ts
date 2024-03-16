@@ -23,6 +23,7 @@ enum GlobalEnv {
     UPLOAD_SECRET = `${prefix}UPLOAD_SECRET`,
     RATE_LIMIT = `${prefix}RATE_LIMIT`,
     RATE_LIMIT_MS = `${prefix}RATE_LIMIT_MS`,
+    REDIS_URI = `${prefix}REDIS_URI`,
 }
 
 export default GlobalEnv;

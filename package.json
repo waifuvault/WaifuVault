@@ -1,5 +1,5 @@
 {
-  "name": "waifu_valt",
+  "name": "waifu_vault",
   "version": "1.0.0",
   "description": "Temp file hosting for nerds",
   "type": "module",
@@ -23,6 +23,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "@tsed/ajv": "^7.64.0",
     "@tsed/common": "^7.64.0",
     "@tsed/core": "^7.64.0",
@@ -75,6 +76,7 @@
     "passport-http": "^0.3.0",
     "passport-local": "^1.0.0",
     "punycode": "^2.3.1",
+    "redis": "^4.6.13",
     "socket.io": "^4.7.5",
     "toad-scheduler": "^3.0.1",
     "typeorm": "^0.3.20",

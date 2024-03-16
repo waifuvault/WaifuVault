@@ -18,8 +18,7 @@ export class RecordInfoSocket {
     }
 
     public async $onConnection(): Promise<void> {
-        const payload = await this.getPayload();
-        this.nsp.emit("record", payload);
+        await this.emit();
     }
 
     private async getPayload(): Promise<RecordInfoPayload> {

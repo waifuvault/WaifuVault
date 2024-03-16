@@ -5,6 +5,8 @@ import "@tsed/platform-express";
 import "@tsed/ajv";
 import "@tsed/swagger";
 import "@tsed/socketio";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { createClient } from "redis";
 // custom index imports
 import "./protocols/index.js";
 import "./filters/index.js";
@@ -152,6 +154,8 @@ const opts: Partial<TsED.Configuration> = {
     exclude: ["**/*.spec.ts"],
 };
 
+await initRedis();
+
 @Configuration(opts)
 export class Server implements BeforeRoutesInit {
     public constructor(
@@ -174,6 +178,9 @@ export class Server implements BeforeRoutesInit {
 
     @Constant(GlobalEnv.RATE_LIMIT)
     private readonly rateLimit: string;
+
+    @Constant(GlobalEnv.REDIS_URI)
+    private readonly redisUrl: string;
 
     public $beforeRoutesInit(): void {
         if (isProduction) {
@@ -227,6 +234,9 @@ export class Server implements BeforeRoutesInit {
                 }),
             );
         }
+        if (this.redisUrl) {
+            this.logger.info(`Connected IO to redis at ${this.redisUrl}`);
+        }
     }
 
     private parseError(error: Exception): DefaultRenderObj {
@@ -235,5 +245,14 @@ export class Server implements BeforeRoutesInit {
             message: error.message,
             status: error.status ?? 500,
         };
+    }
+}
+
+async function initRedis(): Promise<void> {
+    if (process.env.REDIS_URI) {
+        const pubClient = createClient({ url: process.env.SOCKET_IO_REDIS });
+        const subClient = pubClient.duplicate();
+        await Promise.all([pubClient.connect(), subClient.connect()]);
+        opts.socketIO!.adapter = createAdapter(pubClient, subClient);
     }
 }
