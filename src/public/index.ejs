@@ -618,7 +618,7 @@ public class Example {
 
         function loadSocket(){
             socket.on("record", ({recordCount, recordSize}) => {
-                fileCountSpan.innerText = recordCount;
+                fileCountSpan.innerText = recordCount.toLocaleString();
                 totalFileSizeSpan.innerText = recordSize;
             });
         }
