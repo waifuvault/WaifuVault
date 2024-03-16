@@ -45,6 +45,7 @@ Optional Settings
 | UPLOAD_SECRET    | A secret passcode you can set, when used as on the upload as a query paramater `secret_token`, the file will have no expiry and will persist forever |
 | RATE_LIMIT       | If set, this will enable rate limiting, this defines how many requests can be made within the `RATE_LIMIT_MS` period                                 |
 | RATE_LIMIT_MS    | If `RATE_LIMIT` is set, then this is required and defines how long to wait for each rate limit reset                                                 |
+| REDIS_URI        | Set this if you are using redis. currently this is only used for socket IO when the application is running using node clusters                       |
 
 > For rate limiting, if `RATE_LIMIT` was 1 and `RATE_LIMIT_MS` is `1000`. Then this means 1 request every second
 

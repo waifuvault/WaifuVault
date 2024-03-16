@@ -1,7 +1,7 @@
 module.exports = [
     {
         script: "./dist/index.js",
-        name: "waifu_valt",
+        name: "waifu_vault",
         time: true,
         source_map_support: true,
         watch: false,

@@ -560,7 +560,9 @@ public class Example {
 <script>
     Site.loadPage(async () => {
 
-        const socket = io(`${mainRul}/recordInfo`, {path: '/socket.io/recordInfo'});
+        const socket = io(`${mainRul}/recordInfo`, {
+            path: '/socket.io/recordInfo'
+        });
 
         const fileCountSpan = document.getElementById("fileCount");
         const totalFileSizeSpan = document.getElementById("totalFileSize");
