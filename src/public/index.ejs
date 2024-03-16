@@ -18,7 +18,7 @@
         <div class="p-5 mb-4 bg-body-tertiary rounded-3 border border-primary-subtle position-relative">
             <div class="container-fluid py-5 ">
                 <h1 class="display-5 fw-bold">No nonsense temporary file hosting</h1>
-                <h2 class="fw-bold">Serving <%- recordCount -%> public files totalling <%- recordSize -%>
+                <h2 class="fw-bold">Serving <span id="fileCount">0</span> public files totalling <span id="totalFileSize">0kb</span>
                 </h2>
                 <p class="col-md-8 fs-4">Inspired by
                     <a href="https://0x0.st" target="_blank">https://0x0.st</a>, WaifuVault is a temporary file hosting service that allows for file uploads that are hosted for a set amount of time.
@@ -556,57 +556,73 @@ public class Example {
     </div>
 </main>
 <%- include('snippets/scripts.ejs'); %>
+<script src="<%-process.env.BASE_URL-%>/socket.io/socket.io.min.js"></script>
 <script>
-    hljs.highlightAll();
+    Site.loadPage(async () => {
 
-    const caculateFileInput = document.getElementById("caculateFileTime");
-    const MIN_EXPIRATION = 30 * 24 * 60 * 60 * 1000;
-    const MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
-    caculateFileInput?.addEventListener("change", () => {
-        const okFileSize = document.getElementById("okFileSize");
-        const badFileSize = document.getElementById("badFileSize");
-        toggleShow(badFileSize, false);
-        toggleShow(okFileSize, false);
-        const file = caculateFileInput.files[0];
-        const fileSize = file.size;
-        if (fileSize > fileSizeLimit) {
-            toggleShow(badFileSize, true);
+        const socket = io(`${mainRul}/recordInfo`, {path: '/socket.io/recordInfo'});
+
+        const fileCountSpan = document.getElementById("fileCount");
+        const totalFileSizeSpan = document.getElementById("totalFileSize");
+
+        hljs.highlightAll();
+        const caculateFileInput = document.getElementById("caculateFileTime");
+        const MIN_EXPIRATION = 30 * 24 * 60 * 60 * 1000;
+        const MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
+        caculateFileInput?.addEventListener("change", () => {
+            const okFileSize = document.getElementById("okFileSize");
+            const badFileSize = document.getElementById("badFileSize");
+            toggleShow(badFileSize, false);
             toggleShow(okFileSize, false);
-            return;
-        }
-        okFileSize.innerText = timeToHuman(getTimeLeftBySize(file.size));
-        toggleShow(badFileSize, false);
-        toggleShow(okFileSize, true);
-    });
-
-    function getTimeLeftBySize(filesize) {
-        const ttl = Math.floor((MIN_EXPIRATION - MAX_EXPIRATION) * Math.pow((filesize / (fileSizeLimit) - 1), 3));
-        return ttl < MIN_EXPIRATION ? MIN_EXPIRATION : ttl;
-    }
-
-    function toggleShow(el, show) {
-        show ? el.classList.remove("hidden") : el.classList.add("hidden");
-    }
-
-    function timeToHuman(value) {
-        const seconds = value / 1000;
-        const levels = [
-            [Math.floor(seconds / 31536000), "years"],
-            [Math.floor((seconds % 31536000) / 86400), "days"],
-            [Math.floor(((seconds % 31536000) % 86400) / 3600), "hours"],
-            [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), "minutes"],
-            [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"]
-        ];
-        let returnText = "";
-        for (let i = 0, max = levels.length; i < max; i++) {
-            if (levels[i][0] === 0) {
-                continue;
+            const file = caculateFileInput.files[0];
+            const fileSize = file.size;
+            if (fileSize > fileSizeLimit) {
+                toggleShow(badFileSize, true);
+                toggleShow(okFileSize, false);
+                return;
             }
-            returnText += ` ${levels[i][0]} ${levels[i][0] === 1 ? levels[i][1].substr(0, levels[i][1].length - 1) : levels[i][1]}`;
-        }
-        return returnText.trim();
-    }
+            okFileSize.innerText = timeToHuman(getTimeLeftBySize(file.size));
+            toggleShow(badFileSize, false);
+            toggleShow(okFileSize, true);
+        });
 
+        function getTimeLeftBySize(filesize) {
+            const ttl = Math.floor((MIN_EXPIRATION - MAX_EXPIRATION) * Math.pow((filesize / (fileSizeLimit) - 1), 3));
+            return ttl < MIN_EXPIRATION ? MIN_EXPIRATION : ttl;
+        }
+
+        function toggleShow(el, show) {
+            show ? el.classList.remove("hidden") : el.classList.add("hidden");
+        }
+
+        function timeToHuman(value) {
+            const seconds = value / 1000;
+            const levels = [
+                [Math.floor(seconds / 31536000), "years"],
+                [Math.floor((seconds % 31536000) / 86400), "days"],
+                [Math.floor(((seconds % 31536000) % 86400) / 3600), "hours"],
+                [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), "minutes"],
+                [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"]
+            ];
+            let returnText = "";
+            for (let i = 0, max = levels.length; i < max; i++) {
+                if (levels[i][0] === 0) {
+                    continue;
+                }
+                returnText += ` ${levels[i][0]} ${levels[i][0] === 1 ? levels[i][1].substr(0, levels[i][1].length - 1) : levels[i][1]}`;
+            }
+            return returnText.trim();
+        }
+
+        function loadSocket(){
+            socket.on("record", ({recordCount, recordSize}) => {
+                fileCountSpan.innerText = recordCount;
+                totalFileSizeSpan.innerText = recordSize;
+            });
+        }
+
+        loadSocket();
+    })
 </script>
 </body>
 </html>

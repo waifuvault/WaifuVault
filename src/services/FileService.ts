@@ -18,6 +18,7 @@ import TIME_UNIT from "../model/constants/TIME_UNIT.js";
 import argon2 from "argon2";
 import { AvManager } from "../manager/AvManager.js";
 import { EncryptionService } from "./EncryptionService.js";
+import { RecordInfoSocket } from "./socket/recordInfoSocket.js";
 
 @Service()
 export class FileService {
@@ -34,6 +35,7 @@ export class FileService {
         @Inject() private logger: Logger,
         @Inject() private avManager: AvManager,
         @Inject() private encryptionService: EncryptionService,
+        @Inject() private recordInfoSocket: RecordInfoSocket,
     ) {}
 
     public async processUpload(
@@ -89,8 +91,9 @@ export class FileService {
                 throw new InternalServerError(e.message);
             }
         }
-
         const savedEntry = await this.repo.saveEntry(uploadEntry.build());
+
+        await this.recordInfoSocket.emit();
 
         return [FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true), false];
     }
@@ -225,16 +228,8 @@ export class FileService {
             this.logger.error(e);
             return false;
         }
+        await this.recordInfoSocket.emit();
         return deleted;
-    }
-
-    public getRecordCount(): Promise<number> {
-        return this.repo.getRecordCount();
-    }
-
-    public async getRecordSize(): Promise<number> {
-        const entries = await this.repo.getAllEntries();
-        return entries.reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
     }
 
     private async getFileHash(resourcePath: string): Promise<string> {

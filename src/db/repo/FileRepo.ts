@@ -27,6 +27,10 @@ export class FileRepo {
         return this.fileDao.getAllEntries(ids);
     }
 
+    public getTotalFileSize(): Promise<number | null> {
+        return this.fileDao.getTotalFileSize();
+    }
+
     public getAllEntriesForIp(ip: string): Promise<FileUploadModel[]> {
         return this.fileDao.getAllEntriesForIp(ip);
     }

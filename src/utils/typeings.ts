@@ -56,3 +56,8 @@ export type IpBlockedAwareFileEntry = {
 export type ProtectionLevel = "Encrypted" | "Password" | "None";
 
 export type Awaitable<T> = Promise<T> | T;
+
+export type RecordInfoPayload = {
+    recordCount: string;
+    recordSize: string;
+};
