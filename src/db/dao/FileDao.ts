@@ -21,14 +21,6 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         });
     }
 
-    public getRawSQL(query: string, transaction?: EntityManager): Promise<unknown> {
-        return this.getRepository(transaction).query(query);
-    }
-
-    public getEntryFromEpoch(epoch: number, transaction?: EntityManager): Promise<FileUploadModel | null> {
-        return this.getRepository(transaction).findOneBy({});
-    }
-
     public getEntriesFromChecksum(checksum: string, transaction?: EntityManager): Promise<FileUploadModel[]> {
         return this.getRepository(transaction).findBy({
             checksum,
@@ -49,6 +41,10 @@ export class FileDao extends AbstractDao<FileUploadModel> {
             });
         }
         return this.getRepository(transaction).find();
+    }
+
+    public getTotalFileSize(transaction?: EntityManager): Promise<number | null> {
+        return this.getRepository(transaction).sum("fileSize");
     }
 
     public getAllEntriesOrdered(

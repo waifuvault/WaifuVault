@@ -4,6 +4,7 @@ import { PlatformApplication } from "@tsed/common";
 import "@tsed/platform-express";
 import "@tsed/ajv";
 import "@tsed/swagger";
+import "@tsed/socketio";
 // custom index imports
 import "./protocols/index.js";
 import "./filters/index.js";
