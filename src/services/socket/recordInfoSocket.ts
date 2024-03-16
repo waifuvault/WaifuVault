@@ -22,10 +22,10 @@ export class RecordInfoSocket {
     }
 
     private async getPayload(): Promise<RecordInfoPayload> {
-        const records = await this.repo.getRecordCount();
+        const recordCount = await this.repo.getRecordCount();
         const size = (await this.repo.getTotalFileSize()) ?? 0;
         return {
-            recordCount: records.toLocaleString(),
+            recordCount,
             recordSize: ObjectUtils.sizeToHuman(size),
         };
     }
