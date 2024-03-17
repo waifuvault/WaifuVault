@@ -4,6 +4,9 @@
 
 export * from "./av/ClamAvEngine.js";
 export * from "./av/MsDefenderEngine.js";
+export * from "./captcha/AbstractCaptchaEngine.js";
+export * from "./captcha/ReCAPTCHAEngine.js";
+export * from "./captcha/TurnstileCaptcha.js";
 export * from "./HttpErrorRenderers/AuthenticationErrorRenderEngine.js";
 export * from "./HttpErrorRenderers/DefaultHttpRenderEngine.js";
 export * from "./HttpErrorRenderers/FileProtectedRenderEngine.js";

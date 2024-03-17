@@ -22,12 +22,21 @@ export type AvScanResult = {
     additionalMessage?: string;
 };
 
-export type ReCAPTCHAResponse = {
+export type CaptchaResponse = {
     success: boolean;
     challenge_ts: string;
     hostname: string;
     "error-codes": string[];
 };
+
+export type ReCAPTCHAResponse = CaptchaResponse;
+
+export type TurnstileResponse = ReCAPTCHAResponse & {
+    action: string;
+    cdata: string;
+};
+
+export type HcaptchaResponse = CaptchaResponse;
 
 export type DatatableOrder = {
     column: number;

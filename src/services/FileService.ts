@@ -14,11 +14,11 @@ import { Logger } from "@tsed/logger";
 import type { EntrySettings, XOR } from "../utils/typeings.js";
 import { BadRequest, InternalServerError, NotFound, UnsupportedMediaType } from "@tsed/exceptions";
 import { FileUtils, ObjectUtils } from "../utils/Utils.js";
-import TIME_UNIT from "../model/constants/TIME_UNIT.js";
+import TimeUnit from "../model/constants/TimeUnit.js";
 import argon2 from "argon2";
 import { AvManager } from "../manager/AvManager.js";
 import { EncryptionService } from "./EncryptionService.js";
-import { RecordInfoSocket } from "./socket/recordInfoSocket.js";
+import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
 
 @Service()
 export class FileService {
@@ -187,15 +187,15 @@ export class FileService {
 
     private calculateCustomExpires(entry: IBuilder<FileUploadModel>, expires: string, secretToken?: string): void {
         let value: number = ObjectUtils.getNumber(expires);
-        let timeFactor: TIME_UNIT = TIME_UNIT.minutes;
+        let timeFactor: TimeUnit = TimeUnit.minutes;
 
         if (value === 0) {
             throw new BadRequest(`Unable to parse expire value from ${expires}`);
         }
         if (expires.includes("d")) {
-            timeFactor = TIME_UNIT.days;
+            timeFactor = TimeUnit.days;
         } else if (expires.includes("h")) {
-            timeFactor = TIME_UNIT.hours;
+            timeFactor = TimeUnit.hours;
         }
         value = ObjectUtils.convertToMilli(value, timeFactor);
         const maxExp: number | null =

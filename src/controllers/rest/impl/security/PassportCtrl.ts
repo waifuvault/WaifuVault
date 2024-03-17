@@ -8,7 +8,7 @@ import { UserModel } from "../../../../model/db/User.model.js";
 import { BaseRestController } from "../../BaseRestController.js";
 import { CustomUserInfoModel } from "../../../../model/auth/CustomUserInfoModel.js";
 import { UserService } from "../../../../services/UserService.js";
-import { ReCAPTCHAMiddleWare } from "../../../../middleware/endpoint/ReCAPTCHAMiddleWare.js";
+import { CaptchaMiddleWare } from "../../../../middleware/endpoint/CaptchaMiddleWare.js";
 import { Forbidden } from "@tsed/exceptions";
 
 @Controller("/auth")
@@ -21,7 +21,7 @@ export class PassportCtrl extends BaseRestController {
     }
 
     @Post("/login")
-    @UseBefore(ReCAPTCHAMiddleWare)
+    @UseBefore(CaptchaMiddleWare)
     @Authenticate("loginAuthProvider", { failWithError: true })
     @Returns(StatusCodes.MOVED_TEMPORARILY)
     @Returns(StatusCodes.UNAUTHORIZED)

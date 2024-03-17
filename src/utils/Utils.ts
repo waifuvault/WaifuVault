@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import TIME_UNIT from "../model/constants/TIME_UNIT.js";
+import TimeUnit from "../model/constants/TimeUnit.js";
 import process from "node:process";
 import type { Request } from "express";
 import fs from "node:fs/promises";
@@ -29,11 +29,11 @@ export class ObjectUtils {
         return `${sizeGB} GB`;
     }
 
-    public static timeToHuman(value: number, timeUnit: TIME_UNIT = TIME_UNIT.milliseconds): string {
+    public static timeToHuman(value: number, timeUnit: TimeUnit = TimeUnit.milliseconds): string {
         let seconds: number;
-        if (timeUnit === TIME_UNIT.milliseconds) {
+        if (timeUnit === TimeUnit.milliseconds) {
             seconds = Math.round(value / 1000);
-        } else if (timeUnit !== TIME_UNIT.seconds) {
+        } else if (timeUnit !== TimeUnit.seconds) {
             seconds = Math.round(ObjectUtils.convertToMilli(value, timeUnit) / 1000);
         } else {
             seconds = Math.round(value);
@@ -59,23 +59,23 @@ export class ObjectUtils {
         return returnText.trim();
     }
 
-    public static convertToMilli(value: number, unit: TIME_UNIT): number {
+    public static convertToMilli(value: number, unit: TimeUnit): number {
         switch (unit) {
-            case TIME_UNIT.seconds:
+            case TimeUnit.seconds:
                 return value * 1000;
-            case TIME_UNIT.minutes:
+            case TimeUnit.minutes:
                 return value * 60000;
-            case TIME_UNIT.hours:
+            case TimeUnit.hours:
                 return value * 3600000;
-            case TIME_UNIT.days:
+            case TimeUnit.days:
                 return value * 86400000;
-            case TIME_UNIT.weeks:
+            case TimeUnit.weeks:
                 return value * 604800000;
-            case TIME_UNIT.months:
+            case TimeUnit.months:
                 return value * 2629800000;
-            case TIME_UNIT.years:
+            case TimeUnit.years:
                 return value * 31556952000;
-            case TIME_UNIT.decades:
+            case TimeUnit.decades:
                 return value * 315569520000;
             default:
                 return -1;

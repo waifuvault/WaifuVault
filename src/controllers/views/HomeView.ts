@@ -1,10 +1,13 @@
 import { Get, Hidden, View } from "@tsed/schema";
-import { Controller } from "@tsed/di";
+import { Controller, Inject } from "@tsed/di";
 import { Req, Res } from "@tsed/common";
+import CaptchaServices from "../../model/constants/CaptchaServices.js";
+import { CaptchaManager } from "../../manager/CaptchaManager.js";
 
 @Controller("/")
 @Hidden()
 export class HomeView {
+    public constructor(@Inject() private captchaManager: CaptchaManager) {}
     @Get()
     @View("index.ejs")
     public showRoot(): unknown {
@@ -17,6 +20,13 @@ export class HomeView {
         if (req.user) {
             res.redirect("/admin/stats");
         }
-        return null;
+        const captchaType = this.activeCaptchaService;
+        return {
+            captchaType,
+        };
+    }
+
+    private get activeCaptchaService(): CaptchaServices | null {
+        return this.captchaManager.engine?.type ?? null;
     }
 }
