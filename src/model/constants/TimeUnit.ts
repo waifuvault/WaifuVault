@@ -1,4 +1,4 @@
-enum TIME_UNIT {
+enum TimeUnit {
     milliseconds,
     seconds,
     minutes,
@@ -10,4 +10,4 @@ enum TIME_UNIT {
     decades,
 }
 
-export default TIME_UNIT;
+export default TimeUnit;

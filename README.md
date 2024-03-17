@@ -22,15 +22,11 @@ Required Settings
 | BLOCKED_MIME_TYPES        | Comma seperated list of MIME types that will be blocked from being uploaded   |
 | FILE_SIZE_UPLOAD_LIMIT_MB | Limit on size of file allowed to be uploaded                                  |
 | MAX_URL_LENGTH            | Maximum URL length that can be specified                                      |
-| RECAPTCHA_SITE_KEY        | Replace this with your Google V2 Recaptcha Site Key                           |
-| RECAPTCHA_SECRET_KEY      | Replace this with your Google V2 Recaptcha Secret Key                         |
 | SALT                      | 8 Characters defining salt for encryption (if not set encryption is disabled) |
 | SESSION_KEY               | Replace 'YourSessionKey' with a random string to use as the session key       |
 
 > **Note Well** the file size sets the time to live for a file, so files close to the upload limit will only be hosted
 > for 30 days. It is a cubic curve so files up to 50% of the size will get close to a year of hosting time.
-
-> **Google V2 Recaptcha** is required for the admin login page. Use non invisible one.
 
 > **SALT ISSUES - IMPORTANT - PLEASE READ** <br>
 > If you change the salt setting after password protected files have been added, you will no longer be able to access
@@ -38,16 +34,28 @@ Required Settings
 
 Optional Settings
 
-| Setting          | Description                                                                                                                                          |
-|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| CLAM_PATH        | The path to your Clam Antivirus installation                                                                                                         |
-| MS_DEFENDER_PATH | The path to your MS Defender Antivirus installation                                                                                                  |
-| UPLOAD_SECRET    | A secret passcode you can set, when used as on the upload as a query paramater `secret_token`, the file will have no expiry and will persist forever |
-| RATE_LIMIT       | If set, this will enable rate limiting, this defines how many requests can be made within the `RATE_LIMIT_MS` period                                 |
-| RATE_LIMIT_MS    | If `RATE_LIMIT` is set, then this is required and defines how long to wait for each rate limit reset                                                 |
-| REDIS_URI        | Set this if you are using redis. currently this is only used for socket IO when the application is running using node clusters                       |
+| Setting            | Description                                                                                                                                          |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CLAM_PATH          | The path to your Clam Antivirus installation                                                                                                         |
+| MS_DEFENDER_PATH   | The path to your MS Defender Antivirus installation                                                                                                  |
+| UPLOAD_SECRET      | A secret passcode you can set, when used as on the upload as a query paramater `secret_token`, the file will have no expiry and will persist forever |
+| RATE_LIMIT         | If set, this will enable rate limiting, this defines how many requests can be made within the `RATE_LIMIT_MS` period                                 |
+| RATE_LIMIT_MS      | If `RATE_LIMIT` is set, then this is required and defines how long to wait for each rate limit reset                                                 |
+| REDIS_URI          | Set this if you are using redis. currently this is only used for socket IO when the application is running using node clusters                       |
+| CAPTCHA_SERVICE    | Select the captcha service you want to use on login (see list of available values below)                                                             |
+| CAPTCHA_SITE_KEY   | The site key from the selected captcha service                                                                                                       |
+| CAPTCHA_SECRET_KEY | The secret key from the selected captcha service                                                                                                     |
+
+The available `CAPTCHA_SERVICE` values are:
+
+* turnstile
+* reCAPTCHA
+* hCaptcha
 
 > For rate limiting, if `RATE_LIMIT` was 1 and `RATE_LIMIT_MS` is `1000`. Then this means 1 request every second
+ 
+
+> **Google V2 Recaptcha** If you want to use google reCaptcha, then select the non-invisible one.
 
 > **Note Well** if a path to an Antivirus engine is not defined it will not be used, if no paths are defined then no
 > antivirus scanning will be used
