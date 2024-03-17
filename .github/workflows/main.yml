@@ -14,6 +14,8 @@ jobs:
           node-version: 20
       - name: install
         run: npm install
+      - name: TSC
+        run: npm run tsc
       - name: ESLint
         run: npm run lint
       - name: prettier

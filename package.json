@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "tsc": "tsc --project tsconfig.compile.json",
+    "tsc": "tsc --project tsconfig.json",
     "build": "npm run barrels && node ./buildScripts/cleanDist.mjs && swc src -d dist --config-file .swcrc --copy-files && node ./buildScripts/moveFiles.mjs",
     "barrels": "barrelsby --config .barrelsby.json && node buildScripts/fixbarrels.mjs",
     "start_js": "node dist/index.js",
@@ -126,6 +126,7 @@
   },
   "lint-staged": {
     "src/**/*.ts": [
+      "tsc",
       "eslint --cache --fix",
       "prettier --write"
     ]
