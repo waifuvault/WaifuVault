@@ -15,6 +15,8 @@ export class CaptchaManager {
         this._engine = captchaFactory.getEnabledService();
         if (this._engine === null) {
             this.logger.warn("No captcha service is enabled");
+        } else {
+            this.logger.info(`Using ${this._engine.type} as captcha service`);
         }
     }
 

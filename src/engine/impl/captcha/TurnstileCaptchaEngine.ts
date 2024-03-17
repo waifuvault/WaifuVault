@@ -10,7 +10,7 @@ import { Logger } from "@tsed/common";
     scope: ProviderScope.SINGLETON,
     type: CAPTCHA_ENGINE,
 })
-export class TurnstileCaptcha extends AbstractCaptchaEngine<TurnstileResponse> {
+export class TurnstileCaptchaEngine extends AbstractCaptchaEngine<TurnstileResponse> {
     @Constant(GlobalEnv.CAPTCHA_SECRET_KEY)
     private readonly turnstileSecretKey: string;
 
