@@ -148,6 +148,7 @@ const opts: Partial<TsED.Configuration> = {
             specVersion: "3.0.3",
             options: {
                 withCredentials: true,
+                supportedSubmitMethods: isProduction ? [] : undefined,
             },
         },
     ],

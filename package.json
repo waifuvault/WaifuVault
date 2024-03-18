@@ -110,6 +110,7 @@
     "prettier": "3.2.5",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+    "tsc-files": "^1.1.4",
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.6.2",
     "typescript": "^5.4.2",
@@ -126,7 +127,7 @@
   },
   "lint-staged": {
     "src/**/*.ts": [
-      "tsc",
+      "tsc-files --noEmit --pretty",
       "eslint --cache --fix",
       "prettier --write"
     ]
