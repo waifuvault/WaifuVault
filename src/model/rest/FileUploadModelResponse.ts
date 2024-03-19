@@ -43,6 +43,10 @@ export class FileUploadModelResponse {
         if (fileUploadModel.settings?.hideFilename || !fileUploadModel.originalFileName) {
             return `${baseUrl}/f/${fileUploadModel.fullFileNameOnSystem}`;
         }
-        return `${baseUrl}/f/${fileUploadModel.fileName}/${fileUploadModel.originalFileName}`;
+        let { originalFileName } = fileUploadModel;
+        if (originalFileName.startsWith("/")) {
+            originalFileName = originalFileName.substring(1);
+        }
+        return `${baseUrl}/f/${fileUploadModel.fileName}/${originalFileName}`;
     }
 }
