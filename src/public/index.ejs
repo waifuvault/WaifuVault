@@ -416,20 +416,20 @@ using Waifuvault;
 using System.IO;
 
 // Upload file
-var upload_file = new Waifuvault.FileUpload("./aCoolFile.png");
-var upload_resp = await Waifuvault.Api.uploadFile(upload_file);
-Console.WriteLine(upload_resp.url);
+var uploadFile = new Waifuvault.FileUpload("./aCoolFile.png");
+var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
+Console.WriteLine(uploadResp.url);
 
 // Upload via URL
-var upload_file = new Waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png");
-var upload_resp = await Waifuvault.Api.uploadFile(upload_file);
-Console.WriteLine(upload_resp.url);
+var uploadFile = new Waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png");
+var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
+Console.WriteLine(uploadResp.url);
 
 // Upload via Buffer
 byte[] buffer = File.ReadAllBytes("./aCoolFile.png");
-var upload_file = new Waifuvault.FileUpload(buffer,"aCoolFile.png");
-var upload_resp = await Waifuvault.Api.uploadFile(upload_file);
-Console.WriteLine(upload_resp.url);
+var uploadFile = new Waifuvault.FileUpload(buffer,"aCoolFile.png");
+var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
+Console.WriteLine(uploadResp.url);
 </code>
 </pre>
                         </div>
