@@ -5,6 +5,7 @@ import * as Path from "node:path";
 import { FileService } from "../../services/FileService.js";
 import { FileProtectedException } from "../../model/exceptions/FileProtectedException.js";
 import { MimeService } from "../../services/MimeService.js";
+import type { Response } from "express";
 
 @Hidden()
 @Controller("/")
@@ -14,9 +15,9 @@ export class FileServerController {
         @Inject() private mimeService: MimeService,
     ) {}
 
-    @Get("/:t/:file?")
+    @Get("/:t/:file(*)?")
     public async getFile(
-        @Res() res: Res,
+        @Res() res: Response,
         @PathParams("t") resource: string,
         @HeaderParams("x-password") password?: string,
         @PathParams("file") requestedFileName?: string,

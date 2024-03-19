@@ -113,6 +113,9 @@ export class FileService {
             resourcePath = source.path;
             originalFileName = source.originalname;
         }
+        if (originalFileName.startsWith("/")) {
+            originalFileName = originalFileName.substring(1);
+        }
         return [resourcePath, originalFileName];
     }
 
@@ -166,7 +169,14 @@ export class FileService {
     ): Promise<[Buffer, FileUploadModel]> {
         const entry = await this.repo.getEntryFileName(fileNameOnSystem);
         const resource = requestedFileName ?? fileNameOnSystem;
-        if (entry === null || (requestedFileName && entry.originalFileName !== requestedFileName) || entry.hasExpired) {
+        if (entry === null) {
+            throw new NotFound(`resource ${resource} is not found`);
+        }
+        let { originalFileName } = entry;
+        if (originalFileName.startsWith("/")) {
+            originalFileName = originalFileName.substring(1);
+        }
+        if ((requestedFileName && originalFileName !== requestedFileName) || entry.hasExpired) {
             throw new NotFound(`resource ${resource} is not found`);
         }
         return Promise.all([this.encryptionService.decrypt(entry, password), entry]);
