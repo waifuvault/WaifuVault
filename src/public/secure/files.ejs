@@ -298,7 +298,7 @@
                                     idArr.push(data.id);
                                 });
                                 await deleteEntry(idArr);
-                                dt.rows({ selected: true }).remove().draw(false);
+                                reloadTable(["entries"]);
                             }
                         },
                         {
