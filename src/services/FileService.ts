@@ -220,7 +220,7 @@ export class FileService {
                     throw new BadRequest("Unable to remove password if previousPassword is not supplied");
                 }
                 const decryptedEntry = await this.encryptionService.decrypt(entryToModify, dto.previousPassword);
-                await fs.writeFile(decryptedEntry, FileUtils.getFilePath(entryToModify));
+                await fs.writeFile(FileUtils.getFilePath(entryToModify), decryptedEntry);
             }
             const newSettings = builder.settings();
             delete newSettings?.password;
