@@ -118,8 +118,8 @@ export class FileUtils {
         return ttl < FileUtils.MIN_EXPIRATION ? FileUtils.MIN_EXPIRATION : ttl;
     }
 
-    public static getExpiresBySize(filesize: number): number {
-        return Date.now() + this.getTimeLeftBySize(filesize);
+    public static getExpiresBySize(filesize: number, dateToUse = Date.now()): number {
+        return dateToUse + this.getTimeLeftBySize(filesize);
     }
 
     public static async getFilesCount(): Promise<number> {
@@ -136,7 +136,7 @@ export class FileUtils {
         return fs.rm(toDelete, { recursive: true, force });
     }
 
-    public static async getFileSize(file: string | PlatformMulterFile): Promise<number> {
+    public static async getFileSize(file: string | PlatformMulterFile | FileUploadModel): Promise<number> {
         const f = this.getFilePath(file);
         const stat = await fs.stat(f);
         return stat.size;
