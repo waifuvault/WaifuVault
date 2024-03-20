@@ -19,10 +19,7 @@ Required Settings
 
 | Setting                   | Description                                                                   |
 |---------------------------|-------------------------------------------------------------------------------|
-| BLOCKED_MIME_TYPES        | Comma seperated list of MIME types that will be blocked from being uploaded   |
 | FILE_SIZE_UPLOAD_LIMIT_MB | Limit on size of file allowed to be uploaded                                  |
-| MAX_URL_LENGTH            | Maximum URL length that can be specified                                      |
-| SALT                      | 8 Characters defining salt for encryption (if not set encryption is disabled) |
 | SESSION_KEY               | Replace 'YourSessionKey' with a random string to use as the session key       |
 
 > **Note Well** the file size sets the time to live for a file, so files close to the upload limit will only be hosted
@@ -36,6 +33,7 @@ Optional Settings
 
 | Setting            | Description                                                                                                                                          |
 |--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| BLOCKED_MIME_TYPES | Comma seperated list of MIME types that will be blocked from being uploaded                                                                          |
 | CLAM_PATH          | The path to your Clam Antivirus installation                                                                                                         |
 | MS_DEFENDER_PATH   | The path to your MS Defender Antivirus installation                                                                                                  |
 | UPLOAD_SECRET      | A secret passcode you can set, when used as on the upload as a query paramater `secret_token`, the file will have no expiry and will persist forever |
@@ -45,6 +43,8 @@ Optional Settings
 | CAPTCHA_SERVICE    | Select the captcha service you want to use on login (see list of available values below)                                                             |
 | CAPTCHA_SITE_KEY   | The site key from the selected captcha service                                                                                                       |
 | CAPTCHA_SECRET_KEY | The secret key from the selected captcha service                                                                                                     |
+| SALT               | 8 Characters defining salt for encryption (if not set encryption is disabled)                                                                        |
+| MAX_URL_LENGTH     | Maximum URL length that can be specified                                                                                                             |
 
 The available `CAPTCHA_SERVICE` values are:
 
