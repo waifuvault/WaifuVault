@@ -206,9 +206,25 @@ export class FileService {
                 }
                 await this.encryptionService.changePassword(dto.previousPassword, dto.password, entryToModify);
             } else {
-                builder.encrypted(true);
-                await this.encryptionService.encrypt(FileUtils.getFilePath(entryToModify), dto.password);
+                const didEncrypt = await this.encryptionService.encrypt(
+                    FileUtils.getFilePath(entryToModify),
+                    dto.password,
+                );
+                if (didEncrypt) {
+                    builder.encrypted(true);
+                }
             }
+        } else {
+            if (builder.encrypted()) {
+                if (!dto.previousPassword) {
+                    throw new BadRequest("Unable to remove password if previousPassword is not supplied");
+                }
+                const decryptedEntry = await this.encryptionService.decrypt(entryToModify, dto.previousPassword);
+                await fs.writeFile(decryptedEntry, FileUtils.getFilePath(entryToModify));
+            }
+            const newSettings = builder.settings();
+            delete newSettings?.password;
+            builder.settings(newSettings);
         }
         if (dto.customExpiry) {
             this.calculateCustomExpires(builder, dto.customExpiry);

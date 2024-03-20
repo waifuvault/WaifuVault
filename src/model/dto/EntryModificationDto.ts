@@ -13,9 +13,6 @@ import { BadRequest } from "@tsed/exceptions";
             throw new BadRequest("bad expire string format");
         }
     }
-    if (data.previousPassword && !data.password) {
-        throw new BadRequest("password must be set if previousPassword is set");
-    }
     return data;
 })
 export class EntryModificationDto {
