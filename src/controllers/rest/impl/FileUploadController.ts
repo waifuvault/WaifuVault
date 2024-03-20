@@ -153,7 +153,6 @@ export class FileUploadController extends BaseRestController {
         if (!token) {
             throw new BadRequest("no token provided");
         }
-        console.log(body);
         return this.fileUploadService.modifyEntry(token, body);
     }
 
