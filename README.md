@@ -17,10 +17,13 @@ of hosting.
 
 Required Settings
 
-| Setting                   | Description                                                                   |
-|---------------------------|-------------------------------------------------------------------------------|
-| FILE_SIZE_UPLOAD_LIMIT_MB | Limit on size of file allowed to be uploaded                                  |
-| SESSION_KEY               | Replace 'YourSessionKey' with a random string to use as the session key       |
+| Setting                   | Description                                                             |
+|---------------------------|-------------------------------------------------------------------------|
+| FILE_SIZE_UPLOAD_LIMIT_MB | Limit on size of file allowed to be uploaded                            |
+| SESSION_KEY               | Replace 'YourSessionKey' with a random string to use as the session key |
+| PORT                      | The port the service will listen on                                     |
+| BASE_URL                  | The base URL of the site                                                |
+| HTTPS                     | True if using HTTPS, false otherwise                                    |
 
 > **Note Well** the file size sets the time to live for a file, so files close to the upload limit will only be hosted
 > for 30 days. It is a cubic curve so files up to 50% of the size will get close to a year of hosting time.
@@ -45,6 +48,7 @@ Optional Settings
 | CAPTCHA_SECRET_KEY | The secret key from the selected captcha service                                                                                                     |
 | SALT               | 8 Characters defining salt for encryption (if not set encryption is disabled)                                                                        |
 | MAX_URL_LENGTH     | Maximum URL length that can be specified                                                                                                             |
+| HTTPS_PORT         | Port to listen on if using HTTPS                                                                                                                     |
 
 The available `CAPTCHA_SERVICE` values are:
 
