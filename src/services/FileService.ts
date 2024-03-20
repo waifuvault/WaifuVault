@@ -206,6 +206,7 @@ export class FileService {
                 }
                 await this.encryptionService.changePassword(dto.previousPassword, dto.password, entryToModify);
             } else {
+                builder.encrypted(true);
                 await this.encryptionService.encrypt(FileUtils.getFilePath(entryToModify), dto.password);
             }
         }
