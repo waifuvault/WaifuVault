@@ -8,7 +8,7 @@ import { Builder, type IBuilder } from "builder-pattern";
 import path from "node:path";
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
-import { FileUploadModelResponse } from "../model/rest/FileUploadModelResponse.js";
+import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
 import type { EntrySettings, XOR } from "../utils/typeings.js";
@@ -19,6 +19,7 @@ import argon2 from "argon2";
 import { AvManager } from "../manager/AvManager.js";
 import { EncryptionService } from "./EncryptionService.js";
 import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
+import { EntryModificationDto } from "../model/dto/EntryModificationDto.js";
 
 @Service()
 export class FileService {
@@ -45,7 +46,7 @@ export class FileService {
         maskFilename = false,
         password?: string,
         secretToken?: string,
-    ): Promise<[FileUploadModelResponse, boolean]> {
+    ): Promise<[FileUploadResponseDto, boolean]> {
         const token = crypto.randomUUID();
         const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
         const [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
@@ -63,7 +64,7 @@ export class FileService {
             if (existingFileModel.hasExpired) {
                 await this.processDelete([existingFileModel.token], true);
             } else {
-                return [FileUploadModelResponse.fromModel(existingFileModel, this.baseUrl, true), true];
+                return [FileUploadResponseDto.fromModel(existingFileModel, this.baseUrl, true), true];
             }
         }
 
@@ -84,7 +85,7 @@ export class FileService {
         if (password) {
             try {
                 const didEncrypt = await this.encryptionService.encrypt(resourcePath, password);
-                uploadEntry.encrypted(didEncrypt);
+                uploadEntry.encrypted(didEncrypt !== null);
             } catch (e) {
                 await this.deleteUploadedFile(resourcePath);
                 this.logger.error(e.message);
@@ -95,7 +96,7 @@ export class FileService {
 
         await this.recordInfoSocket.emit();
 
-        return [FileUploadModelResponse.fromModel(savedEntry, this.baseUrl, true), false];
+        return [FileUploadResponseDto.fromModel(savedEntry, this.baseUrl, true), false];
     }
 
     private hashPassword(password: string): Promise<string> {
@@ -182,7 +183,57 @@ export class FileService {
         return Promise.all([this.encryptionService.decrypt(entry, password), entry]);
     }
 
-    public async getFileInfo(token: string, humanReadable: boolean): Promise<FileUploadModelResponse> {
+    public async modifyEntry(token: string, dto: EntryModificationDto): Promise<FileUploadResponseDto> {
+        const [entryToModify] = await this.repo.getEntry([token]);
+        if (!entryToModify) {
+            throw new BadRequest(`Unknown token ${token}`);
+        }
+        const builder = Builder(FileUploadModel, entryToModify);
+        if (dto.hideFilename) {
+            builder.settings({
+                ...builder.settings(),
+                hideFilename: dto.hideFilename,
+            });
+        }
+        if (dto.password) {
+            builder.settings({
+                ...builder.settings(),
+                password: await this.hashPassword(dto.password),
+            });
+            if (builder.encrypted()) {
+                if (!dto.previousPassword) {
+                    throw new BadRequest("You must supply 'previousPassword' to change the password");
+                }
+                await this.encryptionService.changePassword(dto.previousPassword, dto.password, entryToModify);
+            } else {
+                const didEncrypt = await this.encryptionService.encrypt(
+                    FileUtils.getFilePath(entryToModify),
+                    dto.password,
+                );
+                if (didEncrypt) {
+                    builder.encrypted(true);
+                }
+            }
+        } else {
+            if (builder.encrypted()) {
+                if (!dto.previousPassword) {
+                    throw new BadRequest("Unable to remove password if previousPassword is not supplied");
+                }
+                const decryptedEntry = await this.encryptionService.decrypt(entryToModify, dto.previousPassword);
+                await fs.writeFile(FileUtils.getFilePath(entryToModify), decryptedEntry);
+            }
+            const newSettings = builder.settings();
+            delete newSettings?.password;
+            builder.settings(newSettings);
+        }
+        if (dto.customExpiry) {
+            this.calculateCustomExpires(builder, dto.customExpiry);
+        }
+        const updatedEntry = await this.repo.saveEntry(builder.build());
+        return FileUploadResponseDto.fromModel(updatedEntry, this.baseUrl);
+    }
+
+    public async getFileInfo(token: string, humanReadable: boolean): Promise<FileUploadResponseDto> {
         const foundEntries = await this.repo.getEntry([token]);
         if (foundEntries.length !== 1) {
             throw new BadRequest(`Unknown token ${token}`);
@@ -192,7 +243,7 @@ export class FileService {
             await this.processDelete([entry.token], true);
             throw new BadRequest(`Unknown token ${token}`);
         }
-        return FileUploadModelResponse.fromModel(entry, this.baseUrl, humanReadable);
+        return FileUploadResponseDto.fromModel(entry, this.baseUrl, humanReadable);
     }
 
     private calculateCustomExpires(entry: IBuilder<FileUploadModel>, expires: string, secretToken?: string): void {

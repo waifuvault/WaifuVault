@@ -4,7 +4,7 @@ import { ObjectUtils } from "../../utils/Utils.js";
 import type { IpBlockedAwareFileEntry, ProtectionLevel } from "../../utils/typeings.js";
 import { FileUploadModel } from "../db/FileUpload.model.js";
 
-export class FileEntry {
+export class FileEntryDto {
     @Property()
     public id: number;
 
@@ -44,9 +44,9 @@ export class FileEntry {
     @Property()
     public fileProtectionLevel: ProtectionLevel;
 
-    public static fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry, baseUrl: string): FileEntry {
-        const fileEntryBuilder = Builder(FileEntry)
-            .url(FileEntry.getUrl(entry, baseUrl))
+    public static fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry, baseUrl: string): FileEntryDto {
+        const fileEntryBuilder = Builder(FileEntryDto)
+            .url(FileEntryDto.getUrl(entry, baseUrl))
             .fileExtension(entry.fileExtension)
             .createdAt(entry.createdAt)
             .id(entry.id)

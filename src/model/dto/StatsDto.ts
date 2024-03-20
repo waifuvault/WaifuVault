@@ -1,9 +1,9 @@
 import { Property } from "@tsed/schema";
 import { Builder } from "builder-pattern";
-import { FileEntry } from "./FileEntry.js";
+import { FileEntryDto } from "./FileEntryDto.js";
 import { FileUtils } from "../../utils/Utils.js";
 
-export class Stats {
+export class StatsDto {
     @Property()
     public totalFileCount: number;
 
@@ -14,12 +14,12 @@ export class Stats {
     public totalFileSize: number;
 
     @Property()
-    public entries: FileEntry[];
+    public entries: FileEntryDto[];
 
-    public static async buildStats(entries: FileEntry[]): Promise<Stats> {
+    public static async buildStats(entries: FileEntryDto[]): Promise<StatsDto> {
         const realFiles = await FileUtils.getFilesCount();
         const fileSizes = entries.reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
-        const statsBuilder = Builder(Stats)
+        const statsBuilder = Builder(StatsDto)
             .totalFileCount(entries.length)
             .realFileCount(realFiles)
             .totalFileSize(fileSizes)

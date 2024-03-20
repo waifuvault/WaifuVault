@@ -26,18 +26,25 @@ export class EncryptionService implements OnInit {
         });
     }
 
-    public async encrypt(filePath: string, password: string): Promise<boolean> {
+    public async encrypt(file: string | Buffer, password: string): Promise<Buffer | null> {
         if (!this.salt) {
-            return false;
+            return null;
         }
-        const fileSource = FileUtils.getFilePath(Path.basename(filePath));
-        const buffer = await fs.readFile(fileSource);
+        let buffer: Buffer;
+        if (typeof file === "string") {
+            const fileSource = FileUtils.getFilePath(Path.basename(file));
+            buffer = await fs.readFile(fileSource);
+        } else {
+            buffer = file;
+        }
         const iv = await this.randomBytes(16);
         const key = await this.getKey(password);
         const cipher = crypto.createCipheriv(this.algorithm, key, iv);
         const encryptedBuffer = Buffer.concat([iv, cipher.update(buffer), cipher.final()]);
-        await fs.writeFile(fileSource, encryptedBuffer);
-        return true;
+        if (typeof file === "string") {
+            await fs.writeFile(file, encryptedBuffer);
+        }
+        return encryptedBuffer;
     }
 
     public async decrypt(source: FileUploadModel, password?: string): Promise<Buffer> {
@@ -66,6 +73,15 @@ export class EncryptionService implements OnInit {
         const key = await this.getKey(password);
         const decipher = crypto.createDecipheriv(this.algorithm, key, iv);
         return Buffer.concat([decipher.update(encryptedRest), decipher.final()]);
+    }
+
+    public async changePassword(oldPassword: string, newPassword: string, entry: FileUploadModel): Promise<void> {
+        const decryptedBuffer = await this.decrypt(entry, oldPassword);
+        const newBuffer = await this.encrypt(decryptedBuffer, newPassword);
+        if (!newBuffer) {
+            throw new Error("Unable to encrypt file");
+        }
+        await fs.writeFile(FileUtils.getFilePath(entry), newBuffer);
     }
 
     private validatePassword(resource: FileUploadModel, password: string): Promise<boolean> {

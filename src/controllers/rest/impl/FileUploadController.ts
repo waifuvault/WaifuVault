@@ -1,7 +1,7 @@
 import { Controller, Inject } from "@tsed/di";
-import { Delete, Description, Example, Examples, Get, Name, Put, Returns, Summary } from "@tsed/schema";
+import { Delete, Description, Example, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
-import { FileUploadModelResponse } from "../../../model/rest/FileUploadModelResponse.js";
+import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto.js";
 import { BadRequest, Forbidden, UnsupportedMediaType } from "@tsed/exceptions";
 import { MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res } from "@tsed/common";
 import { BodyParams } from "@tsed/platform-params";
@@ -9,6 +9,8 @@ import { FileService } from "../../../services/FileService.js";
 import { FileUtils, NetworkUtils } from "../../../utils/Utils.js";
 import { BaseRestController } from "../BaseRestController.js";
 import { Logger } from "@tsed/logger";
+import { EntryModificationDto } from "../../../model/dto/EntryModificationDto.js";
+import type { Request, Response } from "express";
 
 @Controller("/")
 @Description("This is the API documentation for uploading and sharing files.")
@@ -23,9 +25,9 @@ export class FileUploadController extends BaseRestController {
     }
 
     @Put()
-    @Returns(StatusCodes.CREATED, FileUploadModelResponse).Description("If the file was stored successfully")
+    @Returns(StatusCodes.CREATED, FileUploadResponseDto).Description("If the file was stored successfully")
     @Returns(StatusCodes.BAD_REQUEST, BadRequest).Description("If the request was malformed")
-    @Returns(StatusCodes.OK, FileUploadModelResponse).Description("If the file already exists")
+    @Returns(StatusCodes.OK, FileUploadResponseDto).Description("If the file already exists")
     @Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, UnsupportedMediaType).Description(
         "If the media type of the file specified was blocked",
     )
@@ -38,8 +40,8 @@ export class FileUploadController extends BaseRestController {
         "Upload a file or specify URL to a file. Use the location header in the response or the url prop in the JSON to get the URL of the file",
     )
     public async addEntry(
-        @Req() req: Req,
-        @Res() res: Res,
+        @Req() req: Request,
+        @Res() res: Response,
         @QueryParams("expires")
         @Examples({
             empty: {
@@ -88,7 +90,7 @@ export class FileUploadController extends BaseRestController {
             }
         }
         const ip = NetworkUtils.getIp(req);
-        let uploadModelResponse: FileUploadModelResponse;
+        let uploadModelResponse: FileUploadResponseDto;
         let alreadyExists: boolean;
         try {
             [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
@@ -118,7 +120,7 @@ export class FileUploadController extends BaseRestController {
     }
 
     @Get("/:token")
-    @Returns(StatusCodes.OK, FileUploadModelResponse)
+    @Returns(StatusCodes.OK, FileUploadResponseDto)
     @Returns(StatusCodes.BAD_REQUEST, BadRequest)
     @Description("Get entry info such as when it will expire and the URL")
     @Summary("Get entry info via token")
@@ -135,6 +137,23 @@ export class FileUploadController extends BaseRestController {
             throw new BadRequest("no token provided");
         }
         return this.fileUploadService.getFileInfo(token, humanReadable);
+    }
+
+    @Patch("/:token")
+    @Returns(StatusCodes.OK, FileUploadResponseDto)
+    @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    @Description("Modify an entry such as password, expiry and other settings")
+    @Summary("Modify components of an entry")
+    public modifyEntry(
+        @PathParams("token")
+        token: string,
+        @BodyParams()
+        body: EntryModificationDto,
+    ): Promise<unknown> {
+        if (!token) {
+            throw new BadRequest("no token provided");
+        }
+        return this.fileUploadService.modifyEntry(token, body);
     }
 
     @Delete("/:token")
