@@ -4,10 +4,10 @@ import { IpBlackListRepo } from "../db/repo/IpBlackListRepo.js";
 import { IpBlackListModel } from "../model/db/IpBlackList.model.js";
 import { FileService } from "./FileService.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import { FileEntry } from "../model/rest/FileEntry.js";
+import { FileEntryDto } from "../model/dto/FileEntryDto.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { IpBlockedAwareFileEntry } from "../utils/typeings.js";
-import { Stats } from "../model/rest/Stats.js";
+import { StatsDto } from "../model/dto/StatsDto.js";
 
 @Service()
 export class AdminService {
@@ -20,11 +20,11 @@ export class AdminService {
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
-    public getStatsData(entries: FileEntry[]): Promise<Stats> {
-        return Stats.buildStats(entries);
+    public getStatsData(entries: FileEntryDto[]): Promise<StatsDto> {
+        return StatsDto.buildStats(entries);
     }
 
-    public async getAllEntries(): Promise<FileEntry[]> {
+    public async getAllEntries(): Promise<FileEntryDto[]> {
         const allEntries = await this.repo.getAllEntries();
         return this.buildFileEntryDtos(allEntries);
     }
@@ -35,12 +35,12 @@ export class AdminService {
         sortColumn = "id",
         sortDir = "ASC",
         search?: string,
-    ): Promise<FileEntry[]> {
+    ): Promise<FileEntryDto[]> {
         const entries = await this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search);
         return this.buildFileEntryDtos(entries);
     }
 
-    private async buildFileEntryDtos(entries: FileUploadModel[]): Promise<FileEntry[]> {
+    private async buildFileEntryDtos(entries: FileUploadModel[]): Promise<FileEntryDto[]> {
         const ipBlockedPArr = entries.map(entry => Promise.all([entry, this.ipBlackListRepo.isIpBlocked(entry.ip)]));
         const ipBlockedArr = await Promise.all(ipBlockedPArr);
         return ipBlockedArr.map(([entry, ipBlocked]) => {
@@ -48,7 +48,7 @@ export class AdminService {
                 ipBlocked,
                 entry,
             } as IpBlockedAwareFileEntry;
-            return FileEntry.fromModel(ipBlockedAwareEntry, this.baseUrl);
+            return FileEntryDto.fromModel(ipBlockedAwareEntry, this.baseUrl);
         });
     }
 

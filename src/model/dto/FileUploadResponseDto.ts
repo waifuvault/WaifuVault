@@ -3,7 +3,7 @@ import { FileUploadModel } from "../db/FileUpload.model.js";
 import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
 
-export class FileUploadModelResponse {
+export class FileUploadResponseDto {
     @Property()
     @Description("Used for file info and deleting")
     public token: string;
@@ -21,14 +21,10 @@ export class FileUploadModelResponse {
     @Nullable(Number, String)
     public retentionPeriod: string | number | null = null;
 
-    public static fromModel(
-        fileUploadModel: FileUploadModel,
-        baseUrl: string,
-        format = false,
-    ): FileUploadModelResponse {
-        const builder = Builder(FileUploadModelResponse)
+    public static fromModel(fileUploadModel: FileUploadModel, baseUrl: string, format = false): FileUploadResponseDto {
+        const builder = Builder(FileUploadResponseDto)
             .token(fileUploadModel.token)
-            .url(FileUploadModelResponse.getUrl(fileUploadModel, baseUrl));
+            .url(FileUploadResponseDto.getUrl(fileUploadModel, baseUrl));
         const expiresIn = fileUploadModel.expiresIn;
         if (format && expiresIn !== null) {
             builder.retentionPeriod(ObjectUtils.timeToHuman(expiresIn));
