@@ -221,6 +221,7 @@ export class FileService {
                 }
                 const decryptedEntry = await this.encryptionService.decrypt(entryToModify, dto.previousPassword);
                 await fs.writeFile(FileUtils.getFilePath(entryToModify), decryptedEntry);
+                builder.encrypted(false);
             }
             const newSettings = builder.settings();
             delete newSettings?.password;
