@@ -23,7 +23,6 @@ Required Settings
 | SESSION_KEY               | Replace 'YourSessionKey' with a random string to use as the session key |
 | PORT                      | The port the service will listen on                                     |
 | BASE_URL                  | The base URL of the site                                                |
-| HTTPS                     | True if using HTTPS, false otherwise                                    |
 
 > **Note Well** the file size sets the time to live for a file, so files close to the upload limit will only be hosted
 > for 30 days. It is a cubic curve so files up to 50% of the size will get close to a year of hosting time.
@@ -48,6 +47,7 @@ Optional Settings
 | CAPTCHA_SECRET_KEY | The secret key from the selected captcha service                                                                                                     |
 | SALT               | 8 Characters defining salt for encryption (if not set encryption is disabled)                                                                        |
 | MAX_URL_LENGTH     | Maximum URL length that can be specified                                                                                                             |
+| HTTPS              | True if using HTTPS, False otherwise                                                                                                                 |
 | HTTPS_PORT         | Port to listen on if using HTTPS                                                                                                                     |
 
 The available `CAPTCHA_SERVICE` values are:
@@ -58,8 +58,11 @@ The available `CAPTCHA_SERVICE` values are:
 
 > For rate limiting, if `RATE_LIMIT` was 1 and `RATE_LIMIT_MS` is `1000`. Then this means 1 request every second
  
+> **HTTPS** Note well if running behind a reverse proxy (normal deployment) then HTTPS terminates at the proxy, 
+> and this should be set False
 
-> **Google V2 Recaptcha** If you want to use google reCaptcha, then select the non-invisible one.
+> **Google V2 Recaptcha** 
+> If you want to use google reCaptcha, then select the non-invisible one.
 
 > **Note Well** if a path to an Antivirus engine is not defined it will not be used, if no paths are defined then no
 > antivirus scanning will be used
