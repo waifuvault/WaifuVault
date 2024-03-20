@@ -189,7 +189,7 @@ export class FileService {
             throw new BadRequest(`Unknown token ${token}`);
         }
         const builder = Builder(FileUploadModel, entryToModify);
-        if (dto.hideFilename) {
+        if (typeof dto.hideFilename === "boolean") {
             builder.settings({
                 ...builder.settings(),
                 hideFilename: dto.hideFilename,
@@ -214,7 +214,7 @@ export class FileService {
                     builder.encrypted(true);
                 }
             }
-        } else {
+        } else if (dto.password === "") {
             if (builder.encrypted()) {
                 if (!dto.previousPassword) {
                     throw new BadRequest("Unable to remove password if previousPassword is not supplied");
@@ -229,6 +229,9 @@ export class FileService {
         }
         if (dto.customExpiry) {
             this.calculateCustomExpires(builder, dto.customExpiry);
+        } else if (dto.customExpiry === "") {
+            const fileSize = await FileUtils.getFileSize(entryToModify);
+            builder.expires(FileUtils.getExpiresBySize(fileSize, entryToModify.createdAt.getTime()));
         }
         const updatedEntry = await this.repo.saveEntry(builder.build());
         return FileUploadResponseDto.fromModel(updatedEntry, this.baseUrl);
