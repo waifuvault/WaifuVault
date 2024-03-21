@@ -1,8 +1,10 @@
-import { Description, Nullable, Property } from "@tsed/schema";
+import { Description, Name, Nullable, Property } from "@tsed/schema";
 import { FileUploadModel } from "../db/FileUpload.model.js";
 import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
 
+@Name("WaifuResponse")
+@Description("This is a standard response for the service, containing info about the entry")
 export class FileUploadResponseDto {
     @Property()
     @Description("Used for file info and deleting")
