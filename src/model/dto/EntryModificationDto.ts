@@ -1,20 +1,5 @@
-import { Description, Name, Optional, Property } from "@tsed/schema";
-import { BadRequest } from "@tsed/exceptions";
-import { BeforeDeserialize } from "@tsed/json-mapper";
+import { Description, Name, Optional, Pattern, Property } from "@tsed/schema";
 
-@BeforeDeserialize((data: Record<keyof EntryModificationDto, unknown>) => {
-    if (data.customExpiry) {
-        const checkExpires = /[mhd]/;
-        if (typeof data.customExpiry !== "string") {
-            throw new BadRequest("bad expire string format");
-        }
-        data.customExpiry = data.customExpiry.toLowerCase().replace(/ /g, "");
-        if (!checkExpires.test(data.customExpiry as string)) {
-            throw new BadRequest("bad expire string format");
-        }
-    }
-    return data;
-})
 @Name("WaifuModification")
 @Description("A modify request to change components of an entry")
 export class EntryModificationDto {
@@ -37,6 +22,7 @@ export class EntryModificationDto {
             "NOTE: the file expiry will be recalculated from the moment you change this value, not the time it was uploaded (the standard retention rate limit still has effect).",
     )
     @Optional()
+    @Pattern(/^$|^\d+[mhd]$/)
     public customExpiry?: string;
 
     @Property()

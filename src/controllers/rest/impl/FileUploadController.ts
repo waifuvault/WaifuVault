@@ -1,5 +1,5 @@
 import { Controller, Inject } from "@tsed/di";
-import { Delete, Description, Example, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
+import { Delete, Description, Example, Examples, Get, Name, Patch, Pattern, Put, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
 import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto.js";
 import { BadRequest } from "@tsed/exceptions";
@@ -59,6 +59,7 @@ export class FileUploadController extends BaseRestController {
         @Description(
             "a string containing a number and a letter of `m` for mins, `h` for hours, `d` for days. For example: `1h` would be 1 hour and `1d` would be 1 day. leave this blank if you want the file to exist according to the retention policy",
         )
+        @Pattern(/^$|^\d+[mhd]$/)
         customExpiry?: string,
         @QueryParams("hide_filename")
         @Description(
@@ -82,13 +83,6 @@ export class FileUploadController extends BaseRestController {
         }
         if (!file && !url) {
             throw new BadRequest("Please supply a file or url");
-        }
-        if (customExpiry) {
-            const checkExpires = /[mhd]/;
-            customExpiry = customExpiry.toLowerCase().replace(/ /g, "");
-            if (!checkExpires.test(customExpiry)) {
-                throw new BadRequest("bad expire string format");
-            }
         }
         const ip = NetworkUtils.getIp(req);
         let uploadModelResponse: FileUploadResponseDto;
