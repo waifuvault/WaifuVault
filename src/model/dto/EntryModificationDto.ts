@@ -22,7 +22,7 @@ export class EntryModificationDto {
             "NOTE: the file expiry will be recalculated from the moment you change this value, not the time it was uploaded (the standard retention rate limit still has effect).",
     )
     @Optional()
-    @Pattern(/^$|\d+[mhd]/)
+    @Pattern(/^$|^\d+[mhd]$/)
     public customExpiry?: string;
 
     @Property()
