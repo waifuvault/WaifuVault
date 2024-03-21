@@ -44,8 +44,8 @@ import { fileURLToPath } from "node:url";
 import { ExpressRateLimitTypeOrmStore } from "typeorm-rate-limit-store";
 import { ExpressRateLimitStoreModel } from "./model/db/ExpressRateLimitStore.model.js";
 import { Exception, TooManyRequests } from "@tsed/exceptions";
-import { DefaultRenderObj } from "./engine/impl/index.js";
 import { Logger } from "@tsed/logger";
+import { DefaultRenderException } from "./model/rest/DefaultRenderException.js";
 
 const opts: Partial<TsED.Configuration> = {
     ...config,
@@ -240,7 +240,7 @@ export class Server implements BeforeRoutesInit {
         }
     }
 
-    private parseError(error: Exception): DefaultRenderObj {
+    private parseError(error: Exception): DefaultRenderException {
         return {
             name: error.origin?.name ?? error.name,
             message: error.message,

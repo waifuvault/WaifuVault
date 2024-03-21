@@ -2,7 +2,7 @@ import { Controller, Inject } from "@tsed/di";
 import { Delete, Description, Example, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
 import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto.js";
-import { BadRequest, Forbidden, UnsupportedMediaType } from "@tsed/exceptions";
+import { BadRequest } from "@tsed/exceptions";
 import { MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res } from "@tsed/common";
 import { BodyParams } from "@tsed/platform-params";
 import { FileService } from "../../../services/FileService.js";
@@ -11,11 +11,12 @@ import { BaseRestController } from "../BaseRestController.js";
 import { Logger } from "@tsed/logger";
 import { EntryModificationDto } from "../../../model/dto/EntryModificationDto.js";
 import type { Request, Response } from "express";
+import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 
 @Controller("/")
 @Description("This is the API documentation for uploading and sharing files.")
 @Name("File Uploader")
-@Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
+@Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked")
 export class FileUploadController extends BaseRestController {
     public constructor(
         @Inject() private fileUploadService: FileService,
@@ -26,9 +27,9 @@ export class FileUploadController extends BaseRestController {
 
     @Put()
     @Returns(StatusCodes.CREATED, FileUploadResponseDto).Description("If the file was stored successfully")
-    @Returns(StatusCodes.BAD_REQUEST, BadRequest).Description("If the request was malformed")
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException).Description("If the request was malformed")
     @Returns(StatusCodes.OK, FileUploadResponseDto).Description("If the file already exists")
-    @Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, UnsupportedMediaType).Description(
+    @Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, DefaultRenderException).Description(
         "If the media type of the file specified was blocked",
     )
     @Example({
@@ -121,7 +122,7 @@ export class FileUploadController extends BaseRestController {
 
     @Get("/:token")
     @Returns(StatusCodes.OK, FileUploadResponseDto)
-    @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Get entry info such as when it will expire and the URL")
     @Summary("Get entry info via token")
     public getInfo(
@@ -141,7 +142,7 @@ export class FileUploadController extends BaseRestController {
 
     @Patch("/:token")
     @Returns(StatusCodes.OK, FileUploadResponseDto)
-    @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Modify an entry such as password, expiry and other settings")
     @Summary("Modify components of an entry")
     public modifyEntry(
@@ -158,7 +159,7 @@ export class FileUploadController extends BaseRestController {
 
     @Delete("/:token")
     @Returns(StatusCodes.OK, Boolean)
-    @Returns(StatusCodes.BAD_REQUEST, BadRequest)
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Delete a file via the token")
     @Summary("Delete a file from a token")
     public async deleteEntry(@PathParams("token") token: string): Promise<unknown> {

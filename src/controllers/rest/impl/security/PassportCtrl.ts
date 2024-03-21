@@ -9,12 +9,12 @@ import { BaseRestController } from "../../BaseRestController.js";
 import { CustomUserInfoModel } from "../../../../model/auth/CustomUserInfoModel.js";
 import { UserService } from "../../../../services/UserService.js";
 import { CaptchaMiddleWare } from "../../../../middleware/endpoint/CaptchaMiddleWare.js";
-import { Forbidden } from "@tsed/exceptions";
+import { DefaultRenderException } from "../../../../model/rest/DefaultRenderException.js";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
 @Hidden()
-@Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
+@Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked")
 export class PassportCtrl extends BaseRestController {
     public constructor(@Inject() private usersService: UserService) {
         super();

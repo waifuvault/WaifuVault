@@ -4,14 +4,15 @@ import { AdminService } from "../../../../services/AdminService.js";
 import { Authorize } from "@tsed/passport";
 import { BodyParams } from "@tsed/platform-params";
 import { PlatformResponse, QueryParams, Res } from "@tsed/common";
-import { Forbidden, NotFound } from "@tsed/exceptions";
+import { NotFound } from "@tsed/exceptions";
 import { BaseRestController } from "../../BaseRestController.js";
 import { StatusCodes } from "http-status-codes";
 import type { DatatableColumn, DatatableOrder, DatatableSearch } from "../../../../utils/typeings.js";
+import { DefaultRenderException } from "../../../../model/rest/DefaultRenderException.js";
 
 @Hidden()
 @Controller("/admin")
-@Returns(StatusCodes.FORBIDDEN, Forbidden).Description("If your IP has been blocked")
+@Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked")
 @Authorize("loginAuthProvider")
 export class AdminController extends BaseRestController {
     public constructor(@Inject() private adminService: AdminService) {
