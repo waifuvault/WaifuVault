@@ -1,5 +1,7 @@
-import { Description, Property } from "@tsed/schema";
+import { Description, Name, Property } from "@tsed/schema";
 
+@Name("WaifuError")
+@Description("A standard error, all errors from the service will take this shape")
 export class DefaultRenderException {
     @Property()
     @Description("The name of the error, this is normally the HTTP exception thrown")

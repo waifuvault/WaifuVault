@@ -1,4 +1,4 @@
-import { Description, Optional, Property } from "@tsed/schema";
+import { Description, Name, Optional, Property } from "@tsed/schema";
 import { BadRequest } from "@tsed/exceptions";
 import { BeforeDeserialize } from "@tsed/json-mapper";
 
@@ -15,6 +15,8 @@ import { BeforeDeserialize } from "@tsed/json-mapper";
     }
     return data;
 })
+@Name("WaifuModification")
+@Description("A modify request to change components of an entry")
 export class EntryModificationDto {
     @Property()
     @Optional()
