@@ -83,13 +83,6 @@ export class FileUploadController extends BaseRestController {
         if (!file && !url) {
             throw new BadRequest("Please supply a file or url");
         }
-        if (customExpiry) {
-            const checkExpires = /[mhd]/;
-            customExpiry = customExpiry.toLowerCase().replace(/ /g, "");
-            if (!checkExpires.test(customExpiry)) {
-                throw new BadRequest("bad expire string format");
-            }
-        }
         const ip = NetworkUtils.getIp(req);
         let uploadModelResponse: FileUploadResponseDto;
         let alreadyExists: boolean;
