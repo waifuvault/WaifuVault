@@ -1,5 +1,5 @@
 import { Controller, Inject } from "@tsed/di";
-import { Delete, Description, Example, Examples, Get, Name, Patch, Pattern, Put, Returns, Summary } from "@tsed/schema";
+import { Delete, Description, Example, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
 import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto.js";
 import { BadRequest } from "@tsed/exceptions";
@@ -12,6 +12,7 @@ import { Logger } from "@tsed/logger";
 import { EntryModificationDto } from "../../../model/dto/EntryModificationDto.js";
 import type { Request, Response } from "express";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
+import { FileUploadParameters } from "../../../model/rest/FileUploadParameters.js";
 
 @Controller("/")
 @Description("This is the API documentation for uploading and sharing files.")
@@ -43,37 +44,26 @@ export class FileUploadController extends BaseRestController {
     public async addEntry(
         @Req() req: Request,
         @Res() res: Response,
-        @QueryParams("expires")
+        @QueryParams()
         @Examples({
             empty: {
-                summary: "empty",
+                summary: "Expires: empty",
                 description: "expires according to retention policy",
-                value: "",
+                value: {
+                    expires: "",
+                },
             },
             "1d": {
-                summary: "1d",
+                summary: "Expires: 1d",
                 description: "expires in 1day",
-                value: "1d",
+                value: {
+                    expires: "1d",
+                },
             },
         })
-        @Description(
-            "a string containing a number and a letter of `m` for mins, `h` for hours, `d` for days. For example: `1h` would be 1 hour and `1d` would be 1 day. leave this blank if you want the file to exist according to the retention policy",
-        )
-        @Pattern(/^$|^\d+[mhd]$/)
-        customExpiry?: string,
-        @QueryParams("hide_filename")
-        @Description(
-            "if set to true, then your filename will not appear in the URL. if false, then it will appear in the URL. defaults to false",
-        )
-        hideFileName?: boolean,
-        @QueryParams("password")
-        @Description(
-            "Set a password for this file, this will encrypt the file on the server that not even the server owner can obtain it, when fetching the file. you can fill out the `x-password` http header with your password to obtain the file via API",
-        )
-        password?: string,
+        params: FileUploadParameters,
         @MultipartFile("file") file?: PlatformMulterFile,
         @BodyParams("url") url?: string,
-        @QueryParams("secret_token") @Description("Shh, it's a secret ;)") secretToken?: string,
     ): Promise<unknown> {
         if (file && url) {
             if (file) {
@@ -91,10 +81,10 @@ export class FileUploadController extends BaseRestController {
             [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
                 ip,
                 url || file!,
-                customExpiry,
-                hideFileName,
-                password,
-                secretToken,
+                params.expires,
+                params.hide_filename,
+                params.password,
+                params.secret_token,
             );
         } catch (e) {
             this.logger.error(e.message);
