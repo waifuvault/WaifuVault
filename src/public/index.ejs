@@ -12,17 +12,19 @@
             <a href="/" class="text-body-emphasis text-decoration-none">
                 <span class="fs-4">WaifuVault</span>
             </a>
-            <a class="btn btn-secondary" href="https://github.com/VictoriqueMoe/WaifuVault" target="_blank"><i class="bi bi-github"></i> Source</a>
+            <a class="btn btn-secondary" href="https://github.com/waifuvault/WaifuVault" target="_blank"><i class="bi bi-github"></i> Source</a>
         </header>
 
         <div class="p-5 mb-4 bg-body-tertiary rounded-3 border border-primary-subtle position-relative">
             <div class="container-fluid py-5 ">
-                <h1 class="display-5 fw-bold">No BS temp file hosting</h1>
+                <h1 class="display-5 fw-bold">No nonsense temporary file hosting</h1>
+                <h2 class="fw-bold">Serving <span id="fileCount">0</span> public files totalling <span id="totalFileSize">0kb</span>
+                </h2>
                 <p class="col-md-8 fs-4">Inspired by
                     <a href="https://0x0.st" target="_blank">https://0x0.st</a>, WaifuVault is a temporary file hosting service that allows for file uploads that are hosted for a set amount of time.
                 </p>
                 <a class="btn btn-primary btn-lg" type="button" href="/api-docs" target="_blank">Api Documentation</a>
-                <img id="victorique" class="img-fluid" src="assets/custom/images/08.png" alt="logo"/>
+                <img id="victorique" class="img-fluid" src="assets/custom/images/08.png" alt="logo" />
             </div>
         </div>
 
@@ -64,6 +66,49 @@
         </div>
 
         <div class="row align-items-md-stretch mb-4">
+            <div class="col-md-12">
+                <div class="h-100 p-5 text-bg-dark rounded-3 border border-warning-subtle bg-body-tertiary">
+                    <h2 class="mb-4 text-center">Features</h2>
+                    <div class="row align-items-md-stretch mb-4">
+                        <div class="col-md-4">
+                            <div class="card text-center border-0 bg-transparent">
+                                <i class="bi bi-key"></i>
+                                <div class="card-body">
+                                    <h5 class="card-title">Encrypted files</h5>
+                                    <p class="card-text">
+                                        When you specify a password with your upload, your file is encrypted using AES-256 on the server, so no one other than those with the password can download it.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center border-0 bg-transparent">
+                                <i class="bi bi-binoculars"></i>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Hide filenames</h5>
+                                    <p class="card-text">
+                                        Hide the original filename, the result would be a shortened URL that you can use that won't contain the original filename.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center border-0 bg-transparent">
+                                <i class="bi bi-stopwatch"></i>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Custom retention period</h5>
+                                    <p class="card-text">
+                                        You are able to specify a shorter expiry for files on upload down to 1 minute.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row align-items-md-stretch mb-4">
             <div class="col-md-6">
                 <div class="h-100 p-5 text-bg-dark rounded-3 border border-danger-subtle bg-body-tertiary">
                     <h2>Restrictions</h2>
@@ -75,13 +120,6 @@
                         <li class="list-group-item">Crypto shit</li>
                         <li class="list-group-item">Anything illegal under British Law</li>
                         <li class="list-group-item">File Limit: <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</li>
-                        <li class="list-group-item">Blocked MIME types:
-                            <ul>
-                                <% for(const blockedMime of process.env.BLOCKED_MIME_TYPES.split(",")){ %>
-                                    <li><%- blockedMime; -%></li>
-                                <% } %>
-                            </ul>
-                        </li>
                     </ul>
                     <p>The amount of time a given file is hosted for is determined by its size. Files are hosted for a maximum of 365 days, with the time being shortened on a cubic curve.</p>
                     <p>This means for files up to about 50% of the maximum file size will get close to the maximum time. All files will be retained for at LEAST 30 days</p>
@@ -94,6 +132,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="col-md-6">
                 <div class="h-100 p-5  border border-info-subtle rounded-3">
                     <h2>Privacy Policy</h2>
@@ -112,10 +151,78 @@
                     <p>While we have taken reasonable steps to secure any information you provide to us, please be aware that despite our efforts,
                         no security measures are perfect or impenetrable. No method of data transmission can be guaranteed against any interception
                         or other type of misuse. Any information disclosed online is potentially vulnerable to interception and misuse by unauthorised parties.</p>
-                    <a class="btn btn-secondary btn-sm mt-3" href="mailto:victoria@victorique.moe">Contact me if you have any issues</a>
+                    <a class="btn btn-secondary btn-sm mt-3" href="mailto:victoria@waifuvault.moe">Contact me if you have any issues</a>
                 </div>
             </div>
         </div>
+
+        <div class="row align-items-md-stretch mb-4">
+            <div class="col-md-12">
+                <div class="h-100 p-5 text-bg-dark rounded-3 border border-warning-subtle bg-body-tertiary">
+                    <h2 class="mb-4 text-center">Bespoke SDKs</h2>
+                    <h6 class="text-center mb-4">Official SDKs for interacting with waifuvault</h6>
+                    <div class="row align-items-md-stretch mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-transparent">
+                                <img class="img-fluid ms-auto me-auto customIcon" src="assets/custom/icons/icons8-nodejs.svg" />
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Node.js</h5>
+                                    <p class="card-text">
+                                        The official Node.js SDK
+                                    </p>
+                                    <div class="d-grid">
+                                        <a class="btn btn-primary btn-sm" href="https://www.npmjs.com/package/waifuvault-node-api" target="_blank">Node SDK</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-transparent">
+                                <img class="img-fluid ms-auto me-auto customIcon" src="assets/custom/icons/icons8-python.svg" />
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Python</h5>
+                                    <p class="card-text">
+                                        The official Python SDK
+                                    </p>
+                                    <div class="d-grid">
+                                        <a class="btn btn-primary btn-sm mb-3" href="https://pypi.org/project/waifuvault/" target="_blank">Python SDK</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-transparent">
+                                <img class="img-fluid ms-auto me-auto customIcon" style="width: 35px;" src="assets/custom/icons/gopher.svg" />
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Go</h5>
+                                    <p class="card-text">
+                                        The official Go SDK
+                                    </p>
+                                    <div class="d-grid">
+                                        <a class="btn btn-primary btn-sm mb-3" href="https://pkg.go.dev/github.com/waifuvault/waifuVault-go-api" target="_blank">Go SDK</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-transparent">
+                                <img class="img-fluid ms-auto me-auto customIcon" src="assets/custom/icons/icons8-c-sharp-logo.svg" />
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">C#</h5>
+                                    <p class="card-text">
+                                        The official C# SDK
+                                    </p>
+                                    <div class="d-grid">
+                                        <a class="btn btn-primary btn-sm mb-3" href="https://www.nuget.org/packages/Waifuvault" target="_blank">C# SDK</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row align-items-md-stretch mb-4">
             <div class="col-md-12">
                 <div class="h-100 p-5 text-bg-dark rounded-3 border border-success-subtle bg-body-tertiary">
@@ -128,7 +235,7 @@
                             <button class="nav-link active" id="curl-tab" data-bs-toggle="tab" data-bs-target="#curl-tab-pane" type="button" role="tab" aria-controls="curl-tab-pane" aria-selected="true">Curl</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="node-tab" data-bs-toggle="tab" data-bs-target="#node-tab-pane" type="button" role="tab" aria-controls="node-tab-pane" aria-selected="false">Node (node-fetch)</button>
+                            <button class="nav-link" id="node-tab" data-bs-toggle="tab" data-bs-target="#node-tab-pane" type="button" role="tab" aria-controls="node-tab-pane" aria-selected="false">Node</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="go-tab" data-bs-toggle="tab" data-bs-target="#go-tab-pane" type="button" role="tab" aria-controls="go-tab-pane" aria-selected="false">Go</button>
@@ -161,133 +268,168 @@ curl --request PUT --url <%- process.env.BASE_URL; -%>/rest --header 'Content-Ty
 </pre>
                         </div>
                         <div class="tab-pane fade" id="node-tab-pane" role="tabpanel" aria-labelledby="node-tab" tabindex="0">
-<pre><code class="language-ts">
-import fetch, {fileFrom, FormData} from 'node-fetch';
+                            <p>For Node, there is an official SDK that provides access to all of the features of the site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://www.npmjs.com/package/waifuvault-node-api" target="_blank">WaifuVault Node API</a>
+                            <pre><code class="language-ts">
+import Waifuvault from "waifuvault-node-api";
 
 // upload file
-const formData = new FormData();
-const blob = await fileFrom('./src/input.txt');
-formData.set('file', blob);
-const response = await fetch("<%- process.env.BASE_URL; -%>/rest", {
-    method: 'PUT',
-    body: formData
+const resp = await Waifuvault.uploadFile({
+    file: "./files/aCoolFile.jpg"
 });
-const data = await response.json(); // object
+console.log(resp.url); // the file download URL
 
 // upload via URL
-const encodedParams = new URLSearchParams();
-encodedParams.set('url', 'https://victorique.moe/img/slider/Quotes.jpg');
-const response = await fetch("<%- process.env.BASE_URL; -%>/rest", {
-    method: 'PUT',
-    body: encodedParams
+const resp = await Waifuvault.uploadFile({
+    url: "https://waifuvault.moe/assets/custom/images/08.png"
 });
-const data = await response.json(); // object
+console.log(resp.url); // the file download URL
+
+// upload a buffer
+const resp = await Waifuvault.uploadFile({
+    file: Buffer.from("someData"),
+    filename: "aCoolFile.jpg"
+});
+console.log(resp.url); // the file download URL
 </code>
 </pre>
                         </div>
                         <div class="tab-pane fade" id="go-tab-pane" role="tabpanel" aria-labelledby="go-tab" tabindex="0">
+                            <p>For Go, there is an official SDK that provides access to all of the features of the site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://pkg.go.dev/github.com/waifuvault/waifuVault-go-api" target="_blank">WaifuVault Go API</a>
 <pre><code class="language-go">
 //upload via URL
 package main
 
 import (
-	"bytes"
+	"context"
+	"fmt"
+	"github.com/waifuvault/waifuVault-go-api/pkg"
+	waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod" // namespace mod
 	"net/http"
 )
 
 func main() {
-	url := "<%- process.env.BASE_URL; -%>/rest"
-	data := []byte(`{"url": "https://victorique.moe/img/slider/Quotes.jpg"}`)
-	req, _ := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(data))
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, _ := client.Do(req)
-	defer resp.Body.Close()
+	api := waifuVault.NewWaifuvaltApi(http.Client{})
+	file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
+		Url: "https://waifuvault.moe/assets/custom/images/08.png",
+	})
+	if err != nil {
+		return
+	}
+	fmt.Printf(file.URL) // the URL
 }
 
 // upload file
 package main
 
 import (
-	"bytes"
-	"io"
-	"mime/multipart"
+	"context"
+	"fmt"
+	"github.com/waifuvault/waifuVault-go-api/pkg"
+	waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod"
 	"net/http"
 	"os"
-	"path"
-	"path/filepath"
 )
 
 func main() {
-	fileDir, _ := os.Getwd()
-	fileName := "main.go"
-	filePath := path.Join(fileDir, fileName)
+	api := waifuVault.NewWaifuvaltApi(http.Client{})
 
-	file, _ := os.Open(filePath)
-	defer file.Close()
-
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	part, _ := writer.CreateFormFile("file", filepath.Base(file.Name()))
-	io.Copy(part, file)
-	writer.Close()
-
-	r, _ := http.NewRequest("PUT", "<%- process.env.BASE_URL; -%>/rest", body)
-	r.Header.Add("Content-Type", writer.FormDataContentType())
-	client := &http.Client{}
-	resp, err := client.Do(r)
+	fileStruc, err := os.Open("myCoolFile.jpg")
 	if err != nil {
-		// handle error
+		fmt.Print(err)
 	}
-	defer resp.Body.Close()
+
+	file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
+		File: fileStruc,
+	})
+	if err != nil {
+		return
+	}
+	fmt.Printf(file.URL) // the URL
 }
 
+// upload buffer
+package main
+
+import (
+	"context"
+	"fmt"
+	"github.com/waifuvault/waifuVault-go-api/pkg"
+	waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod"
+	"net/http"
+	"os"
+)
+
+func main() {
+	api := waifuVault.NewWaifuvaltApi(http.Client{})
+
+	b, err := os.ReadFile("myCoolFile.jpg")
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
+		Bytes:    &b,
+		FileName: "myCoolFile.jpg", // make sure you supply the extension
+	})
+	if err != nil {
+		return
+	}
+	fmt.Printf(file.URL) // the URL
+}
 </code>
 </pre>
                         </div>
                         <div class="tab-pane fade" id="python-tab-pane" role="tabpanel" aria-labelledby="python-tab" tabindex="0">
+                            <p>For Python, there is an official SDK that provides access to all of the features of the site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://pypi.org/project/waifuvault/" target="_blank">WaifuVault Python API</a>
 <pre><code class="language-python">
-import requests
-from requests_toolbelt import MultipartEncoder
+import waifuvault
+import io
 
 # upload file
-multipart_data = MultipartEncoder(
-    fields={
-        'file': ('input.txt', open('./src/input.txt', 'rb'), 'text/plain')
-    }
-)
-response = requests.put("<%- process.env.BASE_URL; -%>/rest", data=multipart_data, headers={'Content-Type': multipart_data.content_type})
-data = response.json()
+upload_file = waifuvault.FileUpload("./files/aCoolFile.png")
+upload_res = waifuvault.upload_file(upload_file)
+print(f"{upload_res.url}")
 
 # upload via URL
-response = requests.put(
-    "<%- process.env.BASE_URL; -%>/rest",
-    data={'url': 'https://victorique.moe/img/slider/Quotes.jpg'}
-)
-data = response.json()
+upload_file = waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png")
+upload_res = waifuvault.upload_file(upload_file)
+print(f"{upload_res.url}")
+
+# upload a buffer
+with open("./files/aCoolFile.png", "rb") as fh:
+    buf = io.BytesIO(fh.read())
+
+upload_file = waifuvault.FileUpload(buf, "aCoolFile.png")
+upload_res = waifuvault.upload_file(upload_file)
+print(f"{upload_res.url}")
 </code>
 </pre>
                         </div>
                         <div class="tab-pane fade" id="cs-tab-pane" role="tabpanel" aria-labelledby="cs-tab" tabindex="0">
+                            <p>For C#, there is an official SDK that provides access to all of the features of the site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://www.nuget.org/packages/Waifuvault" target="_blank">WaifuVault C# API</a>
 <pre><code class="language-cs">
-var client = new HttpClient();
+using Waifuvault;
+using System.IO;
 
 // Upload file
-var filePath = "./src/input.txt";
-var content = new MultipartFormDataContent();
-var fileStream = new FileStream(filePath, FileMode.Open);
-content.Add(new StreamContent(fileStream), "file", Path.GetFileName(filePath));
-var fileResponse = await client.PutAsync("<%- process.env.BASE_URL; -%>/rest", content);
-var fileResponseData = await fileResponse.Content.ReadAsStringAsync();
-fileStream.Close();
+var uploadFile = new Waifuvault.FileUpload("./aCoolFile.png");
+var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
+Console.WriteLine(uploadResp.url);
 
 // Upload via URL
-var urlContent = new FormUrlEncodedContent(new []
-{
-    new KeyValuePair<string, string>("url", "https://victorique.moe/img/slider/Quotes.jpg")
-});
-var urlResponse = await client.PutAsync("<%- process.env.BASE_URL; -%>/rest", urlContent);
-var urlResponseData = await urlResponse.Content.ReadAsStringAsync();
+var uploadFile = new Waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png");
+var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
+Console.WriteLine(uploadResp.url);
+
+// Upload via Buffer
+byte[] buffer = File.ReadAllBytes("./aCoolFile.png");
+var uploadFile = new Waifuvault.FileUpload(buffer,"aCoolFile.png");
+var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
+Console.WriteLine(uploadResp.url);
 </code>
 </pre>
                         </div>
@@ -414,57 +556,75 @@ public class Example {
     </div>
 </main>
 <%- include('snippets/scripts.ejs'); %>
+<script src="<%-process.env.BASE_URL-%>/socket.io/socket.io.min.js"></script>
 <script>
-    hljs.highlightAll();
+    Site.loadPage(async () => {
 
-    const caculateFileInput = document.getElementById("caculateFileTime");
-    const MIN_EXPIRATION = 30 * 24 * 60 * 60 * 1000;
-    const MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
-    caculateFileInput?.addEventListener("change", () => {
-        const okFileSize = document.getElementById("okFileSize");
-        const badFileSize = document.getElementById("badFileSize");
-        toggleShow(badFileSize, false);
-        toggleShow(okFileSize, false);
-        const file = caculateFileInput.files[0];
-        const fileSize = file.size;
-        if (fileSize > fileSizeLimit) {
-            toggleShow(badFileSize, true);
+        const socket = io(`${mainRul}/recordInfo`, {
+            path: '/socket.io/recordInfo'
+        });
+
+        const fileCountSpan = document.getElementById("fileCount");
+        const totalFileSizeSpan = document.getElementById("totalFileSize");
+
+        hljs.highlightAll();
+        const caculateFileInput = document.getElementById("caculateFileTime");
+        const MIN_EXPIRATION = 30 * 24 * 60 * 60 * 1000;
+        const MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
+        caculateFileInput?.addEventListener("change", () => {
+            const okFileSize = document.getElementById("okFileSize");
+            const badFileSize = document.getElementById("badFileSize");
+            toggleShow(badFileSize, false);
             toggleShow(okFileSize, false);
-            return
-        }
-        okFileSize.innerText = timeToHuman(getTimeLeftBySize(file.size));
-        toggleShow(badFileSize, false);
-        toggleShow(okFileSize, true);
-    });
-
-    function getTimeLeftBySize(filesize) {
-        const ttl = Math.floor((MIN_EXPIRATION - MAX_EXPIRATION) * Math.pow((filesize / (fileSizeLimit) - 1), 3));
-        return ttl < MIN_EXPIRATION ? MIN_EXPIRATION : ttl;
-    }
-
-    function toggleShow(el, show) {
-        show ? el.classList.remove("hidden") : el.classList.add("hidden");
-    }
-
-    function timeToHuman(value) {
-        const seconds = value / 1000;
-        const levels = [
-            [Math.floor(seconds / 31536000), "years"],
-            [Math.floor((seconds % 31536000) / 86400), "days"],
-            [Math.floor(((seconds % 31536000) % 86400) / 3600), "hours"],
-            [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), "minutes"],
-            [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"]
-        ];
-        let returnText = "";
-        for (let i = 0, max = levels.length; i < max; i++) {
-            if (levels[i][0] === 0) {
-                continue;
+            const file = caculateFileInput.files[0];
+            const fileSize = file.size;
+            if (fileSize > fileSizeLimit) {
+                toggleShow(badFileSize, true);
+                toggleShow(okFileSize, false);
+                return;
             }
-            returnText += ` ${levels[i][0]} ${levels[i][0] === 1 ? levels[i][1].substr(0, levels[i][1].length - 1) : levels[i][1]}`;
-        }
-        return returnText.trim();
-    }
+            okFileSize.innerText = timeToHuman(getTimeLeftBySize(file.size));
+            toggleShow(badFileSize, false);
+            toggleShow(okFileSize, true);
+        });
 
+        function getTimeLeftBySize(filesize) {
+            const ttl = Math.floor((MIN_EXPIRATION - MAX_EXPIRATION) * Math.pow((filesize / (fileSizeLimit) - 1), 3));
+            return ttl < MIN_EXPIRATION ? MIN_EXPIRATION : ttl;
+        }
+
+        function toggleShow(el, show) {
+            show ? el.classList.remove("hidden") : el.classList.add("hidden");
+        }
+
+        function timeToHuman(value) {
+            const seconds = value / 1000;
+            const levels = [
+                [Math.floor(seconds / 31536000), "years"],
+                [Math.floor((seconds % 31536000) / 86400), "days"],
+                [Math.floor(((seconds % 31536000) % 86400) / 3600), "hours"],
+                [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), "minutes"],
+                [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"]
+            ];
+            let returnText = "";
+            for (let i = 0, max = levels.length; i < max; i++) {
+                if (levels[i][0] === 0) {
+                    continue;
+                }
+                returnText += ` ${levels[i][0]} ${levels[i][0] === 1 ? levels[i][1].substr(0, levels[i][1].length - 1) : levels[i][1]}`;
+            }
+            return returnText.trim();
+        }
+
+        function loadSocket(){
+            socket.on("record", ({recordCount, recordSize}) => {
+                fileCountSpan.innerText = recordCount.toLocaleString();
+                totalFileSizeSpan.innerText = recordSize;
+            });
+        }
+
+        loadSocket();
+    })
 </script>
 </body>
 </html>

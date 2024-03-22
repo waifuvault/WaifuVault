@@ -1,4 +1,4 @@
-enum TIME_UNIT {
+enum TimeUnit {
     milliseconds,
     seconds,
     minutes,
@@ -7,7 +7,7 @@ enum TIME_UNIT {
     weeks,
     months,
     years,
-    decades
+    decades,
 }
 
-export default TIME_UNIT;
+export default TimeUnit;

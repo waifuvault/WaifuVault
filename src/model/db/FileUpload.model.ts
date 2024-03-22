@@ -1,39 +1,39 @@
-import {Column, Entity, Index} from "typeorm";
-import {AbstractModel} from "./AbstractModel.js";
-import {FileUtils} from "../../utils/Utils.js";
-import type {EntrySettings} from "../../utils/typeings.js";
+import { Column, Entity, Index } from "typeorm";
+import { AbstractModel } from "./AbstractModel.js";
+import { filesDir, FileUtils } from "../../utils/Utils.js";
+import type { EntrySettings, ProtectionLevel } from "../../utils/typeings.js";
+import path from "node:path";
 
 @Entity()
 @Index(["token"], {
-    unique: true
+    unique: true,
 })
 export class FileUploadModel extends AbstractModel {
-
     @Column({
         nullable: false,
         type: "text",
-        unique: false
+        unique: false,
     })
     public fileName: string;
 
     @Column({
         nullable: false,
         type: "text",
-        unique: false
+        unique: false,
     })
     public token: string;
 
     @Column({
         nullable: false,
         type: "text",
-        unique: false
+        unique: false,
     })
     public checksum: string;
 
     @Column({
         nullable: false,
         type: "text",
-        unique: false
+        unique: false,
     })
     public ip: string;
 
@@ -41,40 +41,71 @@ export class FileUploadModel extends AbstractModel {
         nullable: false,
         type: "text",
         default: "",
-        unique: false
+        unique: false,
     })
     public originalFileName: string;
 
     @Column({
         nullable: true,
         type: "text",
-        unique: false
+        unique: false,
     })
     public fileExtension: string | null;
 
     @Column({
         nullable: false,
         type: "integer",
-        unique: false
+        unique: false,
     })
     public fileSize: number;
 
     @Column({
         nullable: true,
         type: "integer",
-        unique: false
+        unique: false,
     })
-    public customExpires: number | null;
+    public expires: number | null;
 
     @Column({
         nullable: true,
         type: "simple-json",
-        unique: false
+        unique: false,
     })
     public settings: EntrySettings | null;
 
-    public get expiresIn(): number {
+    @Column({
+        nullable: true,
+        type: "text",
+        unique: false,
+    })
+    public mediaType: string | null;
+
+    @Column({
+        nullable: false,
+        unique: false,
+        default: false,
+    })
+    public encrypted: boolean;
+
+    public get expiresIn(): number | null {
+        if (this.expires === null) {
+            return null;
+        }
         return FileUtils.getTImeLeft(this);
+    }
+
+    public get hasExpired(): boolean {
+        return FileUtils.isFileExpired(this);
+    }
+
+    public get fileProtectionLevel(): ProtectionLevel {
+        if (this.encrypted) {
+            return "Encrypted";
+        }
+        if (this.settings?.password) {
+            return "Password";
+        }
+        return "None";
     }
 
     /**
@@ -88,4 +119,11 @@ export class FileUploadModel extends AbstractModel {
         return this.fileName;
     }
 
+    /**
+     * Get the full absolute location on disk
+     * @returns {string}
+     */
+    public get fullLocationOnDisk(): string {
+        return path.resolve(`${filesDir}/${this.fullFileNameOnSystem}`);
+    }
 }

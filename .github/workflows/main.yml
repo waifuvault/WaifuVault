@@ -1,0 +1,24 @@
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: install
+        run: npm install
+      - name: TSC
+        run: npm run tsc
+      - name: ESLint
+        run: npm run lint
+      - name: prettier
+        run: npm run prettier
+      - name: compile
+        run: npm run build

@@ -6,9 +6,11 @@
       "compress": {
         "unused": true
       },
-      "mangle": true
+      "mangle": {
+        "topLevel": false
+      }
     },
-    "target": "es2021",
+    "target": "esnext",
     "parser": {
       "syntax": "typescript",
       "tsx": false,

@@ -1,6 +1,6 @@
-import type {HttpErrorRenderObj} from "../utils/typeings.js";
-import {Exception} from "@tsed/exceptions";
-import {PlatformResponse} from "@tsed/common";
+import type { HttpErrorRenderObj } from "../utils/typeings.js";
+import { Exception } from "@tsed/exceptions";
+import { PlatformResponse } from "@tsed/common";
 
 export interface IHttpErrorRenderEngine<T, E extends Exception> {
     /**
@@ -8,13 +8,11 @@ export interface IHttpErrorRenderEngine<T, E extends Exception> {
      * @param obj
      * @param response
      */
-    render(obj: HttpErrorRenderObj<E>, response: PlatformResponse): Promise<T>;
+    render(obj: HttpErrorRenderObj<E>, response?: PlatformResponse): Promise<T>;
 
     /**
      * Returns true if this render engine supports the exception thrown by the system
      * @param exception
      */
     supportsError(exception: Exception): boolean;
-
-    getTitle(): string | null;
 }

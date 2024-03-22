@@ -1,22 +1,39 @@
-import {fileURLToPath} from 'node:url';
+import { fileURLToPath } from "node:url";
 import path from "node:path";
-import type {FileUploadModel} from "../model/db/FileUpload.model.js";
-import TIME_UNIT from "../model/constants/TIME_UNIT.js";
-import process from "process";
-import type {Request} from "express";
+import TimeUnit from "../model/constants/TimeUnit.js";
+import process from "node:process";
+import type { Request } from "express";
+import fs from "node:fs/promises";
+import type { PlatformMulterFile } from "@tsed/common";
+import { FileUploadModel } from "../model/db/FileUpload.model.js";
 
 export class ObjectUtils {
-
     public static getNumber(source: string): number {
         const matches = source.match(/-?\d+/g);
         return matches && matches[0] ? parseInt(matches[0]) : 0;
     }
 
-    public static timeToHuman(value: number, timeUnit: TIME_UNIT = TIME_UNIT.milliseconds): string {
+    public static sizeToHuman(value: number): string {
+        const sizeKB = Math.floor(value / 1024);
+        const sizeMB = Math.floor(sizeKB / 1024);
+        const sizeGB = Math.floor(sizeMB / 1024);
+        if (value < 1024) {
+            return `${value} B`;
+        }
+        if (sizeKB < 1024) {
+            return `${sizeKB} KB`;
+        }
+        if (sizeMB < 1024) {
+            return `${sizeMB} MB`;
+        }
+        return `${sizeGB} GB`;
+    }
+
+    public static timeToHuman(value: number, timeUnit: TimeUnit = TimeUnit.milliseconds): string {
         let seconds: number;
-        if (timeUnit === TIME_UNIT.milliseconds) {
+        if (timeUnit === TimeUnit.milliseconds) {
             seconds = Math.round(value / 1000);
-        } else if (timeUnit !== TIME_UNIT.seconds) {
+        } else if (timeUnit !== TimeUnit.seconds) {
             seconds = Math.round(ObjectUtils.convertToMilli(value, timeUnit) / 1000);
         } else {
             seconds = Math.round(value);
@@ -29,7 +46,7 @@ export class ObjectUtils {
             [Math.floor((seconds % 31536000) / 86400), "days"],
             [Math.floor(((seconds % 31536000) % 86400) / 3600), "hours"],
             [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), "minutes"],
-            [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"]
+            [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), "seconds"],
         ];
         let returnText = "";
 
@@ -42,23 +59,23 @@ export class ObjectUtils {
         return returnText.trim();
     }
 
-    public static convertToMilli(value: number, unit: TIME_UNIT): number {
+    public static convertToMilli(value: number, unit: TimeUnit): number {
         switch (unit) {
-            case TIME_UNIT.seconds:
+            case TimeUnit.seconds:
                 return value * 1000;
-            case TIME_UNIT.minutes:
+            case TimeUnit.minutes:
                 return value * 60000;
-            case TIME_UNIT.hours:
+            case TimeUnit.hours:
                 return value * 3600000;
-            case TIME_UNIT.days:
+            case TimeUnit.days:
                 return value * 86400000;
-            case TIME_UNIT.weeks:
+            case TimeUnit.weeks:
                 return value * 604800000;
-            case TIME_UNIT.months:
+            case TimeUnit.months:
                 return value * 2629800000;
-            case TIME_UNIT.years:
+            case TimeUnit.years:
                 return value * 31556952000;
-            case TIME_UNIT.decades:
+            case TimeUnit.decades:
                 return value * 315569520000;
             default:
                 return -1;
@@ -81,38 +98,92 @@ export class FileUtils {
     private static readonly MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
 
     public static isFileExpired(entry: FileUploadModel): boolean {
-        return FileUtils.getTImeLeft(entry) <= 0;
+        const expired = FileUtils.getTImeLeft(entry);
+        return expired === null ? false : expired <= 0;
     }
 
     public static getExtension(file: string): string {
         return path.extname(file).slice(1);
     }
 
-    public static getTImeLeft(entry: FileUploadModel): number {
-        const maxLifespan: number = this.getTimeLeftBySize(entry.fileSize);
-        const customLifespan: number = entry.customExpires ?? 0;
-        const currentEpoch: number = Date.now();
-        const maxExpiration: number = (customLifespan != 0 ? customLifespan : maxLifespan) + entry.createdAt.getTime();
-        return maxExpiration - currentEpoch;
+    public static getTImeLeft(entry: FileUploadModel): number | null {
+        return entry.expires === null ? null : entry.expires - Date.now();
     }
 
     public static getTimeLeftBySize(filesize: number): number {
-        const ttl = Math.floor((FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) * Math.pow((filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1), 3));
+        const ttl = Math.floor(
+            (FileUtils.MIN_EXPIRATION - FileUtils.MAX_EXPIRATION) *
+                Math.pow(filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1, 3),
+        );
         return ttl < FileUtils.MIN_EXPIRATION ? FileUtils.MIN_EXPIRATION : ttl;
+    }
+
+    public static getExpiresBySize(filesize: number, dateToUse = Date.now()): number {
+        return dateToUse + this.getTimeLeftBySize(filesize);
+    }
+
+    public static async getFilesCount(): Promise<number> {
+        try {
+            const realFiles = await fs.readdir(filesDir, { withFileTypes: true });
+            return realFiles.length;
+        } catch {
+            return 0;
+        }
+    }
+
+    public static deleteFile(file: string | PlatformMulterFile, force = true): Promise<void> {
+        const toDelete = this.getFilePath(file);
+        return fs.rm(toDelete, { recursive: true, force });
+    }
+
+    public static async getFileSize(file: string | PlatformMulterFile | FileUploadModel): Promise<number> {
+        const f = this.getFilePath(file);
+        const stat = await fs.stat(f);
+        return stat.size;
+    }
+
+    public static getFilePath(file: string | PlatformMulterFile | FileUploadModel): string {
+        if (file instanceof FileUploadModel) {
+            return file.fullLocationOnDisk;
+        }
+        return typeof file === "string" ? `${filesDir}/${file}` : file.path;
+    }
+
+    public static async fileExists(file: string): Promise<boolean> {
+        try {
+            await fs.access(file, fs.constants.F_OK);
+            return true;
+        } catch {
+            return false;
+        }
     }
 }
 
 export class NetworkUtils {
-
     public static getIp(req: Request): string {
         const useCf = process.env.USE_CLOUDFLARE === "true";
         let ip: string;
         if (useCf) {
-            ip = req.headers['cf-connecting-ip'] as string;
+            ip = req.headers["cf-connecting-ip"] as string;
         } else {
             ip = req.ip as string;
         }
-        return ip.replace(/:\d+[^:]*$/, '');
+        return this.extractIp(ip);
+    }
+
+    private static extractIp(ipString: string): string {
+        const ipSplit = ipString.split(":");
+        if (ipSplit.length === 1 || (ipSplit.length > 2 && !ipString.includes("]"))) {
+            return ipString;
+        }
+        if (ipSplit.length === 2) {
+            return ipSplit[0];
+        }
+        return ipSplit
+            .slice(0, ipSplit.length - 1)
+            .join(":")
+            .replace(/\[/, "")
+            .replace(/]/, "");
     }
 }
 

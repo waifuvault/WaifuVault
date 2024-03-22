@@ -1,30 +1,32 @@
-import {Constant, Service} from "@tsed/di";
+import { Constant, Inject, Service } from "@tsed/di";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import fetch, {Response} from 'node-fetch';
-import {BadRequest, Forbidden, RequestURITooLong} from "@tsed/exceptions";
-import path from "path";
+import { BadRequest, Forbidden, HTTPException, RequestURITooLong } from "@tsed/exceptions";
+import path from "node:path";
 import fs from "node:fs";
-import {filesDir} from "../utils/Utils.js";
+import { filesDir } from "../utils/Utils.js";
 import isLocalhost from "is-localhost-ip";
 import Module from "node:module";
+import { Logger } from "@tsed/logger";
+import { Readable } from "node:stream";
+import { finished } from "node:stream/promises";
+import type { ReadableStream } from "stream/web";
 
 const require = Module.createRequire(import.meta.url);
 
 // punycode is weird. no ESM support
-const punycode = require('punycode/');
+const punycode = require("punycode/");
 
 @Service()
 export class FileUrlService {
-
     @Constant(GlobalEnv.FILE_SIZE_UPLOAD_LIMIT_MB)
     private readonly MAX_SIZE: string;
 
     @Constant(GlobalEnv.MAX_URL_LENGTH)
     private readonly MAX_URL_LENGTH: string;
 
+    public constructor(@Inject() private logger: Logger) {}
 
     public async getFile(url: string): Promise<[string, string]> {
-
         let maxUrlLength = Number.parseInt(this.MAX_URL_LENGTH);
         if (Number.isNaN(maxUrlLength)) {
             maxUrlLength = -1;
@@ -44,14 +46,15 @@ export class FileUrlService {
         let headCheck: Response;
         try {
             headCheck = await fetch(url, {
-                method: "HEAD"
+                method: "HEAD",
             });
         } catch (e) {
             throw new BadRequest(e.message);
         }
         const contentLengthStr = headCheck.headers.get("content-length");
         if (!contentLengthStr) {
-            throw new BadRequest("Unable to obtain content size for file");
+            const resp = await headCheck.text();
+            throw new HTTPException(headCheck.status, resp);
         }
         const contentLength = Number.parseInt(contentLengthStr);
         if (contentLength > Number.parseInt(this.MAX_SIZE) * 1048576) {
@@ -61,27 +64,27 @@ export class FileUrlService {
         let response: Response;
         try {
             response = await fetch(url, {
-                method: "GET"
+                method: "GET",
             });
         } catch (e) {
             throw new BadRequest(e.message);
         }
         if (!response || !response.ok) {
-            throw new BadRequest(`Unable to get response ${response.statusText}`);
+            const resp = await response.text();
+            this.logger.error(`Error making request to ${url}. response is "${response.status}" with body: ${resp}`);
+            // forward the error to the client
+            throw new HTTPException(response.status, resp);
         }
         const now = Date.now();
-        const originalFileName = url.substring(url.lastIndexOf('/') + 1);
-        const ext = originalFileName.split('.').pop();
+        const originalFileName = url.substring(url.lastIndexOf("/") + 1);
+        const ext = originalFileName.split(".").pop();
         const destination = path.resolve(`${filesDir}/${now}.${ext}`);
         const fileStream = fs.createWriteStream(destination);
-        return new Promise((resolve, reject) => {
-            response.body!.pipe(fileStream);
-            response.body!.on("error", reject);
-            fileStream.on("finish", resolve);
-        }).then(() => [destination, originalFileName]);
+        await finished(Readable.fromWeb(response.body! as ReadableStream).pipe(fileStream));
+        return [destination, originalFileName];
     }
 
     private isLocalhost(url: string): Promise<boolean> {
-        return isLocalhost(punycode.toASCII(url).split('/')[0].split(':')[0]);
+        return isLocalhost(punycode.toASCII(url).split("/")[0].split(":")[0]);
     }
 }

@@ -15,7 +15,15 @@ enum GlobalEnv {
     BLOCKED_MIME_TYPES = `${prefix}BLOCKED_MIME_TYPES`,
     USE_CLOUDFLARE = `${prefix}USE_CLOUDFLARE`,
     MAX_URL_LENGTH = `${prefix}MAX_URL_LENGTH`,
-    MS_DEFENDER_PATH = `${prefix}MS_DEFENDER_PATH`
+    MS_DEFENDER_PATH = `${prefix}MS_DEFENDER_PATH`,
+    CAPTCHA_SITE_KEY = `${prefix}CAPTCHA_SITE_KEY`,
+    CAPTCHA_SECRET_KEY = `${prefix}CAPTCHA_SECRET_KEY`,
+    FILE_CLEANER_CRON = `${prefix}FILE_CLEANER_CRON`,
+    SALT = `${prefix}SALT`,
+    UPLOAD_SECRET = `${prefix}UPLOAD_SECRET`,
+    RATE_LIMIT = `${prefix}RATE_LIMIT`,
+    RATE_LIMIT_MS = `${prefix}RATE_LIMIT_MS`,
+    REDIS_URI = `${prefix}REDIS_URI`,
 }
 
 export default GlobalEnv;

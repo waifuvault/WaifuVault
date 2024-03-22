@@ -6,7 +6,7 @@
     "outDir": "dist",
     "module": "ESNext",
     "forceConsistentCasingInFileNames": true,
-    "target": "ES2021",
+    "target": "ESNext",
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,
@@ -24,6 +24,8 @@
     "noEmit": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "noImplicitOverride": true,
+    "skipLibCheck": true,
     "lib": [
       "es7",
       "dom",

@@ -1,28 +1,54 @@
-import {Inject, Service} from "@tsed/di";
-import {AsyncTask, Job, SimpleIntervalJob, type SimpleIntervalSchedule, ToadScheduler} from "toad-scheduler";
-import schedule, {Job as DateJob, type JobCallback} from "node-schedule";
-import {Logger} from "@tsed/logger";
-import {ObjectUtils} from "../utils/Utils.js";
+import { Inject, Service } from "@tsed/di";
+import { AsyncTask, CronJob, Job, SimpleIntervalJob, type SimpleIntervalSchedule, ToadScheduler } from "toad-scheduler";
+import schedule, { Job as DateJob, type JobCallback } from "node-schedule";
+import { Logger } from "@tsed/logger";
+import { ObjectUtils } from "../utils/Utils.js";
+import cronstrue from "cronstrue";
 
 @Service()
 export class ScheduleService {
-    public constructor(
-        @Inject() private logger: Logger
-    ) {
-    }
+    public constructor(@Inject() private logger: Logger) {}
 
     private static readonly scheduler = new ToadScheduler();
 
     private static readonly dateSchedules: DateJob[] = [];
 
-    public scheduleJobInterval<T>(schedule: SimpleIntervalSchedule, jobHandler: (this: T) => Promise<void>, jobName: string, context: T): void {
+    public scheduleCronJob<T>(
+        cronExpression: string,
+        jobHandler: (this: T) => Promise<void>,
+        jobName: string,
+        context: T,
+        runImmediately = false,
+    ): void {
         jobHandler = jobHandler.bind(context);
-        const task = new AsyncTask(
-            jobName,
-            jobHandler
+        const task = new AsyncTask(jobName, jobHandler);
+        const job = new CronJob(
+            {
+                cronExpression,
+            },
+            task,
+            {
+                preventOverrun: true,
+            },
         );
+        ScheduleService.scheduler.addCronJob(job);
+        const cronExplain = cronstrue.toString(cronExpression);
+        this.logger.info(`Registered cron job ${jobName} to run ${cronExplain}`);
+        if (runImmediately) {
+            jobHandler.call(context);
+        }
+    }
+
+    public scheduleJobInterval<T>(
+        schedule: SimpleIntervalSchedule,
+        jobHandler: (this: T) => Promise<void>,
+        jobName: string,
+        context: T,
+    ): void {
+        jobHandler = jobHandler.bind(context);
+        const task = new AsyncTask(jobName, jobHandler);
         const job = new SimpleIntervalJob(schedule, task, {
-            id: jobName
+            id: jobName,
         });
         ScheduleService.scheduler.addSimpleIntervalJob(job);
         this.logger.info(`Registered interval job ${jobName}`);
@@ -48,5 +74,9 @@ export class ScheduleService {
 
     public getAllDateJobs(): DateJob[] {
         return ScheduleService.dateSchedules;
+    }
+
+    public static get scheduleIntervalEngine(): ToadScheduler {
+        return ScheduleService.scheduler;
     }
 }

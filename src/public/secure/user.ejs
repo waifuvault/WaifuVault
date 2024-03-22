@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head prefix="og: https://ogp.me/ns#">
+    <%- include('../snippets/head.ejs'); %>
+    <link href="/assets/custom/css/index.css" rel="stylesheet">
+    <title>User</title>
+</head>
+<body>
+<div>
+    <div id="overlay" class="hidden">
+        <div id="loader" class="hidden"></div>
+    </div>
+</div>
+<div class="container mt-4">
+    <%- include('../snippets/navbar.ejs'); %>
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card border-primary mb-3">
+                <div class="card-header">User Login Details</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="changeEmail" class="form-label">Username</label>
+                        <input type="email" class="form-control" name="email" id="changeEmail" value="<%- user.email; -%>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="changePassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" name="password" id="changePassword">
+                    </div>
+                    <div class="mb-3">
+                        <label for="changePasswordRepeat" class="form-label">Repeat Password</label>
+                        <input type="password" class="form-control" id="changePasswordRepeat">
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-outline-primary" id="changeDetailsSet">Set Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%- include('../snippets/scripts.ejs'); %>
+<script>
+    Site.loadPage(async site => {
+        function loadEventListeners() {
+            ((() => {
+                document.getElementById("userNav").classList.add("active");
+                document.getElementById("changeDetailsSet").addEventListener("click", async e => {
+                    const formData = new URLSearchParams();
+                    const email = document.getElementById("changeEmail").value;
+                    const password = document.getElementById("changePassword").value;
+                    const repeatPassword = document.getElementById("changePasswordRepeat").value;
+                    if (!email) {
+                        return alert("Please specify email.");
+                    }
+                    if (!password) {
+                        return alert("password must not be blank.");
+                    }
+                    if (password !== repeatPassword) {
+                        return alert("Passwords do not match.");
+                    }
+                    formData.append("email", email);
+                    formData.append("password", password);
+                    Site.loading(true);
+                    try {
+                        await fetch(`${baseUrl}/auth/changeDetails`, {
+                            method: "POST",
+                            body: formData
+                        });
+                    } catch (e) {
+                        alert(e.message);
+                        return;
+                    } finally {
+                        Site.loading(false);
+                    }
+                    alert("User details changed successfully.");
+                });
+            })());
+        }
+
+        loadEventListeners();
+    });
+</script>
+</body>
+</html>
