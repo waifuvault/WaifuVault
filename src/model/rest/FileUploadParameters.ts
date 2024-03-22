@@ -16,7 +16,8 @@ export class FileUploadParameters {
     )
     @Optional()
     @Property()
-    public hide_filename?: boolean;
+    @Name("hide_filename")
+    public hideFilename?: boolean;
 
     @Description(
         "Set a password for this file, this will encrypt the file on the server that not even the server owner can obtain it, when fetching the file. you can fill out the `x-password` http header with your password to obtain the file via API",

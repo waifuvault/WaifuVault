@@ -83,7 +83,7 @@ export class FileUploadController extends BaseRestController {
                 ip,
                 url || file!,
                 params.expires,
-                params.hide_filename,
+                params.hideFilename,
                 params.password,
                 secretToken,
             );
