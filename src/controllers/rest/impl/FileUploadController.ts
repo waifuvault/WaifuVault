@@ -77,14 +77,15 @@ export class FileUploadController extends BaseRestController {
         const ip = NetworkUtils.getIp(req);
         let uploadModelResponse: FileUploadResponseDto;
         let alreadyExists: boolean;
+        const secretToken = req.query["secret_token"]?.toString();
         try {
             [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
                 ip,
                 url || file!,
                 params.expires,
-                params.hide_filename,
+                params.hideFilename,
                 params.password,
-                params.secret_token,
+                secretToken,
             );
         } catch (e) {
             this.logger.error(e.message);
