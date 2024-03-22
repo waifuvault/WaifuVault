@@ -1,5 +1,5 @@
 import { Controller, Inject } from "@tsed/di";
-import { Delete, Description, Example, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
+import { Delete, Description, Example, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
 import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto.js";
 import { BadRequest } from "@tsed/exceptions";
@@ -44,7 +44,24 @@ export class FileUploadController extends BaseRestController {
     public async addEntry(
         @Req() req: Request,
         @Res() res: Response,
-        @QueryParams() params: FileUploadParameters,
+        @QueryParams()
+        @Examples({
+            empty: {
+                summary: "Expires: empty",
+                description: "expires according to retention policy",
+                value: {
+                    expires: "",
+                },
+            },
+            "1d": {
+                summary: "Expires: 1d",
+                description: "expires in 1day",
+                value: {
+                    expires: "1d",
+                },
+            },
+        })
+        params: FileUploadParameters,
         @MultipartFile("file") file?: PlatformMulterFile,
         @BodyParams("url") url?: string,
     ): Promise<unknown> {
