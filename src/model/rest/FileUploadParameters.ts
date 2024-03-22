@@ -24,9 +24,4 @@ export class FileUploadParameters {
     @Optional()
     @Property()
     public password?: string;
-
-    @Description("Shh, it's a secret ;)")
-    @Optional()
-    @Property()
-    public secret_token?: string;
 }
