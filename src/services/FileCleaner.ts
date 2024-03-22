@@ -1,4 +1,5 @@
-import { Constant, Inject, type OnInit, Service } from "@tsed/di";
+import { Constant, Inject, Service } from "@tsed/di";
+import { OnReady } from "@tsed/common";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { ScheduleService } from "./ScheduleService.js";
 import { FileService } from "./FileService.js";
@@ -8,7 +9,7 @@ import fs from "node:fs/promises";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 
 @Service()
-export class FileCleaner implements OnInit {
+export class FileCleaner implements OnReady {
     public constructor(
         @Inject() private repo: FileRepo,
         @Inject() private scheduleService: ScheduleService,
@@ -31,7 +32,7 @@ export class FileCleaner implements OnInit {
         await this.fileUploadService.processDelete(expiredTokens);
     }
 
-    public $onInit(): void {
+    public $onReady(): void {
         this.scheduleService.scheduleCronJob(
             this.cronToRun,
             async () => {
