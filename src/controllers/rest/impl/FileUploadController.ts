@@ -82,9 +82,7 @@ export class FileUploadController extends BaseRestController {
             [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
                 ip,
                 url || file!,
-                params.expires,
-                params.hideFilename,
-                params.password,
+                params,
                 secretToken,
             );
         } catch (e) {
