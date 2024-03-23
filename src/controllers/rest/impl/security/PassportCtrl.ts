@@ -10,6 +10,7 @@ import { CustomUserInfoModel } from "../../../../model/auth/CustomUserInfoModel.
 import { UserService } from "../../../../services/UserService.js";
 import { CaptchaMiddleWare } from "../../../../middleware/endpoint/CaptchaMiddleWare.js";
 import { DefaultRenderException } from "../../../../model/rest/DefaultRenderException.js";
+import { Request, type Response } from "express";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
@@ -25,13 +26,13 @@ export class PassportCtrl extends BaseRestController {
     @Authenticate("loginAuthProvider", { failWithError: true })
     @Returns(StatusCodes.MOVED_TEMPORARILY)
     @Returns(StatusCodes.UNAUTHORIZED)
-    public login(@Res() res: Res): void {
+    public login(@Res() res: Response): void {
         res.redirect("/admin");
     }
 
     @Get("/logout")
     @Returns(StatusCodes.MOVED_TEMPORARILY)
-    public logout(@Req() request: Req, @Res() res: Res): Promise<void> {
+    public logout(@Req() request: Request, @Res() res: Response): Promise<void> {
         return new Promise((resolve, reject) => {
             request.logout(err => {
                 if (err) {
@@ -49,7 +50,7 @@ export class PassportCtrl extends BaseRestController {
     @Returns(StatusCodes.OK)
     public async changeDetails(
         @Res() res: PlatformResponse,
-        @Req() req: Req,
+        @Req() req: Request,
         @BodyParams() userDetails: UserModel,
     ): Promise<PlatformResponse> {
         const loggedInUser = req.user as CustomUserInfoModel;

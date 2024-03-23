@@ -3,13 +3,14 @@ import { Controller } from "@tsed/di";
 import { Authorize } from "@tsed/passport";
 import type { CustomUserInfoModel } from "../../model/auth/CustomUserInfoModel.js";
 import { Req, Res } from "@tsed/common";
+import { Request, type Response } from "express";
 
 @Controller("/")
 @Hidden()
 export class AdminView {
     @Get()
     @Authorize("loginAuthProvider")
-    public showAdmin(@Req() req: Req, @Res() res: Res): unknown {
+    public showAdmin(@Req() req: Request, @Res() res: Response): unknown {
         res.redirect("/admin/files");
         return {
             user: req.user as CustomUserInfoModel,
@@ -33,7 +34,7 @@ export class AdminView {
     @Get("/user")
     @Authorize("loginAuthProvider")
     @View("/secure/user.ejs")
-    public showUserAdmin(@Req() req: Req): unknown {
+    public showUserAdmin(@Req() req: Request): unknown {
         return {
             user: req.user as CustomUserInfoModel,
         };
