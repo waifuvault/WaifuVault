@@ -44,10 +44,10 @@ export class AdminService {
         const ipBlockedPArr = entries.map(entry => Promise.all([entry, this.ipBlackListRepo.isIpBlocked(entry.ip)]));
         const ipBlockedArr = await Promise.all(ipBlockedPArr);
         return ipBlockedArr.map(([entry, ipBlocked]) => {
-            const ipBlockedAwareEntry = {
+            const ipBlockedAwareEntry: IpBlockedAwareFileEntry = {
                 ipBlocked,
                 entry,
-            } as IpBlockedAwareFileEntry;
+            };
             return FileEntryDto.fromModel(ipBlockedAwareEntry, this.baseUrl);
         });
     }
