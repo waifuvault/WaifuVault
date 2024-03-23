@@ -11,7 +11,7 @@ import crypto from "node:crypto";
 import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
-import type { EntrySettings, XOR } from "../utils/typeings.js";
+import type { EntrySettings } from "../utils/typeings.js";
 import { BadRequest, InternalServerError, NotFound, UnsupportedMediaType } from "@tsed/exceptions";
 import { FileUtils, ObjectUtils } from "../utils/Utils.js";
 import TimeUnit from "../model/constants/TimeUnit.js";
@@ -20,6 +20,7 @@ import { AvManager } from "../manager/AvManager.js";
 import { EncryptionService } from "./EncryptionService.js";
 import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
 import { EntryModificationDto } from "../model/dto/EntryModificationDto.js";
+import { FileUploadParameters } from "../model/rest/FileUploadParameters.js";
 
 @Service()
 export class FileService {
@@ -41,10 +42,8 @@ export class FileService {
 
     public async processUpload(
         ip: string,
-        source: XOR<PlatformMulterFile, string>,
-        customExpiry?: string,
-        maskFilename = false,
-        password?: string,
+        source: PlatformMulterFile | string,
+        { password, hideFilename, expires }: FileUploadParameters,
         secretToken?: string,
     ): Promise<[FileUploadResponseDto, boolean]> {
         const token = crypto.randomUUID();
@@ -68,7 +67,7 @@ export class FileService {
             }
         }
 
-        uploadEntry.settings(await this.buildEntrySettings(maskFilename, password));
+        uploadEntry.settings(await this.buildEntrySettings(hideFilename, password));
 
         const ext = FileUtils.getExtension(originalFileName);
         if (ext) {
@@ -76,8 +75,8 @@ export class FileService {
         }
         uploadEntry.originalFileName(originalFileName);
         uploadEntry.checksum(checksum);
-        if (customExpiry) {
-            this.calculateCustomExpires(uploadEntry, customExpiry, secretToken);
+        if (expires) {
+            this.calculateCustomExpires(uploadEntry, expires, secretToken);
         } else if (secretToken !== this.secret) {
             uploadEntry.expires(FileUtils.getExpiresBySize(fileSize));
         }
@@ -103,7 +102,7 @@ export class FileService {
         return argon2.hash(password);
     }
 
-    private async determineResourcePathAndFileName(source: XOR<PlatformMulterFile, string>): Promise<[string, string]> {
+    private async determineResourcePathAndFileName(source: PlatformMulterFile | string): Promise<[string, string]> {
         let resourcePath: string;
         let originalFileName: string;
         if (typeof source === "string") {
