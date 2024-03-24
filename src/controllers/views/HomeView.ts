@@ -3,7 +3,7 @@ import { Controller, Inject } from "@tsed/di";
 import { Req, Res } from "@tsed/common";
 import CaptchaServices from "../../model/constants/CaptchaServices.js";
 import { CaptchaManager } from "../../manager/CaptchaManager.js";
-import { Request, type Response } from "express";
+import type { Request, Response } from "express";
 
 @Controller("/")
 @Hidden()

@@ -4,7 +4,7 @@ import { Inject } from "@tsed/di";
 import { IpBlackListRepo } from "../../db/repo/IpBlackListRepo.js";
 import { Forbidden } from "@tsed/exceptions";
 import { NetworkUtils } from "../../utils/Utils.js";
-import { Request } from "express";
+import type { Request } from "express";
 
 @Middleware()
 export class IpFilterMiddleware implements MiddlewareMethods {
