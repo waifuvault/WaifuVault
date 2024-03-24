@@ -12,7 +12,7 @@ import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
 import type { EntrySettings } from "../utils/typeings.js";
-import { BadRequest, InternalServerError, NotFound, UnsupportedMediaType } from "@tsed/exceptions";
+import { BadRequest, Exception, InternalServerError, NotFound, UnsupportedMediaType } from "@tsed/exceptions";
 import { FileUtils, ObjectUtils } from "../utils/Utils.js";
 import TimeUnit from "../model/constants/TimeUnit.js";
 import argon2 from "argon2";
@@ -21,6 +21,7 @@ import { EncryptionService } from "./EncryptionService.js";
 import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
 import { EntryModificationDto } from "../model/dto/EntryModificationDto.js";
 import { FileUploadParameters } from "../model/rest/FileUploadParameters.js";
+import { ProcessUploadException } from "../model/exceptions/ProcessUploadException.js";
 
 @Service()
 export class FileService {
@@ -46,56 +47,65 @@ export class FileService {
         { password, hideFilename, expires }: FileUploadParameters,
         secretToken?: string,
     ): Promise<[FileUploadResponseDto, boolean]> {
-        const token = crypto.randomUUID();
-        const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
-        const [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
-        uploadEntry.fileName(path.parse(resourcePath).name);
-        await this.scanFile(resourcePath);
-        await this.checkMime(resourcePath);
-        const mediaType = await this.mimeService.findMimeType(resourcePath);
-        uploadEntry.mediaType(mediaType);
-        const fileSize = await FileUtils.getFileSize(path.basename(resourcePath));
-        uploadEntry.fileSize(fileSize);
-        const checksum = await this.getFileHash(resourcePath);
+        let resourcePath: string | undefined;
+        let originalFileName: string | undefined;
+        try {
+            const token = crypto.randomUUID();
+            const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
+            [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
+            uploadEntry.fileName(path.parse(resourcePath).name);
+            await this.scanFile(resourcePath);
+            await this.checkMime(resourcePath);
+            const mediaType = await this.mimeService.findMimeType(resourcePath);
+            uploadEntry.mediaType(mediaType);
+            const fileSize = await FileUtils.getFileSize(path.basename(resourcePath));
+            uploadEntry.fileSize(fileSize);
+            const checksum = await this.getFileHash(resourcePath);
 
-        const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
-        if (existingFileModel) {
-            if (existingFileModel.hasExpired) {
-                await this.processDelete([existingFileModel.token], true);
-            } else {
-                return [FileUploadResponseDto.fromModel(existingFileModel, this.baseUrl, true), true];
+            const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
+            if (existingFileModel) {
+                if (existingFileModel.hasExpired) {
+                    await this.processDelete([existingFileModel.token], true);
+                } else {
+                    return [FileUploadResponseDto.fromModel(existingFileModel, this.baseUrl, true), true];
+                }
             }
-        }
 
-        uploadEntry.settings(await this.buildEntrySettings(hideFilename, password));
+            uploadEntry.settings(await this.buildEntrySettings(hideFilename, password));
 
-        const ext = FileUtils.getExtension(originalFileName);
-        if (ext) {
-            uploadEntry.fileExtension(ext);
-        }
-        uploadEntry.originalFileName(originalFileName);
-        uploadEntry.checksum(checksum);
-        if (expires) {
-            this.calculateCustomExpires(uploadEntry, expires, secretToken);
-        } else if (secretToken !== this.secret) {
-            uploadEntry.expires(FileUtils.getExpiresBySize(fileSize));
-        }
-
-        if (password) {
-            try {
-                const didEncrypt = await this.encryptionService.encrypt(resourcePath, password);
-                uploadEntry.encrypted(didEncrypt !== null);
-            } catch (e) {
-                await this.deleteUploadedFile(resourcePath);
-                this.logger.error(e.message);
-                throw new InternalServerError(e.message);
+            const ext = FileUtils.getExtension(originalFileName);
+            if (ext) {
+                uploadEntry.fileExtension(ext);
             }
+            uploadEntry.originalFileName(originalFileName);
+            uploadEntry.checksum(checksum);
+            if (expires) {
+                this.calculateCustomExpires(uploadEntry, expires, secretToken);
+            } else if (secretToken !== this.secret) {
+                uploadEntry.expires(FileUtils.getExpiresBySize(fileSize));
+            }
+
+            if (password) {
+                try {
+                    const didEncrypt = await this.encryptionService.encrypt(resourcePath, password);
+                    uploadEntry.encrypted(didEncrypt !== null);
+                } catch (e) {
+                    await this.deleteUploadedFile(resourcePath);
+                    this.logger.error(e.message);
+                    throw new InternalServerError(e.message);
+                }
+            }
+            const savedEntry = await this.repo.saveEntry(uploadEntry.build());
+
+            await this.recordInfoSocket.emit();
+
+            return [FileUploadResponseDto.fromModel(savedEntry, this.baseUrl, true), false];
+        } catch (e) {
+            if (e instanceof Exception) {
+                throw new ProcessUploadException(e.status, e.message, resourcePath, e);
+            }
+            throw e;
         }
-        const savedEntry = await this.repo.saveEntry(uploadEntry.build());
-
-        await this.recordInfoSocket.emit();
-
-        return [FileUploadResponseDto.fromModel(savedEntry, this.baseUrl, true), false];
     }
 
     private hashPassword(password: string): Promise<string> {

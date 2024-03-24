@@ -14,12 +14,16 @@ export class HttpExceptionFilter implements ExceptionFilterMethods<Exception> {
 
     public async catch(exception: Exception, ctx: PlatformContext): Promise<void> {
         const renderEngine = this.httpErrorFactory.getRenderEngine(exception);
+        const processorEngine = this.httpErrorFactory.getErrorProcessor(exception);
         const obj: HttpErrorRenderObj<Exception> = {
             status: exception.status,
             message: exception.message,
             internalError: exception,
         };
         const response = ctx.response;
+        if (processorEngine) {
+            await processorEngine.process(obj);
+        }
         const template = await renderEngine.render(obj, response);
         response.status(exception.status).body(template);
     }
