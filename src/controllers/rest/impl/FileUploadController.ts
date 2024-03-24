@@ -87,11 +87,6 @@ export class FileUploadController extends BaseRestController {
             );
         } catch (e) {
             this.logger.error(e.message);
-            if (file) {
-                // this will delete files if something goes wrong, but not urls...
-                // TODO: fix
-                await FileUtils.deleteFile(file, true);
-            }
             throw e;
         }
         if (alreadyExists) {
