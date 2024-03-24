@@ -1,7 +1,7 @@
 import { PlatformTest } from "@tsed/common";
 import { FileUtils, NetworkUtils, ObjectUtils } from "../../Utils.js";
 import { initDotEnv } from "../../../__test__/testUtils.spec.js";
-import { requestMock1 } from "../../../__test__/mocks/global/Request.mock.js";
+import { requestMock1, requestMock2 } from "../../../__test__/mocks/global/Request.mock.js";
 import {
     fileUploadModelMock500MB,
     fileUploadModelMockCustomExpire,
@@ -9,6 +9,7 @@ import {
 } from "../../../model/db/__test__/mocks/FileUploadModel.mock.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import TimeUnit from "../../../model/constants/TimeUnit.js";
+import process from "node:process";
 
 describe("unit tests", () => {
     beforeEach(() => {
@@ -148,13 +149,15 @@ describe("unit tests", () => {
             const TIME_LEFT_10DAYS = 10 * 24 * 60 * 60 * 1000;
             const TIME_LEFT_30DAYS = 30 * 24 * 60 * 60 * 1000;
             it("should take a normal expire fileupload and return slightly less than thirty days as millis", () => {
-                expect(FileUtils.getTImeLeft(fileUploadModelMock500MB)).toBeLessThanOrEqual(TIME_LEFT_30DAYS);
+                expect(FileUtils.getTImeLeft(fileUploadModelMock500MB) ?? 0).toBeLessThanOrEqual(TIME_LEFT_30DAYS);
             });
             it("should take a custom expire fileupload and return slightly less than ten days as millis", () => {
-                expect(FileUtils.getTImeLeft(fileUploadModelMockCustomExpire)).toBeLessThanOrEqual(TIME_LEFT_10DAYS);
+                expect(FileUtils.getTImeLeft(fileUploadModelMockCustomExpire) ?? 0).toBeLessThanOrEqual(
+                    TIME_LEFT_10DAYS,
+                );
             });
             it("should take an expired fileupload and return 0 or less time left", () => {
-                expect(FileUtils.getTImeLeft(fileUploadModelMockExpired)).toBeLessThanOrEqual(0);
+                expect(FileUtils.getTImeLeft(fileUploadModelMockExpired) ?? 0).toBeLessThanOrEqual(0);
             });
         });
     });
@@ -163,6 +166,9 @@ describe("unit tests", () => {
         describe("getIp", () => {
             it("should take a request and return the ip", () => {
                 expect(NetworkUtils.getIp(requestMock1)).toEqual("192.168.2.2");
+            });
+            it("should take a request with ipv6 and return the ip", () => {
+                expect(NetworkUtils.getIp(requestMock2)).toEqual("2001:470:30:84:e276:63ff:fe62:3035");
             });
             it("should take a cloudflare request and return the ip", () => {
                 process.env.USE_CLOUDFLARE = "true";
