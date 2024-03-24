@@ -20,7 +20,10 @@
     "revertmigration": "typeorm-ts-node-esm migration:revert -d ./src/db/DataSource.ts",
     "prettier": "prettier ./src --check",
     "prettier:fix": "prettier ./src --write",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:debug": "vitest run --inspect-brk --inspect --logHeapUsage --no-file-parallelism"
   },
   "dependencies": {
     "@socket.io/redis-adapter": "^8.3.0",
@@ -102,6 +105,7 @@
     "@types/passport-http": "^0.3.11",
     "@types/passport-local": "^1.0.38",
     "@types/punycode": "^2.1.4",
+    "@vavite/node-loader": "^4.1.1",
     "barrelsby": "^2.8.1",
     "eslint": "^8.57.0",
     "husky": "^9.0.11",
@@ -114,7 +118,9 @@
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.6.2",
     "typescript": "^5.4.3",
-    "typescript-eslint": "^7.3.1"
+    "typescript-eslint": "^7.3.1",
+    "unplugin-swc": "^1.4.4",
+    "vitest": "^1.4.0"
   },
   "main": "index.js",
   "keywords": [],
