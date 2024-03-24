@@ -3,7 +3,7 @@ import { Controller } from "@tsed/di";
 import { Authorize } from "@tsed/passport";
 import type { CustomUserInfoModel } from "../../model/auth/CustomUserInfoModel.js";
 import { Req, Res } from "@tsed/common";
-import { Request, type Response } from "express";
+import type { Request, Response } from "express";
 
 @Controller("/")
 @Hidden()

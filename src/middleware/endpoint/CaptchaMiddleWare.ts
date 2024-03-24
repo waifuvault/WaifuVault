@@ -1,8 +1,8 @@
 import { Middleware, MiddlewareMethods } from "@tsed/platform-middlewares";
 import { Inject } from "@tsed/di";
 import { CaptchaManager } from "../../manager/CaptchaManager.js";
+import type { Request } from "express";
 import { Req } from "@tsed/common";
-import { Request } from "express";
 
 @Middleware()
 export class CaptchaMiddleWare implements MiddlewareMethods {

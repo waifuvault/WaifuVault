@@ -10,7 +10,7 @@ import { CustomUserInfoModel } from "../../../../model/auth/CustomUserInfoModel.
 import { UserService } from "../../../../services/UserService.js";
 import { CaptchaMiddleWare } from "../../../../middleware/endpoint/CaptchaMiddleWare.js";
 import { DefaultRenderException } from "../../../../model/rest/DefaultRenderException.js";
-import { Request, type Response } from "express";
+import type { Request, Response } from "express";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
