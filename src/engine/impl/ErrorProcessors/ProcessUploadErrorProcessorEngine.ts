@@ -4,6 +4,8 @@ import { Exception } from "@tsed/exceptions";
 import { ProcessUploadException } from "../../../model/exceptions/ProcessUploadException.js";
 import type { IErrorProcessorEngine } from "../../IErrorProcessorEngine.js";
 import { HttpErrorRenderObj } from "../../../utils/typeings.js";
+import { FileUtils } from "../../../utils/Utils.js";
+import path from "node:path";
 
 @Injectable({
     scope: ProviderScope.SINGLETON,
@@ -14,9 +16,9 @@ export class ProcessUploadErrorProcessorEngine implements IErrorProcessorEngine<
         return exception instanceof ProcessUploadException;
     }
 
-    public process(obj: HttpErrorRenderObj<ProcessUploadException>): boolean {
-        if (obj.status == 500) {
-            return false;
+    public async process(obj: HttpErrorRenderObj<ProcessUploadException>): Promise<boolean> {
+        if (obj.internalError.filePath) {
+            await FileUtils.deleteFile(path.basename(obj.internalError.filePath), true);
         }
         return true;
     }
