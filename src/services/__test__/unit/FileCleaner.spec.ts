@@ -75,7 +75,7 @@ describe("unit tests", () => {
         );
 
         it(
-            "should filter out only non-expired files",
+            "should filter out only expired files",
             PlatformTest.inject(
                 [FileRepo, FileService, FileCleaner],
                 async (fileRepo: FileRepo, fileService: FileService, fileCleaner: FileCleaner) => {
