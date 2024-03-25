@@ -245,7 +245,7 @@ describe("unit tests", () => {
                 });
                 const file = "test.png";
                 FileUtils.deleteFile(file, false);
-                expect(fs.rm).toHaveBeenCalledWith(`${filesDir}/${file}`, { recursive: true, force: false });
+                expect(fs.rm).toHaveBeenCalledWith(`${filesDir}${path.sep}${file}`, { recursive: true, force: false });
             });
         });
     });
