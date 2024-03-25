@@ -1,6 +1,5 @@
-// vitest.config.ts
+import swc from "unplugin-swc";
 import { configDefaults, defineConfig } from "vitest/config";
-import typescript from "@rollup/plugin-typescript";
 
 export default defineConfig({
     test: {
@@ -8,6 +7,11 @@ export default defineConfig({
         root: "./",
         exclude: [...configDefaults.exclude, "node_modules/*", "src/__test__"],
     },
-    plugins: [typescript()],
-    esbuild: false,
+    plugins: [
+        swc.vite({
+            module: {
+                type: "es6",
+            },
+        }),
+    ],
 });

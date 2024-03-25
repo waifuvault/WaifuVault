@@ -7,7 +7,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "tsc": "tsc --project tsconfig.json",
-    "build": "npm run barrels && node ./buildScripts/cleanDist.mjs && swc src -d dist --config-file .swcrc --copy-files && node ./buildScripts/moveFiles.mjs",
+    "build": "npm run barrels && node ./buildScripts/cleanDist.mjs && swc src -d dist --config-file .swcrc.prod --copy-files && node ./buildScripts/moveFiles.mjs",
     "barrels": "barrelsby --config .barrelsby.json && node buildScripts/fixbarrels.mjs",
     "start_js": "node dist/index.js",
     "start": "node --loader ts-node/esm src/index.ts",
@@ -88,7 +88,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^8.57.0",
-    "@rollup/plugin-typescript": "^11.1.6",
     "@swc/cli": "^0.3.10",
     "@swc/core": "^1.4.8",
     "@tsed/cli-plugin-passport": "5.1.1",
