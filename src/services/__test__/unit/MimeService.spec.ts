@@ -34,11 +34,29 @@ describe("unit tests", () => {
                 const buffer = Buffer.from("fake");
 
                 // when
-                const didBlock = await mimeService.findMimeTypeFromBuffer(buffer);
+                const mimeType = await mimeService.findMimeTypeFromBuffer(buffer);
 
                 // then
                 expect(spy).toBeCalledWith(buffer);
-                expect(didBlock).toBe("image/jpeg");
+                expect(mimeType).toBe("image/jpeg");
+            }),
+        );
+        it(
+            "should get the mineType from a buffer with a resourceName calling buffer first",
+            PlatformTest.inject([MimeService], async (mimeService: MimeService) => {
+                // given
+                const bufferSpy = vi.mocked(fileTypeFromBuffer).mockResolvedValue(undefined);
+                const fileNameSpy = vi.mocked(mime.getType).mockResolvedValue("image/jpeg");
+                const buffer = Buffer.from("fake");
+                const fileName = "fake.jpg";
+
+                // when
+                const mimeType = await mimeService.findMimeTypeFromBuffer(buffer, fileName);
+
+                // then
+                expect(bufferSpy).toBeCalledWith(buffer);
+                expect(fileNameSpy).toBeCalledWith(fileName);
+                expect(mimeType).toBe("image/jpeg");
             }),
         );
     });
