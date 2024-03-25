@@ -219,17 +219,16 @@ describe("unit tests", () => {
                 {
                     testName: "String",
                     value: "bar.png",
-                    expected: "/files/bar.png",
+                    expected: "/bar.png",
                 },
                 {
                     testName: "UploadModel",
                     value: fileUploadModelMock500MB,
-                    expected:
-                        "/files/" + fileUploadModelMock500MB.fileName + "." + fileUploadModelMock500MB.fileExtension,
+                    expected: "/" + fileUploadModelMock500MB.fileName + "." + fileUploadModelMock500MB.fileExtension,
                 },
             ])("should take a file, entry or string and return a filepath", ({ value, expected, testName }) => {
                 it(testName, () => {
-                    expect(FileUtils.getFilePath(value)).toContain(expected);
+                    expect(FileUtils.getFilePath(value)).toBe(`${filesDir}${expected}`);
                 });
             });
         });
