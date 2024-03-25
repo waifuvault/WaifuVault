@@ -32,7 +32,10 @@ describe("unit tests", () => {
         initDotEnv();
     });
 
-    afterEach(PlatformTest.reset);
+    afterEach(() => {
+        vi.clearAllMocks();
+        PlatformTest.reset();
+    });
 
     describe("processFiles", () => {
         it(

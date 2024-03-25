@@ -11,7 +11,7 @@ import {
     fileUploadModelMockCustomExpire,
     fileUploadModelMockExpired,
 } from "../../../model/db/__test__/mocks/FileUploadModel.mock.js";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TimeUnit from "../../../model/constants/TimeUnit.js";
 import process from "node:process";
 
@@ -20,7 +20,10 @@ describe("unit tests", () => {
         PlatformTest.create();
         initDotEnv();
     });
-    afterEach(PlatformTest.reset);
+    afterEach(() => {
+        vi.clearAllMocks();
+        PlatformTest.reset();
+    });
 
     describe("ObjectUtils", () => {
         describe("getNumber", () => {
