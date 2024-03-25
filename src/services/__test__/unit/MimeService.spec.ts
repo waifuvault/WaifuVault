@@ -15,7 +15,7 @@ describe("unit tests", () => {
     });
 
     afterEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
         PlatformTest.reset();
     });
 
