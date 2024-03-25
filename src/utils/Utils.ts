@@ -187,4 +187,4 @@ export class NetworkUtils {
     }
 }
 
-export const filesDir = `${path.dirname(fileURLToPath(import.meta.url))}/../../files`;
+export const filesDir = path.resolve(`${path.dirname(fileURLToPath(import.meta.url))}/../../files`);

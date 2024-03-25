@@ -1,5 +1,5 @@
 import { PlatformTest } from "@tsed/common";
-import { FileUtils, NetworkUtils, ObjectUtils } from "../../Utils.js";
+import { filesDir, FileUtils, NetworkUtils, ObjectUtils } from "../../Utils.js";
 import { initDotEnv } from "../../../__test__/testUtils.spec.js";
 import {
     requestMockIpv4WithPort,
@@ -14,6 +14,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TimeUnit from "../../../model/constants/TimeUnit.js";
 import process from "node:process";
+import fs from "node:fs/promises";
 
 describe("unit tests", () => {
     beforeEach(() => {
@@ -95,6 +96,35 @@ describe("unit tests", () => {
             });
         });
 
+        describe("sizeToHuman", () => {
+            describe.each([
+                {
+                    testName: "100 Bytes",
+                    value: 100,
+                    expected: "100 B",
+                },
+                {
+                    testName: "100 Kilobytes",
+                    value: 100 * 1024,
+                    expected: "100 KB",
+                },
+                {
+                    testName: "100 Megabytes",
+                    value: 100 * 1024 * 1024,
+                    expected: "100 MB",
+                },
+                {
+                    testName: "100 Gigabytes",
+                    value: 100 * 1024 * 1024 * 1024,
+                    expected: "100 GB",
+                },
+            ])("should take number of bytes and return a human readable string", ({ value, expected, testName }) => {
+                it(testName, () => {
+                    expect(ObjectUtils.sizeToHuman(value)).toBe(expected);
+                });
+            });
+        });
+
         describe("convertToMilli", () => {
             it("should take a number and time unit and return a number of ms", () => {
                 expect(ObjectUtils.convertToMilli(1, TimeUnit.minutes)).toEqual(60000);
@@ -143,6 +173,22 @@ describe("unit tests", () => {
             });
         });
 
+        describe("getExpiresBySize", () => {
+            const FILE_SIZE_500MB = 500 * 1024 * 1024;
+            const FILE_SIZE_10MB = 10 * 1024 * 1024;
+            const EXPIRATION_300DAY = 300 * 24 * 60 * 60 * 1000;
+            const EXPIRATION_30DAY = 30 * 24 * 60 * 60 * 1000;
+            const DATE_EPOCH = Date.now();
+            it("should take a low filesize and date then return date plus close to max time", () => {
+                expect(FileUtils.getExpiresBySize(FILE_SIZE_10MB, DATE_EPOCH)).toBeGreaterThan(
+                    DATE_EPOCH + EXPIRATION_300DAY,
+                );
+            });
+            it("should take a max filesize and date then return date plus min time", () => {
+                expect(FileUtils.getExpiresBySize(FILE_SIZE_500MB, DATE_EPOCH)).toEqual(DATE_EPOCH + EXPIRATION_30DAY);
+            });
+        });
+
         describe("isFileExpired", () => {
             it("should take an expired fileupload and return true for expired", () => {
                 expect(FileUtils.isFileExpired(fileUploadModelMockExpired)).toEqual(true);
@@ -165,6 +211,41 @@ describe("unit tests", () => {
             });
             it("should take an expired fileupload and return 0 or less time left", () => {
                 expect(FileUtils.getTImeLeft(fileUploadModelMockExpired) ?? 0).toBeLessThanOrEqual(0);
+            });
+        });
+
+        describe("getFilePath", () => {
+            describe.each([
+                {
+                    testName: "String",
+                    value: "bar.png",
+                    expected: "/files/bar.png",
+                },
+                {
+                    testName: "UploadModel",
+                    value: fileUploadModelMock500MB,
+                    expected:
+                        "/files/" + fileUploadModelMock500MB.fileName + "." + fileUploadModelMock500MB.fileExtension,
+                },
+            ])("should take a file, entry or string and return a filepath", ({ value, expected, testName }) => {
+                it(testName, () => {
+                    expect(FileUtils.getFilePath(value)).toContain(expected);
+                });
+            });
+        });
+
+        describe("deleteFile", () => {
+            it("should take a filename and force setting and call rm with them", () => {
+                vi.mock("node:fs/promises", () => {
+                    return {
+                        default: {
+                            rm: vi.fn().mockReturnValue(Promise.resolve()),
+                        },
+                    };
+                });
+                const file = "test.png";
+                FileUtils.deleteFile(file, false);
+                expect(fs.rm).toHaveBeenCalledWith(`${filesDir}/${file}`, { recursive: true, force: false });
             });
         });
     });
