@@ -35,6 +35,7 @@ export function setUpDataSource(ds?: DataSource): void {
 export function initDotEnv(): void {
     dotenv.config({
         path: path.resolve(process.cwd(), ".test.env"),
+        override: true,
     });
 }
 

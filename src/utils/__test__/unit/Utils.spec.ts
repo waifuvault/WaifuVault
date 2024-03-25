@@ -1,7 +1,11 @@
 import { PlatformTest } from "@tsed/common";
 import { FileUtils, NetworkUtils, ObjectUtils } from "../../Utils.js";
 import { initDotEnv } from "../../../__test__/testUtils.spec.js";
-import { requestMock1, requestMock2 } from "../../../__test__/mocks/global/Request.mock.js";
+import {
+    requestMockIpv4WithPort,
+    requestMockIpv6WithPort,
+    requestMockStandardIpv4,
+} from "../../../__test__/mocks/global/Request.mock.js";
 import {
     fileUploadModelMock500MB,
     fileUploadModelMockCustomExpire,
@@ -165,14 +169,17 @@ describe("unit tests", () => {
     describe("NetworkUtils", () => {
         describe("getIp", () => {
             it("should take a request and return the ip", () => {
-                expect(NetworkUtils.getIp(requestMock1)).toEqual("192.168.2.2");
+                expect(NetworkUtils.getIp(requestMockStandardIpv4)).toEqual("192.168.2.2");
             });
-            it("should take a request with ipv6 and return the ip", () => {
-                expect(NetworkUtils.getIp(requestMock2)).toEqual("2001:470:30:84:e276:63ff:fe62");
+            it("should take a request with ipv6 with a port and strip port", () => {
+                expect(NetworkUtils.getIp(requestMockIpv6WithPort)).toEqual("2001:470:30:84:e276:63ff:fe62");
             });
             it("should take a cloudflare request and return the ip", () => {
                 process.env.USE_CLOUDFLARE = "true";
-                expect(NetworkUtils.getIp(requestMock1)).toEqual("192.168.2.3");
+                expect(NetworkUtils.getIp(requestMockStandardIpv4)).toEqual("192.168.2.3");
+            });
+            it("should take a ip with port and strip port", () => {
+                expect(NetworkUtils.getIp(requestMockIpv4WithPort)).toEqual("192.168.2.2");
             });
         });
     });
