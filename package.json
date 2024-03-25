@@ -88,6 +88,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^8.57.0",
+    "@rollup/plugin-typescript": "^11.1.6",
     "@swc/cli": "^0.3.10",
     "@swc/core": "^1.4.8",
     "@tsed/cli-plugin-passport": "5.1.1",

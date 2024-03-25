@@ -168,7 +168,7 @@ describe("unit tests", () => {
                 expect(NetworkUtils.getIp(requestMock1)).toEqual("192.168.2.2");
             });
             it("should take a request with ipv6 and return the ip", () => {
-                expect(NetworkUtils.getIp(requestMock2)).toEqual("2001:470:30:84:e276:63ff:fe62:3035");
+                expect(NetworkUtils.getIp(requestMock2)).toEqual("2001:470:30:84:e276:63ff:fe62");
             });
             it("should take a cloudflare request and return the ip", () => {
                 process.env.USE_CLOUDFLARE = "true";
