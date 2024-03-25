@@ -16,7 +16,7 @@ import TimeUnit from "../../../model/constants/TimeUnit.js";
 import process from "node:process";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { Stats } from "node:fs";
+import { Dirent, Stats } from "node:fs";
 
 describe("unit tests", () => {
     beforeEach(() => {
@@ -154,15 +154,15 @@ describe("unit tests", () => {
                 // When
                 ObjectUtils.removeObjectFromArray(arr, itm => itm === 1 || itm === 2);
 
-                // then
+                // Then
                 expect(arr).toHaveLength(1);
             });
 
             it("should remove 1 element from array", () => {
-                // when
+                // When
                 ObjectUtils.removeObjectFromArray(arr, itm => itm === 1);
 
-                // then
+                // Then
                 expect(arr).toHaveLength(2);
             });
         });
@@ -177,6 +177,7 @@ describe("unit tests", () => {
         });
 
         describe("getTimeLeftBySize", () => {
+            // Given
             const FILE_SIZE_500MB = 500 * 1024 * 1024;
             const FILE_SIZE_10MB = 10 * 1024 * 1024;
             const EXPIRATION_300DAY = 300 * 24 * 60 * 60 * 1000;
@@ -187,7 +188,6 @@ describe("unit tests", () => {
                 expect(FileUtils.getTimeLeftBySize(FILE_SIZE_10MB)).toBeGreaterThan(EXPIRATION_300DAY);
             });
 
-            // Then
             it("should take a max filesize and return min time", () => {
                 // When
                 expect(FileUtils.getTimeLeftBySize(FILE_SIZE_500MB)).toEqual(EXPIRATION_30DAY);
@@ -195,6 +195,7 @@ describe("unit tests", () => {
         });
 
         describe("getExpiresBySize", () => {
+            // Given
             const FILE_SIZE_500MB = 500 * 1024 * 1024;
             const FILE_SIZE_10MB = 10 * 1024 * 1024;
             const EXPIRATION_300DAY = 300 * 24 * 60 * 60 * 1000;
@@ -308,6 +309,20 @@ describe("unit tests", () => {
                 // When
                 expect(spy).toHaveBeenCalledWith(file, fs.constants.F_OK);
                 expect(reult).toBe(true);
+            });
+        });
+
+        describe("getFilesCount", () => {
+            it("should take nothing and call readdir on the files directory", async () => {
+                // Given
+                const spy = vi.mocked(fs.readdir).mockResolvedValue([] as Dirent[]);
+
+                // Then
+                const result = await FileUtils.getFilesCount();
+
+                // When
+                expect(spy).toHaveBeenCalledWith(filesDir, { withFileTypes: true });
+                expect(result).toBe(0);
             });
         });
     });
