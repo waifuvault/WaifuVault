@@ -15,6 +15,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TimeUnit from "../../../model/constants/TimeUnit.js";
 import process from "node:process";
 import fs from "node:fs/promises";
+import path from "node:path";
 
 describe("unit tests", () => {
     beforeEach(() => {
@@ -219,12 +220,12 @@ describe("unit tests", () => {
                 {
                     testName: "String",
                     value: "bar.png",
-                    expected: "/bar.png",
+                    expected: `${path.sep}bar.png`,
                 },
                 {
                     testName: "UploadModel",
                     value: fileUploadModelMock500MB,
-                    expected: "/" + fileUploadModelMock500MB.fileName + "." + fileUploadModelMock500MB.fileExtension,
+                    expected: `${path.sep}${fileUploadModelMock500MB.fileName}.${fileUploadModelMock500MB.fileExtension}`,
                 },
             ])("should take a file, entry or string and return a filepath", ({ value, expected, testName }) => {
                 it(testName, () => {

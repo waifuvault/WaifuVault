@@ -6,7 +6,7 @@
     "outDir": "dist",
     "module": "ESNext",
     "forceConsistentCasingInFileNames": true,
-    "target": "es2022",
+    "target": "ESNext",
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,

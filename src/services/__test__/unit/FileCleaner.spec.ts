@@ -2,7 +2,6 @@ import { PlatformTest } from "@tsed/common";
 import { FileCleaner } from "../../FileCleaner.js";
 import { FileRepo } from "../../../db/repo/FileRepo.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ScheduleService } from "../../ScheduleService.js";
 import { FileService } from "../../FileService.js";
 import { envs, initDotEnv, setUpDataSource } from "../../../__test__/testUtils.spec.js";
 import {
@@ -15,17 +14,7 @@ import {
 
 describe("unit tests", () => {
     beforeEach(() => {
-        const mockScheduleService = {
-            scheduleJobInterval: vi.fn(),
-        };
-
         PlatformTest.create({
-            imports: [
-                {
-                    token: ScheduleService,
-                    use: mockScheduleService,
-                },
-            ],
             envs,
         });
         setUpDataSource();
