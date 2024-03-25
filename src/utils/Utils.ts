@@ -146,7 +146,7 @@ export class FileUtils {
         if (file instanceof FileUploadModel) {
             return file.fullLocationOnDisk;
         }
-        return typeof file === "string" ? `${filesDir}/${file}` : file.path;
+        return typeof file === "string" ? `${filesDir}${path.sep}${file}` : file.path;
     }
 
     public static async fileExists(file: string): Promise<boolean> {
@@ -187,4 +187,4 @@ export class NetworkUtils {
     }
 }
 
-export const filesDir = `${path.dirname(fileURLToPath(import.meta.url))}/../../files`;
+export const filesDir = path.resolve(`${path.dirname(fileURLToPath(import.meta.url))}/../../files`);

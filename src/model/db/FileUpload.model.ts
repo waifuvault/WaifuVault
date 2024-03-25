@@ -124,6 +124,6 @@ export class FileUploadModel extends AbstractModel {
      * @returns {string}
      */
     public get fullLocationOnDisk(): string {
-        return path.resolve(`${filesDir}/${this.fullFileNameOnSystem}`);
+        return path.resolve(`${filesDir}${path.sep}${this.fullFileNameOnSystem}`);
     }
 }
