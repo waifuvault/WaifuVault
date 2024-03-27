@@ -472,46 +472,36 @@ fn main() {
 </pre>
                         </div>
                         <div class="tab-pane fade" id="php-tab-pane" role="tabpanel" aria-labelledby="php-tab" tabindex="0">
+                            <p>For PHP, there is an official SDK that provides access to all of the features of the site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://packagist.org/packages/ernestmarcinko/waifuvault-php-api" target="_blank">WaifuVault PHP API</a>
 <pre><code class="language-php">
 // Upload file
-$file_path = 'file.jpg';
-$curl = curl_init();
-$curl_options = [
-	CURLOPT_CONNECTTIMEOUT => 60,
-	CURLOPT_CUSTOMREQUEST => 'PUT',
-	CURLOPT_RETURNTRANSFER => 1,
-	CURLOPT_URL => '<%- process.env.BASE_URL; -%>/rest',
-	CURLOPT_POSTFIELDS => [
-		'file' => new CURLFile($file_path)
-	],
-];
-curl_setopt_array($curl, $curl_options);
-$result = curl_exec($curl);
-if( $result === false )  {
-	throw new Exception('Curl error: ' . curl_error($curl) );
-}
-curl_close($curl);
-$result = json_decode($result, true);
+use ErnestMarcinko\WaifuVault\WaifuApi;
+
+$waifu = new WaifuApi();
+$response = $waifu->uploadFile(array(
+	'file' =>   __DIR__ . '/image.jpg',
+));
+var_dump($response);
 
 // Upload via URL
-$file_url = 'https://victorique.moe/img/slider/Quotes.jpg';
-$curl = curl_init();
-$curl_options = [
-	CURLOPT_CONNECTTIMEOUT => 60,
-	CURLOPT_CUSTOMREQUEST => 'PUT',
-	CURLOPT_RETURNTRANSFER => 1,
-	CURLOPT_URL => '<%- process.env.BASE_URL; -%>/rest',
-	CURLOPT_POSTFIELDS => [
-		'url' => $file_url
-	],
-];
-curl_setopt_array($curl, $curl_options);
-$result = curl_exec($curl);
-if( $result === false )  {
-	throw new Exception('Curl error: ' . curl_error($curl) );
-}
-curl_close($curl);
-$result = json_decode($result, true);
+use ErnestMarcinko\WaifuVault\WaifuApi;
+
+$waifu = new WaifuApi();
+$response = $waifu->uploadFile(array(
+	'url' =>   'https://waifuvault.moe/assets/custom/images/08.png',
+));
+var_dump($response);
+
+// Upload via Buffer
+use ErnestMarcinko\WaifuVault\WaifuApi;
+
+$waifu = new WaifuApi();
+$response = $waifu->uploadFile(array(
+	'file_contents' => file_get_contents(__DIR__ . '/image.jpg'),
+	'filename' => 'image.jpg',
+));
+var_dump($response);
 </code>
 </pre>
                         </div>
