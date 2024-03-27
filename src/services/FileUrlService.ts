@@ -53,8 +53,7 @@ export class FileUrlService {
         }
         const contentLengthStr = headCheck.headers.get("content-length");
         if (!contentLengthStr) {
-            const resp = await headCheck.text();
-            throw new HTTPException(headCheck.status, resp);
+            throw new HTTPException(headCheck.status, "Unable to determine file size of URL");
         }
         const contentLength = Number.parseInt(contentLengthStr);
         if (contentLength > Number.parseInt(this.MAX_SIZE) * 1048576) {
@@ -75,12 +74,15 @@ export class FileUrlService {
             // forward the error to the client
             throw new HTTPException(response.status, resp);
         }
+        if (!response.body) {
+            throw new BadRequest("URL supplied has no body");
+        }
         const now = Date.now();
         const originalFileName = url.substring(url.lastIndexOf("/") + 1);
         const ext = originalFileName.split(".").pop();
         const destination = path.resolve(`${filesDir}/${now}.${ext}`);
         const fileStream = fs.createWriteStream(destination);
-        await finished(Readable.fromWeb(response.body! as ReadableStream).pipe(fileStream));
+        await finished(Readable.fromWeb(response.body as ReadableStream).pipe(fileStream));
         return [destination, originalFileName];
     }
 
