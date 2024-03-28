@@ -102,4 +102,15 @@ export class FileDao extends AbstractDao<FileUploadModel> {
             ip,
         });
     }
+
+    public getEntryFromChecksumAndIp(
+        checksum: string,
+        ip: string,
+        transaction?: EntityManager,
+    ): Promise<FileUploadModel | null> {
+        return this.getRepository(transaction).findOneBy({
+            checksum,
+            ip,
+        });
+    }
 }

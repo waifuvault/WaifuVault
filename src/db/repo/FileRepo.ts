@@ -23,6 +23,10 @@ export class FileRepo {
         return this.fileDao.getEntriesFromChecksum(hash);
     }
 
+    public getEntryFromChecksumAndIp(hash: string, ip: string): Promise<FileUploadModel | null> {
+        return this.fileDao.getEntryFromChecksumAndIp(hash, ip);
+    }
+
     public getAllEntries(ids: number[] = []): Promise<FileUploadModel[]> {
         return this.fileDao.getAllEntries(ids);
     }
