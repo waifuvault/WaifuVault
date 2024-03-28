@@ -9,7 +9,7 @@ import Module from "node:module";
 import { Logger } from "@tsed/logger";
 import { Readable } from "node:stream";
 import { finished } from "node:stream/promises";
-import type { ReadableStream } from "stream/web";
+import { ReadableStream } from "node:stream/web";
 
 const require = Module.createRequire(import.meta.url);
 
@@ -53,35 +53,63 @@ export class FileUrlService {
         }
         const contentLengthStr = headCheck.headers.get("content-length");
         if (!contentLengthStr) {
-            const resp = await headCheck.text();
-            throw new HTTPException(headCheck.status, resp);
+            throw new HTTPException(headCheck.status, "Unable to determine file size of URL");
         }
+        const maxSizeBits = Number.parseInt(this.MAX_SIZE) * 1048576;
         const contentLength = Number.parseInt(contentLengthStr);
-        if (contentLength > Number.parseInt(this.MAX_SIZE) * 1048576) {
+        if (contentLength > maxSizeBits) {
             throw new BadRequest("file too big");
         }
 
-        let response: Response;
-        try {
-            response = await fetch(url, {
-                method: "GET",
-            });
-        } catch (e) {
-            throw new BadRequest(e.message);
-        }
-        if (!response || !response.ok) {
-            const resp = await response.text();
-            this.logger.error(`Error making request to ${url}. response is "${response.status}" with body: ${resp}`);
-            // forward the error to the client
-            throw new HTTPException(response.status, resp);
-        }
+        const response = await this.fetchResource(url, maxSizeBits);
         const now = Date.now();
         const originalFileName = url.substring(url.lastIndexOf("/") + 1);
         const ext = originalFileName.split(".").pop();
         const destination = path.resolve(`${filesDir}/${now}.${ext}`);
         const fileStream = fs.createWriteStream(destination);
-        await finished(Readable.fromWeb(response.body! as ReadableStream).pipe(fileStream));
+        await finished(Readable.fromWeb(response).pipe(fileStream));
         return [destination, originalFileName];
+    }
+
+    private async fetchResource(url: string, fileSizeLimit: number): Promise<ReadableStream> {
+        const controller = new AbortController();
+        const signal = controller.signal;
+        let response: Response;
+        try {
+            response = await fetch(url, {
+                method: "GET",
+                signal,
+            });
+        } catch (e) {
+            throw new BadRequest(e.message);
+        }
+        if (!response.ok) {
+            const resp = await response.text();
+            this.logger.error(`Error making request to ${url}. response is "${response.status}" with body: ${resp}`);
+            // forward the error to the client
+            throw new HTTPException(response.status, resp);
+        }
+        if (!response.body) {
+            throw new BadRequest("URL supplied has no body");
+        }
+
+        const reader = response.body.getReader();
+
+        let receivedLength = 0;
+        const chunks: Uint8Array[] = [];
+        for (;;) {
+            const { done, value } = await reader.read();
+            if (done) {
+                break;
+            }
+            receivedLength += value.length;
+            if (receivedLength > fileSizeLimit) {
+                controller.abort("File limit reached");
+                throw new BadRequest("File size limit reached while download resource");
+            }
+            chunks.push(value);
+        }
+        return ReadableStream.from(chunks);
     }
 
     private isLocalhost(url: string): Promise<boolean> {

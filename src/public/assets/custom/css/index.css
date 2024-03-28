@@ -111,6 +111,9 @@
     #victorique {
         display: none;
     }
+    #phpSdxButton{
+        width: 100% !important;
+    }
 }
 
 .card > i {
