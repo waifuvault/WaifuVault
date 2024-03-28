@@ -6,7 +6,11 @@ import { FileService } from "../../FileService.js";
 import { AdminService } from "../../AdminService.js";
 import { IpBlackListRepo } from "../../../db/repo/IpBlackListRepo.js";
 import { Builder } from "builder-pattern";
-import { IpBlackListModel } from "../../../model/db/IpBlackList.model";
+import { IpBlackListModel } from "../../../model/db/IpBlackList.model.js";
+import {
+    fileUploadModelMock500MB,
+    fileUploadModelMockCustomExpire,
+} from "../../../model/db/__test__/mocks/FileUploadModel.mock.js";
 
 describe("unit tests", () => {
     beforeEach(() => {
@@ -84,13 +88,8 @@ describe("unit tests", () => {
         it(
             "should call process ip and not call delete",
             PlatformTest.inject(
-                [FileRepo, IpBlackListRepo, FileService, AdminService],
-                async (
-                    fileRepo: FileRepo,
-                    ipBlacklistRepo: IpBlackListRepo,
-                    adminService: AdminService,
-                    fileService: FileService,
-                ) => {
+                [IpBlackListRepo, FileService, AdminService],
+                async (ipBlacklistRepo: IpBlackListRepo, fileService: FileService, adminService: AdminService) => {
                     // given
                     const blackListSpy = vi
                         .spyOn(ipBlacklistRepo, "addIpBlock")
@@ -110,16 +109,27 @@ describe("unit tests", () => {
         it(
             "should call process ip and call delete",
             PlatformTest.inject(
-                [IpBlackListRepo, FileService, AdminService],
-                async (ipBlacklistRepo: IpBlackListRepo, fileService: FileService, adminService: AdminService) => {
+                [FileRepo, IpBlackListRepo, FileService, AdminService],
+                async (
+                    fileRepo: FileRepo,
+                    ipBlacklistRepo: IpBlackListRepo,
+                    fileService: FileService,
+                    adminService: AdminService,
+                ) => {
                     // given
-                    const blackListSpy = vi.spyOn(ipBlacklistRepo, "addIpBlock");
-                    const processDeleteSpy = vi.spyOn(fileService, "processDelete");
+                    const fileRepoSpy = vi
+                        .spyOn(fileRepo, "getAllEntriesForIp")
+                        .mockResolvedValue([fileUploadModelMock500MB, fileUploadModelMockCustomExpire]);
+                    const blackListSpy = vi
+                        .spyOn(ipBlacklistRepo, "addIpBlock")
+                        .mockResolvedValue(Builder(IpBlackListModel).ip("1.1.1.1").build());
+                    const processDeleteSpy = vi.spyOn(fileService, "processDelete").mockResolvedValue(true);
 
                     // when
                     await adminService.blockIp("1.1.1.1", true);
 
                     // then
+                    expect(fileRepoSpy).toHaveBeenCalled();
                     expect(blackListSpy).toHaveBeenCalled();
                     expect(processDeleteSpy).toHaveBeenCalled();
                 },
