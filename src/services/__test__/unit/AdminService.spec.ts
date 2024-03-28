@@ -11,6 +11,7 @@ import {
     fileUploadModelMock500MB,
     fileUploadModelMockCustomExpire,
 } from "../../../model/db/__test__/mocks/FileUploadModel.mock.js";
+import { StatsDto } from "../../../model/dto/StatsDto.js";
 
 describe("unit tests", () => {
     beforeEach(() => {
@@ -27,27 +28,65 @@ describe("unit tests", () => {
     });
 
     describe("getStatsData", () => {
-        // Given
-        // When
-        // Then
+        it(
+            "should call build stats",
+            PlatformTest.inject([AdminService], async (adminService: AdminService) => {
+                // given
+                const statsSpy = vi.spyOn(StatsDto, "buildStats").mockResolvedValue(Builder(StatsDto).build());
+
+                // when
+                await adminService.getStatsData([]);
+
+                // then
+                expect(statsSpy).toHaveBeenCalled();
+            }),
+        );
     });
 
     describe("getAllEntries", () => {
-        // Given
-        // When
-        // Then
+        it(
+            "should call get all entries and build dto",
+            PlatformTest.inject(
+                [FileRepo, IpBlackListRepo, AdminService],
+                async (fileRepo: FileRepo, ipBlackListRepo: IpBlackListRepo, adminService: AdminService) => {
+                    // given
+                    const fileSpy = vi
+                        .spyOn(fileRepo, "getAllEntries")
+                        .mockResolvedValue([fileUploadModelMock500MB, fileUploadModelMockCustomExpire]);
+                    vi.spyOn(ipBlackListRepo, "isIpBlocked").mockResolvedValue(false);
+
+                    // when
+                    const retval = await adminService.getAllEntries();
+
+                    // then
+                    expect(fileSpy).toHaveBeenCalled();
+                    expect(retval.length).equal(2);
+                },
+            ),
+        );
     });
 
     describe("getPagedEntries", () => {
-        // Given
-        // When
-        // Then
-    });
+        it(
+            "should call get all entries ordered and build dto",
+            PlatformTest.inject(
+                [FileRepo, IpBlackListRepo, AdminService],
+                async (fileRepo: FileRepo, ipBlackListRepo: IpBlackListRepo, adminService: AdminService) => {
+                    // given
+                    const fileSpy = vi
+                        .spyOn(fileRepo, "getAllEntriesOrdered")
+                        .mockResolvedValue([fileUploadModelMock500MB, fileUploadModelMockCustomExpire]);
+                    vi.spyOn(ipBlackListRepo, "isIpBlocked").mockResolvedValue(false);
 
-    describe("buildFileEntryDtos", () => {
-        // Given
-        // When
-        // Then
+                    // when
+                    const retval = await adminService.getPagedEntries(1, 10, "id", "ASC", "test search");
+
+                    // then
+                    expect(fileSpy).toHaveBeenCalled();
+                    expect(retval.length).equal(2);
+                },
+            ),
+        );
     });
 
     describe("getFileRecordCount", () => {
@@ -82,7 +121,29 @@ describe("unit tests", () => {
         );
     });
 
-    describe("getAllBlockedIps", () => {});
+    describe("getAllBlockedIps", () => {
+        it(
+            "should call get all blocked ips",
+            PlatformTest.inject(
+                [IpBlackListRepo, AdminService],
+                async (ipBlacklistRepo: IpBlackListRepo, adminService: AdminService) => {
+                    // given
+                    const blackListSpy = vi
+                        .spyOn(ipBlacklistRepo, "getAllBlockedIps")
+                        .mockResolvedValue([
+                            Builder(IpBlackListModel).ip("1.1.1.1").build(),
+                            Builder(IpBlackListModel).ip("2.2.2.2").build(),
+                        ]);
+
+                    // when
+                    await adminService.getAllBlockedIps();
+
+                    // then
+                    expect(blackListSpy).toHaveBeenCalled();
+                },
+            ),
+        );
+    });
 
     describe("blockIp", () => {
         it(
@@ -138,14 +199,44 @@ describe("unit tests", () => {
     });
 
     describe("removeBlockedIps", () => {
-        // Given
-        // When
-        // Then
+        it(
+            "should call remove blocked ips",
+            PlatformTest.inject(
+                [IpBlackListRepo, AdminService],
+                async (ipBlacklistRepo: IpBlackListRepo, adminService: AdminService) => {
+                    // given
+                    const blackListSpy = vi.spyOn(ipBlacklistRepo, "removeBlockedIps").mockResolvedValue(true);
+
+                    // when
+                    await adminService.removeBlockedIps(["1.1.1.1", "2.2.2.2"]);
+
+                    // then
+                    expect(blackListSpy).toHaveBeenCalled();
+                },
+            ),
+        );
     });
 
     describe("deleteEntries", () => {
-        // Given
-        // When
-        // Then
+        it(
+            "should call delete entries",
+            PlatformTest.inject(
+                [FileRepo, FileService, AdminService],
+                async (fileRepo: FileRepo, fileService: FileService, adminService: AdminService) => {
+                    // given
+                    const getAllEntriesSpy = vi
+                        .spyOn(fileRepo, "getAllEntries")
+                        .mockResolvedValue([fileUploadModelMock500MB, fileUploadModelMockCustomExpire]);
+                    const processDeleteSpy = vi.spyOn(fileService, "processDelete").mockResolvedValue(true);
+
+                    // when
+                    await adminService.deleteEntries([100, 101]);
+
+                    // then
+                    expect(getAllEntriesSpy).toHaveBeenCalled();
+                    expect(processDeleteSpy).toHaveBeenCalled();
+                },
+            ),
+        );
     });
 });
