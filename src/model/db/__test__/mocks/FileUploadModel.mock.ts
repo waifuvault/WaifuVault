@@ -13,6 +13,13 @@ export const fileUploadModelMock500MB = Builder(FileUploadModel)
     .createdAt(new Date())
     .build();
 
+export const fileUploadModelMock500MBProtected = Builder(FileUploadModel, fileUploadModelMock500MB)
+    .settings({
+        password: "foo",
+    })
+    .encrypted(true)
+    .build();
+
 export const fileUploadModelMockCustomExpire = Builder(FileUploadModel)
     .fileExtension("jpg")
     .fileName("foo")

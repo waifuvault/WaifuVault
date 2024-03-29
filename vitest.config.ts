@@ -3,6 +3,7 @@ import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
     test: {
+        unstubEnvs: true,
         globals: true,
         root: "./",
         exclude: [...configDefaults.exclude, "node_modules/*", "src/__test__"],
