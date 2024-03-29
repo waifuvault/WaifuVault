@@ -38,7 +38,7 @@ describe("unit tests", () => {
                 await adminService.getStatsData([]);
 
                 // then
-                expect(statsSpy).toHaveBeenCalled();
+                expect(statsSpy).toHaveBeenCalledWith([]);
             }),
         );
     });
@@ -59,7 +59,7 @@ describe("unit tests", () => {
                     const retval = await adminService.getAllEntries();
 
                     // then
-                    expect(fileSpy).toHaveBeenCalled();
+                    expect(fileSpy).toHaveBeenCalledWith();
                     expect(retval.length).equal(2);
                 },
             ),
@@ -82,7 +82,7 @@ describe("unit tests", () => {
                     const retval = await adminService.getPagedEntries(1, 10, "id", "ASC", "test search");
 
                     // then
-                    expect(fileSpy).toHaveBeenCalled();
+                    expect(fileSpy).toHaveBeenCalledWith(1, 10, "id", "ASC", "test search");
                     expect(retval.length).equal(2);
                 },
             ),
@@ -139,7 +139,7 @@ describe("unit tests", () => {
                     await adminService.getAllBlockedIps();
 
                     // then
-                    expect(blackListSpy).toHaveBeenCalled();
+                    expect(blackListSpy).toHaveBeenCalledWith();
                 },
             ),
         );
@@ -161,7 +161,7 @@ describe("unit tests", () => {
                     await adminService.blockIp("1.1.1.1", false);
 
                     // then
-                    expect(blackListSpy).toHaveBeenCalled();
+                    expect(blackListSpy).toHaveBeenCalledWith("1.1.1.1");
                     expect(processDeleteSpy).not.toHaveBeenCalled();
                 },
             ),
@@ -191,8 +191,11 @@ describe("unit tests", () => {
 
                     // then
                     expect(fileRepoSpy).toHaveBeenCalled();
-                    expect(blackListSpy).toHaveBeenCalled();
-                    expect(processDeleteSpy).toHaveBeenCalled();
+                    expect(blackListSpy).toHaveBeenCalledWith("1.1.1.1");
+                    expect(processDeleteSpy).toHaveBeenCalledWith([
+                        fileUploadModelMock500MB.token,
+                        fileUploadModelMockCustomExpire.token,
+                    ]);
                 },
             ),
         );
@@ -211,7 +214,7 @@ describe("unit tests", () => {
                     await adminService.removeBlockedIps(["1.1.1.1", "2.2.2.2"]);
 
                     // then
-                    expect(blackListSpy).toHaveBeenCalled();
+                    expect(blackListSpy).toHaveBeenCalledWith(["1.1.1.1", "2.2.2.2"]);
                 },
             ),
         );
@@ -233,8 +236,11 @@ describe("unit tests", () => {
                     await adminService.deleteEntries([100, 101]);
 
                     // then
-                    expect(getAllEntriesSpy).toHaveBeenCalled();
-                    expect(processDeleteSpy).toHaveBeenCalled();
+                    expect(getAllEntriesSpy).toHaveBeenCalledWith([100, 101]);
+                    expect(processDeleteSpy).toHaveBeenCalledWith([
+                        fileUploadModelMock500MB.token,
+                        fileUploadModelMockCustomExpire.token,
+                    ]);
                 },
             ),
         );
