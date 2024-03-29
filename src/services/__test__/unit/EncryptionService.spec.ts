@@ -80,6 +80,7 @@ describe("unit tests", () => {
             }),
         );
     });
+
     describe("decrypt", () => {
         it(
             "should decrypt a file",
@@ -151,6 +152,29 @@ describe("unit tests", () => {
                 expect(readFileMock).toBeCalledWith(fileToCheck);
                 expect(result).toBe(fileBuffer);
                 expect(decipherivSpy).not.toHaveBeenCalled();
+            }),
+        );
+    });
+
+    describe("changePassword", () => {
+        it(
+            "should call decrypt, encrypt and write to file",
+            PlatformTest.inject([EncryptionService], async (encryptionService: EncryptionService) => {
+                // given
+                const source = fileUploadModelMock500MB;
+                const fileToCheck = source.fullLocationOnDisk;
+                const fileBuffer = Buffer.from(fileToCheck);
+                const decryptSpy = vi.spyOn(encryptionService, "decrypt").mockResolvedValue(fileBuffer);
+                const encryptSpy = vi.spyOn(encryptionService, "encrypt").mockResolvedValue(fileBuffer);
+                const writeSpy = vi.spyOn(fs, "writeFile").mockResolvedValue(undefined);
+
+                // when
+                await encryptionService.changePassword("oldPassword", "newPassword", source);
+
+                // then
+                expect(decryptSpy).toHaveBeenCalledWith(source, "oldPassword");
+                expect(encryptSpy).toHaveBeenCalledWith(fileBuffer, "newPassword");
+                expect(writeSpy).toHaveBeenCalledWith(FileUtils.getFilePath(source), fileBuffer);
             }),
         );
     });
