@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, Mock, vi } from "vitest";
 import { envs, initDotEnv, setUpDataSource } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { FileUrlService } from "../../FileUrlService.js";
+import { Readable } from "node:stream";
+import * as stream from "stream";
+import { BadRequest } from "@tsed/exceptions";
 
 describe("unit tests", () => {
     let fetchSpy: Mock;
@@ -28,15 +31,59 @@ describe("unit tests", () => {
 
     describe("getFile", () => {
         it(
+            "should throw an exception as too large",
+            PlatformTest.inject([FileUrlService], async (fileUrlService: FileUrlService) => {
+                // given
+                fetchSpy.mockResolvedValue(
+                    createFetchResponseWithBody(200, "01234567890123456789", { "content-length": "2000000000000000" }),
+                );
+
+                // then
+                await expect(fileUrlService.getFile("https://waifuvault.moe/somefile.jpg")).rejects.toThrow(
+                    "file too big",
+                );
+            }),
+        );
+
+        it(
+            "should throw an exception as localhost requested",
+            PlatformTest.inject([FileUrlService], async (fileUrlService: FileUrlService) => {
+                // given
+                fetchSpy.mockResolvedValue(
+                    createFetchResponseWithBody(200, "01234567890123456789", { "content-length": "200" }),
+                );
+
+                // then
+                await expect(fileUrlService.getFile("https://localhost/somefile.jpg")).rejects.toThrow(
+                    "Unable to accept URL",
+                );
+            }),
+        );
+
+        it(
+            "should throw an exception as bad request returned",
+            PlatformTest.inject([FileUrlService], async (fileUrlService: FileUrlService) => {
+                // given
+                fetchSpy.mockResolvedValue(
+                    createFetchResponseWithBody(400, "01234567890123456789", { "content-length": "200" }),
+                );
+
+                // then
+                await expect(fileUrlService.getFile("https://waifuvault.moe/somefile.jpg")).rejects.toThrow(BadRequest);
+            }),
+        );
+
+        it(
             "should download URL",
             PlatformTest.inject([FileUrlService], async (fileUrlService: FileUrlService) => {
                 // given
-                fetchSpy.mockResolvedValueOnce(
+                fetchSpy.mockResolvedValue(
                     createFetchResponseWithBody(200, "01234567890123456789", { "content-length": "20" }),
                 );
-                fetchSpy.mockResolvedValueOnce(
-                    createFetchResponseWithBody(200, "01234567890123456789", { "content-length": "20" }),
-                );
+                const s = new stream.PassThrough();
+                s.write("01234567890123456789");
+                s.end();
+                const fromWebSpy = vi.spyOn(Readable, "fromWeb").mockResolvedValue(s);
 
                 // when
                 await fileUrlService.getFile("https://waifuvault.moe/somefile.jpg");
@@ -44,6 +91,7 @@ describe("unit tests", () => {
                 // then
                 expect(fetchSpy).toHaveBeenNthCalledWith(1, "https://waifuvault.moe/somefile.jpg", { method: "HEAD" });
                 expect(fetchSpy).toHaveBeenNthCalledWith(2, "https://waifuvault.moe/somefile.jpg", { method: "GET" });
+                expect(fromWebSpy).toHaveBeenCalled();
             }),
         );
     });
