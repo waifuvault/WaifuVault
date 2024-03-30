@@ -9,6 +9,7 @@ import { Logger } from "@tsed/logger";
 import { Readable } from "node:stream";
 import { finished } from "node:stream/promises";
 import { ReadableStream } from "node:stream/web";
+import isLocalhost from "is-localhost-ip";
 
 const require = Module.createRequire(import.meta.url);
 
@@ -113,7 +114,7 @@ export class FileUrlService {
 
     private isLocalhost(url: string): Promise<boolean> {
         return url.includes("://")
-            ? punycode.toASCII(url).split("://")[1].split("/")[0]
-            : punycode.toASCII(url).split("/")[0];
+            ? isLocalhost(punycode.toASCII(url).split("://")[1].split("/")[0])
+            : isLocalhost(punycode.toASCII(url).split("/")[0]);
     }
 }
