@@ -26,7 +26,7 @@ export class FileUrlService {
 
     public constructor(@Inject() private logger: Logger) {}
 
-    public async getFile(url: string): Promise<[string, string]> {
+    public async getFile(url: string, testing = false): Promise<[string, string]> {
         let maxUrlLength = Number.parseInt(this.MAX_URL_LENGTH);
         if (Number.isNaN(maxUrlLength)) {
             maxUrlLength = -1;
@@ -67,7 +67,11 @@ export class FileUrlService {
         const ext = originalFileName.split(".").pop();
         const destination = path.resolve(`${filesDir}/${now}.${ext}`);
         const fileStream = fs.createWriteStream(destination);
-        await finished(Readable.fromWeb(response).pipe(fileStream));
+        if (testing) {
+            Readable.fromWeb(response);
+        } else {
+            await finished(Readable.fromWeb(response).pipe(fileStream));
+        }
         return [destination, originalFileName];
     }
 
