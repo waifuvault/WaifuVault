@@ -4,12 +4,12 @@ import { BadRequest, Forbidden, HTTPException, RequestURITooLong } from "@tsed/e
 import path from "node:path";
 import fs from "node:fs";
 import { filesDir } from "../utils/Utils.js";
-import isLocalhost from "is-localhost-ip";
 import Module from "node:module";
 import { Logger } from "@tsed/logger";
 import { Readable } from "node:stream";
 import { finished } from "node:stream/promises";
 import { ReadableStream } from "node:stream/web";
+import isLocalhost from "is-localhost-ip";
 
 const require = Module.createRequire(import.meta.url);
 
@@ -113,6 +113,8 @@ export class FileUrlService {
     }
 
     private isLocalhost(url: string): Promise<boolean> {
-        return isLocalhost(punycode.toASCII(url).split("/")[0].split(":")[0]);
+        return url.includes("://")
+            ? isLocalhost(punycode.toASCII(url).split("://")[1].split("/")[0])
+            : isLocalhost(punycode.toASCII(url).split("/")[0]);
     }
 }
