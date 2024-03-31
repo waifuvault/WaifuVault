@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, Mock, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { envs, initDotEnv, setUpDataSource } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { FileUrlService } from "../../FileUrlService.js";
@@ -7,8 +7,6 @@ import { finished } from "node:stream/promises";
 import { ReadableStream } from "node:stream/web";
 
 describe("unit tests", () => {
-    let fetchSpy: Mock;
-
     function createFetchResponseWithBody(status: number, data: BodyInit, headers: HeadersInit): Response {
         return new Response(data, { status: status, headers: headers });
     }
@@ -19,7 +17,6 @@ describe("unit tests", () => {
             envs,
         });
         setUpDataSource();
-        fetchSpy = global.fetch = vi.fn();
     });
 
     afterEach(() => {
@@ -40,7 +37,7 @@ describe("unit tests", () => {
             "should throw an exception as too large",
             PlatformTest.inject([FileUrlService], async (fileUrlService: FileUrlService) => {
                 // given
-                fetchSpy.mockResolvedValue(
+                vi.spyOn(global, "fetch").mockResolvedValue(
                     createFetchResponseWithBody(200, "01234567890123456789", { "content-length": "2000000000000000" }),
                 );
 
@@ -55,7 +52,7 @@ describe("unit tests", () => {
             "should throw an exception as localhost requested",
             PlatformTest.inject([FileUrlService], async (fileUrlService: FileUrlService) => {
                 // given
-                fetchSpy.mockResolvedValue(
+                vi.spyOn(global, "fetch").mockResolvedValue(
                     createFetchResponseWithBody(200, "01234567890123456789", { "content-length": "200" }),
                 );
 
@@ -70,7 +67,7 @@ describe("unit tests", () => {
             "should throw an exception as bad request returned",
             PlatformTest.inject([FileUrlService], async (fileUrlService: FileUrlService) => {
                 // given
-                fetchSpy.mockResolvedValue(
+                vi.spyOn(global, "fetch").mockResolvedValue(
                     createFetchResponseWithBody(400, "BAD_REQUEST", { "content-length": "200" }),
                 );
 
@@ -89,7 +86,7 @@ describe("unit tests", () => {
                 const responseMock = createFetchResponseWithBody(200, "01234567890123456789", {
                     "content-length": "20",
                 });
-                fetchSpy.mockResolvedValue(responseMock);
+                const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(responseMock);
                 const streamMock = Readable.from([responseMock.body]);
                 const pipeMock = vi.spyOn(streamMock, "pipe").mockImplementation(() => mockedStream);
                 const fromWebMock = vi.spyOn(Readable, "fromWeb").mockImplementation(() => streamMock);
