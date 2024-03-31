@@ -107,7 +107,7 @@ describe("unit tests", () => {
                 );
                 expect(fromWebMock).toHaveBeenCalledWith(expect.objectContaining(bodyStream));
                 expect(pipeMock).toHaveBeenCalledWith(undefined); // the file does not exist on disk, thus `fs.createWriteStream` will be undefined
-                expect(finishedMock).toHaveBeenCalled();
+                expect(finishedMock).toHaveBeenCalledWith(mockedStream);
             }),
         );
     });
