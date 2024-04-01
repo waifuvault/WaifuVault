@@ -79,6 +79,24 @@ describe("unit tests", () => {
         );
 
         it(
+            "should throw an exception as file size limit reached",
+            PlatformTest.inject([FileUrlService], async (fileUrlService: FileUrlService) => {
+                // given
+                vi.spyOn(global, "fetch").mockResolvedValue(
+                    createFetchResponseWithBody(200, "x".repeat(1024 * 1024), {
+                        "content-length": "20",
+                    }),
+                );
+                process.env.FILE_SIZE_UPLOAD_LIMIT_MB = "1";
+
+                // then
+                await expect(fileUrlService.getFile("https://waifuvault.moe/somefile.jpg")).rejects.toThrow(
+                    "BAD_REQUEST",
+                );
+            }),
+        );
+
+        it(
             "should download URL",
             PlatformTest.inject([FileUrlService], async (fileUrlService: FileUrlService) => {
                 // given
