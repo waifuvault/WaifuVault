@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { envs, initDotEnv, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { envsLowMax, initDotEnvLowMax, setUpDataSource } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { FileUrlService } from "../../FileUrlService.js";
 import { PassThrough, Readable } from "node:stream";
@@ -12,7 +12,8 @@ describe("unit tests", () => {
     }
 
     beforeEach(() => {
-        initDotEnv();
+        initDotEnvLowMax();
+        const envs = envsLowMax;
         PlatformTest.create({
             envs,
         });

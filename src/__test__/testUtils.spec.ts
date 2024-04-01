@@ -45,3 +45,17 @@ export const envs = {
         path: path.resolve(process.cwd(), ".test.env"),
     }).parsed,
 };
+
+export function initDotEnvLowMax(): void {
+    dotenv.config({
+        path: path.resolve(process.cwd(), ".test_lowmax.env"),
+        override: true,
+    });
+}
+
+export const envsLowMax = {
+    ...process.env,
+    ...dotenv.config({
+        path: path.resolve(process.cwd(), ".test_lowmax.env"),
+    }).parsed,
+};
