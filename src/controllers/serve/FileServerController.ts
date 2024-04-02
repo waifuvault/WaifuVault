@@ -6,6 +6,7 @@ import { FileService } from "../../services/FileService.js";
 import { FileProtectedException } from "../../model/exceptions/FileProtectedException.js";
 import { MimeService } from "../../services/MimeService.js";
 import type { Response } from "express";
+import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 
 @Hidden()
 @Controller("/")
@@ -25,6 +26,7 @@ export class FileServerController {
         await this.hasPassword(resource, password);
         const [buff, entry] = await this.fileService.getEntry(resource, requestedFileName, password);
         const mimeType = await this.mimeService.findMimeTypeFromBuffer(buff, entry.fullFileNameOnSystem);
+        res.on("finish", () => this.postProcess(entry));
         if (mimeType) {
             res.contentType(mimeType);
         } else {
@@ -32,6 +34,13 @@ export class FileServerController {
             res.contentType("application/octet-stream");
         }
         res.send(buff);
+    }
+
+    private async postProcess(entry: FileUploadModel): Promise<void> {
+        const hasOneTimeDownload = entry.settings?.oneTimeDownload ?? false;
+        if (hasOneTimeDownload) {
+            await this.fileService.processDelete([entry.token]);
+        }
     }
 
     private async hasPassword(resource: string, password?: string): Promise<boolean> {
