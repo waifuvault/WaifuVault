@@ -33,7 +33,7 @@ describe("unit tests", () => {
                 const userObj = await userService.getUser("test@waifuvault.moe", "password");
 
                 // then
-                expect(userObj).null;
+                expect(userObj).toBeNull();
             }),
         );
 
@@ -51,7 +51,7 @@ describe("unit tests", () => {
                 const userObj = await userService.getUser("test@waifuvault.moe", "incorrect");
 
                 // then
-                expect(userObj).null;
+                expect(userObj).toBeNull();
             }),
         );
 
@@ -83,7 +83,7 @@ describe("unit tests", () => {
                 const userObj = userService.getLoggedInUser();
 
                 // then
-                expect(userObj).null;
+                expect(userObj).toBeNull();
             }),
         );
     });
