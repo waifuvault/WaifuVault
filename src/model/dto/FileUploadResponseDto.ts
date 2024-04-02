@@ -1,7 +1,25 @@
-import { Description, Name, Nullable, Property } from "@tsed/schema";
+import { Default, Description, Name, Nullable, Property } from "@tsed/schema";
 import { FileUploadModel } from "../db/FileUpload.model.js";
 import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
+import { EntrySettings } from "../../utils/typeings.js";
+
+class ResponseOptions implements Required<Omit<EntrySettings, "password">> {
+    @Property(Boolean)
+    @Description("If the filename is hidden")
+    @Default(false)
+    public hideFilename = false;
+
+    @Property(Boolean)
+    @Default(false)
+    @Description("If this file will be deleted when it is accessed")
+    public oneTimeDownload = false;
+
+    @Property(Boolean)
+    @Default(false)
+    @Description("Does this file require a password")
+    public protected = false;
+}
 
 @Name("WaifuResponse")
 @Description("This is a standard response for the service, containing info about the entry")
@@ -15,13 +33,14 @@ export class FileUploadResponseDto {
     public url: string;
 
     @Property()
-    @Description("Does this file require a password")
-    public protected: boolean;
-
-    @Property()
     @Description("How long this file will exist for")
     @Nullable(Number, String)
+    @Default(Number)
     public retentionPeriod: string | number | null = null;
+
+    @Property()
+    @Description("The options for this entry")
+    public options: ResponseOptions;
 
     public static fromModel(fileUploadModel: FileUploadModel, baseUrl: string, format = false): FileUploadResponseDto {
         const builder = Builder(FileUploadResponseDto)
@@ -33,7 +52,8 @@ export class FileUploadResponseDto {
         } else {
             builder.retentionPeriod(fileUploadModel.expiresIn);
         }
-        builder.protected(!!fileUploadModel.settings?.password);
+
+        builder.options(FileUploadResponseDto.makeOptions(fileUploadModel.settings));
         return builder.build();
     }
 
@@ -46,5 +66,17 @@ export class FileUploadResponseDto {
             originalFileName = originalFileName.substring(1);
         }
         return `${baseUrl}/f/${fileUploadModel.fileName}/${originalFileName}`;
+    }
+
+    private static makeOptions(settings: EntrySettings | null): ResponseOptions {
+        const options = Builder(ResponseOptions);
+        if (!settings) {
+            return options.build();
+        }
+        options.oneTimeDownload(settings?.oneTimeDownload ?? false);
+        options.hideFilename(settings?.hideFilename ?? false);
+        options.protected(!!settings.password);
+
+        return options.build();
     }
 }
