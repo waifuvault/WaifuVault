@@ -7,6 +7,7 @@ import { UserRepo } from "../../../db/repo/UserRepo.js";
 import argon2 from "argon2";
 import { Builder } from "builder-pattern";
 import { CustomUserInfoModel } from "../../../model/auth/CustomUserInfoModel";
+import { user1, user1Password } from "../../../__test__/mocks/global/User.mock.js";
 
 describe("unit tests", () => {
     beforeEach(() => {
@@ -30,7 +31,7 @@ describe("unit tests", () => {
                 vi.spyOn(userRepo, "getUser").mockResolvedValue(null);
 
                 // when
-                const userObj = await userService.getUser("test@waifuvault.moe", "password");
+                const userObj = await userService.getUser(user1.email, user1.password);
 
                 // then
                 expect(userObj).toBeNull();
@@ -41,11 +42,7 @@ describe("unit tests", () => {
             "should return null for an existing user with wrong password",
             PlatformTest.inject([UserRepo, UserService], async (userRepo: UserRepo, userService: UserService) => {
                 // given
-                const user = Builder(UserModel)
-                    .email("test@waifuvault.moe")
-                    .password(await argon2.hash("password"))
-                    .build();
-                vi.spyOn(userRepo, "getUser").mockResolvedValue(user);
+                vi.spyOn(userRepo, "getUser").mockResolvedValue(user1);
 
                 // when
                 const userObj = await userService.getUser("test@waifuvault.moe", "incorrect");
@@ -59,18 +56,14 @@ describe("unit tests", () => {
             "should return user model for an existing user",
             PlatformTest.inject([UserRepo, UserService], async (userRepo: UserRepo, userService: UserService) => {
                 // given
-                const user = Builder(UserModel)
-                    .email("test@waifuvault.moe")
-                    .password(await argon2.hash("password"))
-                    .build();
-                vi.spyOn(userRepo, "getUser").mockResolvedValue(user);
+                vi.spyOn(userRepo, "getUser").mockResolvedValue(user1);
 
                 // when
-                const userObj = await userService.getUser("test@waifuvault.moe", "password");
+                const userObj = await userService.getUser(user1.email, user1Password);
 
                 // then
                 expect(userObj).toBeInstanceOf(UserModel);
-                expect(userObj?.email ?? "").toEqual("test@waifuvault.moe");
+                expect(userObj).toBe(user1);
             }),
         );
     });
@@ -93,22 +86,25 @@ describe("unit tests", () => {
             "should return user model with changed email and password",
             PlatformTest.inject([UserRepo, UserService], async (userRepo: UserRepo, userService: UserService) => {
                 // given
-                const newUser = Builder(UserModel).email("newtest@waifuvault.moe").password("newpassword").build();
-                const newUserHash = Builder(UserModel)
-                    .email("newtest@waifuvault.moe")
-                    .password("newpasswordhash")
-                    .build();
-                const user = Builder(UserModel).email("test@waifuvault.moe").password("passwordhash").build();
-                const loggedIn = Builder(CustomUserInfoModel).email("test@waifuvault.moe").build();
-                vi.spyOn(userRepo, "getUser").mockResolvedValue(user);
-                vi.spyOn(argon2, "hash").mockResolvedValue("newpasswordhash");
+                const newHash = "1234";
+                const newUser = Builder(UserModel).email("newtest@waifuvault.moe").password(newHash).build();
+                const loggedIn = Builder(CustomUserInfoModel).email(user1.email).build();
+                const getUserSpy = vi.spyOn(userRepo, "getUser").mockResolvedValue({ ...user1 });
+                const argonSpy = vi.spyOn(argon2, "hash").mockResolvedValue(newHash);
                 const updateSpy = vi.spyOn(userRepo, "updateUser").mockResolvedValue(newUser);
 
                 // when
-                await userService.changeDetails(newUser, loggedIn);
+                const result = await userService.changeDetails(newUser, loggedIn);
 
                 // then
-                expect(updateSpy).toHaveBeenCalledWith(newUserHash);
+                expect(getUserSpy).toBeCalledWith(user1.email);
+                expect(argonSpy).toBeCalledWith(newUser.password);
+                // asert that the update has been called with the new changed user
+                expect(updateSpy).toHaveBeenCalledWith(newUser);
+                // asset that the result is the new user
+                expect(result).toBe(newUser);
+                // assert that the function did change the user from the supplied user (logged in is the same as user1)
+                expect(result).not.toBe(user1);
             }),
         );
     });
