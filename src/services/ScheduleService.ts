@@ -80,23 +80,4 @@ export class ScheduleService {
     public get scheduleIntervalEngine(): ToadScheduler {
         return this.scheduler;
     }
-
-    public clearAllIntervalJobs(): void {
-        const allJobs = this.scheduler.getAllJobs();
-        let len = allJobs.length;
-        while (len--) {
-            const job = allJobs[len];
-            if (job.id) {
-                job.stop();
-                this.scheduler.removeById(job.id);
-            }
-        }
-    }
-
-    public clearAllDateJobs(): void {
-        for (const job of this.dateSchedules) {
-            job.cancel();
-        }
-        this.dateSchedules.length = 0;
-    }
 }

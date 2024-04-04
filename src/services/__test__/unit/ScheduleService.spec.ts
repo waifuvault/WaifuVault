@@ -8,9 +8,6 @@ describe("unit tests", () => {
     beforeEach(async () => {
         await platformCreate();
         setUpDataSource();
-        const sheduleService: ScheduleService = PlatformTest.get(ScheduleService);
-        sheduleService.clearAllIntervalJobs();
-        sheduleService.clearAllDateJobs();
     });
 
     afterEach(() => {
