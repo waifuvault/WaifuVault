@@ -1,6 +1,6 @@
 import { PlatformTest } from "@tsed/common";
 import { filesDir, FileUtils, NetworkUtils, ObjectUtils } from "../../Utils.js";
-import { initDotEnv } from "../../../__test__/testUtils.spec.js";
+import { platformCreate } from "../../../__test__/testUtils.spec.js";
 import {
     requestMockIpv4WithPort,
     requestMockIpv6WithPort,
@@ -19,9 +19,8 @@ import path from "node:path";
 import { Dirent, Stats } from "node:fs";
 
 describe("unit tests", () => {
-    beforeEach(() => {
-        PlatformTest.create();
-        initDotEnv();
+    beforeEach(async () => {
+        await platformCreate();
     });
     afterEach(() => {
         vi.clearAllMocks();

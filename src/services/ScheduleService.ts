@@ -9,9 +9,9 @@ import cronstrue from "cronstrue";
 export class ScheduleService {
     public constructor(@Inject() private logger: Logger) {}
 
-    private static readonly scheduler = new ToadScheduler();
+    private readonly scheduler = new ToadScheduler();
 
-    private static readonly dateSchedules: DateJob[] = [];
+    private readonly dateSchedules: DateJob[] = [];
 
     public scheduleCronJob<T>(
         cronExpression: string,
@@ -32,7 +32,7 @@ export class ScheduleService {
                 preventOverrun: true,
             },
         );
-        ScheduleService.scheduler.addCronJob(job);
+        this.scheduler.addCronJob(job);
         const cronExplain = cronstrue.toString(cronExpression);
         this.logger.info(`Registered cron job ${jobName} to run ${cronExplain}`);
         if (runImmediately) {
@@ -51,7 +51,7 @@ export class ScheduleService {
         const job = new SimpleIntervalJob(schedule, task, {
             id: jobName,
         });
-        ScheduleService.scheduler.addSimpleIntervalJob(job);
+        this.scheduler.addSimpleIntervalJob(job);
         this.logger.info(`Registered interval job ${jobName}`);
     }
 
@@ -63,21 +63,40 @@ export class ScheduleService {
         jobHandler = jobHandler.bind(context);
         const job = schedule.scheduleJob(name, when, (fireDate: Date) => {
             jobHandler.call(context, fireDate);
-            ObjectUtils.removeObjectFromArray(ScheduleService.dateSchedules, itm => itm === job);
+            ObjectUtils.removeObjectFromArray(this.dateSchedules, itm => itm === job);
         });
-        ScheduleService.dateSchedules.push(job);
+        this.dateSchedules.push(job);
         this.logger.info(`Registered date job ${name} to run on ${when.toUTCString()}`);
     }
 
     public getAllIntervalJobs(): Job[] {
-        return ScheduleService.scheduler.getAllJobs();
+        return this.scheduler.getAllJobs();
     }
 
     public getAllDateJobs(): DateJob[] {
-        return ScheduleService.dateSchedules;
+        return this.dateSchedules;
     }
 
-    public static get scheduleIntervalEngine(): ToadScheduler {
-        return ScheduleService.scheduler;
+    public get scheduleIntervalEngine(): ToadScheduler {
+        return this.scheduler;
+    }
+
+    public clearAllIntervalJobs(): void {
+        const allJobs = this.scheduler.getAllJobs();
+        let len = allJobs.length;
+        while (len--) {
+            const job = allJobs[len];
+            if (job.id) {
+                job.stop();
+                this.scheduler.removeById(job.id);
+            }
+        }
+    }
+
+    public clearAllDateJobs(): void {
+        for (const job of this.dateSchedules) {
+            job.cancel();
+        }
+        this.dateSchedules.length = 0;
     }
 }

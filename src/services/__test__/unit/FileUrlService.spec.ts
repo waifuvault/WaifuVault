@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { envsLowMax, initDotEnvLowMax, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { overrideConstant, platformCreate, setUpDataSource } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { FileUrlService } from "../../FileUrlService.js";
 import { PassThrough, Readable } from "node:stream";
@@ -11,12 +11,8 @@ describe("unit tests", () => {
         return new Response(data, { status: status, headers: headers });
     }
 
-    beforeEach(() => {
-        initDotEnvLowMax();
-        const envs = envsLowMax;
-        PlatformTest.create({
-            envs,
-        });
+    beforeEach(async () => {
+        await platformCreate();
         setUpDataSource();
     });
 
@@ -82,6 +78,8 @@ describe("unit tests", () => {
         it(
             "should throw an exception as file size limit reached",
             PlatformTest.inject([FileUrlService], async (fileUrlService: FileUrlService) => {
+                overrideConstant(fileUrlService, "MAX_SIZE", "1");
+
                 // given
                 vi.spyOn(global, "fetch").mockResolvedValue(
                     createFetchResponseWithBody(200, "x".repeat(2 * 1024 * 1024), {

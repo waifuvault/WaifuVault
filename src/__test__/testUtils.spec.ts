@@ -32,6 +32,13 @@ export function setUpDataSource(ds?: DataSource): void {
     }
 }
 
+export function overrideConstant<T extends object>(obj: T, prop: string, newValue: string): void {
+    Reflect.deleteProperty(obj, prop);
+    Reflect.defineProperty(obj, prop, {
+        get: () => newValue,
+    });
+}
+
 export function initDotEnv(): void {
     dotenv.config({
         path: path.resolve(process.cwd(), ".test.env"),
@@ -39,23 +46,17 @@ export function initDotEnv(): void {
     });
 }
 
+export async function platformCreate(settings?: Partial<TsED.Configuration>): Promise<void> {
+    initDotEnv();
+    await PlatformTest.create({
+        ...settings,
+        envs,
+    });
+}
+
 export const envs = {
     ...process.env,
     ...dotenv.config({
         path: path.resolve(process.cwd(), ".test.env"),
-    }).parsed,
-};
-
-export function initDotEnvLowMax(): void {
-    dotenv.config({
-        path: path.resolve(process.cwd(), ".test_lowmax.env"),
-        override: true,
-    });
-}
-
-export const envsLowMax = {
-    ...process.env,
-    ...dotenv.config({
-        path: path.resolve(process.cwd(), ".test_lowmax.env"),
     }).parsed,
 };

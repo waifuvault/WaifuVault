@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { envs, initDotEnv, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { platformCreate, setUpDataSource } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { ScheduleService } from "../../ScheduleService.js";
 import { Job, ToadScheduler } from "toad-scheduler";
 
 describe("unit tests", () => {
-    beforeEach(() => {
-        initDotEnv();
-        PlatformTest.create({
-            envs,
-        });
+    beforeEach(async () => {
+        await platformCreate();
         setUpDataSource();
+        const sheduleService: ScheduleService = PlatformTest.get(ScheduleService);
+        sheduleService.clearAllIntervalJobs();
+        sheduleService.clearAllDateJobs();
     });
 
     afterEach(() => {
@@ -28,7 +28,7 @@ describe("unit tests", () => {
                 // when
                 scheduleService.scheduleCronJob(cronval, async () => {}, "testJob", this, false);
                 // then
-                const job = ScheduleService.scheduleIntervalEngine.getById("testJob");
+                const job = scheduleService.scheduleIntervalEngine.getById("testJob");
                 expect(job).toBeInstanceOf(Job);
             }),
         );
@@ -39,7 +39,6 @@ describe("unit tests", () => {
             "should schedule a job at a given interval",
             PlatformTest.inject([ScheduleService], (scheduleService: ScheduleService) => {
                 // when
-                ScheduleService.scheduleIntervalEngine.removeById("testInterval");
                 scheduleService.scheduleJobInterval(
                     { hours: 1, runImmediately: false },
                     async () => {},
@@ -47,7 +46,7 @@ describe("unit tests", () => {
                     this,
                 );
                 // then
-                const job = ScheduleService.scheduleIntervalEngine.getById("testInterval");
+                const job = scheduleService.scheduleIntervalEngine.getById("testInterval");
                 expect(job).toBeInstanceOf(Job);
             }),
         );
@@ -74,11 +73,6 @@ describe("unit tests", () => {
             "should return all scheduled interval jobs",
             PlatformTest.inject([ScheduleService], (scheduleService: ScheduleService) => {
                 // when
-                ScheduleService.scheduleIntervalEngine.removeById("testJob");
-                ScheduleService.scheduleIntervalEngine.removeById("testInterval");
-                ScheduleService.scheduleIntervalEngine.removeById("testInterval2");
-                ScheduleService.scheduleIntervalEngine.removeById("testInterval3");
-
                 scheduleService.scheduleJobInterval(
                     { hours: 1, runImmediately: false },
                     async () => {},
@@ -110,7 +104,7 @@ describe("unit tests", () => {
                 scheduleService.scheduleJobAtDate("testDate2", tomorrow, async () => {}, this);
                 // then
                 const job = scheduleService.getAllDateJobs();
-                expect(job.length).toBe(3);
+                expect(job.length).toBe(2);
             }),
         );
     });
@@ -118,9 +112,9 @@ describe("unit tests", () => {
     describe("scheduleIntervalEngine", () => {
         it(
             "should return the interval scheduler",
-            PlatformTest.inject([ScheduleService], () => {
+            PlatformTest.inject([ScheduleService], (scheduleService: ScheduleService) => {
                 // when
-                const scheduler = ScheduleService.scheduleIntervalEngine;
+                const scheduler = scheduleService.scheduleIntervalEngine;
                 // then
                 expect(scheduler).toBeInstanceOf(ToadScheduler);
             }),

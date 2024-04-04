@@ -1,16 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlatformTest } from "@tsed/common";
-import { envs, initDotEnv, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { platformCreate, setUpDataSource } from "../../../__test__/testUtils.spec.js";
 import { MimeService } from "../../MimeService.js";
 import { fileTypeFromBuffer, fileTypeFromFile } from "file-type";
 import mime from "mime";
 
 describe("unit tests", () => {
-    beforeEach(() => {
-        initDotEnv();
-        PlatformTest.create({
-            envs,
-        });
+    beforeEach(async () => {
+        await platformCreate();
         setUpDataSource();
     });
 

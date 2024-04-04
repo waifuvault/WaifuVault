@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { envs, initDotEnv } from "../../../__test__/testUtils.spec.js";
+import { platformCreate } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { EncryptionService } from "../../EncryptionService.js";
 import { FileUtils } from "../../../utils/Utils.js";
@@ -12,16 +12,13 @@ import argon2 from "argon2";
 import crypto from "node:crypto";
 
 describe("unit tests", () => {
-    beforeEach(() => {
-        PlatformTest.create({
-            envs,
-        });
-        initDotEnv();
+    beforeEach(async () => {
+        await platformCreate();
     });
 
-    afterEach(() => {
+    afterEach(async () => {
         vi.clearAllMocks();
-        PlatformTest.reset();
+        await PlatformTest.reset();
     });
 
     vi.mock("node:fs/promises");

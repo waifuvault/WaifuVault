@@ -3,7 +3,7 @@ import { FileCleaner } from "../../FileCleaner.js";
 import { FileRepo } from "../../../db/repo/FileRepo.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FileService } from "../../FileService.js";
-import { envs, initDotEnv, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { platformCreate, setUpDataSource } from "../../../__test__/testUtils.spec.js";
 import {
     fileUploadModelMock500MB,
     fileUploadModelMockCustomExpire,
@@ -13,17 +13,14 @@ import {
 } from "../../../model/db/__test__/mocks/FileUploadModel.mock.js";
 
 describe("unit tests", () => {
-    beforeEach(() => {
-        PlatformTest.create({
-            envs,
-        });
+    beforeEach(async () => {
+        await platformCreate();
         setUpDataSource();
-        initDotEnv();
     });
 
-    afterEach(() => {
+    afterEach(async () => {
         vi.clearAllMocks();
-        PlatformTest.reset();
+        await PlatformTest.reset();
     });
 
     describe("processFiles", () => {

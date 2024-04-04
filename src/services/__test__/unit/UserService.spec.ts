@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { envs, initDotEnv, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { platformCreate, setUpDataSource } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { UserService } from "../../UserService.js";
 import { UserModel } from "../../../model/db/User.model.js";
@@ -10,11 +10,8 @@ import { CustomUserInfoModel } from "../../../model/auth/CustomUserInfoModel";
 import { user1, user1Password } from "../../../__test__/mocks/global/User.mock.js";
 
 describe("unit tests", () => {
-    beforeEach(() => {
-        initDotEnv();
-        PlatformTest.create({
-            envs,
-        });
+    beforeEach(async () => {
+        await platformCreate();
         setUpDataSource();
     });
 
