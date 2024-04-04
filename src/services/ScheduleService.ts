@@ -28,6 +28,7 @@ export class ScheduleService {
             },
             task,
             {
+                id: jobName,
                 preventOverrun: true,
             },
         );
