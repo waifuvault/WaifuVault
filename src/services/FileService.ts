@@ -44,9 +44,10 @@ export class FileService {
     public async processUpload(
         ip: string,
         source: PlatformMulterFile | string,
-        { password, hideFilename, expires }: FileUploadParameters,
+        options: FileUploadParameters,
         secretToken?: string,
     ): Promise<[FileUploadResponseDto, boolean]> {
+        const { expires, password } = options;
         let resourcePath: string | undefined;
         let originalFileName: string | undefined;
         try {
@@ -71,7 +72,7 @@ export class FileService {
                 }
             }
 
-            uploadEntry.settings(await this.buildEntrySettings(hideFilename, password));
+            uploadEntry.settings(await this.buildEntrySettings(options));
 
             const ext = FileUtils.getExtension(originalFileName);
             if (ext) {
@@ -144,13 +145,20 @@ export class FileService {
         return null;
     }
 
-    private async buildEntrySettings(hideFilename?: boolean, password?: string): Promise<EntrySettings | null> {
+    private async buildEntrySettings({
+        password,
+        hideFilename,
+        one_time_download,
+    }: FileUploadParameters): Promise<EntrySettings | null> {
         const retObj: EntrySettings = {};
         if (password) {
             retObj["password"] = await this.hashPassword(password);
         }
         if (hideFilename) {
             retObj["hideFilename"] = hideFilename;
+        }
+        if (one_time_download) {
+            retObj["oneTimeDownload"] = one_time_download;
         }
         return Object.keys(retObj).length === 0 ? null : retObj;
     }

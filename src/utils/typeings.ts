@@ -10,6 +10,7 @@ export type HttpErrorRenderObj<T extends Exception> = {
 export type EntrySettings = {
     hideFilename?: boolean;
     password?: string;
+    oneTimeDownload?: boolean;
 };
 
 export type AvScanResult = {

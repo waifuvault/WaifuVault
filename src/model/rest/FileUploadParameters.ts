@@ -1,4 +1,4 @@
-import { Description, Name, Optional, Pattern, Property } from "@tsed/schema";
+import { Default, Description, Name, Optional, Pattern, Property } from "@tsed/schema";
 
 @Name("WaifuUploadParameters")
 @Description("Upload parameters for put requests")
@@ -17,6 +17,7 @@ export class FileUploadParameters {
     @Optional()
     @Property()
     @Name("hide_filename")
+    @Default(false)
     public hideFilename?: boolean;
 
     @Description(
@@ -25,4 +26,10 @@ export class FileUploadParameters {
     @Optional()
     @Property()
     public password?: string;
+
+    @Description("If this is true, then the file will be deleted as soon as it is accessed")
+    @Optional()
+    @Property()
+    @Default(false)
+    public one_time_download?: boolean;
 }
