@@ -48,8 +48,18 @@ export function initDotEnv(): void {
 
 export async function platformCreate(settings?: Partial<TsED.Configuration>): Promise<void> {
     initDotEnv();
+    const mockDS = {
+        initialize: vi.fn(),
+        getRepository: vi.fn(),
+    };
     await PlatformTest.create({
         ...settings,
+        imports: [
+            {
+                token: SQLITE_DATA_SOURCE,
+                use: mockDS,
+            },
+        ],
         envs,
     });
 }

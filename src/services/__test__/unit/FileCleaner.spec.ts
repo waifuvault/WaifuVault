@@ -3,7 +3,7 @@ import { FileCleaner } from "../../FileCleaner.js";
 import { FileRepo } from "../../../db/repo/FileRepo.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FileService } from "../../FileService.js";
-import { platformCreate, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { platformCreate } from "../../../__test__/testUtils.spec.js";
 import {
     fileUploadModelMock500MB,
     fileUploadModelMockCustomExpire,
@@ -15,7 +15,7 @@ import {
 describe("unit tests", () => {
     beforeEach(async () => {
         await platformCreate();
-        setUpDataSource();
+        // setUpDataSource();
     });
 
     afterEach(async () => {
