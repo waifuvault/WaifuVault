@@ -5,33 +5,6 @@ import { vi } from "vitest";
 import dotenv from "dotenv";
 import path from "path";
 
-export function setUpDataSource(ds?: DataSource): void {
-    const settings = {
-        provide: SQLITE_DATA_SOURCE,
-        type: "typeorm:datasource",
-    };
-    if (ds) {
-        PlatformTest.injector.addProvider(SQLITE_DATA_SOURCE, {
-            ...settings,
-            useAsyncFactory: async () => {
-                await ds.initialize();
-            },
-        });
-    } else {
-        // mock the datasource
-        const mockDS = {
-            initialize: vi.fn(),
-            getRepository: vi.fn(),
-        };
-
-        PlatformTest.injector.addProvider(SQLITE_DATA_SOURCE, {
-            provide: SQLITE_DATA_SOURCE,
-            type: "typeorm:datasource",
-            useValue: mockDS,
-        });
-    }
-}
-
 export function overrideConstant<T extends object>(obj: T, prop: string, newValue: string): void {
     Reflect.deleteProperty(obj, prop);
     Reflect.defineProperty(obj, prop, {
