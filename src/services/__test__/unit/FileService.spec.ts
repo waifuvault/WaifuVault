@@ -1,12 +1,11 @@
 import { afterEach, beforeEach, describe, it, vi } from "vitest";
-import { platformCreate, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { platformCreate } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { FileService } from "../../FileService.js";
 
 describe("unit tests", () => {
     beforeEach(async () => {
         await platformCreate();
-        setUpDataSource();
     });
 
     afterEach(async () => {

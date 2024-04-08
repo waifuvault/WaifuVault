@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { platformCreate, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { platformCreate } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { FileRepo } from "../../../db/repo/FileRepo.js";
 import { FileService } from "../../FileService.js";
@@ -16,7 +16,6 @@ import { StatsDto } from "../../../model/dto/StatsDto.js";
 describe("unit tests", () => {
     beforeEach(async () => {
         await platformCreate();
-        setUpDataSource();
     });
 
     afterEach(async () => {

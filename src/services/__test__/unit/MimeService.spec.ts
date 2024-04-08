@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlatformTest } from "@tsed/common";
-import { platformCreate, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { platformCreate } from "../../../__test__/testUtils.spec.js";
 import { MimeService } from "../../MimeService.js";
 import { fileTypeFromBuffer, fileTypeFromFile } from "file-type";
 import mime from "mime";
@@ -8,7 +8,6 @@ import mime from "mime";
 describe("unit tests", () => {
     beforeEach(async () => {
         await platformCreate();
-        setUpDataSource();
     });
 
     afterEach(() => {

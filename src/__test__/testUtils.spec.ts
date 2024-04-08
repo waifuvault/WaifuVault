@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { PlatformTest } from "@tsed/common";
+import { PlatformTest, registerProvider } from "@tsed/common";
 import { SQLITE_DATA_SOURCE } from "../model/di/tokens.js";
 import { vi } from "vitest";
 import dotenv from "dotenv";
@@ -52,14 +52,13 @@ export async function platformCreate(settings?: Partial<TsED.Configuration>): Pr
         initialize: vi.fn(),
         getRepository: vi.fn(),
     };
+    registerProvider<DataSource>({
+        provide: SQLITE_DATA_SOURCE,
+        type: "typeorm:datasource",
+        useValue: mockDS,
+    });
     await PlatformTest.create({
         ...settings,
-        imports: [
-            {
-                token: SQLITE_DATA_SOURCE,
-                use: mockDS,
-            },
-        ],
         envs,
     });
 }

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { platformCreate, setUpDataSource } from "../../../__test__/testUtils.spec.js";
+import { platformCreate } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { UserService } from "../../UserService.js";
 import { UserModel } from "../../../model/db/User.model.js";
@@ -12,7 +12,6 @@ import { user1, user1Password } from "../../../__test__/mocks/global/User.mock.j
 describe("unit tests", () => {
     beforeEach(async () => {
         await platformCreate();
-        setUpDataSource();
     });
 
     afterEach(() => {
