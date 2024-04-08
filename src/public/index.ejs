@@ -221,7 +221,19 @@
                         </div>
                     </div>
                     <div class="row align-items-md-stretch mb-4 justify-content-md-center">
-                        <div class="col-md-12">
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-transparent">
+                                <img class="img-fluid ms-auto me-auto customIcon" style="width:80px;margin-bottom:-26px;margin-top:-10px;" src="assets/custom/icons/rust.svg" />
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Rust</h5>
+                                    <p class="card-text">
+                                        The official Rust SDK
+                                    </p>
+                                    <a class="btn btn-primary btn-sm w-25" href="https://crates.io/crates/waifuvault" target="_blank">Rust SDK</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
                             <div class="card border-0 bg-transparent">
                                 <img class="img-fluid ms-auto me-auto customIcon" style="width: 80px;" src="assets/custom/icons/Official%20PHP%20Logo.svg" />
                                 <div class="card-body text-center">
@@ -449,24 +461,37 @@ Console.WriteLine(uploadResp.url);
 </pre>
                         </div>
                         <div class="tab-pane fade" id="rust-tab-pane" role="tabpanel" aria-labelledby="rust-tab" tabindex="0">
-<pre><code class="language-rust">
-use reqwest::blocking::multipart;
-use reqwest::blocking::Client;
+                            <p>For Rust, there is an official SDK that provides access to all of the features of the site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://crates.io/crates/waifuvault" target="_blank">WaifuVault Rust API</a>
+                            <pre><code class="language-rust">
+use waifuvault::{
+    ApiCaller,
+    api::{WaifuUploadRequest, WaifuResponse}
+};
 
-fn main() {
-    // NOTE WELL - Requires cargo.toml containing:
-    // reqwest = { version = "0.11.24", features = ["blocking","multipart"]}
-    let client = Client::new();
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let caller = ApiCaller::new();
 
-    // upload file
-    let form = multipart::Form::new().file("file", "./src/main.rs");
-    let response = client.put("<%- process.env.BASE_URL; -%>/rest").multipart(form.unwrap()).send();
-    println!("{:?}",response);
+    // Upload a file from disk
+    let request = WaifuUploadRequest::new()
+        .file("/some/file/path") // Path to a file
+        .password("set a password") // Set a password
+        .one_time_download(true); // Delete after first access
+    let response = caller.upload_file(request).await?;
 
-    // upload via URL
-    let params = [("url", "https://victorique.moe/img/slider/Quotes.jpg")];
-    let response_url = client.put("<%- process.env.BASE_URL; -%>/rest").form(&amp;params).send();
-    println!("{:?}",response_url);
+    // Upload a file from a URL
+    let request = WaifuUploadRequest::new()
+        .url("https://some-website/image.jpg"); // URL to content
+    let response = caller.upload_file(request).await?;
+
+    // Upload a file from raw bytes
+    let data = std::fs::read("some/file/path")?;
+    let request = WaifuUploadRequest::new()
+        .bytes(data, "name-to-store.rs"); // Raw file content and name to store on the vault
+    let response = caller.upload_file(request).await?;
+
+    Ok(())
 }
 </code>
 </pre>
