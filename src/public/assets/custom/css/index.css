@@ -111,8 +111,11 @@
     #victorique {
         display: none;
     }
-    #phpSdxButton{
+    .sdkButton {
         width: 100% !important;
+    }
+    #sdkWrapper > div.row {
+        margin-bottom: 0 !important;
     }
 }
 
