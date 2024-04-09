@@ -10,6 +10,7 @@ export const fileUploadModelMock500MB = Builder(FileUploadModel)
     .ip("192.168.4.4")
     .token("cdbe690b-552c-4533-a7e9-5802ef4b2f1b")
     .expires(null)
+    .encrypted(false)
     .createdAt(new Date())
     .build();
 

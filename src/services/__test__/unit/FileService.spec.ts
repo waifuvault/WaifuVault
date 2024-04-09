@@ -1,7 +1,12 @@
-import { afterEach, beforeEach, describe, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { platformCreate } from "../../../__test__/testUtils.spec.js";
 import { PlatformTest } from "@tsed/common";
 import { FileService } from "../../FileService.js";
+import { FileRepo } from "../../../db/repo/FileRepo.js";
+import {
+    fileUploadModelMock500MB,
+    fileUploadModelMock500MBProtected,
+} from "../../../model/db/__test__/mocks/FileUploadModel.mock.js";
 
 describe("unit tests", () => {
     beforeEach(async () => {
@@ -29,28 +34,98 @@ describe("unit tests", () => {
 
     describe("isFileEncrypted", () => {
         it(
-            "should return a bool with encryption state for a given file",
-            PlatformTest.inject([FileService], async (fileService: FileService) => {
+            "should return true for an encrypted file",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
                 // given
+                const fileSpy = vi
+                    .spyOn(fileRepo, "getEntryFileName")
+                    .mockResolvedValue(fileUploadModelMock500MBProtected);
 
                 // when
-                await fileService.getFileInfo("sometoken", true);
+                const retval = await fileService.isFileEncrypted("sometoken");
 
                 // then
+                expect(fileSpy).toHaveBeenCalledWith("sometoken");
+                expect(retval).toBe(true);
+            }),
+        );
+
+        it(
+            "should return false for a normal file",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
+                // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntryFileName").mockResolvedValue(fileUploadModelMock500MB);
+
+                // when
+                const retval = await fileService.isFileEncrypted("sometoken");
+
+                // then
+                expect(fileSpy).toHaveBeenCalledWith("sometoken");
+                expect(retval).toBe(false);
+            }),
+        );
+
+        it(
+            "should return false for a missing file",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
+                // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntryFileName").mockResolvedValue(null);
+
+                // when
+                const retval = await fileService.isFileEncrypted("sometoken");
+
+                // then
+                expect(fileSpy).toHaveBeenCalledWith("sometoken");
+                expect(retval).toBe(false);
             }),
         );
     });
 
     describe("requiresPassword", () => {
         it(
-            "should return true if entry requires a password",
-            PlatformTest.inject([FileService], async (fileService: FileService) => {
+            "should return true for a file with a password",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
                 // given
+                const fileSpy = vi
+                    .spyOn(fileRepo, "getEntryFileName")
+                    .mockResolvedValue(fileUploadModelMock500MBProtected);
 
                 // when
-                await fileService.getFileInfo("sometoken", true);
+                const retval = await fileService.requiresPassword("sometoken");
 
                 // then
+                expect(fileSpy).toHaveBeenCalledWith("sometoken");
+                expect(retval).toBe(true);
+            }),
+        );
+
+        it(
+            "should return false for a file without a password",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
+                // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntryFileName").mockResolvedValue(fileUploadModelMock500MB);
+
+                // when
+                const retval = await fileService.requiresPassword("sometoken");
+
+                // then
+                expect(fileSpy).toHaveBeenCalledWith("sometoken");
+                expect(retval).toBe(false);
+            }),
+        );
+
+        it(
+            "should return false for a missing file",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
+                // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntryFileName").mockResolvedValue(null);
+
+                // when
+                const retval = await fileService.requiresPassword("sometoken");
+
+                // then
+                expect(fileSpy).toHaveBeenCalledWith("sometoken");
+                expect(retval).toBe(false);
             }),
         );
     });
