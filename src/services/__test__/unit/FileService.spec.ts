@@ -6,7 +6,9 @@ import { FileRepo } from "../../../db/repo/FileRepo.js";
 import {
     fileUploadModelMock500MB,
     fileUploadModelMock500MBProtected,
+    fileUploadModelMockExpired,
 } from "../../../model/db/__test__/mocks/FileUploadModel.mock.js";
+import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto";
 
 describe("unit tests", () => {
     beforeEach(async () => {
@@ -161,13 +163,46 @@ describe("unit tests", () => {
     describe("getFileInfo", () => {
         it(
             "should return file information for a given token and human readable bool",
-            PlatformTest.inject([FileService], async (fileService: FileService) => {
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
                 // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntry").mockResolvedValue([fileUploadModelMock500MB]);
 
                 // when
-                await fileService.getFileInfo("sometoken", true);
+                const retval = await fileService.getFileInfo("sometoken", true);
 
                 // then
+                expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
+                expect(retval).toBeInstanceOf(FileUploadResponseDto);
+                expect(retval.token).toBe("cdbe690b-552c-4533-a7e9-5802ef4b2f1b");
+            }),
+        );
+
+        it(
+            "should throw exception for missing token",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
+                // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntry").mockResolvedValue([]);
+
+                // when
+                await expect(fileService.getFileInfo("sometoken", true)).rejects.toThrow("Unknown token sometoken");
+
+                // then
+                expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
+            }),
+        );
+
+        it(
+            "should throw exception for expired token",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
+                // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntry").mockResolvedValue([fileUploadModelMockExpired]);
+                const delSpy = vi.spyOn(fileService, "processDelete").mockResolvedValue(true);
+                // when
+                await expect(fileService.getFileInfo("sometoken", true)).rejects.toThrow("Unknown token sometoken");
+
+                // then
+                expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
+                expect(delSpy).toHaveBeenCalledWith(["cdbe690b-552c-4533-a7e9-5802ef4b2f1d"], true);
             }),
         );
     });
