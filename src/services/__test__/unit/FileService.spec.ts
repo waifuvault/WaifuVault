@@ -6,9 +6,12 @@ import { FileRepo } from "../../../db/repo/FileRepo.js";
 import {
     fileUploadModelMock500MB,
     fileUploadModelMock500MBProtected,
+    fileUploadModelMockCustomExpire,
     fileUploadModelMockExpired,
 } from "../../../model/db/__test__/mocks/FileUploadModel.mock.js";
 import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto";
+import { FileUtils } from "../../../utils/Utils";
+import { RecordInfoSocket } from "../../socket/RecordInfoSocket";
 
 describe("unit tests", () => {
     beforeEach(async () => {
@@ -210,13 +213,72 @@ describe("unit tests", () => {
     describe("processDelete", () => {
         it(
             "should delete the files for a given list of tokens",
-            PlatformTest.inject([FileService], async (fileService: FileService) => {
+            PlatformTest.inject(
+                [FileService, FileRepo, RecordInfoSocket],
+                async (fileService: FileService, fileRepo: FileRepo, recordSocketInfo: RecordInfoSocket) => {
+                    // given
+                    const fileSpy = vi
+                        .spyOn(fileRepo, "getEntry")
+                        .mockResolvedValue([fileUploadModelMock500MB, fileUploadModelMockCustomExpire]);
+                    const delSpy = vi.spyOn(FileUtils, "deleteFile").mockResolvedValue();
+                    const delEntSpy = vi.spyOn(fileRepo, "deleteEntries").mockResolvedValue(true);
+                    vi.spyOn(recordSocketInfo, "emit").mockResolvedValue(true);
+
+                    // when
+                    const retval = await fileService.processDelete(["sometoken1", "sometoken2"]);
+
+                    // then
+                    expect(fileSpy).toHaveBeenCalledWith(["sometoken1", "sometoken2"]);
+                    expect(delSpy).toHaveBeenNthCalledWith(1, fileUploadModelMock500MB.fullFileNameOnSystem, true);
+                    expect(delSpy).toHaveBeenNthCalledWith(
+                        2,
+                        fileUploadModelMockCustomExpire.fullFileNameOnSystem,
+                        true,
+                    );
+                    expect(delEntSpy).toHaveBeenCalledWith(["sometoken1", "sometoken2"]);
+                    expect(retval).toBe(true);
+                },
+            ),
+        );
+
+        it(
+            "should return false for no files found",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
                 // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntry").mockResolvedValue([]);
+                const delSpy = vi.spyOn(FileUtils, "deleteFile").mockResolvedValue();
+                const delEntSpy = vi.spyOn(fileRepo, "deleteEntries").mockResolvedValue(true);
 
                 // when
-                await fileService.getFileInfo("sometoken", true);
+                const retval = await fileService.processDelete(["sometoken1", "sometoken2"]);
 
                 // then
+                expect(fileSpy).toHaveBeenCalledWith(["sometoken1", "sometoken2"]);
+                expect(delSpy).not.toHaveBeenCalled();
+                expect(delEntSpy).not.toHaveBeenCalled();
+                expect(retval).toBe(false);
+            }),
+        );
+
+        it(
+            "should return false for expired entry on soft delete",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
+                // given
+                const fileSpy = vi
+                    .spyOn(fileRepo, "getEntry")
+                    .mockResolvedValue([fileUploadModelMock500MB, fileUploadModelMockExpired]);
+                const delSpy = vi.spyOn(FileUtils, "deleteFile").mockResolvedValue();
+                const delEntSpy = vi.spyOn(fileRepo, "deleteEntries").mockResolvedValue(true);
+
+                // when
+                const retval = await fileService.processDelete(["sometoken1", "sometoken2"], true);
+
+                // then
+                expect(fileSpy).toHaveBeenCalledWith(["sometoken1", "sometoken2"]);
+                expect(delSpy).toHaveBeenNthCalledWith(1, fileUploadModelMock500MB.fullFileNameOnSystem, true);
+                expect(delSpy).toHaveBeenNthCalledWith(2, fileUploadModelMockExpired.fullFileNameOnSystem, true);
+                expect(delEntSpy).not.toHaveBeenCalled();
+                expect(retval).toBe(false);
             }),
         );
     });
