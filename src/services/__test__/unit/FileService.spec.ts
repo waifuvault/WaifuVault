@@ -12,6 +12,7 @@ import {
 import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto";
 import { FileUtils } from "../../../utils/Utils";
 import { RecordInfoSocket } from "../../socket/RecordInfoSocket";
+import { EncryptionService } from "../../EncryptionService";
 
 describe("unit tests", () => {
     beforeEach(async () => {
@@ -137,15 +138,61 @@ describe("unit tests", () => {
 
     describe("getEntry", () => {
         it(
-            "should return a decrypted buffer and fileupload model for a given filename",
-            PlatformTest.inject([FileService], async (fileService: FileService) => {
+            "should throw resource not found exception for missing entry",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
                 // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntryFileName").mockResolvedValue(null);
 
                 // when
-                await fileService.getFileInfo("sometoken", true);
+                await expect(fileService.getEntry("somefilename")).rejects.toThrow(
+                    "resource somefilename is not found",
+                );
 
                 // then
+                expect(fileSpy).toHaveBeenCalledWith("somefilename");
             }),
+        );
+
+        it(
+            "should throw resource not found exception for expired entry",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
+                // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntryFileName").mockResolvedValue(fileUploadModelMockExpired);
+
+                // when
+                await expect(fileService.getEntry("somefilename")).rejects.toThrow(
+                    "resource somefilename is not found",
+                );
+
+                // then
+                expect(fileSpy).toHaveBeenCalledWith("somefilename");
+            }),
+        );
+
+        it(
+            "should call decrypt entry and return a buffer and file upload model",
+            PlatformTest.inject(
+                [FileService, FileRepo, EncryptionService],
+                async (fileService: FileService, fileRepo: FileRepo, encryptionService: EncryptionService) => {
+                    // given
+                    const fileSpy = vi
+                        .spyOn(fileRepo, "getEntryFileName")
+                        .mockResolvedValue(fileUploadModelMock500MBProtected);
+                    const encSpy = vi.spyOn(encryptionService, "decrypt").mockResolvedValue(Buffer.from([10, 10, 10]));
+
+                    // when
+                    const entry = await fileService.getEntry(
+                        fileUploadModelMock500MBProtected.originalFileName,
+                        fileUploadModelMock500MBProtected.originalFileName,
+                        "somepassword",
+                    );
+
+                    // then
+                    expect(fileSpy).toHaveBeenCalledWith(fileUploadModelMock500MBProtected.originalFileName);
+                    expect(encSpy).toHaveBeenCalledWith(fileUploadModelMock500MBProtected, "somepassword");
+                    expect(entry).toEqual([Buffer.from([10, 10, 10]), fileUploadModelMock500MBProtected]);
+                },
+            ),
         );
     });
 

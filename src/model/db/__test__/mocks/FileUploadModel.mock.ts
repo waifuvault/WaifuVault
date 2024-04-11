@@ -18,6 +18,7 @@ export const fileUploadModelMock500MBProtected = Builder(FileUploadModel, fileUp
     .settings({
         password: "foo",
     })
+    .originalFileName("fooprotected")
     .encrypted(true)
     .build();
 
@@ -34,6 +35,7 @@ export const fileUploadModelMockCustomExpire = Builder(FileUploadModel)
 export const fileUploadModelMockExpired = Builder(FileUploadModel)
     .fileExtension("jpg")
     .fileName("fooexpired")
+    .originalFileName("fooexpired")
     .fileSize(3000)
     .ip("192.168.4.3")
     .token("cdbe690b-552c-4533-a7e9-5802ef4b2f1d")
