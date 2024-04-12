@@ -13,6 +13,8 @@ import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto"
 import { FileUtils } from "../../../utils/Utils";
 import { RecordInfoSocket } from "../../socket/RecordInfoSocket";
 import { EncryptionService } from "../../EncryptionService";
+import { Builder } from "builder-pattern";
+import { EntryModificationDto } from "../../../model/dto/EntryModificationDto";
 
 describe("unit tests", () => {
     beforeEach(async () => {
@@ -198,14 +200,51 @@ describe("unit tests", () => {
 
     describe("modifyEntry", () => {
         it(
-            "should modify an entry based on a given modification dto and token",
-            PlatformTest.inject([FileService], async (fileService: FileService) => {
+            "should throw unknown token exception for missing entry",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
                 // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntry").mockResolvedValue([]);
+                const entryMod = Builder<EntryModificationDto>().customExpiry("1d").build();
 
                 // when
-                await fileService.getFileInfo("sometoken", true);
+                await expect(fileService.modifyEntry("sometoken", entryMod)).rejects.toThrow("Unknown token sometoken");
 
                 // then
+                expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
+            }),
+        );
+
+        it(
+            "should throw previous password needed exception for encrypted entry change of password",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
+                // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntry").mockResolvedValue([fileUploadModelMock500MBProtected]);
+                const entryMod = Builder<EntryModificationDto>().password("newpassword").build();
+
+                // when
+                await expect(fileService.modifyEntry("sometoken", entryMod)).rejects.toThrow(
+                    "You must supply 'previousPassword' to change the password",
+                );
+
+                // then
+                expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
+            }),
+        );
+
+        it(
+            "should throw previous password needed exception for encrypted entry removal of password",
+            PlatformTest.inject([FileService, FileRepo], async (fileService: FileService, fileRepo: FileRepo) => {
+                // given
+                const fileSpy = vi.spyOn(fileRepo, "getEntry").mockResolvedValue([fileUploadModelMock500MBProtected]);
+                const entryMod = Builder<EntryModificationDto>().password("").build();
+
+                // when
+                await expect(fileService.modifyEntry("sometoken", entryMod)).rejects.toThrow(
+                    "Unable to remove password if previousPassword is not supplied",
+                );
+
+                // then
+                expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
             }),
         );
     });
