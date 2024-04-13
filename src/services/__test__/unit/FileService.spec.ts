@@ -247,6 +247,66 @@ describe("unit tests", () => {
                 expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
             }),
         );
+
+        it(
+            "should take a dto with a password and return an appropriately adjusted file response dto",
+            PlatformTest.inject(
+                [FileService, FileRepo, EncryptionService],
+                async (fileService: FileService, fileRepo: FileRepo, encryptionService: EncryptionService) => {
+                    // given
+                    const fileSpy = vi
+                        .spyOn(fileRepo, "getEntry")
+                        .mockResolvedValue([fileUploadModelMock500MBProtected]);
+                    const encChangePasswordSpy = vi.spyOn(encryptionService, "changePassword").mockResolvedValue();
+                    vi.spyOn(encryptionService, "encrypt").mockResolvedValue(Buffer.from([10, 10, 10]));
+                    vi.spyOn(FileUtils, "getFilePath").mockResolvedValue("somepath");
+                    vi.spyOn(fileRepo, "saveEntry").mockResolvedValue(fileUploadModelMock500MBProtected);
+
+                    const entryMod = Builder<EntryModificationDto>()
+                        .password("newpassword")
+                        .previousPassword("oldpassword")
+                        .build();
+
+                    // when
+                    const modifiedEntry = await fileService.modifyEntry("sometoken", entryMod);
+
+                    // then
+                    expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
+                    expect(encChangePasswordSpy).toHaveBeenCalledWith(
+                        "oldpassword",
+                        "newpassword",
+                        fileUploadModelMock500MBProtected,
+                    );
+                    expect(modifiedEntry.options.protected).toBe(true);
+                },
+            ),
+        );
+
+        it(
+            "should take a dto with a custom expiry and return an appropriately adjusted file response dto",
+            PlatformTest.inject(
+                [FileService, FileRepo, EncryptionService],
+                async (fileService: FileService, fileRepo: FileRepo, encryptionService: EncryptionService) => {
+                    // given
+                    const fileSpy = vi.spyOn(fileRepo, "getEntry").mockResolvedValue([fileUploadModelMock500MB]);
+                    const fileSizeSpy = vi.spyOn(FileUtils, "getTimeLeftBySize").mockResolvedValue(500000);
+                    vi.spyOn(encryptionService, "changePassword").mockResolvedValue();
+                    vi.spyOn(encryptionService, "encrypt").mockResolvedValue(Buffer.from([10, 10, 10]));
+                    vi.spyOn(FileUtils, "getFilePath").mockResolvedValue("somepath");
+                    vi.spyOn(fileRepo, "saveEntry").mockResolvedValue(fileUploadModelMock500MB);
+
+                    const entryMod = Builder<EntryModificationDto>().customExpiry("1d").build();
+
+                    // when
+                    const modifiedEntry = await fileService.modifyEntry("sometoken", entryMod);
+
+                    // then
+                    expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
+                    expect(fileSizeSpy).toHaveBeenCalledWith(fileUploadModelMock500MB.fileSize);
+                    expect(modifiedEntry).toBeInstanceOf(FileUploadResponseDto);
+                },
+            ),
+        );
     });
 
     describe("getFileInfo", () => {
