@@ -281,9 +281,7 @@ export class FileService {
         }
         value = ObjectUtils.convertToMilli(value, timeFactor);
         const maxExp: number | null =
-            this.secret === secretToken && secretToken !== undefined
-                ? null
-                : FileUtils.getTimeLeftBySize(entry.fileSize());
+            this.secret && this.secret === secretToken ? null : FileUtils.getTimeLeftBySize(entry.fileSize());
 
         if (maxExp !== null && value > maxExp) {
             throw new BadRequest(`Cannot extend time remaining beyond ${ObjectUtils.timeToHuman(maxExp)}`);
