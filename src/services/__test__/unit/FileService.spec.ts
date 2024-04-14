@@ -286,14 +286,14 @@ describe("unit tests", () => {
             "should take a dto with a custom expiry and return an appropriately adjusted file response dto",
             PlatformTest.inject(
                 [FileService, FileRepo, EncryptionService],
-                async (fileService: FileService, fileRepo: FileRepo, encryptionService: EncryptionService) => {
+                async (fileService: FileService, fileRepo: FileRepo) => {
                     // given
                     const fileSpy = vi.spyOn(fileRepo, "getEntry").mockResolvedValue([fileUploadModelMock500MB]);
                     const fileSizeSpy = vi.spyOn(FileUtils, "getTimeLeftBySize").mockResolvedValue(500000);
-                    vi.spyOn(encryptionService, "changePassword").mockResolvedValue();
-                    vi.spyOn(encryptionService, "encrypt").mockResolvedValue(Buffer.from([10, 10, 10]));
                     vi.spyOn(FileUtils, "getFilePath").mockResolvedValue("somepath");
-                    vi.spyOn(fileRepo, "saveEntry").mockResolvedValue(fileUploadModelMock500MB);
+                    vi.spyOn(fileRepo, "saveEntry").mockImplementation(entry => {
+                        return Promise.resolve(entry);
+                    });
 
                     const entryMod = Builder<EntryModificationDto>().customExpiry("1d").build();
 
@@ -304,6 +304,33 @@ describe("unit tests", () => {
                     expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
                     expect(fileSizeSpy).toHaveBeenCalledWith(fileUploadModelMock500MB.fileSize);
                     expect(modifiedEntry).toBeInstanceOf(FileUploadResponseDto);
+                },
+            ),
+        );
+
+        it(
+            "should take a dto with hidefile name set and return an appropriately adjusted file response dto",
+            PlatformTest.inject(
+                [FileService, FileRepo, EncryptionService],
+                async (fileService: FileService, fileRepo: FileRepo, encryptionService: EncryptionService) => {
+                    // given
+                    const fileSpy = vi.spyOn(fileRepo, "getEntry").mockResolvedValue([fileUploadModelMock500MB]);
+                    vi.spyOn(encryptionService, "changePassword").mockResolvedValue();
+                    vi.spyOn(encryptionService, "encrypt").mockResolvedValue(Buffer.from([10, 10, 10]));
+                    vi.spyOn(FileUtils, "getFilePath").mockResolvedValue("somepath");
+                    vi.spyOn(fileRepo, "saveEntry").mockImplementation(entry => {
+                        return Promise.resolve(entry);
+                    });
+
+                    const entryMod = Builder<EntryModificationDto>().hideFilename(true).build();
+
+                    // when
+                    const modifiedEntry = await fileService.modifyEntry("sometoken", entryMod);
+
+                    // then
+                    expect(fileSpy).toHaveBeenCalledWith(["sometoken"]);
+                    expect(modifiedEntry).toBeInstanceOf(FileUploadResponseDto);
+                    expect(modifiedEntry.options.hideFilename).toBe(true);
                 },
             ),
         );
