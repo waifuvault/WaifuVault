@@ -74,7 +74,6 @@
     "lru-cache": "^10.2.0",
     "method-override": "^3.0.0",
     "mime": "^4.0.1",
-    "node-schedule": "^2.1.1",
     "passport": "^0.7.0",
     "passport-http": "^0.3.0",
     "passport-local": "^1.0.0",
@@ -118,9 +117,9 @@
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.6.2",
     "typescript": "^5.4.3",
+    "typescript-eslint": "^7.4.0",
     "unplugin-swc": "^1.4.4",
-    "vitest": "^1.4.0",
-    "typescript-eslint": "^7.4.0"
+    "vitest": "^1.4.0"
   },
   "main": "index.js",
   "keywords": [],

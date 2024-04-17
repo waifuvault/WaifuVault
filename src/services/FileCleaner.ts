@@ -40,7 +40,6 @@ export class FileCleaner implements OnReady {
                 await this.sync();
             },
             "removeExpiredFiles",
-            this,
             true,
         );
     }
