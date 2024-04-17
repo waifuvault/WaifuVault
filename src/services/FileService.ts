@@ -135,8 +135,7 @@ export class FileService {
         checksum: string,
         ip: string,
     ): Promise<FileUploadModel | null> {
-        const existingFileModels = await this.repo.getEntriesFromChecksum(checksum);
-        const existingFileModel = existingFileModels.find(m => m.ip === ip);
+        const existingFileModel = await this.repo.getEntryFromChecksumAndIp(checksum, ip);
         if (existingFileModel) {
             if (!existingFileModel.hasExpired) {
                 await this.deleteUploadedFile(resourcePath);

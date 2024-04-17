@@ -25,7 +25,7 @@ export class FileCleaner implements OnReady {
         if (allFiles.length === 0) {
             return;
         }
-        const expiredTokens = allFiles.filter(file => FileUtils.isFileExpired(file)).map(entry => entry.token);
+        const expiredTokens = allFiles.filter(file => file.hasExpired).map(entry => entry.token);
         if (expiredTokens.length === 0) {
             return;
         }
@@ -40,7 +40,6 @@ export class FileCleaner implements OnReady {
                 await this.sync();
             },
             "removeExpiredFiles",
-            this,
             true,
         );
     }

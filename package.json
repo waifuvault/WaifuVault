@@ -7,7 +7,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "tsc": "tsc --project tsconfig.json",
-    "build": "npm run barrels && node ./buildScripts/cleanDist.mjs && swc src -d dist --config-file .swcrc --copy-files && node ./buildScripts/moveFiles.mjs",
+    "build": "npm run barrels && node ./buildScripts/cleanDist.mjs && swc src -d dist --config-file .swcrc.prod --copy-files && node ./buildScripts/moveFiles.mjs",
     "barrels": "barrelsby --config .barrelsby.json && node buildScripts/fixbarrels.mjs",
     "start_js": "node dist/index.js",
     "start": "node --loader ts-node/esm src/index.ts",
@@ -20,7 +20,10 @@
     "revertmigration": "typeorm-ts-node-esm migration:revert -d ./src/db/DataSource.ts",
     "prettier": "prettier ./src --check",
     "prettier:fix": "prettier ./src --write",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:debug": "vitest run --inspect-brk --inspect --logHeapUsage --no-file-parallelism"
   },
   "dependencies": {
     "@socket.io/redis-adapter": "^8.3.0",
@@ -71,7 +74,6 @@
     "lru-cache": "^10.2.0",
     "method-override": "^3.0.0",
     "mime": "^4.0.1",
-    "node-schedule": "^2.1.1",
     "passport": "^0.7.0",
     "passport-http": "^0.3.0",
     "passport-local": "^1.0.0",
@@ -102,6 +104,7 @@
     "@types/passport-http": "^0.3.11",
     "@types/passport-local": "^1.0.38",
     "@types/punycode": "^2.1.4",
+    "@vavite/node-loader": "^4.1.1",
     "barrelsby": "^2.8.1",
     "eslint": "^8.57.0",
     "husky": "^9.0.11",
@@ -114,7 +117,9 @@
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.6.2",
     "typescript": "^5.4.3",
-    "typescript-eslint": "^7.4.0"
+    "typescript-eslint": "^7.4.0",
+    "unplugin-swc": "^1.4.4",
+    "vitest": "^1.4.0"
   },
   "main": "index.js",
   "keywords": [],

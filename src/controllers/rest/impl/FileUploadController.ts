@@ -81,7 +81,7 @@ export class FileUploadController extends BaseRestController {
         try {
             [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
                 ip,
-                url || file!,
+                url ?? file!,
                 params,
                 secretToken,
             );

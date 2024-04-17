@@ -30,7 +30,7 @@ export class FileServerController {
         if (mimeType) {
             res.contentType(mimeType);
         } else {
-            // unknown> just send an octet stream and let the client figure it out
+            // unknown, send an octet stream and let the client figure it out
             res.contentType("application/octet-stream");
         }
         res.send(buff);

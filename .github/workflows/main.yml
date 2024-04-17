@@ -14,11 +14,13 @@ jobs:
           node-version: 20
       - name: install
         run: npm install
-      - name: TSC
+      - name: type-check
         run: npm run tsc
       - name: ESLint
         run: npm run lint
       - name: prettier
         run: npm run prettier
+      - name: test
+        run: npm run test
       - name: compile
         run: npm run build
