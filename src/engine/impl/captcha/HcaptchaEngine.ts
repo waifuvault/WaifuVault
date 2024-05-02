@@ -13,6 +13,7 @@ import GlobalEnv from "../../../model/constants/GlobalEnv.js";
 export class HcaptchaEngine extends AbstractCaptchaEngine<HcaptchaResponse> {
     @Constant(GlobalEnv.CAPTCHA_SECRET_KEY)
     private readonly hCaptchaSecretKey: string;
+
     public constructor(@Inject() logger: Logger) {
         super(CaptchaServices.HCAPTCHA, logger);
     }

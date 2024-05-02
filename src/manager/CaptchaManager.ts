@@ -8,6 +8,7 @@ import { Logger } from "@tsed/logger";
 @Injectable()
 export class CaptchaManager {
     private readonly _engine: ICaptchaEngine | null;
+
     public constructor(
         @Inject() captchaFactory: CaptchaFactory,
         @Inject() private logger: Logger,
