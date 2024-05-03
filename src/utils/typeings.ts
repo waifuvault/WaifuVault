@@ -1,5 +1,7 @@
 import { Exception } from "@tsed/exceptions";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
+import type { PlatformMulterFile } from "@tsed/common";
+import { FileUploadQueryParameters } from "../model/rest/FileUploadQueryParameters.js";
 
 export type HttpErrorRenderObj<T extends Exception> = {
     status: number;
@@ -67,4 +69,12 @@ export type Awaitable<T> = Promise<T> | T;
 export type RecordInfoPayload = {
     recordCount: number;
     recordSize: string;
+};
+
+export type fileUploadProps = {
+    ip: string;
+    source: PlatformMulterFile | string;
+    options: FileUploadQueryParameters;
+    password?: string;
+    secretToken?: string;
 };

@@ -11,7 +11,7 @@ import crypto from "node:crypto";
 import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
-import type { EntrySettings } from "../utils/typeings.js";
+import { EntrySettings, fileUploadProps } from "../utils/typeings.js";
 import { BadRequest, Exception, InternalServerError, NotFound, UnsupportedMediaType } from "@tsed/exceptions";
 import { FileUtils, ObjectUtils } from "../utils/Utils.js";
 import TimeUnit from "../model/constants/TimeUnit.js";
@@ -20,7 +20,7 @@ import { AvManager } from "../manager/AvManager.js";
 import { EncryptionService } from "./EncryptionService.js";
 import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
 import { EntryModificationDto } from "../model/dto/EntryModificationDto.js";
-import { FileUploadParameters } from "../model/rest/FileUploadParameters.js";
+import { FileUploadQueryParameters } from "../model/rest/FileUploadQueryParameters.js";
 import { ProcessUploadException } from "../model/exceptions/ProcessUploadException.js";
 
 @Service()
@@ -41,13 +41,14 @@ export class FileService {
         @Inject() private recordInfoSocket: RecordInfoSocket,
     ) {}
 
-    public async processUpload(
-        ip: string,
-        source: PlatformMulterFile | string,
-        options: FileUploadParameters,
-        secretToken?: string,
-    ): Promise<[FileUploadResponseDto, boolean]> {
-        const { expires, password } = options;
+    public async processUpload({
+        ip,
+        source,
+        options,
+        password,
+        secretToken,
+    }: fileUploadProps): Promise<[FileUploadResponseDto, boolean]> {
+        const { expires } = options;
         let resourcePath: string | undefined;
         let originalFileName: string | undefined;
         try {
@@ -72,7 +73,12 @@ export class FileService {
                 }
             }
 
-            uploadEntry.settings(await this.buildEntrySettings(options));
+            uploadEntry.settings(
+                await this.buildEntrySettings({
+                    password,
+                    ...options,
+                }),
+            );
 
             const ext = FileUtils.getExtension(originalFileName);
             if (ext) {
@@ -150,7 +156,7 @@ export class FileService {
         password,
         hideFilename,
         one_time_download,
-    }: FileUploadParameters): Promise<EntrySettings | null> {
+    }: FileUploadQueryParameters & { password?: string }): Promise<EntrySettings | null> {
         const retObj: EntrySettings = {};
         if (password) {
             retObj["password"] = await this.hashPassword(password);
