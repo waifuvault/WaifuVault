@@ -145,7 +145,7 @@ const opts: Partial<TsED.Configuration> = {
     swagger: [
         {
             path: "/api-docs",
-            specVersion: "3.0.3",
+            specVersion: "3.1.0",
             options: {
                 withCredentials: true,
                 supportedSubmitMethods: isProduction ? [] : undefined,

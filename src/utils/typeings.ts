@@ -29,7 +29,7 @@ export type CaptchaResponse = {
 
 export type ReCAPTCHAResponse = CaptchaResponse;
 
-export type TurnstileResponse = ReCAPTCHAResponse & {
+export type TurnstileResponse = CaptchaResponse & {
     action: string;
     cdata: string;
 };
