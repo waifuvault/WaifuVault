@@ -12,7 +12,7 @@ import { Logger } from "@tsed/logger";
 import { EntryModificationDto } from "../../../model/dto/EntryModificationDto.js";
 import type { Request, Response } from "express";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
-import { FileUploadParameters } from "../../../model/rest/FileUploadParameters.js";
+import { FileUploadQueryParameters } from "../../../model/rest/FileUploadQueryParameters.js";
 
 @Controller("/")
 @Description("This is the API documentation for uploading and sharing files.")
@@ -61,9 +61,21 @@ export class FileUploadController extends BaseRestController {
                 },
             },
         })
-        params: FileUploadParameters,
-        @MultipartFile("file") file?: PlatformMulterFile,
-        @BodyParams("url") url?: string,
+        params: FileUploadQueryParameters,
+
+        @Description("The file you want to upload")
+        @MultipartFile("file")
+        file?: PlatformMulterFile,
+
+        @Description("The URL of the file you want to upload")
+        @BodyParams("url")
+        url?: string,
+
+        @Description(
+            "Set a password for this file, this will encrypt the file on the server that not even the server owner can obtain it, when fetching the file. you can fill out the `x-password` http header with your password to obtain the file via API",
+        )
+        @BodyParams("password")
+        password?: string,
     ): Promise<unknown> {
         if (file && url) {
             if (file) {
@@ -79,12 +91,13 @@ export class FileUploadController extends BaseRestController {
         let alreadyExists: boolean;
         const secretToken = req.query["secret_token"]?.toString();
         try {
-            [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload(
+            [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload({
                 ip,
-                url || file!,
-                params,
+                source: url || file!,
+                options: params,
+                password,
                 secretToken,
-            );
+            });
         } catch (e) {
             this.logger.error(e.message);
             throw e;

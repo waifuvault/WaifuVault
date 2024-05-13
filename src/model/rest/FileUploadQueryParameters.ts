@@ -1,8 +1,6 @@
 import { Default, Description, Name, Optional, Pattern, Property } from "@tsed/schema";
 
-@Name("WaifuUploadParameters")
-@Description("Upload parameters for put requests")
-export class FileUploadParameters {
+export class FileUploadQueryParameters {
     @Description(
         "a string containing a number and a letter of `m` for mins, `h` for hours, `d` for days. For example: `1h` would be 1 hour and `1d` would be 1 day. leave this blank if you want the file to exist according to the retention policy",
     )
@@ -19,13 +17,6 @@ export class FileUploadParameters {
     @Name("hide_filename")
     @Default(false)
     public hideFilename?: boolean;
-
-    @Description(
-        "Set a password for this file, this will encrypt the file on the server that not even the server owner can obtain it, when fetching the file. you can fill out the `x-password` http header with your password to obtain the file via API",
-    )
-    @Optional()
-    @Property()
-    public password?: string;
 
     @Description("If this is true, then the file will be deleted as soon as it is accessed")
     @Optional()
