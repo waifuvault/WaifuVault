@@ -418,12 +418,12 @@ import io
 # upload file
 upload_file = waifuvault.FileUpload("./files/aCoolFile.png")
 upload_res = waifuvault.upload_file(upload_file)
-print(f"{upload_res.url}")
+print(upload_res.url)
 
 # upload via URL
 upload_file = waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png")
 upload_res = waifuvault.upload_file(upload_file)
-print(f"{upload_res.url}")
+print(upload_res.url)
 
 # upload a buffer
 with open("./files/aCoolFile.png", "rb") as fh:
@@ -431,7 +431,7 @@ with open("./files/aCoolFile.png", "rb") as fh:
 
 upload_file = waifuvault.FileUpload(buf, "aCoolFile.png")
 upload_res = waifuvault.upload_file(upload_file)
-print(f"{upload_res.url}")
+print(upload_res.url)
 </code>
 </pre>
                         </div>
