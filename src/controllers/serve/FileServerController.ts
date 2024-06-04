@@ -33,7 +33,7 @@ export class FileServerController {
             // unknown> just send an octet stream and let the client figure it out
             res.contentType("application/octet-stream");
         }
-        res.attachment(entry.fullFileNameOnSystem);
+        res.attachment(entry.originalFileName);
         res.send(buff);
     }
 
