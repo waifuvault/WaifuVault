@@ -118,7 +118,7 @@ const opts: Partial<TsED.Configuration> = {
         }),
         cors({
             origin: process.env.BASE_URL,
-            exposedHeaders: ["Location"],
+            exposedHeaders: ["Location", "Content-Disposition"],
         }),
         cookieParser(),
         methodOverride(),
