@@ -34,12 +34,6 @@ export class FileServerController {
             res.contentType("application/octet-stream");
         }
 
-        if (entry.settings?.hideFilename) {
-            res.attachment(entry.fullFileNameOnSystem);
-        } else {
-            res.attachment(entry.originalFileName);
-        }
-
         res.send(buff);
     }
 
