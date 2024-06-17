@@ -39,13 +39,13 @@
                         <thead>
                         <tr>
                             <th scope="col">ID</th>
-                            <th scope="col">file Name on system</th>
+                            <th scope="col">file Name</th>
                             <th scope="col">file Extension</th>
                             <th scope="col">file Size</th>
                             <th scope="col">Created At</th>
                             <th scope="col">expires</th>
                             <th scope="col">mediaType</th>
-                            <th scope="col">original FileName</th>
+                            <th scope="col">file Name on system</th>
                             <th scope="col">url</th>
                         </tr>
                         </thead>
@@ -193,13 +193,13 @@
                     case "entries":
                         return [
                             { data: "id" },
-                            { data: "fileName", className: "col-filename" },
+                            { data: "originalFileName", className: "col-filename" },
                             { data: "fileExtension", className: "col-fileext" },
                             { data: "fileSize", render: sizeAsMB() },
                             { data: "createdAt", render: customDate() },
                             { data: "expires", render: renderNullField() },
                             { data: "mediaType", render: renderNullField() },
-                            { data: "originalFileName" },
+                            { data: "fileName" },
                             { data: "url" }
                         ];
                 }
