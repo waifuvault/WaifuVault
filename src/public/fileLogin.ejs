@@ -115,10 +115,12 @@
                     }
                 );
 
+                const filename = location.pathname.split("/").pop();
                 const blob = await res.blob();
-                const _url = window.URL.createObjectURL(blob);
+                const file = new File([blob], filename)
+                const _url = window.URL.createObjectURL(file);
                 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-                if (blob.type === "application/octet-stream" || isSafari) {
+                if (isSafari) {
                     const a = document.createElement("a");
                     document.body.appendChild(a);
                     a.style.display = "none";
