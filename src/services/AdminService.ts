@@ -20,13 +20,14 @@ export class AdminService {
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
-    public getStatsData(entries: FileEntryDto[]): Promise<StatsDto> {
+    public async getStatsData(): Promise<StatsDto> {
+        const entries = await this.getAllEntries();
         return StatsDto.buildStats(entries);
     }
 
     public async getAllEntries(): Promise<FileEntryDto[]> {
         const allEntries = await this.repo.getAllEntries();
-        return this.buildFileEntryDtos(allEntries);
+        return this.buildFileEntryDtos(allEntries.filter(entry => !entry.hasExpired));
     }
 
     public async getPagedEntries(
@@ -37,7 +38,7 @@ export class AdminService {
         search?: string,
     ): Promise<FileEntryDto[]> {
         const entries = await this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search);
-        return this.buildFileEntryDtos(entries);
+        return this.buildFileEntryDtos(entries.filter(entry => !entry.hasExpired));
     }
 
     private async buildFileEntryDtos(entries: FileUploadModel[]): Promise<FileEntryDto[]> {

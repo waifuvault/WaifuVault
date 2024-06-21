@@ -53,8 +53,8 @@ export class AdminController extends BaseRestController {
     }
 
     @Get("/statsData")
-    public async getStatsData(): Promise<unknown> {
-        return this.adminService.getStatsData(await this.adminService.getAllEntries());
+    public getStatsData(): Promise<unknown> {
+        return this.adminService.getStatsData();
     }
 
     @Get("/blockedIps")
