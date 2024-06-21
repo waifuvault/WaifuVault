@@ -2,11 +2,11 @@ import { Get, Hidden } from "@tsed/schema";
 import { Controller, Inject } from "@tsed/di";
 import { HeaderParams, PathParams, Res } from "@tsed/common";
 import * as Path from "node:path";
-import { FileService } from "../../services/FileService.js";
 import { FileProtectedException } from "../../model/exceptions/FileProtectedException.js";
 import { MimeService } from "../../services/MimeService.js";
 import type { Response } from "express";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
+import { FileService } from "../../services/FileService.js";
 
 @Hidden()
 @Controller("/")

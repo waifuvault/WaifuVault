@@ -5,7 +5,7 @@ import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto.
 import { BadRequest } from "@tsed/exceptions";
 import { MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res } from "@tsed/common";
 import { BodyParams } from "@tsed/platform-params";
-import { FileService } from "../../../services/FileService.js";
+import { FileUploadService } from "../../../services/FileUploadService.js";
 import { FileUtils, NetworkUtils } from "../../../utils/Utils.js";
 import { BaseRestController } from "../BaseRestController.js";
 import { Logger } from "@tsed/logger";
@@ -13,6 +13,7 @@ import { EntryModificationDto } from "../../../model/dto/EntryModificationDto.js
 import type { Request, Response } from "express";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 import { FileUploadQueryParameters } from "../../../model/rest/FileUploadQueryParameters.js";
+import { FileService } from "../../../services/FileService.js";
 
 @Controller("/")
 @Description("This is the API documentation for uploading and sharing files.")
@@ -20,7 +21,8 @@ import { FileUploadQueryParameters } from "../../../model/rest/FileUploadQueryPa
 @Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked")
 export class FileUploadController extends BaseRestController {
     public constructor(
-        @Inject() private fileUploadService: FileService,
+        @Inject() private fileUploadService: FileUploadService,
+        @Inject() private fileService: FileService,
         @Inject() private logger: Logger,
     ) {
         super();
@@ -128,7 +130,7 @@ export class FileUploadController extends BaseRestController {
         if (!token) {
             throw new BadRequest("no token provided");
         }
-        return this.fileUploadService.getFileInfo(token, humanReadable);
+        return this.fileService.getFileInfo(token, humanReadable);
     }
 
     @Patch("/:token")
@@ -157,7 +159,7 @@ export class FileUploadController extends BaseRestController {
         if (!token) {
             throw new BadRequest("no token provided");
         }
-        const deleted = await this.fileUploadService.processDelete([token]);
+        const deleted = await this.fileService.processDelete([token]);
         if (!deleted) {
             throw new BadRequest(`Unknown token ${token}`);
         }

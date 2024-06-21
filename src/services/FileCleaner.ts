@@ -2,11 +2,11 @@ import { Constant, Inject, Service } from "@tsed/di";
 import { OnReady } from "@tsed/common";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { ScheduleService } from "./ScheduleService.js";
-import { FileService } from "./FileService.js";
 import { filesDir, FileUtils } from "../utils/Utils.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import fs from "node:fs/promises";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
+import { FileService } from "./FileService.js";
 
 @Service()
 export class FileCleaner implements OnReady {
