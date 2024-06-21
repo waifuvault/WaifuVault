@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@tsed/di";
 import { AbstractDao } from "./AbstractDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
-import { DataSource, EntityManager, In, Like } from "typeorm";
+import { DataSource, EntityManager, In, IsNull, Like, MoreThan } from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
 
 @Injectable()
@@ -44,7 +44,14 @@ export class FileDao extends AbstractDao<FileUploadModel> {
     }
 
     public getTotalFileSize(transaction?: EntityManager): Promise<number | null> {
-        return this.getRepository(transaction).sum("fileSize");
+        return this.getRepository(transaction).sum("fileSize", [
+            {
+                expires: IsNull(),
+            },
+            {
+                expires: MoreThan(Date.now()),
+            },
+        ]);
     }
 
     public getAllEntriesOrdered(
@@ -78,7 +85,16 @@ export class FileDao extends AbstractDao<FileUploadModel> {
     }
 
     public getRecordCount(transaction?: EntityManager): Promise<number> {
-        return this.getRepository(transaction).count();
+        return this.getRepository(transaction).count({
+            where: [
+                {
+                    expires: IsNull(),
+                },
+                {
+                    expires: MoreThan(Date.now()),
+                },
+            ],
+        });
     }
 
     public getSearchRecordCount(search: string, transaction?: EntityManager): Promise<number> {
