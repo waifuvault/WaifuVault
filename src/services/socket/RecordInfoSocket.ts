@@ -26,7 +26,7 @@ export class RecordInfoSocket {
         const size = (await this.repo.getTotalFileSize()) ?? 0;
         return {
             recordCount,
-            recordSize: ObjectUtils.sizeToHuman(size),
+            recordSize: ObjectUtils.humanFileSize(size, false, 2),
         };
     }
 }
