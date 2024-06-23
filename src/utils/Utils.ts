@@ -13,20 +13,25 @@ export class ObjectUtils {
         return matches && matches[0] ? parseInt(matches[0]) : 0;
     }
 
-    public static sizeToHuman(value: number): string {
-        const sizeKB = Math.floor(value / 1024);
-        const sizeMB = Math.floor(sizeKB / 1024);
-        const sizeGB = Math.floor(sizeMB / 1024);
-        if (value < 1024) {
-            return `${value} B`;
+    public static humanFileSize(bytes: number, si = false, dp = 1): string {
+        const thresh = si ? 1000 : 1024;
+
+        if (Math.abs(bytes) < thresh) {
+            return bytes + " B";
         }
-        if (sizeKB < 1024) {
-            return `${sizeKB} KB`;
-        }
-        if (sizeMB < 1024) {
-            return `${sizeMB} MB`;
-        }
-        return `${sizeGB} GB`;
+
+        const units = si
+            ? ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
+            : ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+        let u = -1;
+        const r = 10 ** dp;
+
+        do {
+            bytes /= thresh;
+            ++u;
+        } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
+
+        return bytes.toFixed(dp) + " " + units[u];
     }
 
     public static timeToHuman(value: number, timeUnit: TimeUnit = TimeUnit.milliseconds): string {
