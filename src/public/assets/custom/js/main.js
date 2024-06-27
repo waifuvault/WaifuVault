@@ -48,13 +48,17 @@ const Site = (function() {
     };
 
 
+    const initTooltips = function initTooltips() {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, {
+            sanitize: false
+        }));
+    }
+
+
+
     const loadPage = function loadPage(anon) {
         // eslint-disable-next-line require-await
         anon.call(this, Site).then(async () => {
-            function initTooltips() {
-                document.querySelectorAll("[data-bs-toggle=\"tooltip\"]").forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
-            }
-
             function initTabs() {
                 const triggerTabList = document.querySelectorAll("#resultTabs button");
                 triggerTabList.forEach(triggerEl => {
@@ -76,6 +80,7 @@ const Site = (function() {
         loading,
         display,
         showSuccess,
-        showError
+        showError,
+        initTooltips
     };
 }());

@@ -182,6 +182,22 @@
                 };
             }
 
+            function fileEmbedRender() {
+                return function(data, type, row) {
+                    const url = row.url;
+                    if(url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null){
+                        return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<img src='${url}' />">${data}</span>`;
+                    }else if(url.match(/\.(mp4|ogg|webm)$/) != null){
+                        const ext = url.match(/\.(mp4|ogg|webm)$/)[1];
+                        let type = `video/${ext}`;
+                        const videoTag = `<video width='320' height='240' autoplay><source src='${url}' type='${type}'></video>`;
+                        return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="${videoTag}">${data}</span>`;
+                    }
+                    return `<span>${data}</span>`;
+                };
+            }
+
+
             function getDataMapping(type) {
                 switch (type) {
                     case "ips":
@@ -193,7 +209,7 @@
                     case "entries":
                         return [
                             { data: "id" },
-                            { data: "originalFileName", className: "col-filename" },
+                            { data: "originalFileName", className: "col-filename", render: fileEmbedRender() },
                             { data: "fileExtension", className: "col-fileext" },
                             { data: "fileSize", render: sizeAsMB() },
                             { data: "createdAt", render: customDate() },
@@ -401,6 +417,9 @@
                         }
                     });
                 }
+                table.on("draw.dt", () => {
+                    site.initTooltips();
+                });
             }
 
             $(".datatables").each(async function() {
