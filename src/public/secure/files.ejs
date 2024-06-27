@@ -185,15 +185,19 @@
             function fileEmbedRender() {
                 return function(data, type, row) {
                     const url = row.url;
+                    const ext = url.match(/\.(mp4|ogg|webm)$/)?.[1];
+                    let filename = data || `${row.fileName}`; // filename here is originalFileName. but hidden files do not have it, so get the filename on disk
+                    if(ext && !data){
+                        filename+=`.${ext}`;
+                    }
                     if(url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null){
-                        return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<img src='${url}' />">${data}</span>`;
+                        return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<img src='${url}' />">${filename}</span>`;
                     }else if(url.match(/\.(mp4|ogg|webm)$/) != null){
-                        const ext = url.match(/\.(mp4|ogg|webm)$/)[1];
                         let type = `video/${ext}`;
                         const videoTag = `<video width='320' height='240' autoplay><source src='${url}' type='${type}'></video>`;
-                        return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="${videoTag}">${data}</span>`;
+                        return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="${videoTag}">${filename}</span>`;
                     }
-                    return `<span>${data}</span>`;
+                    return `<span>${filename}</span>`;
                 };
             }
 
