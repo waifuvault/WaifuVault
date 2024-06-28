@@ -219,11 +219,14 @@
             rootMedia.interfaceColors.set("grid", am5.color(0xffffff));
             rootMedia.interfaceColors.set("text", am5.color(0xffffff));
             const chartMedia = rootMedia.container.children.push(am5percent.PieChart.new(rootMedia, {
-                layout: rootMedia.horizontalLayout,
+                layout: rootMedia.verticalHorizontal,
                 radius: am5.percent(70)
             }));
-            const legendMedia = chartMedia.children.push(am5.Legend.new(rootMedia, {}));
+
+            const legendMedia = chartMedia.children.push(am5.Legend.new(rootMedia, {
+            }));
             legendMedia.data.setAll(chartMedia.series.values);
+
             const modalMedia = am5.Modal.new(rootMedia, {
                 content: "The chart has no data"
             });
@@ -239,6 +242,10 @@
             const mediaItems = summarizeProperty(stats.entries, "mediaType", false, false);
             mediaItems.sort((a, b) => b.value - a.value);
             seriesMedia.data.setAll(mediaItems.slice(0, 10));
+            seriesMedia.labels.template.setAll({
+                text: "",
+                textType: "circular"
+            });
 
             //Upload velocity
             const rootUpload = am5.Root.new("chartUploadVelocity");
