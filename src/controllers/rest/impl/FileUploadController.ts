@@ -18,7 +18,7 @@ import { FileService } from "../../../services/FileService.js";
 @Controller("/")
 @Description("This is the API documentation for uploading and sharing files.")
 @Name("File Uploader")
-@Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked")
+@(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class FileUploadController extends BaseRestController {
     public constructor(
         @Inject() private fileUploadService: FileUploadService,
@@ -29,12 +29,12 @@ export class FileUploadController extends BaseRestController {
     }
 
     @Put()
-    @Returns(StatusCodes.CREATED, FileUploadResponseDto).Description("If the file was stored successfully")
-    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException).Description("If the request was malformed")
-    @Returns(StatusCodes.OK, FileUploadResponseDto).Description("If the file already exists")
-    @Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, DefaultRenderException).Description(
+    @(Returns(StatusCodes.CREATED, FileUploadResponseDto).Description("If the file was stored successfully"))
+    @(Returns(StatusCodes.BAD_REQUEST, DefaultRenderException).Description("If the request was malformed"))
+    @(Returns(StatusCodes.OK, FileUploadResponseDto).Description("If the file already exists"))
+    @(Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, DefaultRenderException).Description(
         "If the media type of the file specified was blocked",
-    )
+    ))
     @Example({
         description: "foo",
         summary: "bnar",
