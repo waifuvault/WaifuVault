@@ -12,7 +12,7 @@ import { DefaultRenderException } from "../../../../model/rest/DefaultRenderExce
 
 @Hidden()
 @Controller("/admin")
-@Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked")
+@(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 @Authorize("loginAuthProvider")
 export class AdminController extends BaseRestController {
     public constructor(@Inject() private adminService: AdminService) {

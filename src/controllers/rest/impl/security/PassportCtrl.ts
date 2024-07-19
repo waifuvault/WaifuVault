@@ -15,7 +15,7 @@ import type { Request, Response } from "express";
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
 @Hidden()
-@Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked")
+@(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class PassportCtrl extends BaseRestController {
     public constructor(@Inject() private usersService: UserService) {
         super();
