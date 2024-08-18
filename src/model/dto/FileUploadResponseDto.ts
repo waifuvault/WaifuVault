@@ -33,6 +33,11 @@ export class FileUploadResponseDto {
     public url: string;
 
     @Property()
+    @Description("The bucket that this file belongs to")
+    @Nullable(String)
+    public bucket: string | null = null;
+
+    @Property()
     @Description("How long this file will exist for")
     @Nullable(Number, String)
     @Default(Number)
@@ -45,6 +50,7 @@ export class FileUploadResponseDto {
     public static fromModel(fileUploadModel: FileUploadModel, baseUrl: string, format = false): FileUploadResponseDto {
         const builder = Builder(FileUploadResponseDto)
             .token(fileUploadModel.token)
+            .bucket(fileUploadModel.bucketToken ?? null)
             .url(FileUploadResponseDto.getUrl(fileUploadModel, baseUrl));
         const expiresIn = fileUploadModel.expiresIn;
         if (format && expiresIn !== null) {

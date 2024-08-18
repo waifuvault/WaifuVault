@@ -1,8 +1,9 @@
-import { Column, Entity, Index } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
 import { AbstractModel } from "./AbstractModel.js";
 import { filesDir, FileUtils } from "../../utils/Utils.js";
 import type { EntrySettings, ProtectionLevel } from "../../utils/typeings.js";
 import path from "node:path";
+import type { BucketModel } from "./Bucket.model.js";
 
 @Entity()
 @Index(["token"], {
@@ -86,6 +87,20 @@ export class FileUploadModel extends AbstractModel {
         default: false,
     })
     public encrypted: boolean;
+
+    @Column({
+        nullable: true,
+    })
+    public bucketToken: string | null;
+
+    @ManyToOne("BucketModel", "submissions", {
+        ...AbstractModel.cascadeOps,
+    })
+    @JoinColumn({
+        name: "bucketToken",
+        referencedColumnName: "bucketToken",
+    })
+    public bucket: BucketModel;
 
     public get expiresIn(): number | null {
         if (this.expires === null) {

@@ -3,4 +3,5 @@
  */
 
 export * from "./BasicProtocol.js";
+export * from "./BucketProtocol.js";
 export * from "./LoginLocalProtocol.js";

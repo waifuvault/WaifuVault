@@ -9,10 +9,24 @@ import type { Request, Response } from "express";
 @Hidden()
 export class HomeView {
     public constructor(@Inject() private captchaManager: CaptchaManager) {}
+
     @Get()
     @View("index.ejs")
     public showRoot(): unknown {
         return null;
+    }
+
+    @Get("/bucketAccess")
+    @View("bucketAccess.ejs")
+    public showBucketLoginPage(@Req() req: Request, @Res() res: Response): unknown {
+        if (req.user) {
+            // at this point, the `user` is the bucket model
+            res.redirect("/admin/bucket");
+        }
+        const captchaType = this.activeCaptchaService;
+        return {
+            captchaType,
+        };
     }
 
     @Get("/login")

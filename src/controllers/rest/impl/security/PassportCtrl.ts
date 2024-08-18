@@ -21,6 +21,15 @@ export class PassportCtrl extends BaseRestController {
         super();
     }
 
+    @Post("/authenticate_bucket")
+    @UseBefore(CaptchaMiddleWare)
+    @Authenticate("bucketAuthProvider", { failWithError: true })
+    @Returns(StatusCodes.MOVED_TEMPORARILY)
+    @Returns(StatusCodes.UNAUTHORIZED)
+    public authenticateBucket(@Res() res: Response): void {
+        res.redirect("/admin/bucket");
+    }
+
     @Post("/login")
     @UseBefore(CaptchaMiddleWare)
     @Authenticate("loginAuthProvider", { failWithError: true })

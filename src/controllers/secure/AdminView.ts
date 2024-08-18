@@ -18,14 +18,14 @@ export class AdminView {
     }
 
     @Get("/files")
-    @Authorize("loginAuthProvider")
+    @Authorize(["loginAuthProvider", "bucketAuthProvider"])
     @View("/secure/files.ejs")
     public showFileAdmin(): unknown {
         return null;
     }
 
     @Get("/stats")
-    @Authorize("loginAuthProvider")
+    @Authorize(["loginAuthProvider", "bucketAuthProvider"])
     @View("/secure/stats.ejs")
     public showStatistics(): unknown {
         return null;

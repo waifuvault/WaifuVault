@@ -3,3 +3,4 @@
  */
 
 export * from "./AdminView.js";
+export * from "./BucketView.js";

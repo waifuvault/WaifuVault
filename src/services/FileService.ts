@@ -32,12 +32,8 @@ export class FileService {
         if (entries.length === 0) {
             return false;
         }
-
-        const fileDeletePArr = entries.map(entry => {
-            return FileUtils.deleteFile(entry.fullFileNameOnSystem, true);
-        });
         try {
-            await Promise.all(fileDeletePArr);
+            await this.deleteFilesFromDisk(entries);
             deleted = await this.repo.deleteEntries(tokens);
         } catch (e) {
             this.logger.error(e);
@@ -45,6 +41,13 @@ export class FileService {
         }
         await this.recordInfoSocket.emit();
         return deleted;
+    }
+
+    public async deleteFilesFromDisk(entries: FileUploadModel[]): Promise<void> {
+        const fileDeletePArr = entries.map(entry => {
+            return FileUtils.deleteFile(entry.fullFileNameOnSystem, true);
+        });
+        await Promise.all(fileDeletePArr);
     }
 
     public async getEntry(
