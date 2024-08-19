@@ -22,7 +22,7 @@ export class BucketController extends BaseRestController {
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
-    @Get("createBucket")
+    @Get("/createBucket")
     @Returns(StatusCodes.OK, BucketDto)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Create a new bucket")
