@@ -24,5 +24,5 @@ export class BucketModel extends AbstractModel {
         cascade: true,
         eager: true,
     })
-    public files: FileUploadModel[];
+    public files?: FileUploadModel[];
 }

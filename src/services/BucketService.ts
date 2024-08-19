@@ -64,7 +64,7 @@ export class BucketService {
             this.logger.error(`Unable to delete bucket with id: "${bucket.bucketToken}"`);
             return false;
         }
-        const filesToDelete = bucket.files;
+        const filesToDelete = bucket.files ?? [];
         try {
             await this.fileService.deleteFilesFromDisk(filesToDelete);
         } catch (e) {
