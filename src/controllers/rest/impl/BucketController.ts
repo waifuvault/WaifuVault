@@ -7,8 +7,8 @@ import { BucketService } from "../../../services/BucketService.js";
 import { BucketDto } from "../../../model/dto/BucketDto.js";
 import { PathParams } from "@tsed/common";
 import { BadRequest } from "@tsed/exceptions";
-import { Authorize } from "@tsed/passport";
 import GlobalEnv from "../../../model/constants/GlobalEnv.js";
+import { BodyParams } from "@tsed/platform-params";
 
 @Controller("/bucket")
 @Description("API for creating and deleting buckets.")
@@ -46,12 +46,10 @@ export class BucketController extends BaseRestController {
     @Get()
     @Returns(StatusCodes.OK, BucketDto)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
-    @(Returns(StatusCodes.UNAUTHORIZED, DefaultRenderException).Description("if you are not authorised"))
     @Description("Get a bucket and all associated files")
     @Summary("Get a bucket")
-    @Authorize("bucketAuthProvider")
-    public async getBucket(): Promise<unknown> {
-        const bucket = (await this.bucketService.getBucket())!;
+    public async getBucket(@BodyParams("bucket_token") bucketToken: string): Promise<unknown> {
+        const bucket = (await this.bucketService.getBucket(bucketToken))!;
         return BucketDto.fromModel(bucket, this.baseUrl);
     }
 }
