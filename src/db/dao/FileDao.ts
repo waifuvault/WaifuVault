@@ -73,12 +73,22 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         sortColumn?: string,
         sortOrder?: string,
         search?: string,
+        bucket?: string,
         transaction?: EntityManager,
     ): Promise<FileUploadModel[]> {
         const orderOptions = sortColumn ? { [sortColumn]: sortOrder } : {};
         if (search) {
             return this.getRepository(transaction).find({
-                where: this.getSearchQuery(search),
+                where: this.getSearchQuery(search, bucket),
+                order: orderOptions,
+                skip: start,
+                take: records,
+                ...this.relation,
+            });
+        }
+        if (bucket) {
+            return this.getRepository(transaction).find({
+                where: [{ bucketToken: Equal(bucket) }],
                 order: orderOptions,
                 skip: start,
                 take: records,

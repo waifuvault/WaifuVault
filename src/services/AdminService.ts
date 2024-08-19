@@ -40,11 +40,10 @@ export class AdminService {
         sortColumn = "id",
         sortDir = "ASC",
         search?: string,
+        bucket?: string,
     ): Promise<FileEntryDto[]> {
-        const bucket = await this.bucketService.getBucket();
-        const entries = await this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search);
-        const finalEntries = bucket ? entries.filter(x => x.bucketToken == bucket.bucketToken) : entries;
-        return this.buildFileEntryDtos(finalEntries.filter(entry => !entry.hasExpired));
+        const entries = await this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search, bucket);
+        return this.buildFileEntryDtos(entries.filter(entry => !entry.hasExpired));
     }
 
     private async buildFileEntryDtos(entries: FileUploadModel[]): Promise<FileEntryDto[]> {

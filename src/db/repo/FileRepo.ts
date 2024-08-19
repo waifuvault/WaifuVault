@@ -41,8 +41,9 @@ export class FileRepo {
         sortColumn?: string,
         sortDir?: string,
         search?: string,
+        bucket?: string,
     ): Promise<FileUploadModel[]> {
-        return this.fileDao.getAllEntriesOrdered(start, records, sortColumn, sortDir, search);
+        return this.fileDao.getAllEntriesOrdered(start, records, sortColumn, sortDir, search, bucket);
     }
 
     public deleteEntries(tokens: string[]): Promise<boolean> {

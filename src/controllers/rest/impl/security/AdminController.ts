@@ -44,9 +44,16 @@ export class AdminController extends BaseRestController {
             sortOrder = order[0]?.dir.toUpperCase();
             sortColumn = columns[order[0]?.column ?? 0]?.data;
         }
-        const data = await this.adminService.getPagedEntries(start, length, sortColumn, sortOrder, searchVal);
         const bucket = await this.bucketService.getBucket();
         const bucketToken = bucket ? bucket.bucketToken : undefined;
+        const data = await this.adminService.getPagedEntries(
+            start,
+            length,
+            sortColumn,
+            sortOrder,
+            searchVal,
+            bucketToken,
+        );
         const records = searchVal
             ? await this.adminService.getFileSearchRecordCount(search.value, bucketToken)
             : await this.adminService.getFileRecordCount(bucketToken);
