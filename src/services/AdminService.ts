@@ -32,7 +32,7 @@ export class AdminService {
     public async getAllEntries(): Promise<FileEntryDto[]> {
         const allEntries = await this.repo.getAllEntries();
         const bucket = await this.bucketService.getBucket();
-        const finalEntries = bucket ? allEntries.filter(x => x.bucketToken == bucket.bucketToken) : allEntries;
+        const finalEntries = bucket ? (bucket.files ?? []) : allEntries;
         return this.buildFileEntryDtos(finalEntries.filter(entry => !entry.hasExpired));
     }
 
