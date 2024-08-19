@@ -44,7 +44,7 @@ export class BucketService {
     }
 
     private getLoggedInUserBucket(): Promise<BucketModel | null> {
-        const currentBucketInfo = this.$ctx?.request?.request?.user ?? (null as CustomUserInfoModel | null);
+        const currentBucketInfo: CustomUserInfoModel | null = this.$ctx?.request?.request?.user ?? null;
         if (!currentBucketInfo) {
             return Promise.resolve(null);
         }

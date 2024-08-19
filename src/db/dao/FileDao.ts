@@ -4,6 +4,7 @@ import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 import { DataSource, EntityManager, Equal, In, IsNull, Like, MoreThan } from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
+import { FindOptionsRelations } from "typeorm/find-options/FindOptionsRelations.js";
 
 @Injectable()
 export class FileDao extends AbstractDao<FileUploadModel> {
@@ -11,13 +12,22 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         super(ds, FileUploadModel);
     }
 
+    private readonly relation: { relations: FindOptionsRelations<FileUploadModel> } = {
+        relations: {
+            bucket: true,
+        },
+    };
+
     public saveEntry(entry: FileUploadModel, transaction?: EntityManager): Promise<FileUploadModel> {
         return this.getRepository(transaction).save(entry);
     }
 
     public getEntry(tokens: string[], transaction?: EntityManager): Promise<FileUploadModel[]> {
-        return this.getRepository(transaction).findBy({
-            token: In(tokens),
+        return this.getRepository(transaction).find({
+            where: {
+                token: In(tokens),
+            },
+            ...this.relation,
         });
     }
 
@@ -36,8 +46,11 @@ export class FileDao extends AbstractDao<FileUploadModel> {
 
     public getAllEntries(ids: number[] = [], transaction?: EntityManager): Promise<FileUploadModel[]> {
         if (ids.length > 0) {
-            return this.getRepository(transaction).findBy({
-                id: In(ids),
+            return this.getRepository(transaction).find({
+                where: {
+                    id: In(ids),
+                },
+                ...this.relation,
             });
         }
         return this.getRepository(transaction).find();
@@ -69,12 +82,14 @@ export class FileDao extends AbstractDao<FileUploadModel> {
                 order: orderOptions,
                 skip: start,
                 take: records,
+                ...this.relation,
             });
         }
         return this.getRepository(transaction).find({
             order: orderOptions,
             skip: start,
             take: records,
+            ...this.relation,
         });
     }
 
@@ -136,8 +151,11 @@ export class FileDao extends AbstractDao<FileUploadModel> {
     }
 
     public getAllEntriesForIp(ip: string, transaction?: EntityManager): Promise<FileUploadModel[]> {
-        return this.getRepository(transaction).findBy({
-            ip,
+        return this.getRepository(transaction).find({
+            where: {
+                ip,
+            },
+            ...this.relation,
         });
     }
 }
