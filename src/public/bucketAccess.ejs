@@ -64,8 +64,11 @@ function getHtml() {
                 <div class="card-header text-center">
                     Bucket token
                 </div>
-                <div class="card-body">
-                    <form class="p-lg-3" action="/rest/auth/authenticate_bucket" method="post">
+                <div class="card-body p-lg-3">
+                    <div class="alert alert-info">
+                        some shit about buckets and how they work here
+                    </div>
+                    <form action="/rest/auth/authenticate_bucket" method="post">
                         <div class="form-floating mb-3">
                             <input required name="token" type="text" class="form-control" id="floatingPassword" placeholder="Bucket token">
                             <label for="floatingPassword">Bucket token</label>

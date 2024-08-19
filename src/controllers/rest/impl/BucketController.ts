@@ -38,15 +38,15 @@ export class BucketController extends BaseRestController {
     @Summary("Delete a bucket")
     public async deleteBucket(@PathParams("token") token: string): Promise<unknown> {
         if (!(await this.bucketService.deleteBucket(token))) {
-            throw new BadRequest(`Unable to delete bucket with id ${token}`);
+            throw new BadRequest(`Unable to delete bucket with token ${token}`);
         }
         return true;
     }
 
-    @Get("/")
+    @Get()
     @Returns(StatusCodes.OK, BucketDto)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
-    @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("if you are not authorised"))
+    @(Returns(StatusCodes.UNAUTHORIZED, DefaultRenderException).Description("if you are not authorised"))
     @Description("Get a bucket and all associated files")
     @Summary("Get a bucket")
     @Authorize("bucketAuthProvider")

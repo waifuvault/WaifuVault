@@ -31,7 +31,7 @@ export class BucketProtocol implements OnVerify {
         if (!bucket) {
             throw new BucketAuthenticationException({
                 name: "BucketAuthenticationException",
-                message: `Bucket with ${token} is not found`,
+                message: `Bucket with token ${token} is not found`,
                 status: 401,
             });
         }

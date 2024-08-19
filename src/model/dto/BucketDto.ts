@@ -3,6 +3,7 @@ import { BucketModel } from "../db/Bucket.model.js";
 import { Builder } from "builder-pattern";
 import { FileUploadResponseDto } from "./FileUploadResponseDto.js";
 
+@Name("WaifuBucket")
 export class BucketDto {
     @Property()
     @Description("The token of the bucket")

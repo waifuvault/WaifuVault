@@ -61,7 +61,7 @@ export class BucketService {
         }
         const didDeleteBucket = await this.bucketRepo.deleteBucket(bucket.bucketToken);
         if (!didDeleteBucket) {
-            this.logger.error(`Unable to delete bucket with id: "${bucket.bucketToken}"`);
+            this.logger.error(`Unable to delete bucket with token: "${bucket.bucketToken}"`);
             return false;
         }
         const filesToDelete = bucket.files ?? [];
