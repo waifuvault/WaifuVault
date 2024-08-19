@@ -31,7 +31,9 @@ export class AdminService {
 
     public async getAllEntries(): Promise<FileEntryDto[]> {
         const allEntries = await this.repo.getAllEntries();
-        return this.buildFileEntryDtos(allEntries.filter(entry => !entry.hasExpired));
+        const bucket = await this.bucketService.getBucket();
+        const finalEntries = bucket ? allEntries.filter(x => x.bucketToken == bucket.bucketToken) : allEntries;
+        return this.buildFileEntryDtos(finalEntries.filter(entry => !entry.hasExpired));
     }
 
     public async getPagedEntries(

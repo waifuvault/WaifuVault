@@ -47,6 +47,7 @@
 <script src="https://cdn.amcharts.com/lib/5/themes/Responsive.js"></script>
 <script>
     document.getElementById("statsNav").classList.add("active");
+    const isUser = <% if(user.email) { %> true <% } else { %> false <% } %>;
 
     function sizeReadable(data) {
         const sizeKB = Math.floor(data / 1024);
@@ -161,7 +162,7 @@
 
     am5.ready(function() {
         getStats().then(stats => {
-            if (stats.totalFileCount === stats.realFileCount) {
+            if (stats.totalFileCount === stats.realFileCount || !isUser) {
                 document.getElementById("totalFiles").innerText = stats.totalFileCount;
             } else {
                 document.getElementById("totalFiles").innerText = `${stats.totalFileCount} (${stats.realFileCount} on filesystem)`;
