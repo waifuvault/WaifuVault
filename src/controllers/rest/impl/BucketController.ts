@@ -1,5 +1,5 @@
 import { Constant, Controller, Inject } from "@tsed/di";
-import { Delete, Description, Get, Name, Returns, Summary } from "@tsed/schema";
+import { Delete, Description, Get, Name, Post, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 import { BaseRestController } from "../BaseRestController.js";
@@ -32,7 +32,7 @@ export class BucketController extends BaseRestController {
     }
 
     @Delete("/:token")
-    @Returns(StatusCodes.OK, BucketDto)
+    @Returns(StatusCodes.OK, Boolean)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Delete a bucket and all associated data")
     @Summary("Delete a bucket")
@@ -43,13 +43,16 @@ export class BucketController extends BaseRestController {
         return true;
     }
 
-    @Get()
+    @Post()
     @Returns(StatusCodes.OK, BucketDto)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Get a bucket and all associated files")
     @Summary("Get a bucket")
     public async getBucket(@BodyParams("bucket_token") bucketToken: string): Promise<unknown> {
-        const bucket = (await this.bucketService.getBucket(bucketToken))!;
+        const bucket = await this.bucketService.getBucket(bucketToken);
+        if (!bucket) {
+            throw new BadRequest(`Unable to find bucket with token ${bucketToken}`);
+        }
         return BucketDto.fromModel(bucket, this.baseUrl);
     }
 }
