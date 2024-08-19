@@ -14,12 +14,16 @@
                     <a class="nav-link" id="statsNav" href="/admin/stats">Statistics</a>
                 </li>
                 <% if(user.email) { %>
-                <li class="nav-item">
-                    <a class="nav-link" id="userNav" href="/admin/user">User</a>
-                </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="userNav" href="/admin/user">User</a>
+                    </li>
                 <% } %>
                 <li class="nav-item">
-                    <a class="nav-link" href="/rest/auth/logout">Logout</a>
+                    <a class="nav-link" href="/rest/auth/logout">
+                        <% if(typeof bucket === "undefined"){ %>Logout
+                        <% }else{ %>Close bucket
+                        <% } %>
+                    </a>
                 </li>
             </ul>
         </div>

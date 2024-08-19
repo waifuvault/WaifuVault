@@ -33,7 +33,11 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card border-primary mb-3">
-                <div class="card-header">Current Entries</div>
+                <div class="card-header">Current Entries
+                    <% if(typeof bucket !== "undefined"){ %>
+                    for bucket: <%- bucket.bucketToken -%>
+                    <% } %>
+                </div>
                 <div class="card-body">
                     <table class="table submissionsTable datatables display nowrap" data-type="entries">
                         <thead>
@@ -54,7 +58,8 @@
             </div>
         </div>
     </div>
-    <div class="row mt-4" <% if(!user.email) { %> style="display:none;" <% } %> >
+    <div class="row mt-4"
+    <% if(user.email) { %>>
         <div class="col-md-12">
             <div class="card border-primary mb-3">
                 <div class="card-header">Blocked Ips</div>
@@ -71,6 +76,7 @@
                 </div>
             </div>
         </div>
+        <% } %>
     </div>
 </div>
 <!--modals-->
@@ -187,12 +193,12 @@
                     const url = row.url;
                     const ext = url.match(/\.(mp4|ogg|webm)$/)?.[1];
                     let filename = data || `${row.fileName}`; // filename here is originalFileName. but hidden files do not have it, so get the filename on disk
-                    if(ext && !data){
-                        filename+=`.${ext}`;
+                    if (ext && !data) {
+                        filename += `.${ext}`;
                     }
-                    if(url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null){
+                    if (url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null) {
                         return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<img src='${url}' />">${filename}</span>`;
-                    }else if(url.match(/\.(mp4|ogg|webm)$/) != null){
+                    } else if (url.match(/\.(mp4|ogg|webm)$/) != null) {
                         let type = `video/${ext}`;
                         const videoTag = `<video width='320' height='240' autoplay><source src='${url}' type='${type}'></video>`;
                         return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="${videoTag}">${filename}</span>`;
@@ -338,7 +344,7 @@
                                 reloadTable(["entries", "ips"]);
                             }
                         },
-                        <% } %>
+                            <% } %>
                         {
                             extend: "selectedSingle",
                             text: "Details",
