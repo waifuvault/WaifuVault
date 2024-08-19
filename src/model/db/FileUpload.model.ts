@@ -93,7 +93,7 @@ export class FileUploadModel extends AbstractModel {
     })
     public bucketToken: string | null;
 
-    @ManyToOne("BucketModel", "submissions", {
+    @ManyToOne("BucketModel", "files", {
         ...AbstractModel.cascadeOps,
     })
     @JoinColumn({
