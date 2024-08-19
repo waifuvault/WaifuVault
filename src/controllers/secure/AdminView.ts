@@ -20,15 +20,19 @@ export class AdminView {
     @Get("/files")
     @Authorize(["loginAuthProvider", "bucketAuthProvider"])
     @View("/secure/files.ejs")
-    public showFileAdmin(): unknown {
-        return null;
+    public showFileAdmin(@Req() req: Request): unknown {
+        return {
+            user: req.user as CustomUserInfoModel,
+        };
     }
 
     @Get("/stats")
     @Authorize(["loginAuthProvider", "bucketAuthProvider"])
     @View("/secure/stats.ejs")
-    public showStatistics(): unknown {
-        return null;
+    public showStatistics(@Req() req: Request): unknown {
+        return {
+            user: req.user as CustomUserInfoModel,
+        };
     }
 
     @Get("/user")

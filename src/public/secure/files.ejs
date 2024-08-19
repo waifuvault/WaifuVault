@@ -54,7 +54,7 @@
             </div>
         </div>
     </div>
-    <div class="row mt-4">
+    <div class="row mt-4" <% if(!user.email) { %> style="display:none;" <% } %> >
         <div class="col-md-12">
             <div class="card border-primary mb-3">
                 <div class="card-header">Blocked Ips</div>
@@ -321,6 +321,7 @@
                                 reloadTable(["entries"]);
                             }
                         },
+                            <% if(user.email) { %>
                         {
                             extend: "selectedSingle",
                             text: "Ban IP",
@@ -337,6 +338,7 @@
                                 reloadTable(["entries", "ips"]);
                             }
                         },
+                        <% } %>
                         {
                             extend: "selectedSingle",
                             text: "Details",

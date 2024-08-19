@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@tsed/di";
 import { AbstractDao } from "./AbstractDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
-import { DataSource, EntityManager, In, IsNull, Like, MoreThan } from "typeorm";
+import { DataSource, EntityManager, Equal, In, IsNull, Like, MoreThan } from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
 
 @Injectable()
@@ -84,7 +84,21 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         });
     }
 
-    public getRecordCount(transaction?: EntityManager): Promise<number> {
+    public getRecordCount(bucket?: string, transaction?: EntityManager): Promise<number> {
+        if (bucket) {
+            return this.getRepository(transaction).count({
+                where: [
+                    {
+                        expires: IsNull(),
+                        bucketToken: Equal(bucket),
+                    },
+                    {
+                        expires: MoreThan(Date.now()),
+                        bucketToken: Equal(bucket),
+                    },
+                ],
+            });
+        }
         return this.getRepository(transaction).count({
             where: [
                 {
@@ -97,14 +111,22 @@ export class FileDao extends AbstractDao<FileUploadModel> {
         });
     }
 
-    public getSearchRecordCount(search: string, transaction?: EntityManager): Promise<number> {
+    public getSearchRecordCount(search: string, bucket?: string, transaction?: EntityManager): Promise<number> {
         return this.getRepository(transaction).count({
-            where: this.getSearchQuery(search),
+            where: this.getSearchQuery(search, bucket),
         });
     }
 
-    private getSearchQuery(search: string): Record<string, FindOperator<string>>[] {
+    private getSearchQuery(search: string, bucket?: string): Record<string, FindOperator<string>>[] {
         search = `%${search}%`;
+        if (bucket) {
+            return [
+                { fileName: Like(search), bucketToken: Equal(bucket) },
+                { fileExtension: Like(search), bucketToken: Equal(bucket) },
+                { ip: Like(search), bucketToken: Equal(bucket) },
+                { originalFileName: Like(search), bucketToken: Equal(bucket) },
+            ];
+        }
         return [
             { fileName: Like(search) },
             { fileExtension: Like(search) },

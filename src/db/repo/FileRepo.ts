@@ -49,11 +49,11 @@ export class FileRepo {
         return this.fileDao.deleteEntries(tokens);
     }
 
-    public getRecordCount(): Promise<number> {
-        return this.fileDao.getRecordCount();
+    public getRecordCount(bucket?: string): Promise<number> {
+        return this.fileDao.getRecordCount(bucket);
     }
 
-    public getSearchRecordCount(search: string): Promise<number> {
-        return this.fileDao.getSearchRecordCount(search);
+    public getSearchRecordCount(search: string, bucket?: string): Promise<number> {
+        return this.fileDao.getSearchRecordCount(search, bucket);
     }
 }

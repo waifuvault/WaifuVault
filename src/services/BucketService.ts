@@ -48,6 +48,9 @@ export class BucketService {
         if (!currentBucketInfo) {
             return Promise.resolve(null);
         }
+        if (currentBucketInfo.email) {
+            return Promise.resolve(null);
+        }
         return this.getBucket(Number.parseInt(currentBucketInfo.id));
     }
 

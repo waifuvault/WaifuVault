@@ -16,7 +16,7 @@ export class BucketDto {
     public files: FileUploadResponseDto[];
 
     public static fromModel(model: BucketModel, baseUrl: string): BucketDto {
-        const fileDtos = model.files.map(f => FileUploadResponseDto.fromModel(f, baseUrl));
+        const fileDtos = model.files ? model.files.map(f => FileUploadResponseDto.fromModel(f, baseUrl)) : [];
         return Builder(BucketDto).token(model.bucketToken).files(fileDtos).build();
     }
 }
