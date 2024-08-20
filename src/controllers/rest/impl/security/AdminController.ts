@@ -9,13 +9,17 @@ import { BaseRestController } from "../../BaseRestController.js";
 import { StatusCodes } from "http-status-codes";
 import type { DatatableColumn, DatatableOrder, DatatableSearch } from "../../../../utils/typeings.js";
 import { DefaultRenderException } from "../../../../model/rest/DefaultRenderException.js";
+import { BucketService } from "../../../../services/BucketService.js";
 
 @Hidden()
 @Controller("/admin")
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 @Authorize("loginAuthProvider")
 export class AdminController extends BaseRestController {
-    public constructor(@Inject() private adminService: AdminService) {
+    public constructor(
+        @Inject() private adminService: AdminService,
+        @Inject() private bucketService: BucketService,
+    ) {
         super();
     }
 
@@ -40,10 +44,19 @@ export class AdminController extends BaseRestController {
             sortOrder = order[0]?.dir.toUpperCase();
             sortColumn = columns[order[0]?.column ?? 0]?.data;
         }
-        const data = await this.adminService.getPagedEntries(start, length, sortColumn, sortOrder, searchVal);
+        const bucket = await this.bucketService.getBucket();
+        const bucketToken = bucket ? bucket.bucketToken : undefined;
+        const data = await this.adminService.getPagedEntries(
+            start,
+            length,
+            sortColumn,
+            sortOrder,
+            searchVal,
+            bucketToken,
+        );
         const records = searchVal
-            ? await this.adminService.getFileSearchRecordCount(search.value)
-            : await this.adminService.getFileRecordCount();
+            ? await this.adminService.getFileSearchRecordCount(search.value, bucketToken)
+            : await this.adminService.getFileRecordCount(bucketToken);
         return {
             draw: draw,
             recordsTotal: records,

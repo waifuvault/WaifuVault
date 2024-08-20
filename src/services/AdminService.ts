@@ -8,12 +8,16 @@ import { FileEntryDto } from "../model/dto/FileEntryDto.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { IpBlockedAwareFileEntry } from "../utils/typeings.js";
 import { IpBlackListModel } from "../model/db/IpBlackList.model.js";
+import { BucketRepo } from "../db/repo/BucketRepo.js";
+import { BucketService } from "./BucketService.js";
 
 @Service()
 export class AdminService {
     public constructor(
         @Inject() private repo: FileRepo,
+        @Inject() private bucketRepo: BucketRepo,
         @Inject() private ipBlackListRepo: IpBlackListRepo,
+        @Inject() private bucketService: BucketService,
         @Inject() private fileService: FileService,
     ) {}
 
@@ -27,7 +31,9 @@ export class AdminService {
 
     public async getAllEntries(): Promise<FileEntryDto[]> {
         const allEntries = await this.repo.getAllEntries();
-        return this.buildFileEntryDtos(allEntries.filter(entry => !entry.hasExpired));
+        const bucket = await this.bucketService.getBucket();
+        const finalEntries = bucket ? (bucket.files ?? []) : allEntries;
+        return this.buildFileEntryDtos(finalEntries.filter(entry => !entry.hasExpired));
     }
 
     public async getPagedEntries(
@@ -36,8 +42,9 @@ export class AdminService {
         sortColumn = "id",
         sortDir = "ASC",
         search?: string,
+        bucket?: string,
     ): Promise<FileEntryDto[]> {
-        const entries = await this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search);
+        const entries = await this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search, bucket);
         return this.buildFileEntryDtos(entries.filter(entry => !entry.hasExpired));
     }
 
@@ -53,12 +60,12 @@ export class AdminService {
         });
     }
 
-    public getFileRecordCount(): Promise<number> {
-        return this.repo.getRecordCount();
+    public getFileRecordCount(bucket?: string): Promise<number> {
+        return this.repo.getRecordCount(bucket);
     }
 
-    public getFileSearchRecordCount(search: string): Promise<number> {
-        return this.repo.getSearchRecordCount(search);
+    public getFileSearchRecordCount(search: string, bucket?: string): Promise<number> {
+        return this.repo.getSearchRecordCount(search, bucket);
     }
 
     public getAllBlockedIps(): Promise<IpBlackListModel[]> {

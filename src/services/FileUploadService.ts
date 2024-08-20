@@ -49,6 +49,7 @@ export class FileUploadService {
         options,
         password,
         secretToken,
+        bucketToken,
     }: fileUploadProps): Promise<[FileUploadResponseDto, boolean]> {
         const { expires } = options;
         let resourcePath: string | undefined;
@@ -65,6 +66,8 @@ export class FileUploadService {
             const fileSize = await FileUtils.getFileSize(path.basename(resourcePath));
             uploadEntry.fileSize(fileSize);
             const checksum = await this.getFileHash(resourcePath);
+
+            uploadEntry.bucketToken(bucketToken ?? null);
 
             const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
             if (existingFileModel) {

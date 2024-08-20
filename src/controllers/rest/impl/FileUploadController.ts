@@ -1,5 +1,5 @@
 import { Controller, Inject } from "@tsed/di";
-import { Delete, Description, Example, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
+import { Delete, Description, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
 import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto.js";
 import { BadRequest } from "@tsed/exceptions";
@@ -16,7 +16,7 @@ import { FileUploadQueryParameters } from "../../../model/rest/FileUploadQueryPa
 import { FileService } from "../../../services/FileService.js";
 
 @Controller("/")
-@Description("This is the API documentation for uploading and sharing files.")
+@Description("API for uploading and sharing files.")
 @Name("File Uploader")
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class FileUploadController extends BaseRestController {
@@ -28,17 +28,13 @@ export class FileUploadController extends BaseRestController {
         super();
     }
 
-    @Put()
+    @Put("/:bucketToken?")
     @(Returns(StatusCodes.CREATED, FileUploadResponseDto).Description("If the file was stored successfully"))
     @(Returns(StatusCodes.BAD_REQUEST, DefaultRenderException).Description("If the request was malformed"))
     @(Returns(StatusCodes.OK, FileUploadResponseDto).Description("If the file already exists"))
     @(Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, DefaultRenderException).Description(
         "If the media type of the file specified was blocked",
     ))
-    @Example({
-        description: "foo",
-        summary: "bnar",
-    })
     @Summary("Upload a file or send URL")
     @Description(
         "Upload a file or specify URL to a file. Use the location header in the response or the url prop in the JSON to get the URL of the file",
@@ -78,6 +74,8 @@ export class FileUploadController extends BaseRestController {
         )
         @BodyParams("password")
         password?: string,
+        @PathParams("bucketToken")
+        bucketToken?: string,
     ): Promise<unknown> {
         if (file && url) {
             if (file) {
@@ -99,6 +97,7 @@ export class FileUploadController extends BaseRestController {
                 options: params,
                 password,
                 secretToken,
+                bucketToken,
             });
         } catch (e) {
             this.logger.error(e.message);

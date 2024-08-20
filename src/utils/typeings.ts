@@ -77,4 +77,11 @@ export type fileUploadProps = {
     options: FileUploadQueryParameters;
     password?: string;
     secretToken?: string;
+    bucketToken?: string;
+};
+
+export type PassportAuthenticationError = {
+    name: string;
+    message: string;
+    status: number;
 };

@@ -41,19 +41,20 @@ export class FileRepo {
         sortColumn?: string,
         sortDir?: string,
         search?: string,
+        bucket?: string,
     ): Promise<FileUploadModel[]> {
-        return this.fileDao.getAllEntriesOrdered(start, records, sortColumn, sortDir, search);
+        return this.fileDao.getAllEntriesOrdered(start, records, sortColumn, sortDir, search, bucket);
     }
 
     public deleteEntries(tokens: string[]): Promise<boolean> {
         return this.fileDao.deleteEntries(tokens);
     }
 
-    public getRecordCount(): Promise<number> {
-        return this.fileDao.getRecordCount();
+    public getRecordCount(bucket?: string): Promise<number> {
+        return this.fileDao.getRecordCount(bucket);
     }
 
-    public getSearchRecordCount(search: string): Promise<number> {
-        return this.fileDao.getSearchRecordCount(search);
+    public getSearchRecordCount(search: string, bucket?: string): Promise<number> {
+        return this.fileDao.getSearchRecordCount(search, bucket);
     }
 }

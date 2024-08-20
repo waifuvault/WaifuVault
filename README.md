@@ -87,6 +87,56 @@ The available `CAPTCHA_SERVICE` values are:
     npm run start:prod
 ```
 
+## Buckets Admin Feature
+
+Buckets are virtual collections of files that can be accessed with a token.  When a bucket is created, the token is 
+provided.
+
+> **Note Well** The bucket key provides full access to the files, including the ability to delete them, do not share the bucket key.
+> It is intended to provide users the ability to manage their own files.
+
+### Usage
+
+To login to the bucket admin page, use the following URL, relative to the base URL:
+
+```
+/admin/bucket
+```
+
+Once the key is provided, the user will be taken to the file management page.  This is very similar to the main file 
+management page of the admin feature, but restricted to the files contained in the bucket.
+
+### Bucket File Management Operations
+
+On the navigation bar at the top, select **File Management** to get to the file management page.
+
+Delete a file, by selecting it and pressing Delete File. You will be asked if you are sure.
+
+![Delete](https://waifuvault.moe/f/1724106896973/BucketDelete.png)
+
+Download a file, by selecting it and pressing Download File.
+
+![Download](https://waifuvault.moe/f/1724107129053/BucketDownload.png)
+
+Details on a file, by selecting it and pressing Details. The longer fields have copy buttons on them in the details
+panel.
+
+![Details](https://waifuvault.moe/f/1724107243548/BucketDetails.png)
+
+### Bucket Statistics
+
+On the navigation bar at the top, select **Statistics** to get to the statistics page.
+
+This page shows overall statistics for the files uploaded to the site:
+
+* Total Number of Files Uploaded
+* Total Size of Files Uploaded
+* File Size Distribution of Files Uploaded
+* Top 10 Media Types of Files Uploaded
+* File Protection Level Distribution
+
+![Stats](https://waifuvault.moe/f/1724107884794/BucketStats.png)
+
 ## Admin Feature
 
 This application comes with a useful admin site that will allow you to control the files that are uploaded, and to
