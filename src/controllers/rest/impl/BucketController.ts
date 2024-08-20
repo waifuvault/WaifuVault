@@ -22,7 +22,7 @@ export class BucketController extends BaseRestController {
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
-    @Get("/createBucket")
+    @Get("/create")
     @Returns(StatusCodes.OK, BucketDto)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Create a new bucket")
@@ -43,7 +43,7 @@ export class BucketController extends BaseRestController {
         return true;
     }
 
-    @Post()
+    @Post("/get")
     @Returns(StatusCodes.OK, BucketDto)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Get a bucket and all associated files")
