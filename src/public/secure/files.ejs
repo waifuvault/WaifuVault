@@ -185,13 +185,14 @@
             const progressWrapper = document.getElementById("progressWrapper");
             const progressbar = document.getElementById("uploadProgress");
 
-            $('.btn-bucket-upload').click(function() {
-               const file = $('#uploadFile').get(0).files[0];
-               const expires = $('#expires').val();
-               const password = $('#password').val();
-               const hideFileName = $('#hideFilename').is(':checked');
-               const oneTimeDownload = $('#oneTimeDownload').is(':checked');
-               uploadFile(file, '<%- bucket.bucketToken %>', expires, password, hideFileName, oneTimeDownload);
+            document.querySelector('.btn-bucket-upload').addEventListener('click', function() {
+                const file = document.getElementById('uploadFile').files[0];
+                const expires = document.getElementById('expires').value;
+                const password = document.getElementById('password').value;
+                const hideFileName = document.getElementById('hideFilename').checked;
+                const oneTimeDownload = document.getElementById('oneTimeDownload').checked;
+
+                uploadFile(file, '<%- bucket.bucketToken %>', expires, password, hideFileName, oneTimeDownload);
             });
 
             function uploadFile(file, bucket, expires, password, hideFilename, oneTimeDownload) {
