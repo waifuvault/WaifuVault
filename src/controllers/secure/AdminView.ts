@@ -16,6 +16,7 @@ export class AdminView {
         res.redirect("/admin/files");
         return {
             user: req.user as CustomUserInfoModel,
+            loginType: "user",
         };
     }
 
@@ -25,6 +26,7 @@ export class AdminView {
     public showFileAdmin(@Req() req: Request): unknown {
         return {
             user: req.user as CustomUserInfoModel,
+            loginType: "user",
         };
     }
 
@@ -34,6 +36,7 @@ export class AdminView {
     public showStatistics(@Req() req: Request): unknown {
         return {
             user: req.user as CustomUserInfoModel,
+            loginType: "user",
         };
     }
 
@@ -43,6 +46,7 @@ export class AdminView {
     public showUserAdmin(@Req() req: Request): unknown {
         return {
             user: req.user as CustomUserInfoModel,
+            loginType: "user",
         };
     }
 }

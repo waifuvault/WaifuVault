@@ -59,7 +59,7 @@
         </div>
     </div>
     <div class="row mt-4"
-    <% if(user.email) { %>>
+    <% if(loginType==="user") { %>>
         <div class="col-md-12">
             <div class="card border-primary mb-3">
                 <div class="card-header">Blocked Ips</div>
@@ -108,6 +108,59 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="bucketUploadModel" tabindex="-1" aria-labelledby="bucketUploadModelLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="fileDetailsModelLabel">Bucket File Upload</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="fileDetailsModelInfoContent">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input class="form-control" type="file" id="uploadFile">
+                            </div>
+                        </div>
+                        <div class="row py-2">
+                            <div class="col-md-3">
+                                <label for="expires" class="form-label">Expires</label>
+                                <input type="text" class="form-control" id="expires" placeholder="Eg 3d, 5h or 10m">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" placeholder="Optional">
+                            </div>
+                        </div>
+                        <div class="row py-2">
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="hideFilename">
+                                    <label class="form-check-label" for="hideFilename">
+                                        Hide Filename
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="oneTimeDownload">
+                                    <label class="form-check-label" for="oneTimeDownload">
+                                        One Time Download
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-bucket-upload">Upload File</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -121,6 +174,7 @@
 
         function loadDt() {
             const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
+            const uploadModal = new bootstrap.Modal(document.getElementById("bucketUploadModel"), { keyboard: false });
 
             function sizeAsMB() {
                 return function(data, type, row) {
@@ -327,7 +381,7 @@
                                 reloadTable(["entries"]);
                             }
                         },
-                            <% if(user.email) { %>
+                            <% if(loginType==="user") { %>
                         {
                             extend: "selectedSingle",
                             text: "Ban IP",
@@ -377,7 +431,17 @@
                                 const url = selectedRow.url;
                                 window.open(url, "_blank");
                             }
-                        });
+                        },
+                        <% if(loginType==="bucket") { %>
+                        {
+                            text: "Upload file",
+                            attr: { id: "uploadFileButton" },
+                            action: async (e, dt) => {
+                                uploadModal.show();
+                            }
+                        },
+                        <% } %>
+                        );
                 } else if (type === "ips") {
                     buttons.push({
                         extend: "selected",
