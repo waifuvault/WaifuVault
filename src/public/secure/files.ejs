@@ -183,7 +183,7 @@
             const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
             const uploadModal = new bootstrap.Modal(document.getElementById("bucketUploadModel"), { keyboard: false });
             const progressWrapper = document.getElementById("progressWrapper");
-            const progressbar = document.getElementById("downloadprogress");
+            const progressbar = document.getElementById("uploadProgress");
 
             $('.btn-bucket-upload').click(function() {
                const file = $('#uploadFile').get(0).files[0];
@@ -193,19 +193,6 @@
                const oneTimeDownload = $('#oneTimeDownload').is(':checked');
                uploadFile(file, '<%- bucket.bucketToken %>', expires, password, hideFileName, oneTimeDownload);
             });
-
-            function progress({ loaded, total }) {
-                const uploadDone = Math.round(loaded / total * 100) + "%";
-                progressbar.innerText = uploadDone;
-                progressbar.style.width = uploadDone;
-                progressWrapper.setAttribute("aria-valuenow", Math.round(loaded / total * 100).toString());
-            }
-
-            function resetProgress() {
-                progressbar.style.width = "0%";
-                progressbar.innerText = "";
-                progressWrapper.setAttribute("aria-valuenow", "0");
-            }
 
             function uploadFile(file, bucket, expires, password, hideFilename, oneTimeDownload) {
                 let params = `hide_filename=${hideFilename}&oneTimeDownload=${oneTimeDownload}`;
@@ -221,6 +208,15 @@
 
                 const xhr = new XMLHttpRequest();
                 xhr.open('PUT', `/rest/${bucket}?${params}`, true);
+
+                xhr.upload.onprogress = function(event) {
+                    if (event.lengthComputable) {
+                        const uploadDone = Math.round((event.loaded / event.total) * 100) + "%";
+                        progressbar.innerText = uploadDone;
+                        progressbar.style.width = uploadDone;
+                        progressWrapper.setAttribute("aria-valuenow", Math.round((event.loaded / event.total) * 100).toString());
+                    }
+                };
 
                 xhr.onload = function() {
                     if (xhr.status === 200 || xhr.status === 201) {
