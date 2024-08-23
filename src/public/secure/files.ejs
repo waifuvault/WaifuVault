@@ -153,6 +153,16 @@
                             </div>
                         </div>
                         <div class="row py-2">
+                            <div class="col-md-12 hidden" id="error">
+                                <div class="alert alert-danger" id="errorContent"></div>
+                            </div>
+                            <div class="col-md-12 hidden" id="success">
+                                <div class="alert alert-success">
+                                    File Successfully Uploaded
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row py-2">
                             <div class="col-md-12">
                                 <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressWrapper">
                                     <div id="uploadProgress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0"></div>
@@ -195,6 +205,12 @@
                 uploadFile(file, '<%- bucket.bucketToken %>', expires, password, hideFileName, oneTimeDownload);
             });
 
+            function resetProgress() {
+                progressbar.style.width = "0%";
+                progressbar.innerText = "";
+                progressWrapper.setAttribute("aria-valuenow", "0");
+            }
+
             function uploadFile(file, bucket, expires, password, hideFilename, oneTimeDownload) {
                 let params = `hide_filename=${hideFilename}&oneTimeDownload=${oneTimeDownload}`;
                 if(expires) {
@@ -221,14 +237,17 @@
 
                 xhr.onload = function() {
                     if (xhr.status === 200 || xhr.status === 201) {
-                        window.location.reload();
+                        Site.showSuccess();
                     } else {
-                        alert('Error uploading file: ' + xhr.statusText);
+                        Site.showError('Error uploading file: ' + JSON.parse(xhr.response).message);
                     }
+                    resetProgress();
+                    reloadTable(["entries"]);
                 };
 
                 xhr.onerror = function() {
-                    alert('Network error.');
+                    Site.showError('Network error.');
+                    resetProgress();
                 };
 
                 xhr.send(formData);
