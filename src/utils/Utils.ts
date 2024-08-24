@@ -13,6 +13,10 @@ export class ObjectUtils {
         return matches && matches[0] ? parseInt(matches[0]) : 0;
     }
 
+    public static enumKeys<O extends object, K extends keyof O = keyof O>(obj: O): K[] {
+        return Object.keys(obj).filter(k => !Number.isNaN(k)) as K[];
+    }
+
     public static humanFileSize(bytes: number, si = false, dp = 1): string {
         const thresh = si ? 1000 : 1024;
 

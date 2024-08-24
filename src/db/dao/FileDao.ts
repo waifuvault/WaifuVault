@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@tsed/di";
-import { AbstractDao } from "./AbstractDao.js";
+import { AbstractTypeOrmDao } from "./AbstractTypeOrmDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 import { DataSource, EntityManager, Equal, In, IsNull, Like, MoreThan } from "typeorm";
@@ -7,7 +7,7 @@ import { FindOperator } from "typeorm/find-options/FindOperator.js";
 import { FindOptionsRelations } from "typeorm/find-options/FindOptionsRelations.js";
 
 @Injectable()
-export class FileDao extends AbstractDao<FileUploadModel> {
+export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
     public constructor(@Inject(SQLITE_DATA_SOURCE) ds: DataSource) {
         super(ds, FileUploadModel);
     }

@@ -1,11 +1,11 @@
 import { Inject, Injectable } from "@tsed/di";
-import { AbstractDao } from "./AbstractDao.js";
+import { AbstractTypeOrmDao } from "./AbstractTypeOrmDao.js";
 import { IpBlackListModel } from "../../model/db/IpBlackList.model.js";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 import { DataSource, EntityManager, In } from "typeorm";
 
 @Injectable()
-export class IpBlackListDao extends AbstractDao<IpBlackListModel> {
+export class IpBlackListDao extends AbstractTypeOrmDao<IpBlackListModel> {
     public constructor(@Inject(SQLITE_DATA_SOURCE) ds: DataSource) {
         super(ds, IpBlackListModel);
     }

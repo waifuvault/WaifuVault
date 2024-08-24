@@ -1,7 +1,7 @@
 import type { DataSource, EntityManager, EntityTarget, Repository as Dao } from "typeorm";
 import type { ObjectLiteral } from "typeorm/common/ObjectLiteral";
 
-export abstract class AbstractDao<T extends ObjectLiteral> {
+export abstract class AbstractTypeOrmDao<T extends ObjectLiteral> {
     private readonly dao: Dao<T>;
 
     protected constructor(
