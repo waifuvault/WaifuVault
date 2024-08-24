@@ -41,6 +41,7 @@ export class BucketView {
         return {
             user: req.user as CustomUserInfoModel,
             bucket,
+            loginType: "bucket",
         };
     }
 }

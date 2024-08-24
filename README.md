@@ -118,6 +118,13 @@ Download a file, by selecting it and pressing Download File.
 
 ![Download](https://waifuvault.moe/f/1724107129053/BucketDownload.png)
 
+Upload a file, by pressing Upload File, which will bring up the uploader where you can choose the file and set what
+options you would like on it.
+
+> **NOTE:** The uploader will stay open after file upload, to allow you to easily upload multiple files
+
+![Upload](https://waifuvault.moe/f/1724420540903/BucketUpload.png)
+
 Details on a file, by selecting it and pressing Details. The longer fields have copy buttons on them in the details
 panel.
 
