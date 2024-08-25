@@ -1,6 +1,6 @@
 import { Any, Description, Enum, Name, Property } from "@tsed/schema";
 import RestrictionType from "../constants/RestrictionType.js";
-import { RestrictionValueType } from "../../utils/typeings.js";
+import type { RestrictionValueType } from "../../utils/typeings.js";
 
 @Name("WaifuRestriction")
 export class Restriction {

@@ -5,7 +5,7 @@ import RestrictionType from "../model/constants/RestrictionType.js";
 import { ObjectUtils } from "../utils/Utils.js";
 import { Builder } from "builder-pattern";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import { RestrictionValueType } from "../utils/typeings.js";
+import type { RestrictionValueType } from "../utils/typeings.js";
 
 @Service()
 export class RestrictionService {
