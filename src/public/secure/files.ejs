@@ -225,7 +225,7 @@
                     const hideFileName = document.getElementById('hideFilename').checked;
                     const oneTimeDownload = document.getElementById('oneTimeDownload').checked;
 
-                    uploadFile(file, bucketId, expires, password, hideFileName, oneTimeDownload);
+                    uploadFile(file, url, bucketId, expires, password, hideFileName, oneTimeDownload);
                 });
 
                 document.getElementById('radioFileSelectFile').addEventListener('change', function() {
@@ -257,14 +257,19 @@
                     progressWrapper.setAttribute("aria-valuenow", "0");
                 }
 
-                function uploadFile(file, bucket, expires, password, hideFilename, oneTimeDownload) {
+                function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
                     let params = `hide_filename=${hideFilename}&oneTimeDownload=${oneTimeDownload}`;
                     if (expires) {
                         params += `&expires=${expires}`;
                     }
 
                     const formData = new FormData();
-                    formData.append('file', file);
+                    if (url) {
+                        formData.append('url', url)
+                    } else {
+                        formData.append('file', file);
+                    }
+
                     if (password) {
                         formData.append('password', password);
                     }
