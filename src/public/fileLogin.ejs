@@ -52,7 +52,7 @@
         submitPassword();
     });
 
-    function progress({ loaded, total }) {
+    function progress({loaded, total}) {
         const downloadDone = Math.round(loaded / total * 100) + "%";
         progressbar.innerText = downloadDone;
         progressbar.style.width = downloadDone;
@@ -93,12 +93,12 @@
                                 const reader = response.body.getReader();
                                 for (; ;) {
                                     try {
-                                        const { done, value } = await reader.read();
+                                        const {done, value} = await reader.read();
                                         if (done) {
                                             break;
                                         }
                                         loaded += value.byteLength;
-                                        progress({ loaded, total });
+                                        progress({loaded, total});
                                         controller.enqueue(value);
                                     } catch (e) {
                                         controller.error(e);
@@ -115,9 +115,12 @@
                     }
                 );
 
+                const contentType = response.headers.get("content-type");
                 const filename = location.pathname.split("/").pop();
                 const blob = await res.blob();
-                const file = new File([blob], filename)
+                const file = new File([blob], filename, {
+                    type: contentType
+                })
                 const _url = window.URL.createObjectURL(file);
                 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
                 if (isSafari) {
