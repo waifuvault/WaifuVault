@@ -128,7 +128,14 @@
                         <div class="container-fluid">
                             <div class="row">
                                 <div class="col-md-12">
-                                    <input class="form-control" type="file" id="uploadFile">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="radioFileSelect" id="radioFileSelectFile" checked>
+                                        <input class="form-control" type="file" id="uploadFile">
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="radioFileSelect" id="radioFileSelectUrl">
+                                        <input type="text" class="form-control" id="url" placeholder="Choose URL: Eg https://somedomain.com/your-file.jpg" disabled="disabled">
+                                    </div>
                                 </div>
                             </div>
                             <div class="row py-2">
@@ -212,12 +219,35 @@
                 <% if(loginType === "bucket") { %>
                 document.querySelector('.btn-bucket-upload').addEventListener('click', () => {
                     const file = document.getElementById('uploadFile').files[0];
+                    const url = document.getElementById('url').value;
                     const expires = document.getElementById('expires').value;
                     const password = document.getElementById('password').value;
                     const hideFileName = document.getElementById('hideFilename').checked;
                     const oneTimeDownload = document.getElementById('oneTimeDownload').checked;
 
                     uploadFile(file, bucketId, expires, password, hideFileName, oneTimeDownload);
+                });
+
+                document.getElementById('radioFileSelectFile').addEventListener('change', function() {
+                    const radioFile = document.getElementById('radioFileSelectFile');
+                    const urlInput = document.getElementById('url');
+                    const fileInput = document.getElementById('uploadFile');
+                    if (radioFile.checked) {
+                        urlInput.value = null;
+                        urlInput.disabled = true;
+                        fileInput.disabled = false;
+                    }
+                });
+
+                document.getElementById('radioFileSelectUrl').addEventListener('change', function() {
+                    const radioUrl = document.getElementById('radioFileSelectUrl');
+                    const urlInput = document.getElementById('url');
+                    const fileInput = document.getElementById('uploadFile');
+                    if (radioUrl.checked) {
+                        fileInput.value = null;
+                        fileInput.disabled = true;
+                        urlInput.disabled = false;
+                    }
                 });
                 <% } %>
 
