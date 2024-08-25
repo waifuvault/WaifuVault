@@ -2,6 +2,7 @@ import { Exception } from "@tsed/exceptions";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import type { PlatformMulterFile } from "@tsed/common";
 import { FileUploadQueryParameters } from "../model/rest/FileUploadQueryParameters.js";
+import RestrictionType from "../model/constants/RestrictionType.js";
 
 export type HttpErrorRenderObj<T extends Exception> = {
     status: number;
@@ -85,3 +86,10 @@ export type PassportAuthenticationError = {
     message: string;
     status: number;
 };
+
+export type RestrictionTypeMapping = {
+    [RestrictionType.FILE_SIZE_UPLOAD_LIMIT_MB]: number;
+    [RestrictionType.BLOCKED_MIME_TYPES]: string;
+};
+
+export type RestrictionValueType = string | number | string[];

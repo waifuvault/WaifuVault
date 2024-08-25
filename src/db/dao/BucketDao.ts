@@ -1,11 +1,11 @@
-import { AbstractDao } from "./AbstractDao.js";
+import { AbstractTypeOrmDao } from "./AbstractTypeOrmDao.js";
 import { BucketModel } from "../../model/db/Bucket.model.js";
 import { Inject, Injectable } from "@tsed/di";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 import { DataSource, EntityManager } from "typeorm";
 
 @Injectable()
-export class BucketDao extends AbstractDao<BucketModel> {
+export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
     public constructor(@Inject(SQLITE_DATA_SOURCE) ds: DataSource) {
         super(ds, BucketModel);
     }
