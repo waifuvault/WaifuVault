@@ -197,7 +197,7 @@
 
         document.getElementById("filesNav").classList.add("active");
 
-        const bucketId = <%- loginType === "bucket" ? `"${bucket.bucketToken}";` : null; -%>
+        const bucketId = <%- loginType === "bucket" ? `"${bucket.bucketToken}";` : "null;"; -%>
 
             function loadDt() {
                 const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), {keyboard: false});
