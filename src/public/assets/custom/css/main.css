@@ -62,3 +62,7 @@
     background-color: inherit;
     color: inherit;
 }
+
+.tooltip-inner {
+    max-width: 100% !important;
+}

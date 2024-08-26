@@ -258,6 +258,8 @@
                 }
 
                 function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
+                    const uploadButton = document.querySelector('.btn-bucket-upload');
+                    uploadButton.disabled = true;
                     let params = `hide_filename=${hideFilename}&oneTimeDownload=${oneTimeDownload}`;
                     if (expires) {
                         params += `&expires=${expires}`;
@@ -294,11 +296,13 @@
                         }
                         resetProgress();
                         reloadTable(["entries"]);
+                        uploadButton.disabled = false;
                     };
 
                     xhr.onerror = function () {
                         Site.showError('Network error.');
                         resetProgress();
+                        uploadButton.disabled = false;
                     };
 
                     xhr.send(formData);
@@ -373,17 +377,24 @@
                 function fileEmbedRender() {
                     return function (data, type, row) {
                         const url = row.url;
+                        const notProtected = row.fileProtectionLevel === "None"
                         const ext = url.match(/\.(mp4|ogg|webm)$/)?.[1];
                         let filename = data || `${row.fileName}`; // filename here is originalFileName. but hidden files do not have it, so get the filename on disk
                         if (ext && !data) {
                             filename += `.${ext}`;
                         }
-                        if (url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null) {
-                            return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<img src='${url}' />">${filename}</span>`;
-                        } else if (url.match(/\.(mp4|ogg|webm)$/) != null) {
-                            let type = `video/${ext}`;
-                            const videoTag = `<video width='320' height='240' autoplay><source src='${url}' type='${type}'></video>`;
-                            return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="${videoTag}">${filename}</span>`;
+                        if (notProtected) {
+                            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null) {
+                                const imageTag = `<img width='auto' height='240' src='${url}' />`
+                                return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${imageTag}">${filename}</span>`;
+                            } else if (url.match(/\.(mp4|ogg|webm)$/) != null) {
+                                let type = `video/${ext}`;
+                                const videoTag = `<video width='auto' height='240' autoplay><source src='${url}' type='${type}'></video>`;
+                                return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${videoTag}">${filename}</span>`;
+                            } else if (url.match(/\.(pdf)$/) != null) {
+                                const pdfTag = `<embed class='pdf' width='auto' height='240' src='${url}'>`
+                                return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${pdfTag}">${filename}</span>`;
+                            }
                         }
                         return `<span>${filename}</span>`;
                     };
