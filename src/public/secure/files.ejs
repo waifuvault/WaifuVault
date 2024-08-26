@@ -383,16 +383,18 @@
                         if (ext && !data) {
                             filename += `.${ext}`;
                         }
-                        if (url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null && notProtected) {
-                            const imageTag = `<img width='auto' height='240' src='${url}' />`
-                            return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${imageTag}">${filename}</span>`;
-                        } else if (url.match(/\.(mp4|ogg|webm)$/) != null && notProtected) {
-                            let type = `video/${ext}`;
-                            const videoTag = `<video width='auto' height='240' autoplay><source src='${url}' type='${type}'></video>`;
-                            return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${videoTag}">${filename}</span>`;
-                        } else if (url.match(/\.(pdf)$/) != null && notProtected) {
-                            const pdfTag = `<embed class='pdf' width='auto' height='240' src='${url}'>`
-                            return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${pdfTag}">${filename}</span>`;
+                        if (notProtected) {
+                            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null) {
+                                const imageTag = `<img width='auto' height='240' src='${url}' />`
+                                return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${imageTag}">${filename}</span>`;
+                            } else if (url.match(/\.(mp4|ogg|webm)$/) != null) {
+                                let type = `video/${ext}`;
+                                const videoTag = `<video width='auto' height='240' autoplay><source src='${url}' type='${type}'></video>`;
+                                return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${videoTag}">${filename}</span>`;
+                            } else if (url.match(/\.(pdf)$/) != null) {
+                                const pdfTag = `<embed class='pdf' width='auto' height='240' src='${url}'>`
+                                return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${pdfTag}">${filename}</span>`;
+                            }
                         }
                         return `<span>${filename}</span>`;
                     };
