@@ -258,6 +258,8 @@
                 }
 
                 function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
+                    const uploadButton = document.querySelector('.btn-bucket-upload');
+                    uploadButton.disabled = true;
                     let params = `hide_filename=${hideFilename}&oneTimeDownload=${oneTimeDownload}`;
                     if (expires) {
                         params += `&expires=${expires}`;
@@ -294,11 +296,13 @@
                         }
                         resetProgress();
                         reloadTable(["entries"]);
+                        uploadButton.disabled = false;
                     };
 
                     xhr.onerror = function () {
                         Site.showError('Network error.');
                         resetProgress();
+                        uploadButton.disabled = false;
                     };
 
                     xhr.send(formData);
