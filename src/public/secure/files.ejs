@@ -35,7 +35,7 @@
             <div class="card border-primary mb-3">
                 <div class="card-header">Current Entries
                     <% if(loginType === "bucket") { %>
-                        for bucket: <%- bucket.bucketToken -%>
+                        for bucket: <%- bucket.bucketToken; -%>
                     <% } %>
                 </div>
                 <div class="card-body">
@@ -127,14 +127,24 @@
                     <div class="modal-body" id="fileDetailsModelInfoContent">
                         <div class="container-fluid">
                             <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="radioFileSelect" id="radioFileSelectFile" checked>
-                                        <input class="form-control" type="file" id="uploadFile">
+                                <div class="col-md-12 mb-3">
+                                    <div>
+                                        <label for="radioFileSelectFile" class="form-label">File</label>
+                                        <div class="input-group">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input mt-0" name="radioFileSelect" id="radioFileSelectFile" type="radio" aria-label="Radio button for selecting file">
+                                            </div>
+                                            <input class="form-control" type="file" id="uploadFile" aria-label="Choose file">
+                                        </div>
                                     </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="radioFileSelect" id="radioFileSelectUrl">
-                                        <input type="text" class="form-control" id="url" placeholder="Choose URL: Eg https://somedomain.com/your-file.jpg" disabled="disabled">
+                                    <div class="mt-3">
+                                        <label for="radioFileSelectUrl" class="form-label">URL</label>
+                                        <div class="input-group">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input mt-0" id="radioFileSelectUrl" name="radioFileSelect" type="radio" aria-label="Radio button for following selecting URL">
+                                            </div>
+                                            <input type="text" id="url" class="form-control" aria-label="URL text input" placeholder="https://somedomain.com/your-file.jpg" disabled="disabled">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -207,10 +217,10 @@
         const bucketId = <%- loginType === "bucket" ? `"${bucket.bucketToken}";` : "null;"; -%>
 
             function loadDt() {
-                const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), {keyboard: false});
+                const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
 
                 <% if(loginType === "bucket") { %>
-                const uploadModal = new bootstrap.Modal(document.getElementById("bucketUploadModel"), {keyboard: false});
+                const uploadModal = new bootstrap.Modal(document.getElementById("bucketUploadModel"), { keyboard: false });
                 const progressWrapper = document.getElementById("progressWrapper");
                 const progressbar = document.getElementById("uploadProgress");
                 <% } %>
@@ -279,7 +289,7 @@
                     const xhr = new XMLHttpRequest();
                     xhr.open('PUT', `/rest/${bucket}?${params}`, true);
 
-                    xhr.upload.onprogress = function (event) {
+                    xhr.upload.onprogress = function(event) {
                         if (event.lengthComputable) {
                             const uploadDone = Math.round((event.loaded / event.total) * 100) + "%";
                             progressbar.innerText = uploadDone;
@@ -288,7 +298,7 @@
                         }
                     };
 
-                    xhr.onload = function () {
+                    xhr.onload = function() {
                         if (xhr.status === 200 || xhr.status === 201) {
                             Site.showSuccess();
                         } else {
@@ -299,7 +309,7 @@
                         uploadButton.disabled = false;
                     };
 
-                    xhr.onerror = function () {
+                    xhr.onerror = function() {
                         Site.showError('Network error.');
                         resetProgress();
                         uploadButton.disabled = false;
@@ -309,7 +319,7 @@
                 }
 
                 function sizeAsMB() {
-                    return function (data, type, row) {
+                    return function(data, type, row) {
                         if (type === "display") {
                             const sizeKB = Math.floor(data / 1024);
                             const sizeMB = Math.floor(sizeKB / 1024);
@@ -343,13 +353,13 @@
                 }
 
                 function renderNullField() {
-                    return function (data, type, row) {
+                    return function(data, type, row) {
                         return data ?? "N/A";
                     };
                 }
 
                 function colouredIP() {
-                    return function (data, type, row) {
+                    return function(data, type, row) {
                         if (type === "display") {
                             let sizedData = data;
                             if (data.length > 15) {
@@ -366,7 +376,7 @@
                 }
 
                 function customDate() {
-                    return function (data, type, row) {
+                    return function(data, type, row) {
                         if (type === "display") {
                             return new Date(Date.parse(data)).toLocaleString();
                         }
@@ -375,7 +385,7 @@
                 }
 
                 function fileEmbedRender() {
-                    return function (data, type, row) {
+                    return function(data, type, row) {
                         const url = row.url;
                         const notProtected = row.fileProtectionLevel === "None"
                         const ext = url.match(/\.(mp4|ogg|webm)$/)?.[1];
@@ -405,21 +415,21 @@
                     switch (type) {
                         case "ips":
                             return [
-                                {data: "id"},
-                                {data: "ip"},
-                                {data: "createdAt", render: customDate()}
+                                { data: "id" },
+                                { data: "ip" },
+                                { data: "createdAt", render: customDate() }
                             ];
                         case "entries":
                             return [
-                                {data: "id"},
-                                {data: "originalFileName", className: "col-filename", render: fileEmbedRender()},
-                                {data: "fileExtension", className: "col-fileext"},
-                                {data: "fileSize", render: sizeAsMB()},
-                                {data: "createdAt", render: customDate()},
-                                {data: "expires", render: renderNullField()},
-                                {data: "mediaType", render: renderNullField()},
-                                {data: "fileName"},
-                                {data: "url"}
+                                { data: "id" },
+                                { data: "originalFileName", className: "col-filename", render: fileEmbedRender() },
+                                { data: "fileExtension", className: "col-fileext" },
+                                { data: "fileSize", render: sizeAsMB() },
+                                { data: "createdAt", render: customDate() },
+                                { data: "expires", render: renderNullField() },
+                                { data: "mediaType", render: renderNullField() },
+                                { data: "fileName" },
+                                { data: "url" }
                             ];
                     }
                 }
@@ -456,8 +466,8 @@
                     try {
                         response = await fetch(`${baseUrl}/admin/blockIp?removeRelatedData=${removeRelatedData}`, {
                             method: "POST",
-                            headers: {"Content-Type": "application/x-www-form-urlencoded"},
-                            body: new URLSearchParams({ip})
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: new URLSearchParams({ ip })
                         });
                     } catch (e) {
                         alert(e.message);
@@ -505,14 +515,14 @@
                         buttons.push({
                                 extend: "selected",
                                 text: "Delete file",
-                                attr: {id: "deleteFilesButton"},
+                                attr: { id: "deleteFilesButton" },
                                 action: async (e, dt) => {
                                     const accepted = confirm("Are you sure you want to delete these entries?, the files will also be deleted");
                                     if (!accepted) {
                                         return;
                                     }
                                     const idArr = [];
-                                    dt.rows({selected: true}).every(function () {
+                                    dt.rows({ selected: true }).every(function() {
                                         const data = this.data();
                                         idArr.push(data.id);
                                     });
@@ -524,14 +534,14 @@
                             {
                                 extend: "selectedSingle",
                                 text: "Ban IP",
-                                attr: {id: "banIpButton"},
+                                attr: { id: "banIpButton" },
                                 action: async (e, dt) => {
                                     const accepted = confirm("Are you sure you want to ban this IP?");
                                     if (!accepted) {
                                         return;
                                     }
                                     const deleteRelatedData = confirm("Do you want to also delete all related data?\nPress 'Cancel' for no and 'Ok' for Yes");
-                                    const selectedRow = dt.row({selected: true}).data();
+                                    const selectedRow = dt.row({ selected: true }).data();
                                     const ip = selectedRow.ip;
                                     await banIp(ip, deleteRelatedData);
                                     reloadTable(["entries", "ips"]);
@@ -541,9 +551,9 @@
                             {
                                 extend: "selectedSingle",
                                 text: "Details",
-                                attr: {id: "detailsButton"},
+                                attr: { id: "detailsButton" },
                                 action: async (e, dt) => {
-                                    const selectedRow = dt.row({selected: true}).data();
+                                    const selectedRow = dt.row({ selected: true }).data();
                                     const detailArr = [
                                         ["ID", selectedRow.id],
                                         ["File Name", selectedRow.fileName],
@@ -564,9 +574,9 @@
                             {
                                 extend: "selectedSingle",
                                 text: "Download file",
-                                attr: {id: "downloadFileButton"},
+                                attr: { id: "downloadFileButton" },
                                 action: async (e, dt) => {
-                                    const selectedRow = dt.row({selected: true}).data();
+                                    const selectedRow = dt.row({ selected: true }).data();
                                     const url = selectedRow.url;
                                     window.open(url, "_blank");
                                 }
@@ -574,7 +584,7 @@
                                 <% if(loginType === "bucket") { %>
                             {
                                 text: "Upload file",
-                                attr: {id: "uploadFileButton"},
+                                attr: { id: "uploadFileButton" },
                                 action: async (e, dt) => {
                                     uploadModal?.show();
                                 }
@@ -585,19 +595,19 @@
                         buttons.push({
                             extend: "selected",
                             text: "Un-ban",
-                            attr: {id: "downloadFileButton"},
+                            attr: { id: "downloadFileButton" },
                             action: async (e, dt) => {
                                 const accepted = confirm("Are you sure you want to remove the ban for the selected ip(s)?");
                                 if (!accepted) {
                                     return;
                                 }
                                 const ipArr = [];
-                                dt.rows({selected: true}).every(function () {
+                                dt.rows({ selected: true }).every(function() {
                                     const data = this.data();
                                     ipArr.push(data.ip);
                                 });
                                 await unBanIps(ipArr);
-                                dt.rows({selected: true}).remove().draw(false);
+                                dt.rows({ selected: true }).remove().draw(false);
                                 reloadTable(["entries"]);
                             }
                         });
@@ -622,7 +632,7 @@
 
                     const table = dtMap.get(type);
                     if (type === "entries") {
-                        table.on("select", function (e, dt, type, indexes) {
+                        table.on("select", function(e, dt, type, indexes) {
                             if (type === "row") {
                                 const data = table
                                     .rows(indexes)
@@ -637,7 +647,7 @@
                     });
                 }
 
-                $(".datatables").each(async function () {
+                $(".datatables").each(async function() {
                     const el = $(this)[0];
                     const type = el.dataset.type;
                     let url = null;
