@@ -125,7 +125,7 @@ Select `Choose File` to upload a file, or `Choose URL` to upload from a URL.
 
 > **NOTE:** The uploader will stay open after file upload, to allow you to easily upload multiple files
 
-![Upload](https://waifuvault.moe/f/1724595999690/BucketUpload.png)
+![Upload](https://waifuvault.moe/f/1724817237240/BucketUploadNew.png)
 
 Details on a file, by selecting it and pressing Details. The longer fields have copy buttons on them in the details
 panel.
