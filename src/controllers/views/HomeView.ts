@@ -1,6 +1,6 @@
 import { Get, Hidden, View } from "@tsed/schema";
 import { Controller, Inject } from "@tsed/di";
-import { Req, Res } from "@tsed/common";
+import { Req, Res, Session } from "@tsed/common";
 import CaptchaServices from "../../model/constants/CaptchaServices.js";
 import { CaptchaManager } from "../../manager/CaptchaManager.js";
 import type { Request, Response } from "express";
@@ -18,9 +18,8 @@ export class HomeView {
 
     @Get("/bucketAccess")
     @View("bucketAccess.ejs")
-    public showBucketLoginPage(@Req() req: Request, @Res() res: Response): unknown {
-        if (req.user) {
-            // at this point, the `user` is the bucket model
+    public showBucketLoginPage(@Res() res: Response, @Session() session: Record<string, unknown>): unknown {
+        if (session.bucket) {
             res.redirect("/admin/bucket");
         }
         const captchaType = this.activeCaptchaService;

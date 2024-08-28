@@ -438,7 +438,7 @@
                     Site.loading(true);
                     let response;
                     try {
-                        response = await fetch(`${baseUrl}/admin/unblockIps`, {
+                        response = await fetch(`${baseUrlSecureRest}/unblockIps`, {
                             method: "POST",
                             headers: {
                                 "Accept": "application/json",
@@ -464,7 +464,7 @@
                     Site.loading(true);
                     let response;
                     try {
-                        response = await fetch(`${baseUrl}/admin/blockIp?removeRelatedData=${removeRelatedData}`, {
+                        response = await fetch(`${baseUrlSecureRest}/blockIp?removeRelatedData=${removeRelatedData}`, {
                             method: "POST",
                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
                             body: new URLSearchParams({ ip })
@@ -487,7 +487,7 @@
                     Site.loading(true);
                     let response;
                     try {
-                        response = await fetch(`${baseUrl}/admin/deleteEntries`, {
+                        response = await fetch(`${baseUrlSecureRest}/deleteEntries`, {
                             method: "DELETE",
                             headers: {
                                 "Accept": "application/json",
@@ -653,10 +653,10 @@
                     let url = null;
                     switch (type) {
                         case "ips":
-                            url = `${baseUrl}/admin/blockedIps`;
+                            url = `${baseUrlSecureRest}/blockedIps`;
                             break;
                         case "entries":
-                            url = `${baseUrl}/admin/datatablesEntries`;
+                            url = `${baseUrlSecureRest}/datatablesEntries`;
                     }
                     const dtOpts = {
                         layout: {

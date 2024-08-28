@@ -1,7 +1,7 @@
 import { Controller, Inject, ProviderScope, Scope } from "@tsed/di";
 import { Authenticate, Authorize } from "@tsed/passport";
 import { Get, Hidden, Post, Returns, Security } from "@tsed/schema";
-import { PlatformResponse, Req, Res, UseBefore } from "@tsed/common";
+import { PlatformResponse, Req, Res, Session, UseBefore } from "@tsed/common";
 import { StatusCodes } from "http-status-codes";
 import { BodyParams } from "@tsed/platform-params";
 import { UserModel } from "../../../../model/db/User.model.js";
@@ -11,19 +11,20 @@ import { UserService } from "../../../../services/UserService.js";
 import { CaptchaMiddleWare } from "../../../../middleware/endpoint/CaptchaMiddleWare.js";
 import { DefaultRenderException } from "../../../../model/rest/DefaultRenderException.js";
 import type { Request, Response } from "express";
+import { AuthenticateBucket } from "../../../../middleware/endpoint/AuthenticateBucket.js";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
 @Hidden()
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
-export class PassportCtrl extends BaseRestController {
+export class AuthenticationController extends BaseRestController {
     public constructor(@Inject() private usersService: UserService) {
         super();
     }
 
     @Post("/authenticate_bucket")
     @UseBefore(CaptchaMiddleWare)
-    @Authenticate("bucketAuthProvider", { failWithError: true })
+    @UseBefore(AuthenticateBucket)
     @Returns(StatusCodes.MOVED_TEMPORARILY)
     @Returns(StatusCodes.UNAUTHORIZED)
     public authenticateBucket(@Res() res: Response): void {
@@ -37,6 +38,15 @@ export class PassportCtrl extends BaseRestController {
     @Returns(StatusCodes.UNAUTHORIZED)
     public login(@Res() res: Response): void {
         res.redirect("/admin");
+    }
+
+    @Get("/close_bucket")
+    @Returns(StatusCodes.MOVED_TEMPORARILY)
+    public closeBucket(@Session() session: Record<string, unknown>, @Res() res: Response): void {
+        if (session && session.bucket) {
+            delete session.bucket;
+        }
+        res.redirect("/bucketAccess");
     }
 
     @Get("/logout")

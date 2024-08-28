@@ -19,7 +19,7 @@
                     </li>
                 <% } %>
                 <li class="nav-item">
-                    <a class="nav-link" href="/rest/auth/logout">
+                    <a class="nav-link" href="<% if(loginType==="user") { %>/rest/auth/logout<% } else { %>/rest/auth/close_bucket<% } %>">
                         <% if(typeof bucket === "undefined"){ %>Logout
                         <% }else{ %>Close bucket
                         <% } %>
