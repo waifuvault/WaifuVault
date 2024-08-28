@@ -2,18 +2,17 @@ import { Constant, Inject, InjectContext, Service } from "@tsed/di";
 import { BucketDto } from "../model/dto/BucketDto.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BucketModel } from "../model/db/Bucket.model.js";
-import { FileService } from "./FileService.js";
 import { Logger } from "@tsed/logger";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import type { PlatformContext } from "@tsed/common";
-import { CustomUserInfoModel } from "../model/auth/CustomUserInfoModel.js";
+import GlobalEnv from "../model/constants/GlobalEnv.js";
+import { FileService } from "./FileService.js";
 
 @Service()
 export class BucketService {
     public constructor(
         @Inject() private bucketRepo: BucketRepo,
-        @Inject() private fileService: FileService,
         @Inject() private logger: Logger,
+        @Inject() private fileService: FileService,
     ) {}
 
     @InjectContext()
@@ -44,14 +43,11 @@ export class BucketService {
     }
 
     private getLoggedInUserBucket(): Promise<BucketModel | null> {
-        const currentBucketInfo: CustomUserInfoModel | null = this.$ctx?.request?.request?.user ?? null;
-        if (!currentBucketInfo) {
+        const currentBucketToken: string | null = this.$ctx?.request.session?.bucket ?? null;
+        if (!currentBucketToken) {
             return Promise.resolve(null);
         }
-        if (currentBucketInfo.email) {
-            return Promise.resolve(null);
-        }
-        return this.getBucket(Number.parseInt(currentBucketInfo.id));
+        return this.getBucket(currentBucketToken);
     }
 
     public async deleteBucket(token: string): Promise<boolean> {

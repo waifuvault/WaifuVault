@@ -47,7 +47,7 @@
 <script src="https://cdn.amcharts.com/lib/5/themes/Responsive.js"></script>
 <script>
     document.getElementById("statsNav").classList.add("active");
-    const isUser = <% if(user.email) { %> true <% } else { %> false <% } %>;
+    const isUser = <% if(loginType === "user") { %> true <% } else { %> false <% } %>;
 
     function sizeReadable(data) {
         const sizeKB = Math.floor(data / 1024);
@@ -149,7 +149,7 @@
 
     async function getStats() {
         try {
-            const resp = await fetch("/rest/admin/statsData");
+            const resp = await fetch(`${baseUrlSecureRest}/statsData`);
             if (!resp.ok) {
                 throw new Error(`Network response wrong - ${resp.statusText}`);
             }
