@@ -4,7 +4,7 @@ import { ObjectUtils } from "../../utils/Utils.js";
 import type { IpBlockedAwareFileEntry, ProtectionLevel } from "../../utils/typeings.js";
 import { FileUploadModel } from "../db/FileUpload.model.js";
 
-export class FileEntryDto {
+export class AdminFileEntryDto {
     @Property()
     public id: number;
 
@@ -42,11 +42,15 @@ export class FileEntryDto {
     public mediaType: string | null = null;
 
     @Property()
+    @Nullable(String)
+    public bucket: string | null = null;
+
+    @Property()
     public fileProtectionLevel: ProtectionLevel;
 
-    public static fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry, baseUrl: string): FileEntryDto {
-        const fileEntryBuilder = Builder(FileEntryDto)
-            .url(FileEntryDto.getUrl(entry, baseUrl))
+    public static fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry, baseUrl: string): AdminFileEntryDto {
+        const fileEntryBuilder = Builder(AdminFileEntryDto)
+            .url(AdminFileEntryDto.getUrl(entry, baseUrl))
             .fileExtension(entry.fileExtension)
             .createdAt(entry.createdAt)
             .id(entry.id)
@@ -56,7 +60,8 @@ export class FileEntryDto {
             .mediaType(entry.mediaType)
             .ipBanned(ipBlocked)
             .fileProtectionLevel(entry.fileProtectionLevel)
-            .ip(entry.ip);
+            .ip(entry.ip)
+            .bucket(entry.bucketToken);
         const expiresIn = entry.expiresIn;
         if (expiresIn !== null) {
             fileEntryBuilder.expires(ObjectUtils.timeToHuman(expiresIn));

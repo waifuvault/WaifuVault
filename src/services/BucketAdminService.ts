@@ -1,5 +1,5 @@
 import { AbstractAdminService } from "./AbstractAdminService.js";
-import { FileEntryDto } from "../model/dto/FileEntryDto.js";
+import { AdminFileEntryDto } from "../model/dto/AdminFileEntryDto.js";
 import { Inject } from "@tsed/di";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
@@ -30,7 +30,7 @@ export class BucketAdminService extends AbstractAdminService {
         return this.repo.getRecordCount(bucket);
     }
 
-    public override async getAllEntries(): Promise<FileEntryDto[]> {
+    public override async getAllEntries(): Promise<AdminFileEntryDto[]> {
         const allEntries = await this.repo.getAllEntries();
         const bucket = await this.bucketService.getBucket();
         const finalEntries = bucket ? (bucket.files ?? []) : allEntries;
@@ -44,7 +44,7 @@ export class BucketAdminService extends AbstractAdminService {
         sortDir = "ASC",
         bucket: string,
         search?: string,
-    ): Promise<FileEntryDto[]> {
+    ): Promise<AdminFileEntryDto[]> {
         const entries = await this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search, bucket);
         return this.buildFileEntryDtos(entries.filter(entry => !entry.hasExpired));
     }
