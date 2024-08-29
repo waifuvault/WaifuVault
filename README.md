@@ -106,17 +106,22 @@ To login to the bucket admin page, use the following URL, relative to the base U
 Once the key is provided, the user will be taken to the file management page.  This is very similar to the main file 
 management page of the admin feature, but restricted to the files contained in the bucket.
 
+Buckets can be created from the login page by using the `Create Bucket` button.  This will create and populate a bucket 
+token.
+
+![CreateBucket](https://waifuvault.moe/f/1724958169898/CreateBucket.png)
+
 ### Bucket File Management Operations
 
 On the navigation bar at the top, select **File Management** to get to the file management page.
 
 Delete a file, by selecting it and pressing Delete File. You will be asked if you are sure.
 
-![Delete](https://waifuvault.moe/f/1724106896973/BucketDelete.png)
+![Delete](https://waifuvault.moe/f/1724959374292/BucketDeleteFile.png)
 
 Download a file, by selecting it and pressing Download File.
 
-![Download](https://waifuvault.moe/f/1724107129053/BucketDownload.png)
+![Download](https://waifuvault.moe/f/1724959382664/BucketDownloadFile.png)
 
 Upload a file, by pressing Upload File, which will bring up the uploader where you can choose the file and set what
 options you would like on it.
@@ -130,7 +135,12 @@ Select `Choose File` to upload a file, or `Choose URL` to upload from a URL.
 Details on a file, by selecting it and pressing Details. The longer fields have copy buttons on them in the details
 panel.
 
-![Details](https://waifuvault.moe/f/1724107243548/BucketDetails.png)
+![Details](https://waifuvault.moe/f/1724958342820/FileDetails.png)
+
+Finally you can choose to delete the entire bucket.  Be aware this will also delete all of the files in the bucket.
+You do this by clicking on the red `Delete Bucket` button in the bottom right.
+
+![DeleteBucket](https://waifuvault.moe/f/1724959398024/BucketDeleteBucket.png)
 
 ### Bucket Statistics
 
@@ -185,27 +195,36 @@ On the navigation bar at the top, select **File Management** to get to the file 
 
 Delete a file, by selecting it and pressing Delete File. You will be asked if you are sure.
 
-![Deleting Files](https://waifuvault.moe/f/1709504564466/DeleteFile.png)
+![Deleting Files](https://waifuvault.moe/f/1724958559307/AdminDelete.png)
 
 Download a file, by selecting it and pressing Download File.
 
-![Downloading Files](https://waifuvault.moe/f/1709504647173/DownloadFile.png)
+![Downloading Files](https://waifuvault.moe/f/1724958603142/AdminDownload.png)
 
 Details on a file, by selecting it and pressing Details. The longer fields have copy buttons on them in the details
 panel.
 
-![File Details](https://waifuvault.moe/f/1709504743287/FileDetails.png)
+Upload a file, by pressing Upload File, which will bring up the uploader where you can choose the file and set what
+options you would like on it.
+
+Select `Choose File` to upload a file, or `Choose URL` to upload from a URL.
+
+> **NOTE:** The uploader will stay open after file upload, to allow you to easily upload multiple files
+
+![Upload](https://waifuvault.moe/f/1724958492618/AdminFileUpload.png)
+
+![File Details](https://waifuvault.moe/f/1724958342820/FileDetails.png)
 
 ### IP Operations
 
 Ban an IP by selecting the file and pressing Ban IP, then confirming you want to ban it and if you want to delete
 related files.
 
-![Banning IP Address](https://waifuvault.moe/f/1709504936554/BanIP.png)
+![Banning IP Address](https://waifuvault.moe/f/1724959406997/AdminBanIp.png)
 
 Unban an IP by selecting the IP in the lower table and pressing Un Ban, then confirming you want to unban.
 
-![Unban IP Address](https://waifuvault.moe/f/1709504995039/UnBanIP.png)
+![Unban IP Address](https://waifuvault.moe/f/1724959412624/AdminUnbanIp.png)
 
 ### Statistics
 
