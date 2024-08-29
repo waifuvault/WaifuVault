@@ -586,7 +586,11 @@
                                     const selectedRow = dt.row({ selected: true }).data();
                                     const url = selectedRow.url;
                                     window.open(url, "_blank");
-                                    setTimeout(function() { reloadTable(["entries"]); }, 1000);
+                                    if (selectedRow.oneTimeDownload) {
+                                        setTimeout(function() {
+                                            reloadTable(["entries"]);
+                                        }, 1000);
+                                    }
                                 }
                             },
                             {
