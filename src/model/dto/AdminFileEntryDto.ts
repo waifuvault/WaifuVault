@@ -38,6 +38,9 @@ export class AdminFileEntryDto {
     public ipBanned: boolean;
 
     @Property()
+    public oneTimeDownload: boolean;
+
+    @Property()
     @Nullable(String)
     public mediaType: string | null = null;
 
@@ -59,6 +62,7 @@ export class AdminFileEntryDto {
             .fileName(entry.fileName)
             .mediaType(entry.mediaType)
             .ipBanned(ipBlocked)
+            .oneTimeDownload(entry.settings?.oneTimeDownload ?? false)
             .fileProtectionLevel(entry.fileProtectionLevel)
             .ip(entry.ip)
             .bucket(entry.bucketToken);

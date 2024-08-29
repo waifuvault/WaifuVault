@@ -269,7 +269,7 @@
                 function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
                     const uploadButton = document.querySelector('.btn-file-upload');
                     uploadButton.disabled = true;
-                    let params = `hide_filename=${hideFilename}&oneTimeDownload=${oneTimeDownload}`;
+                    let params = `hide_filename=${hideFilename}&one_time_download=${oneTimeDownload}`;
                     if (expires) {
                         params += `&expires=${expires}`;
                     }
@@ -392,7 +392,7 @@
                 function fileEmbedRender() {
                     return function(data, type, row) {
                         const url = row.url;
-                        const notProtected = row.fileProtectionLevel === "None"
+                        const notProtected = row.fileProtectionLevel === "None" && !row.oneTimeDownload;
                         const ext = url.match(/\.(mp4|ogg|webm)$/)?.[1];
                         let filename = data || `${row.fileName}`; // filename here is originalFileName. but hidden files do not have it, so get the filename on disk
                         if (ext && !data) {
@@ -586,6 +586,7 @@
                                     const selectedRow = dt.row({ selected: true }).data();
                                     const url = selectedRow.url;
                                     window.open(url, "_blank");
+                                    setTimeout(function() { reloadTable(["entries"]); }, 1000);
                                 }
                             },
                             {
