@@ -1,4 +1,4 @@
-import { FileEntryDto } from "../model/dto/FileEntryDto.js";
+import { AdminFileEntryDto } from "../model/dto/AdminFileEntryDto.js";
 import { StatsDto } from "../model/dto/StatsDto.js";
 
 /**
@@ -6,7 +6,7 @@ import { StatsDto } from "../model/dto/StatsDto.js";
  * there can be multiple sources of data for the admin pages, but this is a minimum requirement for them to function
  */
 export interface IAdminService {
-    getAllEntries(): Promise<FileEntryDto[]>;
+    getAllEntries(): Promise<AdminFileEntryDto[]>;
     deleteEntries(ids: number[]): Promise<boolean>;
     getPagedEntries(
         start: number,
@@ -14,7 +14,7 @@ export interface IAdminService {
         sortColumn?: string,
         sortDir?: string,
         search?: string,
-    ): Promise<FileEntryDto[]>;
+    ): Promise<AdminFileEntryDto[]>;
     getFileSearchRecordCount(search: string): Promise<number>;
     getFileRecordCount(): Promise<number>;
     getStatsData(): Promise<StatsDto>;

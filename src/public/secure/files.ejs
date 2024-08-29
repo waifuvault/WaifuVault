@@ -3,7 +3,7 @@
 <head prefix="og: https://ogp.me/ns#">
     <%- include('../snippets/head.ejs'); %>
     <link href="/assets/custom/css/index.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.0/b-3.0.0/b-colvis-3.0.0/fh-4.0.0/r-3.0.0/sc-2.4.0/sl-2.0.0/sr-1.4.0/datatables.min.css">
+    <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.4/b-3.1.1/b-colvis-3.1.1/fh-4.0.1/r-3.0.2/sc-2.4.3/sl-2.0.5/sr-1.4.1/datatables.min.css" rel="stylesheet">
     <style>
         table.dataTable td.dt-type-numeric, table.dataTable th.dt-type-numeric {
             text-align: initial;
@@ -19,6 +19,10 @@
 
         #detailsTableBody .bi-clipboard:active {
             color: #9aabee;
+        }
+
+        :root {
+            --dt-row-selected: var(--bs-tertiary-bg-rgb);
         }
     </style>
 </head>
@@ -51,6 +55,7 @@
                             <th scope="col">mediaType</th>
                             <th scope="col">file Name on system</th>
                             <th scope="col">url</th>
+                            <th scope="col">Bucket</th>
                         </tr>
                         </thead>
                     </table>
@@ -115,98 +120,96 @@
             </div>
         </div>
     </div>
-    <% if(loginType === "bucket") { %>
-        <div class="modal fade" id="bucketUploadModel" tabindex="-1" aria-labelledby="bucketUploadModelLabel"
-             aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="fileDetailsModelLabel">Bucket File Upload</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" id="fileDetailsModelInfoContent">
-                        <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-md-12 mb-3">
-                                    <div>
-                                        <label for="radioFileSelectFile" class="form-label">File</label>
-                                        <div class="input-group">
-                                            <div class="input-group-text">
-                                                <input class="form-check-input mt-0" name="radioFileSelect" id="radioFileSelectFile" type="radio" aria-label="Radio button for selecting file">
-                                            </div>
-                                            <input class="form-control" type="file" id="uploadFile" aria-label="Choose file">
+    <div class="modal fade" id="fileUploadModel" tabindex="-1" aria-labelledby="fileUploadModelLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="fileDetailsModelLabel">File Upload</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="fileDetailsModelInfoContent">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <div>
+                                    <label for="radioFileSelectFile" class="form-label">File</label>
+                                    <div class="input-group">
+                                        <div class="input-group-text">
+                                            <input class="form-check-input mt-0" name="radioFileSelect" id="radioFileSelectFile" type="radio" aria-label="Radio button for selecting file" checked>
                                         </div>
+                                        <input class="form-control" type="file" id="uploadFile" aria-label="Choose file">
                                     </div>
-                                    <div class="mt-3">
-                                        <label for="radioFileSelectUrl" class="form-label">URL</label>
-                                        <div class="input-group">
-                                            <div class="input-group-text">
-                                                <input class="form-check-input mt-0" id="radioFileSelectUrl" name="radioFileSelect" type="radio" aria-label="Radio button for following selecting URL">
-                                            </div>
-                                            <input type="text" id="url" class="form-control" aria-label="URL text input" placeholder="https://somedomain.com/your-file.jpg" disabled="disabled">
+                                </div>
+                                <div class="mt-3">
+                                    <label for="radioFileSelectUrl" class="form-label">URL</label>
+                                    <div class="input-group">
+                                        <div class="input-group-text">
+                                            <input class="form-check-input mt-0" id="radioFileSelectUrl" name="radioFileSelect" type="radio" aria-label="Radio button for following selecting URL">
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row py-2">
-                                <div class="col-md-3">
-                                    <label for="expires" class="form-label">Expires</label>
-                                    <input type="text" class="form-control" id="expires" placeholder="Eg 3d, 5h or 10m">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="password" class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="password" placeholder="Optional">
-                                </div>
-                            </div>
-                            <div class="row py-2">
-                                <div class="col-md-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="hideFilename">
-                                        <label class="form-check-label" for="hideFilename">
-                                            Hide Filename
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="oneTimeDownload">
-                                        <label class="form-check-label" for="oneTimeDownload">
-                                            One Time Download
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row py-2">
-                                <div class="col-md-12 hidden" id="error">
-                                    <div class="alert alert-danger" id="errorContent"></div>
-                                </div>
-                                <div class="col-md-12 hidden" id="success">
-                                    <div class="alert alert-success">
-                                        File Successfully Uploaded
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row py-2">
-                                <div class="col-md-12">
-                                    <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressWrapper">
-                                        <div id="uploadProgress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0"></div>
+                                        <input type="text" id="url" class="form-control" aria-label="URL text input" placeholder="https://somedomain.com/your-file.jpg" disabled="disabled">
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="row py-2">
+                            <div class="col-md-3">
+                                <label for="expires" class="form-label">Expires</label>
+                                <input type="text" class="form-control" id="expires" placeholder="Eg 3d, 5h or 10m">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" placeholder="Optional">
+                            </div>
+                        </div>
+                        <div class="row py-2">
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="hideFilename">
+                                    <label class="form-check-label" for="hideFilename">
+                                        Hide Filename
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="oneTimeDownload">
+                                    <label class="form-check-label" for="oneTimeDownload">
+                                        One Time Download
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row py-2">
+                            <div class="col-md-12 hidden" id="error">
+                                <div class="alert alert-danger" id="errorContent"></div>
+                            </div>
+                            <div class="col-md-12 hidden" id="success">
+                                <div class="alert alert-success">
+                                    File Successfully Uploaded
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row py-2">
+                            <div class="col-md-12">
+                                <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressWrapper">
+                                    <div id="uploadProgress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary btn-bucket-upload">Upload File</button>
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-file-upload">Upload File</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
-    <% } %>
+    </div>
 </div>
 
 
-<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.0/b-3.0.0/b-colvis-3.0.0/fh-4.0.0/r-3.0.0/sc-2.4.0/sl-2.0.0/sr-1.4.0/datatables.min.js"></script>
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.4/b-3.1.1/b-colvis-3.1.1/fh-4.0.1/r-3.0.2/sc-2.4.3/sl-2.0.5/sr-1.4.1/datatables.min.js"></script>
 <%- include('../snippets/scripts.ejs'); %>
 <script>
     Site.loadPage(async site => {
@@ -219,15 +222,12 @@
             function loadDt() {
                 const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
 
-                <% if(loginType === "bucket") { %>
-                const uploadModal = new bootstrap.Modal(document.getElementById("bucketUploadModel"), { keyboard: false });
+                const uploadModal = new bootstrap.Modal(document.getElementById("fileUploadModel"), { keyboard: false });
                 const progressWrapper = document.getElementById("progressWrapper");
                 const progressbar = document.getElementById("uploadProgress");
-                <% } %>
 
 
-                <% if(loginType === "bucket") { %>
-                document.querySelector('.btn-bucket-upload').addEventListener('click', () => {
+                document.querySelector('.btn-file-upload').addEventListener('click', () => {
                     const file = document.getElementById('uploadFile').files[0];
                     const url = document.getElementById('url').value;
                     const expires = document.getElementById('expires').value;
@@ -259,7 +259,6 @@
                         urlInput.disabled = false;
                     }
                 });
-                <% } %>
 
                 function resetProgress() {
                     progressbar.style.width = "0%";
@@ -268,7 +267,7 @@
                 }
 
                 function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
-                    const uploadButton = document.querySelector('.btn-bucket-upload');
+                    const uploadButton = document.querySelector('.btn-file-upload');
                     uploadButton.disabled = true;
                     let params = `hide_filename=${hideFilename}&oneTimeDownload=${oneTimeDownload}`;
                     if (expires) {
@@ -287,7 +286,13 @@
                     }
 
                     const xhr = new XMLHttpRequest();
-                    xhr.open('PUT', `/rest/${bucket}?${params}`, true);
+                    let fileUploadUrl = `${baseUrl}`;
+                    if(bucket){
+                        fileUploadUrl += `/${bucket}?${params}`;
+                    }else{
+                        fileUploadUrl += `?${params}`;
+                    }
+                    xhr.open('PUT', fileUploadUrl, true);
 
                     xhr.upload.onprogress = function(event) {
                         if (event.lengthComputable) {
@@ -429,7 +434,8 @@
                                 { data: "expires", render: renderNullField() },
                                 { data: "mediaType", render: renderNullField() },
                                 { data: "fileName" },
-                                { data: "url" }
+                                { data: "url" },
+                                { data: "bucket", render: renderNullField() }
                             ];
                     }
                 }
@@ -565,7 +571,8 @@
                                         ["Created At", customDate()(selectedRow.createdAt, "display", selectedRow)],
                                         ["Expires", selectedRow.expires ?? "N/A"],
                                         ["IP", selectedRow.ip],
-                                        ["URL", selectedRow.url]
+                                        ["URL", selectedRow.url],
+                                        ["Bucket", selectedRow.bucket ?? "N/A"],
                                     ];
                                     addDetailInfo(detailArr);
                                     detailsModal.show();
@@ -581,7 +588,6 @@
                                     window.open(url, "_blank");
                                 }
                             },
-                                <% if(loginType === "bucket") { %>
                             {
                                 text: "Upload file",
                                 attr: { id: "uploadFileButton" },
@@ -589,7 +595,6 @@
                                     uploadModal?.show();
                                 }
                             },
-                                <% } %>
                         );
                     } else if (type === "ips") {
                         buttons.push({

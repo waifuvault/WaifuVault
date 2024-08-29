@@ -57,6 +57,9 @@ function getHtml() {
     </style>
 </head>
 <body>
+<div id="overlay" class="hidden">
+    <div id="loader" class="hidden"></div>
+</div>
 <div class="container">
     <div class="row">
         <div class="col-md-6 offset-md-3">
@@ -70,8 +73,8 @@ function getHtml() {
                     </div>
                     <form action="/rest/auth/authenticate_bucket" method="post">
                         <div class="form-floating mb-3">
-                            <input required name="token" type="text" class="form-control" id="floatingPassword" placeholder="Bucket token">
-                            <label for="floatingPassword">Bucket token</label>
+                            <input required name="token" type="text" class="form-control" id="tokenInput" placeholder="Bucket token">
+                            <label for="tokenInput">Bucket token</label>
                         </div>
                         <div class="mb-3 text-center">
                             <%- getHtml() -%>
@@ -79,6 +82,7 @@ function getHtml() {
                         <div class="text-center">
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-outline-success">Gain Access</button>
+                                <button type="button" id="createBucketButton" class="btn btn-outline-primary">Create bucket</button>
                             </div>
                         </div>
                     </form>
@@ -95,10 +99,30 @@ function getHtml() {
         </div>
     </div>
 </div>
-</body>
 <% const captchaJsUrl = getCaptcha(); %>
 <% if(captchaJsUrl){ %>
     <script src="<%- getCaptcha() -%>" async defer></script>
 <% } %>
 <%- include('snippets/scripts.ejs'); %>
+
+<script>
+    Site.loadPage(async () => {
+        const tokenInput = document.getElementById("tokenInput");
+        document.getElementById("createBucketButton")?.addEventListener("click", async () => {
+            try{
+                Site.loading(true);
+                const response = await fetch(`${baseUrl}/bucket/create`);
+                const json = await response.json();
+                if(!response.ok){
+                    alert(json.message);
+                    return;
+                }
+                tokenInput.value = json.token;
+            }finally{
+                Site.loading(false);
+            }
+        });
+    })
+</script>
+</body>
 </html>

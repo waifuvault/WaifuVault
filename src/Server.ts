@@ -51,7 +51,7 @@ const opts: Partial<TsED.Configuration> = {
     ...config,
     acceptMimes: ["application/json"],
     httpPort: process.env.PORT ?? 8083,
-    httpsPort: (function (): number | boolean {
+    httpsPort: ((): number | boolean => {
         if (process.env.HTTPS === "true") {
             return Number.parseInt(process.env.HTTPS_PORT as string);
         }
@@ -63,10 +63,10 @@ const opts: Partial<TsED.Configuration> = {
             fileSize: Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB as string) * 1048576,
         },
         storage: multer.diskStorage({
-            destination: function (req, file, cb) {
+            destination: (req, file, cb) => {
                 cb(null, filesDir);
             },
-            filename: function (req, file, cb) {
+            filename: (req, file, cb) => {
                 const ext = FileUtils.getExtension(file.originalname);
                 const fileName = ext ? `${Date.now()}.${ext}` : `${Date.now()}`;
                 return cb(null, fileName);
@@ -164,9 +164,6 @@ export class Server implements BeforeRoutesInit {
         @Inject(SQLITE_DATA_SOURCE) private ds: DataSource,
         @Inject() private logger: Logger,
     ) {}
-
-    @Configuration()
-    protected settings: Configuration;
 
     @Constant(GlobalEnv.SESSION_KEY)
     private readonly sessionKey: string;
