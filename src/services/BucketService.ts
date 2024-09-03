@@ -6,6 +6,7 @@ import { Logger } from "@tsed/logger";
 import type { PlatformContext } from "@tsed/common";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { FileService } from "./FileService.js";
+import { BucketSessionService } from "./BucketSessionService.js";
 
 @Service()
 export class BucketService {
@@ -13,6 +14,7 @@ export class BucketService {
         @Inject() private bucketRepo: BucketRepo,
         @Inject() private logger: Logger,
         @Inject() private fileService: FileService,
+        @Inject() private bucketSessionService: BucketSessionService,
     ) {}
 
     @InjectContext()
@@ -43,7 +45,7 @@ export class BucketService {
     }
 
     private getLoggedInUserBucket(): Promise<BucketModel | null> {
-        const currentBucketToken: string | null = this.$ctx?.request.session?.bucket ?? null;
+        const currentBucketToken = this.bucketSessionService.getSessionToken();
         if (!currentBucketToken) {
             return Promise.resolve(null);
         }
@@ -67,6 +69,7 @@ export class BucketService {
             this.logger.error(e);
             return false;
         }
+        this.bucketSessionService.destroySession();
         return true;
     }
 }
