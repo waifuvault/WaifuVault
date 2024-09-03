@@ -60,6 +60,10 @@ export class BucketService {
             this.logger.error(`Unable to delete bucket with token: "${bucket.bucketToken}"`);
             return false;
         }
+        const currentSession = this.$ctx?.request.session ?? null;
+        if (currentSession) {
+            delete currentSession.bucket;
+        }
         const filesToDelete = bucket.files ?? [];
         try {
             await this.fileService.deleteFilesFromDisk(filesToDelete);
