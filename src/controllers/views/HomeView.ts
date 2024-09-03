@@ -1,14 +1,18 @@
 import { Get, Hidden, View } from "@tsed/schema";
 import { Controller, Inject } from "@tsed/di";
-import { Req, Res, Session } from "@tsed/common";
+import { Req, Res } from "@tsed/common";
 import CaptchaServices from "../../model/constants/CaptchaServices.js";
 import { CaptchaManager } from "../../manager/CaptchaManager.js";
 import type { Request, Response } from "express";
+import { BucketSessionService } from "../../services/BucketSessionService.js";
 
 @Controller("/")
 @Hidden()
 export class HomeView {
-    public constructor(@Inject() private captchaManager: CaptchaManager) {}
+    public constructor(
+        @Inject() private captchaManager: CaptchaManager,
+        @Inject() private bucketSessionService: BucketSessionService,
+    ) {}
 
     @Get()
     @View("index.ejs")
@@ -18,8 +22,8 @@ export class HomeView {
 
     @Get("/bucketAccess")
     @View("bucketAccess.ejs")
-    public showBucketLoginPage(@Res() res: Response, @Session() session: Record<string, unknown>): unknown {
-        if (session.bucket) {
+    public showBucketLoginPage(@Res() res: Response): unknown {
+        if (this.bucketSessionService.hasActiveSession()) {
             res.redirect("/admin/bucket");
         }
         const captchaType = this.activeCaptchaService;

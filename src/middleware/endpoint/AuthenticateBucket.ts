@@ -1,20 +1,20 @@
 import { Middleware, MiddlewareMethods } from "@tsed/platform-middlewares";
-import { Next, PlatformRequest, Req } from "@tsed/common";
+import { Next } from "@tsed/common";
 import { Inject } from "@tsed/di";
 import { BucketService } from "../../services/BucketService.js";
 import { BodyParams } from "@tsed/platform-params";
 import { BucketDto } from "../../model/dto/BucketDto.js";
 import { BucketAuthenticationException } from "../../model/exceptions/BucketAuthenticationException.js";
+import { BucketSessionService } from "../../services/BucketSessionService.js";
 
 @Middleware()
 export class AuthenticateBucket implements MiddlewareMethods {
-    public constructor(@Inject() private bucketService: BucketService) {}
+    public constructor(
+        @Inject() private bucketService: BucketService,
+        @Inject() private bucketSessionService: BucketSessionService,
+    ) {}
 
-    public async use(
-        @Req() request: PlatformRequest,
-        @BodyParams() bucketDto: BucketDto,
-        @Next() next: Next,
-    ): Promise<void> {
+    public async use(@BodyParams() bucketDto: BucketDto, @Next() next: Next): Promise<void> {
         if (!bucketDto) {
             this.throwError(`Payload missing`);
         }
@@ -28,7 +28,7 @@ export class AuthenticateBucket implements MiddlewareMethods {
         }
 
         // we don't want to save the bucket with all the entries into the session, just the token really
-        request.session.bucket = bucket.bucketToken;
+        this.bucketSessionService.createSession(bucket);
         return next();
     }
 

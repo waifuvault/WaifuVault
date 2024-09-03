@@ -1,11 +1,15 @@
 import { Middleware, MiddlewareMethods } from "@tsed/platform-middlewares";
-import { Next, Session } from "@tsed/common";
+import { Next } from "@tsed/common";
 import { BucketAuthenticationException } from "../../model/exceptions/BucketAuthenticationException.js";
+import { Inject } from "@tsed/di";
+import { BucketSessionService } from "../../services/BucketSessionService.js";
 
 @Middleware()
 export class AuthoriseBucket implements MiddlewareMethods {
-    public use(@Session() session: Record<string, unknown>, @Next() next: Next): void {
-        if (!session || !session.bucket) {
+    public constructor(@Inject() private bucketSessionService: BucketSessionService) {}
+
+    public use(@Next() next: Next): void {
+        if (!this.bucketSessionService.hasActiveSession()) {
             throw new BucketAuthenticationException({
                 name: "BucketAuthenticationException",
                 message: "Token is required",

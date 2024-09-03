@@ -1,7 +1,7 @@
 import { Controller, Inject, ProviderScope, Scope } from "@tsed/di";
 import { Authenticate, Authorize } from "@tsed/passport";
 import { Get, Hidden, Post, Returns, Security } from "@tsed/schema";
-import { PlatformResponse, Req, Res, Session, UseBefore } from "@tsed/common";
+import { PlatformResponse, Req, Res, UseBefore } from "@tsed/common";
 import { StatusCodes } from "http-status-codes";
 import { BodyParams } from "@tsed/platform-params";
 import { UserModel } from "../../../../model/db/User.model.js";
@@ -12,13 +12,17 @@ import { CaptchaMiddleWare } from "../../../../middleware/endpoint/CaptchaMiddle
 import { DefaultRenderException } from "../../../../model/rest/DefaultRenderException.js";
 import type { Request, Response } from "express";
 import { AuthenticateBucket } from "../../../../middleware/endpoint/AuthenticateBucket.js";
+import { BucketSessionService } from "../../../../services/BucketSessionService.js";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
 @Hidden()
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class AuthenticationController extends BaseRestController {
-    public constructor(@Inject() private usersService: UserService) {
+    public constructor(
+        @Inject() private usersService: UserService,
+        @Inject() private bucketSessionService: BucketSessionService,
+    ) {
         super();
     }
 
@@ -42,9 +46,9 @@ export class AuthenticationController extends BaseRestController {
 
     @Get("/close_bucket")
     @Returns(StatusCodes.MOVED_TEMPORARILY)
-    public closeBucket(@Session() session: Record<string, unknown>, @Res() res: Response): void {
-        if (session && session.bucket) {
-            delete session.bucket;
+    public closeBucket(@Res() res: Response): void {
+        if (this.bucketSessionService.hasActiveSession()) {
+            this.bucketSessionService.destroySession();
         }
         res.redirect("/bucketAccess");
     }
