@@ -544,7 +544,7 @@
                     const responseStatus = response.status;
                     const responseJson = await response.json();
                     if (responseStatus !== 200) {
-                        alert(responseJson.message);
+                        Site.showError(responseJson.message);
                         throw new Error(responseJson.message);
                     }
                     return responseJson;
