@@ -219,13 +219,13 @@
 
         const bucketId = <%- loginType === "bucket" ? `"${bucket.bucketToken}";` : "null;"; -%>
 
+
             function loadDt() {
                 const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
 
                 const uploadModal = new bootstrap.Modal(document.getElementById("fileUploadModel"), { keyboard: false });
                 const progressWrapper = document.getElementById("progressWrapper");
                 const progressbar = document.getElementById("uploadProgress");
-
 
                 document.querySelector('.btn-file-upload').addEventListener('click', () => {
                     const file = document.getElementById('uploadFile').files[0];
@@ -266,12 +266,27 @@
                     progressWrapper.setAttribute("aria-valuenow", "0");
                 }
 
-                function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
+                async function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
+                    const restrictions = await getRestrictions();
+                    const max_upload_size = restrictions ? restrictions.filter(x => x.type === "MAX_FILE_SIZE")[0].value : null;
+                    const banned_mime_type = restrictions ? restrictions.filter(x => x.type === "BANNED_MIME_TYPE")[0].value : null;
                     const uploadButton = document.querySelector('.btn-file-upload');
                     uploadButton.disabled = true;
                     let params = `hide_filename=${hideFilename}&one_time_download=${oneTimeDownload}`;
                     if (expires) {
                         params += `&expires=${expires}`;
+                    }
+
+                    if (file && max_upload_size && file.size > max_upload_size) {
+                        Site.showError(`File is too large (server limit is ${sizeAsMB()(max_upload_size,"display","")})`);
+                        uploadButton.disabled = false;
+                        return;
+                    }
+
+                    if (file && banned_mime_type && banned_mime_type.indexOf(file.type) !== -1) {
+                        Site.showError(`File is a banned type (server bans ${banned_mime_type})`);
+                        uploadButton.disabled = false;
+                        return;
                     }
 
                     const formData = new FormData();
@@ -513,6 +528,26 @@
                         alert(responseJson.message);
                         throw new Error(responseJson.message);
                     }
+                }
+
+                async function getRestrictions() {
+                    Site.loading(true);
+                    let response;
+                    try {
+                        response = await fetch(`${baseUrl}/resources/restrictions`);
+                    } catch(e) {
+                        alert(e.message);
+                        return null;
+                    } finally {
+                        Site.loading(false);
+                    }
+                    const responseStatus = response.status;
+                    const responseJson = await response.json();
+                    if (responseStatus !== 200) {
+                        Site.showError(responseJson.message);
+                        throw new Error(responseJson.message);
+                    }
+                    return responseJson;
                 }
 
                 function getButtons(type) {
