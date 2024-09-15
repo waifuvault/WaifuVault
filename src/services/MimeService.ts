@@ -2,11 +2,23 @@ import { Constant, Service } from "@tsed/di";
 import mime from "mime";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { fileTypeFromBuffer, fileTypeFromFile } from "file-type";
+import fs from "node:fs/promises";
 
 @Service()
 export class MimeService {
     @Constant(GlobalEnv.BLOCKED_MIME_TYPES)
     private readonly blockedMimeTypes: string;
+
+    private async readFirstKB(filePath: string): Promise<Buffer> {
+        const fileHandle = await fs.open(filePath, "r");
+        const buff = Buffer.alloc(1024);
+        try {
+            await fileHandle.read(buff, 0, 1024, 0);
+        } finally {
+            await fileHandle.close();
+        }
+        return buff;
+    }
 
     public async isBlocked(filepath: string): Promise<boolean> {
         if (!this.blockedMimeTypes) {
@@ -26,7 +38,14 @@ export class MimeService {
             return mimeFromBuffer.mime;
         }
         if (resourceName) {
-            return mime.getType(resourceName);
+            const extType = mime.getType(resourceName);
+            if (extType) {
+                return extType;
+            }
+        }
+        const isText = !buff.toString("utf-8", 0, 1024).includes("\uFFFD");
+        if (isText) {
+            return "text/plain";
         }
         return null;
     }
@@ -40,6 +59,15 @@ export class MimeService {
         } catch {
             return null;
         }
-        return mime.getType(filepath);
+        const extType = mime.getType(filepath);
+        if (extType) {
+            return extType;
+        }
+        const firstKb = await this.readFirstKB(filepath);
+        const isText = !firstKb.toString("utf-8", 0, 1024).includes("\uFFFD");
+        if (isText) {
+            return "text/plain";
+        }
+        return null;
     }
 }
