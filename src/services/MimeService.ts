@@ -9,7 +9,7 @@ export class MimeService {
     @Constant(GlobalEnv.BLOCKED_MIME_TYPES)
     private readonly blockedMimeTypes: string;
 
-    public async readFirstKB(filePath: string): Promise<Buffer> {
+    private async readFirstKB(filePath: string): Promise<Buffer> {
         const fileHandle = await fs.open(filePath, "r");
         const buff = Buffer.alloc(1024);
         try {
