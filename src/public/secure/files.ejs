@@ -283,7 +283,7 @@
                         return;
                     }
 
-                    if (file && banned_mime_type && banned_mime_type.indexOf(file.type) !== -1) {
+                    if (file && file.type!=="" && banned_mime_type && banned_mime_type.indexOf(file.type) !== -1) {
                         Site.showError(`File is a banned type (server bans ${banned_mime_type})`);
                         uploadButton.disabled = false;
                         return;
