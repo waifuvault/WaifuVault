@@ -42,7 +42,6 @@ export default tseslint.config(
             "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
             "@typescript-eslint/no-var-requires": "error",
             "@typescript-eslint/no-explicit-any": "error",
-            "@typescript-eslint/ban-types": "warn",
             "@typescript-eslint/explicit-member-accessibility": [
                 "error",
                 {

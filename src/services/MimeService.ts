@@ -33,25 +33,35 @@ export class MimeService {
     }
 
     public async findMimeTypeFromBuffer(buff: Buffer, resourceName?: string): Promise<string | null> {
+        // the order is very important, do not change
+
+        // first check the buffer magic bytes
         const mimeFromBuffer = await fileTypeFromBuffer(buff);
         if (mimeFromBuffer) {
             return mimeFromBuffer.mime;
         }
+
+        // then check the extension
         if (resourceName) {
             const extType = mime.getType(resourceName);
             if (extType) {
                 return extType;
             }
         }
-        const isText = !buff.toString("utf-8", 0, 1024).includes("\uFFFD");
-        if (isText) {
+
+        // if there still is no mapping, see if the file is plain text
+        if (this.isText(buff)) {
             return "text/plain";
         }
+
         return null;
     }
 
     public async findMimeType(filepath: string): Promise<string | null> {
+        // the order is very important, do not change
+
         try {
+            // check the file itself against magic BOM
             const mimeType = await fileTypeFromFile(filepath);
             if (mimeType) {
                 return mimeType.mime;
@@ -59,15 +69,23 @@ export class MimeService {
         } catch {
             return null;
         }
+
+        // then check it via the file extension
         const extType = mime.getType(filepath);
         if (extType) {
             return extType;
         }
+
+        // if there still is no mapping, see if the file is plain text
         const firstKb = await this.readFirstKB(filepath);
-        const isText = !firstKb.toString("utf-8", 0, 1024).includes("\uFFFD");
-        if (isText) {
+        if (this.isText(firstKb)) {
             return "text/plain";
         }
+
         return null;
+    }
+
+    private isText(buffer: Buffer): boolean {
+        return !buffer.toString("utf-8", 0, 1024).includes("\uFFFD");
     }
 }
