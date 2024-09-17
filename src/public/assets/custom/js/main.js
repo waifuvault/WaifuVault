@@ -57,7 +57,6 @@ const Site = (function() {
 
 
     const loadPage = function loadPage(anon) {
-        // eslint-disable-next-line require-await
         anon.call(this, Site).then(async () => {
             function initTabs() {
                 const triggerTabList = document.querySelectorAll("#resultTabs button");
