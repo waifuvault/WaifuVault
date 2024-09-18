@@ -37,9 +37,15 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card border-primary mb-3">
-                <div class="card-header">Current Entries
-                    <% if(loginType === "bucket") { %>
-                        for bucket: <%- bucket.bucketToken; -%>
+                <div class="card-header">
+                    <div>
+                        Current Entries
+                        <% if(loginType === "bucket") { %>
+                            for bucket: <%- bucket.bucketToken; -%>
+                        <% } %>
+                    </div>
+                    <% if(loginType === "bucket" && bucket.type === "PREMIUM") { %>
+                        <div class="alert alert-info mt-3"><i class="bi bi-question-circle"></i> This is a <%-bucket.type-%> bucket, this means that you get unlimited expiry.</div>
                     <% } %>
                 </div>
                 <div class="card-body">

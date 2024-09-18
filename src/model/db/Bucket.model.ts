@@ -1,6 +1,7 @@
 import { AbstractModel } from "./AbstractModel.js";
 import { Column, Entity, Index, OneToMany } from "typeorm";
 import type { FileUploadModel } from "./FileUpload.model.js";
+import BucketType from "../constants/BucketType.js";
 
 @Entity()
 @Index(["bucketToken"], {
@@ -19,6 +20,13 @@ export class BucketModel extends AbstractModel {
         unique: true,
     })
     public ip: string;
+
+    @Column({
+        nullable: false,
+        type: "text",
+        default: BucketType.NORMAL,
+    })
+    public type: BucketType;
 
     @OneToMany("FileUploadModel", "bucket", {
         cascade: true,
