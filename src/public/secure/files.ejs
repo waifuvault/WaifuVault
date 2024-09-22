@@ -191,8 +191,8 @@
                                 <div class="alert alert-danger" id="errorContent"></div>
                             </div>
                             <div class="col-md-12 hidden" id="success">
-                                <div class="alert alert-success">
-                                    File Successfully Uploaded
+                                <div class="alert alert-success" style="overflow: hidden;text-overflow: ellipsis;">
+                                    File Successfully Uploaded <br /> <span id="fileUploadedUrl"></span>
                                 </div>
                             </div>
                         </div>
@@ -277,6 +277,9 @@
                     const max_upload_size = restrictions ? restrictions.filter(x => x.type === "MAX_FILE_SIZE")[0].value : null;
                     const banned_mime_type = restrictions ? restrictions.filter(x => x.type === "BANNED_MIME_TYPE")[0].value : null;
                     const uploadButton = document.querySelector('.btn-file-upload');
+                    const fileUploadSuccess = document.getElementById("fileUploadedUrl");
+                    fileUploadSuccess.innerHTML = null;
+
                     uploadButton.disabled = true;
                     let params = `hide_filename=${hideFilename}&one_time_download=${oneTimeDownload}`;
                     if (expires) {
@@ -325,10 +328,24 @@
                     };
 
                     xhr.onload = function() {
+                        const response =  JSON.parse(xhr.response);
                         if (xhr.status === 200 || xhr.status === 201) {
+                            const url = response.url;
+                            const btn = document.createElement("button");
+                            btn.className = "btn btn-sm btn-outline-primary mt-3 d-block";
+                            btn.addEventListener("click", () => navigator.clipboard.writeText(url));
+                            btn.textContent = "Copy to clipboard";
+
+                            const anchor = document.createElement("a");
+                            anchor.setAttribute("target", "_blank");
+                            anchor.setAttribute("href", url);
+                            anchor.textContent = url;
+                            fileUploadSuccess.append(anchor);
+                            anchor.after(btn);
+                            // fileUploadSuccess.innerHTML = `<a target="_blank" href="${response.url}">${response.url}</a> <button class="btn btn-sm btn-outline-primary" role="button" onclick="navigator.clipboard.writeText(response);">Copy to clipboard</button>`;
                             Site.showSuccess();
                         } else {
-                            Site.showError('Error uploading file: ' + JSON.parse(xhr.response).message);
+                            Site.showError('Error uploading file: ' + response.message);
                         }
                         resetProgress();
                         reloadTable(["entries"]);
