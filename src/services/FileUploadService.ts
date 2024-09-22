@@ -58,21 +58,10 @@ export class FileUploadService {
         let resourcePath: string | undefined;
         let originalFileName: string | undefined;
         try {
-            const token = crypto.randomUUID();
-            const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
             [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
-            uploadEntry.fileName(path.parse(resourcePath).name);
-            await this.scanFile(resourcePath);
-            await this.fileService.checkMime(resourcePath);
-            const mediaType = await this.mimeService.findMimeType(resourcePath);
-            uploadEntry.mediaType(mediaType);
-            const fileSize = await FileUtils.getFileSize(path.basename(resourcePath));
-            uploadEntry.fileSize(fileSize);
             const checksum = await this.getFileHash(resourcePath);
-
-            uploadEntry.bucketToken(bucketToken ?? null);
-
             const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
+
             if (existingFileModel) {
                 if (existingFileModel.hasExpired) {
                     await this.fileService.processDelete([existingFileModel.token]);
@@ -80,6 +69,19 @@ export class FileUploadService {
                     return [FileUploadResponseDto.fromModel(existingFileModel, this.baseUrl, true), true];
                 }
             }
+
+            const token = crypto.randomUUID();
+            const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
+
+            uploadEntry.fileName(path.parse(resourcePath).name);
+            await this.scanFile(resourcePath);
+            await this.fileService.checkMime(resourcePath);
+            const mediaType = await this.mimeService.findMimeType(resourcePath);
+            uploadEntry.mediaType(mediaType);
+            const fileSize = await FileUtils.getFileSize(path.basename(resourcePath));
+            uploadEntry.fileSize(fileSize);
+
+            uploadEntry.bucketToken(bucketToken ?? null);
 
             uploadEntry.settings(
                 await this.buildEntrySettings({
