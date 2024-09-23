@@ -70,7 +70,15 @@ export class FileUploadService {
             uploadEntry.fileSize(fileSize);
             const checksum = await this.getFileHash(resourcePath);
 
-            uploadEntry.bucketToken(bucketToken ?? null);
+            if (bucketToken) {
+                const bucket = await this.bucketService.getBucket(bucketToken);
+                if (!bucket) {
+                    throw new BadRequest(`Bucket with token ${bucketToken} does not exist`);
+                }
+                uploadEntry.bucketToken(bucketToken);
+            } else {
+                uploadEntry.bucketToken(null);
+            }
 
             const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
             if (existingFileModel) {
