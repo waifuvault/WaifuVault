@@ -172,7 +172,7 @@ export class NetworkUtils {
     public static getIp(req: Request): string {
         const useCf = process.env.USE_CLOUDFLARE === "true";
         let ip: string;
-        if (useCf) {
+        if (useCf && req.headers["cf-connecting-ip"]) {
             ip = req.headers["cf-connecting-ip"] as string;
         } else {
             ip = req.ip as string;
