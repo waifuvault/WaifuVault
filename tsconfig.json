@@ -25,6 +25,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "noImplicitOverride": true,
+    "useDefineForClassFields": false,
     "skipLibCheck": true,
     "lib": [
       "es7",
