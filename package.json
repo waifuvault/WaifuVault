@@ -38,6 +38,7 @@
     "@tsed/platform-exceptions": "^8.0.0-rc.2",
     "@tsed/platform-express": "^8.0.0-rc.2",
     "@tsed/platform-log-middleware": "^8.0.0-rc.2",
+    "@tsed/platform-log-request": "^8.0.0-rc.2",
     "@tsed/platform-middlewares": "^8.0.0-rc.2",
     "@tsed/platform-params": "^8.0.0-rc.2",
     "@tsed/platform-response-filter": "^8.0.0-rc.2",
