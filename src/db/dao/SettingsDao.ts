@@ -6,6 +6,6 @@ export class SettingsDao {
     public constructor(@Configuration() private configuration: Configuration) {}
 
     public getSetting(setting: GlobalEnv): string | null {
-        return this.configuration?.[setting] ?? null;
+        return this.configuration.get<string | null>(setting, null);
     }
 }
