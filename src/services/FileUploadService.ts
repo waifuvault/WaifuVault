@@ -3,7 +3,6 @@ import { FileRepo } from "../db/repo/FileRepo.js";
 import type { PlatformMulterFile } from "@tsed/common";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { FileUrlService } from "./FileUrlService.js";
-import { MimeService } from "./MimeService.js";
 import { Builder, type IBuilder } from "builder-pattern";
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -16,7 +15,6 @@ import { BadRequest, Exception, InternalServerError } from "@tsed/exceptions";
 import { FileUtils, ObjectUtils } from "../utils/Utils.js";
 import TimeUnit from "../model/constants/TimeUnit.js";
 import argon2 from "argon2";
-import { AvManager } from "../manager/AvManager.js";
 import { EncryptionService } from "./EncryptionService.js";
 import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
 import { EntryModificationDto } from "../model/dto/EntryModificationDto.js";
@@ -25,6 +23,8 @@ import { ProcessUploadException } from "../model/exceptions/ProcessUploadExcepti
 import { FileService } from "./FileService.js";
 import { BucketService } from "./BucketService.js";
 import BucketType from "../model/constants/BucketType.js";
+import { FileFilterManager } from "../manager/FileFilterManager.js";
+import { MimeService } from "./MimeService.js";
 
 @Service()
 export class FileUploadService {
@@ -39,11 +39,11 @@ export class FileUploadService {
         @Inject() private fileUrlService: FileUrlService,
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
-        @Inject() private avManager: AvManager,
         @Inject() private encryptionService: EncryptionService,
         @Inject() private recordInfoSocket: RecordInfoSocket,
         @Inject() private fileService: FileService,
         @Inject() private bucketService: BucketService,
+        @Inject() private fileFilterManager: FileFilterManager,
     ) {}
 
     public async processUpload({
@@ -61,9 +61,10 @@ export class FileUploadService {
             const token = crypto.randomUUID();
             const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
             [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
+
+            await this.filterFile(resourcePath);
+
             uploadEntry.fileName(path.parse(resourcePath).name);
-            await this.scanFile(resourcePath);
-            await this.fileService.checkMime(resourcePath);
             const mediaType = await this.mimeService.findMimeType(resourcePath);
             uploadEntry.mediaType(mediaType);
             const fileSize = await FileUtils.getFileSize(path.basename(resourcePath));
@@ -303,8 +304,11 @@ export class FileUploadService {
         hashSum.update(fileBuffer);
         return hashSum.digest("hex");
     }
-
-    private scanFile(resourcePath: string): Promise<void> {
-        return this.avManager.scanFile(resourcePath);
+    private async filterFile(resourcePath: string): Promise<void> {
+        const failedFilters = await this.fileFilterManager.process(resourcePath);
+        if (failedFilters.length > 0) {
+            // throw the error of the highest priority
+            throw failedFilters.sort((a, b) => b.priority - a.priority)[0].error;
+        }
     }
 }

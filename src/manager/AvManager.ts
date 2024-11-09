@@ -2,11 +2,9 @@ import { Inject, Injectable, OnInit } from "@tsed/di";
 import { AvFactory } from "../factory/AvFactory.js";
 import type { PlatformMulterFile } from "@tsed/common";
 import { Logger } from "@tsed/logger";
-import { BadRequest } from "@tsed/exceptions";
 import path from "node:path";
 import { IAvEngine } from "../engine/IAvEngine.js";
 import { AvScanResult } from "../utils/typeings.js";
-import { FileUtils } from "../utils/Utils.js";
 
 @Injectable()
 export class AvManager implements OnInit {
@@ -30,27 +28,18 @@ export class AvManager implements OnInit {
         }
     }
 
-    public async scanFile(file: string | PlatformMulterFile): Promise<void> {
+    public async scanFile(file: string | PlatformMulterFile): Promise<boolean> {
         if (this.avEngines.length === 0) {
-            return;
+            return true;
         }
         const resource = typeof file === "string" ? path.basename(file) : file.filename;
         const scanResults = await this.doScan(resource);
-
+        let passed = true;
         for (const scanResult of scanResults) {
             if (scanResult.passed) {
                 continue;
             }
-            const fileExists = await FileUtils.fileExists(resource);
-            if (fileExists) {
-                try {
-                    await FileUtils.deleteFile(file, false);
-                } catch (e) {
-                    // this basically means we could not delete the virus...
-                    this.logger.error(`Unable to delete resource ${resource} after positive AV detection`);
-                    throw new BadRequest(e.message);
-                }
-            }
+            passed = false;
             let errStr = `AV engine ${scanResult.engineName} found issues `;
             if (scanResult.additionalMessage) {
                 errStr += `AV scan of resource ${resource} for issues terminated with message "${scanResult.additionalMessage}"`;
@@ -63,8 +52,8 @@ export class AvManager implements OnInit {
                 errStr = "AV Scan ended with no reported reason";
             }
             this.logger.warn(errStr);
-            throw new BadRequest("Failed to store file");
         }
+        return passed;
     }
 
     private doScan(resource: string): Promise<AvScanResult[]> {
