@@ -76,7 +76,6 @@ export class FileUploadService {
 
             await this.filterFile(resourcePath);
 
-
             uploadEntry.fileName(path.parse(resourcePath).name);
             const mediaType = await this.mimeService.findMimeType(resourcePath);
             uploadEntry.mediaType(mediaType);
