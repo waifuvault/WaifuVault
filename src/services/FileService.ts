@@ -8,7 +8,7 @@ import { MimeService } from "./MimeService.js";
 import { FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
-import { BadRequest, NotFound, UnsupportedMediaType } from "@tsed/exceptions";
+import { BadRequest, NotFound } from "@tsed/exceptions";
 
 /**
  * Class that deals with interacting files from the filesystem
@@ -104,21 +104,6 @@ export class FileService {
             this.unknownToken(token);
         }
         return FileUploadResponseDto.fromModel(entry, this.baseUrl, humanReadable);
-    }
-
-    public async checkMime(resourcePath: string): Promise<void> {
-        let failedMime = false;
-        try {
-            failedMime = await this.mimeService.isBlocked(resourcePath);
-        } catch (e) {
-            FileUtils.deleteFile(resourcePath);
-            throw e;
-        }
-
-        if (failedMime) {
-            FileUtils.deleteFile(resourcePath);
-            throw new UnsupportedMediaType(`MIME type not supported`);
-        }
     }
 
     private resourceNotFound(resource: string): never {
