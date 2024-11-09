@@ -19,7 +19,7 @@ export class MimeFilter extends AbstractFileFilter {
         super(logger);
     }
 
-    protected async doFilterInternal(file: string | PlatformMulterFile): Promise<boolean> {
+    protected override async doFilterInternal(file: string | PlatformMulterFile): Promise<boolean> {
         const resource = typeof file === "string" ? file : file.path;
         return !(await this.mimeService.isBlocked(resource));
     }
@@ -28,7 +28,7 @@ export class MimeFilter extends AbstractFileFilter {
         return new UnsupportedMediaType(`MIME type not supported`);
     }
 
-    public get priority(): number {
+    public override get priority(): number {
         return FileFilterPriority.LOWEST;
     }
 }

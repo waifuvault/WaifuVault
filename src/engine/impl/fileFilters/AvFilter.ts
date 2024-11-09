@@ -19,7 +19,7 @@ export class AvFilter extends AbstractFileFilter {
         super(logger);
     }
 
-    protected doFilterInternal(file: string | PlatformMulterFile): Promise<boolean> {
+    protected override doFilterInternal(file: string | PlatformMulterFile): Promise<boolean> {
         return this.avManager.scanFile(file);
     }
 
@@ -27,7 +27,7 @@ export class AvFilter extends AbstractFileFilter {
         return new BadRequest("Failed to store file");
     }
 
-    public get priority(): number {
+    public override get priority(): number {
         return FileFilterPriority.HIGHEST;
     }
 }
