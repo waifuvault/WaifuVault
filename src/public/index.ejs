@@ -606,8 +606,8 @@ public class Example {
     Site.loadPage(async () => {
 
         const socket = io(`/recordInfo`, {
-            transports: ['websocket'],
-        });
+            transports: ['websocket']
+        })
 
         const fileCountSpan = document.getElementById("fileCount");
         const totalFileSizeSpan = document.getElementById("totalFileSize");
