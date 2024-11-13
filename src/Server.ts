@@ -105,7 +105,6 @@ const opts: Partial<TsED.Configuration> = {
         cors: {
             origin: process.env.BASE_URL,
         },
-        transports: ["websocket"],
     },
     middlewares: [
         helmet({
