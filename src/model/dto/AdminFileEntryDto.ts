@@ -51,6 +51,9 @@ export class AdminFileEntryDto {
     @Property()
     public fileProtectionLevel: ProtectionLevel;
 
+    @Property()
+    public views: number;
+
     public static fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry, baseUrl: string): AdminFileEntryDto {
         const fileEntryBuilder = Builder(AdminFileEntryDto)
             .url(AdminFileEntryDto.getUrl(entry, baseUrl))
@@ -65,6 +68,7 @@ export class AdminFileEntryDto {
             .oneTimeDownload(entry.settings?.oneTimeDownload ?? false)
             .fileProtectionLevel(entry.fileProtectionLevel)
             .ip(entry.ip)
+            .views(entry.views)
             .bucket(entry.bucketToken);
         const expiresIn = entry.expiresIn;
         if (expiresIn !== null) {

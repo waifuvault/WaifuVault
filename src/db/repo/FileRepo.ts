@@ -1,13 +1,23 @@
-import { Inject, Service } from "@tsed/di";
+import { Inject, OnInit, Service } from "@tsed/di";
 import { FileDao } from "../dao/FileDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
-import * as Path from "node:path";
+import Path from "node:path";
 
 @Service()
-export class FileRepo {
+export class FileRepo implements OnInit {
+    private readonly viewCache: Map<string, number> = new Map(); // token to view count
+
     public constructor(@Inject() private fileDao: FileDao) {}
 
+    public async $onInit(): Promise<void> {
+        const entries = await this.fileDao.getAllEntries();
+        for (const entry of entries) {
+            this.viewCache.set(entry.token, entry.views);
+        }
+    }
+
     public saveEntry(entry: FileUploadModel): Promise<FileUploadModel> {
+        this.viewCache.set(entry.token, entry.views);
         return this.fileDao.saveEntry(entry);
     }
 
@@ -35,6 +45,14 @@ export class FileRepo {
         return this.fileDao.getAllEntriesForIp(ip);
     }
 
+    public async incrementViews(token: string): Promise<number> {
+        let currentViews = this.viewCache.get(token)!;
+        currentViews++;
+        this.viewCache.set(token, currentViews);
+        await this.fileDao.incrementViews(token);
+        return currentViews;
+    }
+
     public getAllEntriesOrdered(
         start: number,
         records: number,
@@ -47,6 +65,9 @@ export class FileRepo {
     }
 
     public deleteEntries(tokens: string[]): Promise<boolean> {
+        for (const token of tokens) {
+            this.viewCache.delete(token);
+        }
         return this.fileDao.deleteEntries(tokens);
     }
 

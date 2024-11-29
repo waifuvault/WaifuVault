@@ -313,4 +313,8 @@ export class FileUploadService {
             throw failedFilters.sort((a, b) => b.priority - a.priority)[0].error;
         }
     }
+
+    public incrementViews(token: string): Promise<number> {
+        return this.repo.incrementViews(token);
+    }
 }

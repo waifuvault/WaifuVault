@@ -4,7 +4,6 @@ import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { EncryptionService } from "./EncryptionService.js";
 import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
 import { Logger } from "@tsed/logger";
-import { MimeService } from "./MimeService.js";
 import { FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
@@ -23,7 +22,6 @@ export class FileService {
         @Inject() private encryptionService: EncryptionService,
         @Inject() private recordInfoSocket: RecordInfoSocket,
         @Inject() private logger: Logger,
-        @Inject() private mimeService: MimeService,
     ) {}
 
     public async processDelete(tokens: string[]): Promise<boolean> {
