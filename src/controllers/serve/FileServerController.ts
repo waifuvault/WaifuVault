@@ -7,6 +7,7 @@ import { MimeService } from "../../services/MimeService.js";
 import type { Response } from "express";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { FileService } from "../../services/FileService.js";
+import { FileUploadService } from "../../services/FileUploadService.js";
 
 @Hidden()
 @Controller("/")
@@ -14,6 +15,7 @@ export class FileServerController {
     public constructor(
         @Inject() private fileService: FileService,
         @Inject() private mimeService: MimeService,
+        @Inject() private fileUploadService: FileUploadService,
     ) {}
 
     @Get("/:t/:file(*)?")
@@ -41,7 +43,9 @@ export class FileServerController {
         const hasOneTimeDownload = entry.settings?.oneTimeDownload ?? false;
         if (hasOneTimeDownload) {
             await this.fileService.processDelete([entry.token]);
+            return;
         }
+        await this.fileUploadService.incrementViews(entry.token);
     }
 
     private async hasPassword(resource: string, password?: string): Promise<boolean> {

@@ -59,6 +59,7 @@
                             <th scope="col">Created At</th>
                             <th scope="col">expires</th>
                             <th scope="col">mediaType</th>
+                            <th scope="col">Views</th>
                             <th scope="col">file Name on system</th>
                             <th scope="col">url</th>
                             <th scope="col">Bucket</th>
@@ -471,6 +472,7 @@
                                 { data: "createdAt", render: customDate() },
                                 { data: "expires", render: renderNullField() },
                                 { data: "mediaType", render: renderNullField() },
+                                { data: "views" },
                                 { data: "fileName" },
                                 { data: "url" },
                                 { data: "bucket", render: renderNullField() }

@@ -33,6 +33,10 @@ export class FileUploadResponseDto {
     public url: string;
 
     @Property()
+    @Description("How many times this file was downloaded")
+    public views: number;
+
+    @Property()
     @Description("The bucket that this file belongs to")
     @Nullable(String)
     public bucket: string | null = null;
@@ -51,6 +55,7 @@ export class FileUploadResponseDto {
         const builder = Builder(FileUploadResponseDto)
             .token(fileUploadModel.token)
             .bucket(fileUploadModel.bucketToken ?? null)
+            .views(fileUploadModel.views)
             .url(FileUploadResponseDto.getUrl(fileUploadModel, baseUrl));
         const expiresIn = fileUploadModel.expiresIn;
         if (format && expiresIn !== null) {
