@@ -1,6 +1,7 @@
 {
   "isModule": true,
   "minify": true,
+  "sourceMaps": true,
   "jsc": {
     "minify": {
       "compress": {
@@ -20,7 +21,8 @@
     },
     "transform": {
       "legacyDecorator": true,
-      "decoratorMetadata": true
+      "decoratorMetadata": true,
+      "useDefineForClassFields": false,
     }
   }
 }
