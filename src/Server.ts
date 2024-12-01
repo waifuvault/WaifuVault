@@ -5,6 +5,7 @@ import "@tsed/platform-express";
 import "@tsed/ajv";
 import "@tsed/swagger";
 import "@tsed/socketio";
+import "@tsed/platform-log-request";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
 // custom index imports

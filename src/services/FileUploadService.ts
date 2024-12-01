@@ -58,6 +58,18 @@ export class FileUploadService {
         let resourcePath: string | undefined;
         let originalFileName: string | undefined;
         try {
+            [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
+            const checksum = await this.getFileHash(resourcePath);
+            const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
+
+            if (existingFileModel) {
+                if (existingFileModel.hasExpired) {
+                    await this.fileService.processDelete([existingFileModel.token]);
+                } else {
+                    return [FileUploadResponseDto.fromModel(existingFileModel, this.baseUrl, true), true];
+                }
+            }
+
             const token = crypto.randomUUID();
             const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
             [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
@@ -69,7 +81,6 @@ export class FileUploadService {
             uploadEntry.mediaType(mediaType);
             const fileSize = await FileUtils.getFileSize(path.basename(resourcePath));
             uploadEntry.fileSize(fileSize);
-            const checksum = await this.getFileHash(resourcePath);
 
             if (bucketToken) {
                 const bucket = await this.bucketService.getBucket(bucketToken);
@@ -79,15 +90,6 @@ export class FileUploadService {
                 uploadEntry.bucketToken(bucketToken);
             } else {
                 uploadEntry.bucketToken(null);
-            }
-
-            const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
-            if (existingFileModel) {
-                if (existingFileModel.hasExpired) {
-                    await this.fileService.processDelete([existingFileModel.token]);
-                } else {
-                    return [FileUploadResponseDto.fromModel(existingFileModel, this.baseUrl, true), true];
-                }
             }
 
             uploadEntry.settings(
