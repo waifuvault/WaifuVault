@@ -1,8 +1,9 @@
 import { Constant, Service } from "@tsed/di";
 import mime from "mime";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import { fileTypeFromBuffer, fileTypeFromFile } from "file-type";
+import { fileTypeFromBuffer, fileTypeFromFile, fileTypeFromStream } from "file-type";
 import fs from "node:fs/promises";
+import { ReadStream } from "node:fs";
 
 @Service()
 export class MimeService {
@@ -53,6 +54,31 @@ export class MimeService {
         if (this.isText(buff)) {
             return "text/plain";
         }
+
+        return null;
+    }
+
+    public async findMimeTypeFromStream(buff: ReadStream, resourceName?: string): Promise<string | null> {
+        // the order is very important, do not change
+
+        // first check the buffer magic bytes
+        const mimeFromBuffer = await fileTypeFromStream(buff);
+        if (mimeFromBuffer) {
+            return mimeFromBuffer.mime;
+        }
+
+        // then check the extension
+        if (resourceName) {
+            const extType = mime.getType(resourceName);
+            if (extType) {
+                return extType;
+            }
+        }
+
+        // if there still is no mapping, see if the file is plain text
+        // if (this.isText(buff)) {
+        //     return "text/plain";
+        // }
 
         return null;
     }

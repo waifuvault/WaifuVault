@@ -8,6 +8,7 @@ import type { Response } from "express";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { FileService } from "../../services/FileService.js";
 import { FileUploadService } from "../../services/FileUploadService.js";
+import { ReadStream } from "node:fs";
 
 @Hidden()
 @Controller("/")
@@ -24,19 +25,19 @@ export class FileServerController {
         @PathParams("t") resource: string,
         @HeaderParams("x-password") password?: string,
         @PathParams("file") requestedFileName?: string,
-    ): Promise<void> {
+    ): Promise<ReadStream> {
         await this.hasPassword(resource, password);
-        const [buff, entry] = await this.fileService.getEntry(resource, requestedFileName, password);
-        const mimeType = await this.mimeService.findMimeTypeFromBuffer(buff, entry.fullFileNameOnSystem);
+        const [stream, entry] = await this.fileService.getEntry(resource, requestedFileName, password);
+        // const mimeType = await this.mimeService.findMimeTypeFromStream(buff, entry.fullFileNameOnSystem);
         res.on("finish", () => this.postProcess(entry));
-        if (mimeType) {
-            res.contentType(mimeType);
+        const mime = stream.fileType?.mime;
+        if (mime) {
+            res.contentType(mime);
         } else {
             // unknown, send an octet-stream and let the client figure it out
             res.contentType("application/octet-stream");
         }
-
-        res.send(buff);
+        return stream as ReadStream;
     }
 
     private async postProcess(entry: FileUploadModel): Promise<void> {
