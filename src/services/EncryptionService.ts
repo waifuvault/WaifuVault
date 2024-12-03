@@ -1,7 +1,6 @@
 import { Constant, OnInit, Service } from "@tsed/di";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import * as fs from "node:fs/promises";
-import { createReadStream, ReadStream } from "node:fs";
 import * as crypto from "node:crypto";
 import argon2 from "argon2";
 import Path from "node:path";
@@ -9,7 +8,6 @@ import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { promisify } from "node:util";
 import { FileUtils } from "../utils/Utils.js";
 import { Forbidden } from "@tsed/exceptions";
-import { buffer as toBuff } from "node:stream/consumers";
 
 @Service()
 export class EncryptionService implements OnInit {
@@ -28,7 +26,7 @@ export class EncryptionService implements OnInit {
         });
     }
 
-    public async encrypt(file: string | Buffer | ReadStream, password: string): Promise<Buffer | null> {
+    public async encrypt(file: string | Buffer, password: string): Promise<Buffer | null> {
         if (!this.salt) {
             return null;
         }
@@ -36,10 +34,8 @@ export class EncryptionService implements OnInit {
         if (typeof file === "string") {
             const fileSource = FileUtils.getFilePath(Path.basename(file));
             buffer = await fs.readFile(fileSource);
-        } else if (file instanceof Buffer) {
-            buffer = file;
         } else {
-            buffer = await toBuff(file as ReadStream);
+            buffer = file;
         }
         const iv = await this.randomBytes(16);
         const key = await this.getKey(password);
@@ -51,9 +47,9 @@ export class EncryptionService implements OnInit {
         return encryptedBuffer;
     }
 
-    public async decrypt(source: FileUploadModel, password?: string): Promise<ReadStream> {
+    public async decrypt(source: FileUploadModel, password: string): Promise<Buffer> {
         const fileSource = FileUtils.getFilePath(source);
-        const isEncrypted = source.encrypted;
+        /* const isEncrypted = source.encrypted;
 
         if (!source.settings?.password) {
             // no password, thus not encrypted, just return file stream
@@ -72,15 +68,18 @@ export class EncryptionService implements OnInit {
         if (!isEncrypted) {
             // the file is password protected, but not encrypted, so return it
             return createReadStream(fileSource);
-        }
+        }*/
 
+        const passwordMatches = await this.validatePassword(source, password);
+        if (!passwordMatches) {
+            throw new Forbidden("Password is incorrect");
+        }
         const encrypted = await fs.readFile(fileSource);
         const iv = encrypted.subarray(0, 16);
         const encryptedRest = encrypted.subarray(16);
         const key = await this.getKey(password);
         const decipher = crypto.createDecipheriv(this.algorithm, key, iv);
-        const b = Buffer.concat([decipher.update(encryptedRest), decipher.final()]);
-        return ReadStream.from(b) as ReadStream;
+        return Buffer.concat([decipher.update(encryptedRest), decipher.final()]);
     }
 
     public async changePassword(oldPassword: string, newPassword: string, entry: FileUploadModel): Promise<void> {
@@ -92,7 +91,7 @@ export class EncryptionService implements OnInit {
         await fs.writeFile(FileUtils.getFilePath(entry), newBuffer);
     }
 
-    private validatePassword(resource: FileUploadModel, password: string): Promise<boolean> {
+    public validatePassword(resource: FileUploadModel, password: string): Promise<boolean> {
         return argon2.verify(resource.settings!.password!, password);
     }
 

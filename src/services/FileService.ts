@@ -7,8 +7,8 @@ import { Logger } from "@tsed/logger";
 import { FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
-import { BadRequest, NotFound } from "@tsed/exceptions";
-import { ReadStream } from "node:fs";
+import { BadRequest, Forbidden, NotFound } from "@tsed/exceptions";
+import { EntryEncryptionWrapper } from "../model/rest/EntryEncryptionWrapper.js";
 
 /**
  * Class that deals with interacting files from the filesystem
@@ -53,7 +53,7 @@ export class FileService {
         fileNameOnSystem: string,
         requestedFileName?: string,
         password?: string,
-    ): Promise<[ReadStream, FileUploadModel]> {
+    ): Promise<EntryEncryptionWrapper> {
         const entry = await this.repo.getEntryFileName(fileNameOnSystem);
         const resource = requestedFileName ?? fileNameOnSystem;
         if (entry === null) {
@@ -72,8 +72,16 @@ export class FileService {
             await this.processDelete([entry.token]);
             this.resourceNotFound(resource);
         }
-
-        return Promise.all([this.encryptionService.decrypt(entry, password), entry]);
+        if (entry.settings?.password) {
+            if (!password) {
+                throw new Forbidden(`${entry?.encrypted ? "Encrypted" : "Protected"} file requires a password`);
+            }
+            const passwordMatches = await this.encryptionService.validatePassword(entry, password);
+            if (!passwordMatches) {
+                throw new Forbidden("Password is incorrect");
+            }
+        }
+        return new EntryEncryptionWrapper(entry);
     }
 
     public async isFileEncrypted(resource: string): Promise<boolean> {
