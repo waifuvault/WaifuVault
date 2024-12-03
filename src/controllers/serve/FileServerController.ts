@@ -8,6 +8,7 @@ import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { FileService } from "../../services/FileService.js";
 import { FileUploadService } from "../../services/FileUploadService.js";
 import { EntryEncryptionWrapper } from "../../model/rest/EntryEncryptionWrapper.js";
+import { StatusCodes } from "http-status-codes";
 
 @Hidden()
 @Controller("/")
@@ -67,7 +68,7 @@ export class FileServerController {
             "Content-Length": contentLength,
             "Content-Type": contentType,
         };
-        res.writeHead(206, headers);
+        res.writeHead(StatusCodes.PARTIAL_CONTENT, headers);
         const videoStream = await entryWrapper.getStream(undefined, { start, end });
         videoStream.pipe(res);
     }
