@@ -3,7 +3,6 @@ import { Controller, Inject } from "@tsed/di";
 import { HeaderParams, PathParams, Res } from "@tsed/common";
 import * as Path from "node:path";
 import { FileProtectedException } from "../../model/exceptions/FileProtectedException.js";
-import { MimeService } from "../../services/MimeService.js";
 import type { Response } from "express";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { FileService } from "../../services/FileService.js";
@@ -15,7 +14,6 @@ import { ReadStream } from "node:fs";
 export class FileServerController {
     public constructor(
         @Inject() private fileService: FileService,
-        @Inject() private mimeService: MimeService,
         @Inject() private fileUploadService: FileUploadService,
     ) {}
 
@@ -28,15 +26,16 @@ export class FileServerController {
     ): Promise<ReadStream> {
         await this.hasPassword(resource, password);
         const [stream, entry] = await this.fileService.getEntry(resource, requestedFileName, password);
-        // const mimeType = await this.mimeService.findMimeTypeFromStream(buff, entry.fullFileNameOnSystem);
-        res.on("finish", () => this.postProcess(entry));
-        const mime = stream.fileType?.mime;
+        const mime = entry.mediaType;
         if (mime) {
             res.contentType(mime);
         } else {
             // unknown, send an octet-stream and let the client figure it out
             res.contentType("application/octet-stream");
         }
+        res.appendHeader("Transfer-Encoding", "chunked");
+
+        res.on("finish", () => this.postProcess(entry));
         return stream as ReadStream;
     }
 

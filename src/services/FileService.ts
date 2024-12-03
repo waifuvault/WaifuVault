@@ -8,7 +8,7 @@ import { FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
 import { BadRequest, NotFound } from "@tsed/exceptions";
-import { ReadableStreamWithFileType } from "file-type";
+import { ReadStream } from "node:fs";
 
 /**
  * Class that deals with interacting files from the filesystem
@@ -53,7 +53,7 @@ export class FileService {
         fileNameOnSystem: string,
         requestedFileName?: string,
         password?: string,
-    ): Promise<[ReadableStreamWithFileType, FileUploadModel]> {
+    ): Promise<[ReadStream, FileUploadModel]> {
         const entry = await this.repo.getEntryFileName(fileNameOnSystem);
         const resource = requestedFileName ?? fileNameOnSystem;
         if (entry === null) {

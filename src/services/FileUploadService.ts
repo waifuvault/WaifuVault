@@ -223,7 +223,7 @@ export class FileUploadService {
                 if (!dto.previousPassword) {
                     throw new BadRequest("You must supply 'previousPassword' to change the password");
                 }
-                // await this.encryptionService.changePassword(dto.previousPassword, dto.password, entryToModify);
+                await this.encryptionService.changePassword(dto.previousPassword, dto.password, entryToModify);
             } else {
                 const didEncrypt = await this.encryptionService.encrypt(
                     FileUtils.getFilePath(entryToModify),
