@@ -49,27 +49,6 @@ export class EncryptionService implements OnInit {
 
     public async decrypt(source: FileUploadModel, password: string): Promise<Buffer> {
         const fileSource = FileUtils.getFilePath(source);
-        /* const isEncrypted = source.encrypted;
-
-        if (!source.settings?.password) {
-            // no password, thus not encrypted, just return file stream
-            return createReadStream(fileSource);
-        }
-
-        if (!password) {
-            throw new Forbidden(`${isEncrypted ? "Encrypted" : "Protected"} file requires a password`);
-        }
-
-        const passwordMatches = await this.validatePassword(source, password);
-        if (!passwordMatches) {
-            throw new Forbidden("Password is incorrect");
-        }
-
-        if (!isEncrypted) {
-            // the file is password protected, but not encrypted, so return it
-            return createReadStream(fileSource);
-        }*/
-
         const passwordMatches = await this.validatePassword(source, password);
         if (!passwordMatches) {
             throw new Forbidden("Password is incorrect");
