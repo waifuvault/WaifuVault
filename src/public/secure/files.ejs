@@ -331,7 +331,7 @@
                     xhr.onload = function() {
                         const response =  JSON.parse(xhr.response);
                         if (xhr.status === 200 || xhr.status === 201) {
-                            const url = response.url;
+                            const url = encodeURI(response.url);
                             const btn = document.createElement("button");
                             btn.className = "btn btn-sm btn-outline-primary mt-3 d-block";
                             btn.addEventListener("click", () => navigator.clipboard.writeText(url));
@@ -390,7 +390,7 @@
                             data = `<span>${data}</span>`;
                         }
                         if (copyButtons.includes(header)) {
-                            data += `<i title="Copy value to clipboard" class='bi bi-clipboard ms-1' onclick='navigator.clipboard.writeText("${details[1]}");'></i>`;
+                            data += `<i title="Copy value to clipboard" class='bi bi-clipboard ms-1' onclick='navigator.clipboard.writeText("${encodeURI(details[1])}");'></i>`;
                         }
                         return `<tr><th>${header}</th><td>${data}</td></tr>`;
                     }).join("");

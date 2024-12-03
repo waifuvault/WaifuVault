@@ -1,13 +1,13 @@
 import { Constant, OnInit, Service } from "@tsed/di";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
-import fs from "node:fs/promises";
-import crypto from "node:crypto";
+import * as fs from "node:fs/promises";
+import * as crypto from "node:crypto";
 import argon2 from "argon2";
-import { Forbidden } from "@tsed/exceptions";
 import Path from "node:path";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { promisify } from "node:util";
 import { FileUtils } from "../utils/Utils.js";
+import { Forbidden } from "@tsed/exceptions";
 
 @Service()
 export class EncryptionService implements OnInit {
@@ -47,27 +47,13 @@ export class EncryptionService implements OnInit {
         return encryptedBuffer;
     }
 
-    public async decrypt(source: FileUploadModel, password?: string): Promise<Buffer> {
+    public async decrypt(source: FileUploadModel, password: string): Promise<Buffer> {
         const fileSource = FileUtils.getFilePath(source);
-        const fileBuffer = await fs.readFile(fileSource);
-        const isEncrypted = source.encrypted;
-        if (!source.settings?.password) {
-            // no password, thus not encrypted, just return buffer
-            return fileBuffer;
-        }
-        if (!password) {
-            throw new Forbidden(`${isEncrypted ? "Encrypted" : "Protected"} file requires a password`);
-        }
         const passwordMatches = await this.validatePassword(source, password);
         if (!passwordMatches) {
             throw new Forbidden("Password is incorrect");
         }
-        if (!isEncrypted) {
-            // the file is password protected, but not encrypted, so return it
-            return fileBuffer;
-        }
-        // we can now assume the password is valid
-        const encrypted = fileBuffer;
+        const encrypted = await fs.readFile(fileSource);
         const iv = encrypted.subarray(0, 16);
         const encryptedRest = encrypted.subarray(16);
         const key = await this.getKey(password);
@@ -84,7 +70,7 @@ export class EncryptionService implements OnInit {
         await fs.writeFile(FileUtils.getFilePath(entry), newBuffer);
     }
 
-    private validatePassword(resource: FileUploadModel, password: string): Promise<boolean> {
+    public validatePassword(resource: FileUploadModel, password: string): Promise<boolean> {
         return argon2.verify(resource.settings!.password!, password);
     }
 
