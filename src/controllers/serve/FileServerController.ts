@@ -47,8 +47,10 @@ export class FileServerController {
             return;
         }
         res.on("finish", () => this.postProcess(entryWrapper.entry));
-        res.appendHeader("Content-Length", entryWrapper.entry.fileSize.toString());
-        return entryWrapper.getStream(password);
+        if (this.allowedChunkMimeTypes.some(substr => mime.startsWith(substr))) {
+            return entryWrapper.getStream(password);
+        }
+        return entryWrapper.getBuffer(password);
     }
 
     private async chunkData(
