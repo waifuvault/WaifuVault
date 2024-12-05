@@ -54,7 +54,7 @@ export class FileService {
         requestedFileName?: string,
         password?: string,
     ): Promise<EntryEncryptionWrapper> {
-        const entry = await this.repo.getEntryFileName(fileNameOnSystem);
+        const entry = await this.repo.getEntryByFileName(fileNameOnSystem);
         const resource = requestedFileName ?? fileNameOnSystem;
         if (entry === null) {
             this.resourceNotFound(resource);
@@ -85,7 +85,7 @@ export class FileService {
     }
 
     public async isFileEncrypted(resource: string): Promise<boolean> {
-        const entry = await this.repo.getEntryFileName(resource);
+        const entry = await this.repo.getEntryByFileName(resource);
         if (!entry) {
             return false;
         }
@@ -93,7 +93,7 @@ export class FileService {
     }
 
     public async requiresPassword(resource: string): Promise<boolean> {
-        const entry = await this.repo.getEntryFileName(resource);
+        const entry = await this.repo.getEntryByFileName(resource);
         if (!entry) {
             return false;
         }
