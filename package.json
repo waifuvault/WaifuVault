@@ -30,6 +30,7 @@
     "@tsed/di": "^8.1.0",
     "@tsed/engines": "^8.1.0",
     "@tsed/exceptions": "^8.1.0",
+    "@tsed/hooks": "^8.1.0",
     "@tsed/json-mapper": "^8.1.0",
     "@tsed/logger": "7.0.1",
     "@tsed/logger-file": "7.0.1",
