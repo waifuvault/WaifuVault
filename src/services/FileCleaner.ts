@@ -15,7 +15,6 @@ export class FileCleaner implements OnReady {
         @Inject() private fileUploadService: FileService,
     ) {}
 
-    @RunEvery(() => getFromEnv(GlobalEnv.FILE_CLEANER_CRON, "0 * * * *"))
     public async processFiles(): Promise<void> {
         const allFiles = await this.repo.getExpiredFiles();
         if (allFiles.length === 0) {
@@ -24,6 +23,7 @@ export class FileCleaner implements OnReady {
         await this.fileUploadService.processDelete(allFiles.map(entry => entry.token));
     }
 
+    @RunEvery(() => getFromEnv(GlobalEnv.FILE_CLEANER_CRON, "0 * * * *"))
     public async $onReady(): Promise<void> {
         await this.processFiles();
         await this.sync();
