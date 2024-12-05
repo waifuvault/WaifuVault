@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@tsed/di";
 import { AbstractTypeOrmDao } from "./AbstractTypeOrmDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
-import { DataSource, EntityManager, Equal, In, IsNull, Like, MoreThan } from "typeorm";
+import { DataSource, EntityManager, Equal, In, IsNull, LessThan, Like, MoreThan } from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
 import { FindOptionsRelations } from "typeorm/find-options/FindOptionsRelations.js";
 
@@ -171,5 +171,13 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
 
     public async incrementViews(token: string, transaction?: EntityManager): Promise<void> {
         await this.getRepository(transaction).increment({ token }, "views", 1);
+    }
+
+    public getExpiredFiles(): Promise<FileUploadModel[]> {
+        return this.getRepository().find({
+            where: {
+                expires: LessThan(Date.now()),
+            },
+        });
     }
 }

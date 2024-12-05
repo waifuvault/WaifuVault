@@ -21,15 +21,11 @@ export class FileCleaner implements OnReady {
     private readonly cronToRun: string;
 
     public async processFiles(): Promise<void> {
-        const allFiles = await this.repo.getAllEntries();
+        const allFiles = await this.repo.getExpiredFiles();
         if (allFiles.length === 0) {
             return;
         }
-        const expiredTokens = allFiles.filter(file => file.hasExpired).map(entry => entry.token);
-        if (expiredTokens.length === 0) {
-            return;
-        }
-        await this.fileUploadService.processDelete(expiredTokens);
+        await this.fileUploadService.processDelete(allFiles.map(entry => entry.token));
     }
 
     public $onReady(): void {

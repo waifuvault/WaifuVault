@@ -112,7 +112,7 @@ export class FileUploadModel extends AbstractModel {
         if (this.expires === null) {
             return null;
         }
-        return FileUtils.getTImeLeft(this);
+        return FileUtils.getTimeLeft(this);
     }
 
     public get hasExpired(): boolean {

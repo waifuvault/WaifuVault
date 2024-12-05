@@ -107,7 +107,7 @@ export class FileUtils {
     private static readonly MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
 
     public static isFileExpired(entry: FileUploadModel): boolean {
-        const expired = FileUtils.getTImeLeft(entry);
+        const expired = FileUtils.getTimeLeft(entry);
         return expired === null ? false : expired <= 0;
     }
 
@@ -115,7 +115,7 @@ export class FileUtils {
         return path.extname(file).slice(1);
     }
 
-    public static getTImeLeft(entry: FileUploadModel): number | null {
+    public static getTimeLeft(entry: FileUploadModel): number | null {
         return entry.expires === null ? null : entry.expires - Date.now();
     }
 
