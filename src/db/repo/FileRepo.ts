@@ -123,4 +123,14 @@ export class FileRepo {
         }
         return null;
     }
+
+    public invalidateCache(tokens?: string[]): void {
+        if (tokens) {
+            for (const token of tokens) {
+                this.entryCache.delete(token);
+            }
+        } else {
+            this.entryCache.clear();
+        }
+    }
 }

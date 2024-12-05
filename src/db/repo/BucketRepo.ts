@@ -7,6 +7,7 @@ import { InternalServerError } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
 import crypto from "node:crypto";
 import { BucketDao } from "../dao/BucketDao.js";
+import { FileRepo } from "./FileRepo.js";
 
 @Service()
 export class BucketRepo {
@@ -16,6 +17,7 @@ export class BucketRepo {
     public constructor(
         @Inject() private bucketDao: BucketDao,
         @Inject() private logger: Logger,
+        @Inject() private fileRepo: FileRepo,
     ) {}
 
     public async createBucket(): Promise<BucketModel> {
@@ -36,8 +38,14 @@ export class BucketRepo {
         return this.bucketDao.createBucket(bucket);
     }
 
-    public deleteBucket(bucketToken: string): Promise<boolean> {
-        return this.bucketDao.deleteBucket(bucketToken);
+    public async deleteBucket(bucketToken: string): Promise<boolean> {
+        const bucket = await this.getBucket(bucketToken);
+        if (!bucket) {
+            return false;
+        }
+        const res = await this.bucketDao.deleteBucket(bucketToken);
+        this.fileRepo.invalidateCache(bucket.files?.map(f => f.token) ?? []);
+        return res;
     }
 
     public getBucket(id: string | number): Promise<BucketModel | null> {
