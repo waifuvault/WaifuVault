@@ -1,10 +1,10 @@
 import { $on } from "@tsed/hooks";
 import { AsyncTask, CronJob, ToadScheduler } from "toad-scheduler";
-import { Logger } from "@tsed/logger";
-import { inject } from "@tsed/di";
+import { logger } from "@tsed/di";
 import cronstrue from "cronstrue";
+import { classOf, isFunction, nameOf } from "@tsed/core";
 
-export const scheduler = new ToadScheduler();
+const scheduler = new ToadScheduler();
 
 /**
  * Run a task as defined by the supplied crontab
@@ -18,19 +18,19 @@ export function RunEvery<T>(
     runImmediately = false,
 ): (target: T, propertyKey: string, descriptor: PropertyDescriptor) => void {
     return function (target: T, propertyKey: string, descriptor: PropertyDescriptor): void {
-        $on("$afterInvoke", (target as object).constructor, (instance: T) => {
-            if (typeof cronExpression === "function") {
+        $on("$afterInvoke", classOf(target), (instance: T) => {
+            if (isFunction(cronExpression)) {
                 cronExpression = cronExpression(instance);
             }
-            const logger = inject(Logger);
-            const jobName = `${(target as object).constructor.name}.${propertyKey}`;
+            const className = nameOf(classOf(target));
+            const jobName = `${className}.${propertyKey}`;
             const task = new AsyncTask(
                 jobName,
                 () => {
                     return descriptor.value.call(instance);
                 },
                 err => {
-                    logger.error(err);
+                    logger().error(err);
                 },
             );
             const job = new CronJob(
@@ -44,7 +44,7 @@ export function RunEvery<T>(
             );
             scheduler.addCronJob(job);
             const cronExplain = cronstrue.toString(cronExpression);
-            logger.info(`Registered cron job ${jobName} to run ${cronExplain}`);
+            logger().info(`Registered cron job ${jobName} to run ${cronExplain}`);
             if (runImmediately) {
                 descriptor.value.call(instance);
             }
