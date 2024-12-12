@@ -1,62 +1,60 @@
 import "reflect-metadata";
-import { $log, Logger as TsEdLogger, registerProvider } from "@tsed/common";
+import { $log } from "@tsed/common";
 import { PlatformExpress } from "@tsed/platform-express";
 import { Server } from "./Server.js";
 import { DataSource, type Logger as TypeOrmLogger } from "typeorm";
 import { SQLITE_DATA_SOURCE } from "./model/di/tokens.js";
 import { dataSource } from "./db/DataSource.js";
+import { injectable, logger } from "@tsed/di";
 
 async function bootstrap(): Promise<void> {
-    registerProvider<DataSource>({
-        provide: SQLITE_DATA_SOURCE,
-        type: "typeorm:datasource",
-        deps: [TsEdLogger],
-        async useAsyncFactory(logger: TsEdLogger) {
+    injectable(SQLITE_DATA_SOURCE)
+        .asyncFactory(async () => {
             await dataSource.initialize();
+            const loggerInstance = logger();
             dataSource.setOptions({
                 logger: new (class LoggerProxy implements TypeOrmLogger {
                     public logQuery(query: string, parameters?: unknown[]): void {
-                        logger.debug(query, parameters);
+                        loggerInstance.debug(query, parameters);
                     }
 
                     public logMigration(message: string): void {
-                        logger.debug(message);
+                        loggerInstance.debug(message);
                     }
 
                     public log(level: "log" | "info" | "warn", message: unknown): void {
                         switch (level) {
                             case "log":
                             case "info":
-                                logger.info(message);
+                                loggerInstance.info(message);
                                 break;
                             case "warn":
-                                logger.warn(message);
+                                loggerInstance.warn(message);
                                 break;
                         }
                     }
 
                     public logSchemaBuild(message: string): void {
-                        logger.debug(message);
+                        loggerInstance.debug(message);
                     }
 
                     public logQueryError(error: string | Error, query: string, parameters?: unknown[]): void {
-                        logger.error(error, query, parameters);
+                        loggerInstance.error(error, query, parameters);
                     }
 
                     public logQuerySlow(time: number, query: string, parameters?: unknown[]): void {
-                        logger.warn(time, query, parameters);
+                        loggerInstance.warn(time, query, parameters);
                     }
                 })(),
             });
-            logger.info(`Connected with typeorm to database: ${dataSource.options.database}`);
+            loggerInstance.info(`Connected with typeorm to database: ${dataSource.options.database}`);
             return dataSource;
-        },
-        hooks: {
-            $onDestroy(dataSource) {
+        })
+        .hooks({
+            $onDestroy(dataSource: DataSource) {
                 return dataSource.isInitialized && dataSource.destroy();
             },
-        },
-    });
+        });
 
     try {
         const platform = await PlatformExpress.bootstrap(Server);
