@@ -110,7 +110,7 @@ export class FileService {
             await this.processDelete([entry.token]);
             this.unknownToken(token);
         }
-        return FileUploadResponseDto.fromModel(entry, this.baseUrl, humanReadable);
+        return FileUploadResponseDto.fromModel(entry, this.baseUrl, humanReadable, true);
     }
 
     private resourceNotFound(resource: string): never {

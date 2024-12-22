@@ -20,7 +20,7 @@ export class ResourceController extends BaseRestController {
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Get all the restrictions that each file will be subject to when being uploaded")
     @Summary("Get all restrictions")
-    public getRestrictions(): unknown {
+    public getRestrictions(): Restriction[] {
         return this.restrictionService.getAllRestrictions();
     }
 }

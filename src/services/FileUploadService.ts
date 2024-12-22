@@ -10,7 +10,7 @@ import crypto from "node:crypto";
 import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
-import { EntrySettings, fileUploadProps } from "../utils/typeings.js";
+import { EntrySettings, FileUploadProps } from "../utils/typeings.js";
 import { BadRequest, Exception, InternalServerError } from "@tsed/exceptions";
 import { FileUtils, ObjectUtils } from "../utils/Utils.js";
 import TimeUnit from "../model/constants/TimeUnit.js";
@@ -53,7 +53,7 @@ export class FileUploadService {
         password,
         secretToken,
         bucketToken,
-    }: fileUploadProps): Promise<[FileUploadResponseDto, boolean]> {
+    }: FileUploadProps): Promise<[FileUploadResponseDto, boolean]> {
         const { expires } = options;
         let resourcePath: string | undefined;
         let originalFileName: string | undefined;
@@ -66,7 +66,7 @@ export class FileUploadService {
                 if (existingFileModel.hasExpired) {
                     await this.fileService.processDelete([existingFileModel.token]);
                 } else {
-                    return [FileUploadResponseDto.fromModel(existingFileModel, this.baseUrl, true), true];
+                    return [await FileUploadResponseDto.fromModel(existingFileModel, this.baseUrl, true, true), true];
                 }
             }
 
@@ -122,7 +122,7 @@ export class FileUploadService {
 
             await this.recordInfoSocket.emit();
 
-            return [FileUploadResponseDto.fromModel(savedEntry, this.baseUrl, true), false];
+            return [FileUploadResponseDto.fromModel(savedEntry, this.baseUrl, true, false), false];
         } catch (e) {
             if (e instanceof Exception) {
                 throw new ProcessUploadException(e.status, e.message, resourcePath, e);
@@ -253,7 +253,7 @@ export class FileUploadService {
             builder.expires(FileUtils.getExpiresBySize(fileSize, entryToModify.createdAt.getTime()));
         }
         const updatedEntry = await this.repo.saveEntry(builder.build());
-        return FileUploadResponseDto.fromModel(updatedEntry, this.baseUrl);
+        return FileUploadResponseDto.fromModel(updatedEntry, this.baseUrl, false, true);
     }
 
     private async calculateCustomExpires(
