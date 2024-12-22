@@ -67,7 +67,12 @@ export type ProtectionLevel = "Encrypted" | "Password" | "None";
 
 export type Awaitable<T> = Promise<T> | T;
 
-export type fileUploadProps = {
+export type RecordInfoPayload = {
+    recordCount: number;
+    recordSize: string;
+};
+
+export type FileUploadProps = {
     ip: string;
     source: PlatformMulterFile | string;
     options: FileUploadQueryParameters;

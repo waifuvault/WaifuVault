@@ -3,6 +3,7 @@ import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
 import type { IpBlockedAwareFileEntry, ProtectionLevel } from "../../utils/typeings.js";
 import { FileUploadModel } from "../db/FileUpload.model.js";
+import { AlbumInfo } from "../rest/AlbumInfo.js";
 
 export class AdminFileEntryDto {
     @Property()
@@ -54,7 +55,14 @@ export class AdminFileEntryDto {
     @Property()
     public views: number;
 
-    public static fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry, baseUrl: string): AdminFileEntryDto {
+    @Property()
+    @Nullable(AlbumInfo)
+    public album: AlbumInfo | null = null;
+
+    public static async fromModel(
+        { entry, ipBlocked }: IpBlockedAwareFileEntry,
+        baseUrl: string,
+    ): Promise<AdminFileEntryDto> {
         const fileEntryBuilder = Builder(AdminFileEntryDto)
             .url(AdminFileEntryDto.getUrl(entry, baseUrl))
             .fileExtension(entry.fileExtension)
@@ -73,6 +81,12 @@ export class AdminFileEntryDto {
         const expiresIn = entry.expiresIn;
         if (expiresIn !== null) {
             fileEntryBuilder.expires(ObjectUtils.timeToHuman(expiresIn));
+        }
+
+        // at this point, all albums should be loaded by the relation query
+        const album = await entry.album;
+        if (album) {
+            fileEntryBuilder.album(AlbumInfo.fromModel(album));
         }
         return fileEntryBuilder.build();
     }

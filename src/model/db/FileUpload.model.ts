@@ -4,6 +4,7 @@ import { filesDir, FileUtils } from "../../utils/Utils.js";
 import type { EntrySettings, ProtectionLevel } from "../../utils/typeings.js";
 import path from "node:path";
 import type { BucketModel } from "./Bucket.model.js";
+import { AlbumModel } from "./Album.model.js";
 
 @Entity()
 @Index(["token"], {
@@ -94,6 +95,12 @@ export class FileUploadModel extends AbstractModel {
     public bucketToken: string | null;
 
     @Column({
+        nullable: true,
+        type: "text",
+    })
+    public albumToken: string | null;
+
+    @Column({
         nullable: false,
         default: 0,
     })
@@ -106,7 +113,16 @@ export class FileUploadModel extends AbstractModel {
         name: "bucketToken",
         referencedColumnName: "bucketToken",
     })
-    public bucket: BucketModel;
+    public bucket: Promise<BucketModel | null>;
+
+    @ManyToOne("AlbumModel", "files", {
+        ...AbstractModel.cascadeOps,
+    })
+    @JoinColumn({
+        name: "albumToken",
+        referencedColumnName: "albumToken",
+    })
+    public album: Promise<AlbumModel | null>;
 
     public get expiresIn(): number | null {
         if (this.expires === null) {
