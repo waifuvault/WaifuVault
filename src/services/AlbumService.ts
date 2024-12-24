@@ -8,6 +8,7 @@ import { Builder } from "builder-pattern";
 import crypto from "node:crypto";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { FileRepo } from "../db/repo/FileRepo.js";
+import { FileService } from "./FileService.js";
 
 @Service()
 export class AlbumService {
@@ -15,6 +16,7 @@ export class AlbumService {
         @Inject() private albumRepo: AlbumRepo,
         @Inject() private bucketRepo: BucketRepo,
         @Inject() private fileRepo: FileRepo,
+        @Inject() private fileService: FileService,
     ) {}
 
     @Constant(GlobalEnv.BASE_URL)
@@ -38,6 +40,23 @@ export class AlbumService {
         return AlbumDto.fromModel(createdAlbum, this.baseUrl);
     }
 
+    public async deleteAlbum(albumToken: string, removeFiles: boolean): Promise<boolean> {
+        const album = await this.albumRepo.getAlbum(albumToken);
+        if (!album) {
+            throw new BadRequest(`Album with token ${albumToken} not found`);
+        }
+        const didDeleteAlbum = await this.albumRepo.deleteAlbum(albumToken, removeFiles);
+        if (!didDeleteAlbum) {
+            throw new BadRequest(`Unable to delete album with token: "${albumToken}"`);
+        }
+        if (removeFiles) {
+            if (album.files) {
+                await this.fileService.deleteFilesFromDisk(album.files);
+            }
+        }
+        return true;
+    }
+
     public async assignFilesToAlbum(albumToken: string, files: string[]): Promise<AlbumDto> {
         const album = await this.albumRepo.getAlbum(albumToken);
         if (!album) {
@@ -45,8 +64,8 @@ export class AlbumService {
         }
 
         const filesToAssociate = await this.fileRepo.getEntry(files);
-        if (filesToAssociate.length === 0) {
-            throw new BadRequest(`no files found`);
+        if (filesToAssociate.length !== files.length) {
+            throw new BadRequest(`some files were not found`);
         }
 
         const albumBucketToken = album.bucketToken;

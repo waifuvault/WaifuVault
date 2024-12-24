@@ -42,25 +42,37 @@ export class AlbumModel extends AbstractModel {
     })
     public bucket: Promise<BucketModel | null>;
 
-    public addFiles(filesToAdd: FileUploadModel[]): void {
+    public removeFiles(filesToRemove: FileUploadModel[] | FileUploadModel): void {
         if (!this.files) {
-            this.files = [];
+            return;
         }
-        for (const fileToAdd of filesToAdd) {
-            fileToAdd.albumToken = this.albumToken;
-            if (!this.fileExists(fileToAdd)) {
-                this.files.push(fileToAdd);
+        if (Array.isArray(filesToRemove)) {
+            for (const fileToRemove of filesToRemove) {
+                fileToRemove.albumToken = null;
+                this.files = this.files.filter(f => f.token !== fileToRemove.token);
             }
+        } else {
+            filesToRemove.albumToken = null;
+            this.files = this.files.filter(f => f.token !== filesToRemove.token);
         }
     }
 
-    public addFile(fileToAdd: FileUploadModel): void {
+    public addFiles(filesToAdd: FileUploadModel[] | FileUploadModel): void {
         if (!this.files) {
             this.files = [];
         }
-        fileToAdd.albumToken = this.albumToken;
-        if (!this.fileExists(fileToAdd)) {
-            this.files.push(fileToAdd);
+        if (Array.isArray(filesToAdd)) {
+            for (const fileToAdd of filesToAdd) {
+                if (!this.fileExists(fileToAdd)) {
+                    fileToAdd.albumToken = this.albumToken;
+                    this.files.push(fileToAdd);
+                }
+            }
+        } else {
+            if (!this.fileExists(filesToAdd)) {
+                filesToAdd.albumToken = this.albumToken;
+                this.files.push(filesToAdd);
+            }
         }
     }
 
