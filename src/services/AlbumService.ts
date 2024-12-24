@@ -61,8 +61,7 @@ export class AlbumService {
         return AlbumDto.fromModel(updatedAlbum, this.baseUrl);
     }
 
-    private async albumExists(name: string, bucketToken: string): Promise<boolean> {
-        const album = await this.albumRepo.getAlbumFromName(name, bucketToken);
-        return album !== null;
+    private albumExists(name: string, bucketToken: string): Promise<boolean> {
+        return this.albumRepo.albumNameExists(name, bucketToken);
     }
 }
