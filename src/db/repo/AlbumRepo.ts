@@ -18,7 +18,7 @@ export class AlbumRepo {
         return this.albumDao.getAlbum(id);
     }
 
-    public getAlbumFromName(name: string, bucketToken: string): Promise<AlbumModel | null> {
-        return this.albumDao.getAlbumFromName(name, bucketToken);
+    public albumNameExists(name: string, bucketToken: string): Promise<boolean> {
+        return this.albumDao.albumNameExists(name, bucketToken);
     }
 }
