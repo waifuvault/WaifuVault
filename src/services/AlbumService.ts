@@ -55,9 +55,6 @@ export class AlbumService {
             throw new BadRequest(`All files must be in the same bucket`);
         }
 
-        for (const fileToAssociate of filesToAssociate) {
-            fileToAssociate.albumToken = albumToken;
-        }
         album.addFiles(filesToAssociate);
 
         const updatedAlbum = await this.albumRepo.saveOrUpdateAlbum(album);

@@ -48,6 +48,7 @@ export class AlbumModel extends AbstractModel {
         }
         for (const fileToAdd of filesToAdd) {
             if (!this.fileExists(fileToAdd)) {
+                fileToAdd.albumToken = this.albumToken;
                 this.files.push(fileToAdd);
             }
         }
@@ -58,6 +59,7 @@ export class AlbumModel extends AbstractModel {
             this.files = [];
         }
         if (!this.fileExists(fileToAdd)) {
+            fileToAdd.albumToken = this.albumToken;
             this.files.push(fileToAdd);
         }
     }
