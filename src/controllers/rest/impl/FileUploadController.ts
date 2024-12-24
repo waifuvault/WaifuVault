@@ -17,7 +17,7 @@ import { FileService } from "../../../services/FileService.js";
 
 @Controller("/")
 @Description("API for uploading and sharing files.")
-@Name("File Uploader")
+@Name("File Upload")
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class FileUploadController extends BaseRestController {
     public constructor(
@@ -28,17 +28,16 @@ export class FileUploadController extends BaseRestController {
         super();
     }
 
-    @Put("/:bucketToken?")
+    @(Put().Description("Upload a file or specify URL to a file.").Summary("Upload a file or send URL"))
+    @(Put("/:bucketToken")
+        .Description("Upload a file or a URL to a specific bucket, the bucket must exist")
+        .Summary("Upload a file or send URL to a specific bucket"))
     @(Returns(StatusCodes.CREATED, FileUploadResponseDto).Description("If the file was stored successfully"))
     @(Returns(StatusCodes.BAD_REQUEST, DefaultRenderException).Description("If the request was malformed"))
     @(Returns(StatusCodes.OK, FileUploadResponseDto).Description("If the file already exists"))
     @(Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, DefaultRenderException).Description(
         "If the media type of the file specified was blocked",
     ))
-    @Summary("Upload a file or send URL")
-    @Description(
-        "Upload a file or specify URL to a file. Use the location header in the response or the url prop in the JSON to get the URL of the file",
-    )
     public async addEntry(
         @Req() req: Request,
         @Res() res: Response,
@@ -74,9 +73,11 @@ export class FileUploadController extends BaseRestController {
         )
         @BodyParams("password")
         password?: string,
+
+        @Description("The bucket you want to upload to")
         @PathParams("bucketToken")
         bucketToken?: string,
-    ): Promise<unknown> {
+    ): Promise<FileUploadResponseDto> {
         if (file && url) {
             if (file) {
                 await FileUtils.deleteFile(file);
@@ -125,7 +126,7 @@ export class FileUploadController extends BaseRestController {
             "If true, this will format the time remaining to a human readable string instead of an epoch if set to false",
         )
         humanReadable: boolean,
-    ): Promise<unknown> {
+    ): Promise<FileUploadResponseDto> {
         if (!token) {
             throw new BadRequest("no token provided");
         }
@@ -142,7 +143,7 @@ export class FileUploadController extends BaseRestController {
         token: string,
         @BodyParams()
         body: EntryModificationDto,
-    ): Promise<unknown> {
+    ): Promise<FileUploadResponseDto> {
         if (!token) {
             throw new BadRequest("no token provided");
         }
@@ -154,7 +155,7 @@ export class FileUploadController extends BaseRestController {
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Delete a file via the token")
     @Summary("Delete a file from a token")
-    public async deleteEntry(@PathParams("token") token: string): Promise<unknown> {
+    public async deleteEntry(@PathParams("token") token: string): Promise<boolean> {
         if (!token) {
             throw new BadRequest("no token provided");
         }

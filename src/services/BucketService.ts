@@ -29,15 +29,10 @@ export class BucketService {
     }
 
     public async getBucket(id?: string | number | undefined): Promise<BucketModel | null> {
-        let bucket: BucketModel | null;
         if (!id) {
             return this.getLoggedInUserBucket();
         }
-        if (typeof id === "number") {
-            bucket = await this.bucketRepo.getBucket(id);
-        } else {
-            bucket = await this.bucketRepo.getBucket(id);
-        }
+        const bucket = await this.bucketRepo.getBucket(id);
         if (!bucket) {
             return null;
         }

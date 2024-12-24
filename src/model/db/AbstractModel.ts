@@ -1,5 +1,4 @@
-import type { RelationOptions } from "typeorm";
-import { CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { CreateDateColumn, PrimaryGeneratedColumn, RelationOptions, UpdateDateColumn } from "typeorm";
 
 export abstract class AbstractModel {
     protected static readonly cascadeOps: RelationOptions = {

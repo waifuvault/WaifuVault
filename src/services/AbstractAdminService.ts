@@ -23,13 +23,15 @@ export abstract class AbstractAdminService implements IAdminService {
     protected async buildFileEntryDtos(entries: FileUploadModel[]): Promise<AdminFileEntryDto[]> {
         const ipBlockedPArr = entries.map(entry => Promise.all([entry, this.ipBlackListRepo.isIpBlocked(entry.ip)]));
         const ipBlockedArr = await Promise.all(ipBlockedPArr);
-        return ipBlockedArr.map(([entry, ipBlocked]) => {
-            const ipBlockedAwareEntry: IpBlockedAwareFileEntry = {
-                ipBlocked,
-                entry,
-            };
-            return AdminFileEntryDto.fromModel(ipBlockedAwareEntry, this.baseUrl);
-        });
+        return Promise.all(
+            ipBlockedArr.map(([entry, ipBlocked]) => {
+                const ipBlockedAwareEntry: IpBlockedAwareFileEntry = {
+                    ipBlocked,
+                    entry,
+                };
+                return AdminFileEntryDto.fromModel(ipBlockedAwareEntry, this.baseUrl);
+            }),
+        );
     }
 
     public abstract getAllEntries(): Promise<AdminFileEntryDto[]>;

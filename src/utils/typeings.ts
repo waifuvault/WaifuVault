@@ -72,7 +72,7 @@ export type RecordInfoPayload = {
     recordSize: string;
 };
 
-export type fileUploadProps = {
+export type FileUploadProps = {
     ip: string;
     source: PlatformMulterFile | string;
     options: FileUploadQueryParameters;
