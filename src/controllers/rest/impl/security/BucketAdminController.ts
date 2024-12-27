@@ -8,6 +8,7 @@ import { BodyParams } from "@tsed/platform-params";
 import { IAdminController } from "../../IAdminController.js";
 import { BucketAdminService } from "../../../../services/BucketAdminService.js";
 import { BucketService } from "../../../../services/BucketService.js";
+import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 
 @Hidden()
 @Controller("/admin/bucket")
@@ -16,8 +17,9 @@ export class BucketAdminController extends AbstractAdminController implements IA
     public constructor(
         @Inject() private bucketAdminService: BucketAdminService,
         @Inject() private bucketService: BucketService,
+        @Inject() private blackListRepo: IpBlackListRepo,
     ) {
-        super(bucketAdminService);
+        super(bucketAdminService, blackListRepo);
     }
 
     @Get("/datatablesEntries")
@@ -38,7 +40,7 @@ export class BucketAdminController extends AbstractAdminController implements IA
         }
         const bucket = await this.bucketService.getBucket();
         const bucketToken = bucket!.bucketToken;
-        const data = await this.bucketAdminService.getPagedEntries(
+        const files = await this.bucketAdminService.getPagedEntries(
             start,
             length,
             sortColumn,
@@ -46,6 +48,7 @@ export class BucketAdminController extends AbstractAdminController implements IA
             bucketToken,
             searchVal,
         );
+        const data = await this.buildFileEntryDtos(files);
         const records = searchVal
             ? await this.bucketAdminService.getFileSearchRecordCount(search.value, bucketToken)
             : await this.bucketAdminService.getFileRecordCount(bucketToken);
