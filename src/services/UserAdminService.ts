@@ -25,7 +25,6 @@ export class UserAdminService extends AbstractAdminService {
     public override async getAllEntries(): Promise<FileUploadModel[]> {
         const allEntries = await this.repo.getAllEntries();
         return allEntries.filter(e => !e.hasExpired);
-        // return this.buildFileEntryDtos(allEntries.filter(entry => !entry.hasExpired));
     }
 
     public override async getPagedEntries(

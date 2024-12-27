@@ -17,7 +17,7 @@ export class BucketAdminController extends AbstractAdminController implements IA
     public constructor(
         @Inject() private bucketAdminService: BucketAdminService,
         @Inject() private bucketService: BucketService,
-        @Inject() private blackListRepo: IpBlackListRepo,
+        @Inject() blackListRepo: IpBlackListRepo,
     ) {
         super(bucketAdminService, blackListRepo);
     }
