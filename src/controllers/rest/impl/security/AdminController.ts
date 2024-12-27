@@ -8,13 +8,17 @@ import { BodyParams } from "@tsed/platform-params";
 import { StatusCodes } from "http-status-codes";
 import { Authorize } from "@tsed/passport";
 import { IAdminController } from "../../IAdminController.js";
+import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 
 @Hidden()
 @Authorize("loginAuthProvider")
 @Controller("/admin")
 export class AdminController extends AbstractAdminController implements IAdminController {
-    public constructor(@Inject() private UserAdminService: UserAdminService) {
-        super(UserAdminService);
+    public constructor(
+        @Inject() private UserAdminService: UserAdminService,
+        @Inject() private BlackListRepo: IpBlackListRepo,
+    ) {
+        super(UserAdminService, BlackListRepo);
     }
 
     @Get("/datatablesEntries")
@@ -33,7 +37,8 @@ export class AdminController extends AbstractAdminController implements IAdminCo
             sortOrder = order[0]?.dir.toUpperCase();
             sortColumn = columns[order[0]?.column ?? 0]?.data;
         }
-        const data = await this.adminService.getPagedEntries(start, length, sortColumn, sortOrder, searchVal);
+        const files = await this.adminService.getPagedEntries(start, length, sortColumn, sortOrder, searchVal);
+        const data = await this.buildFileEntryDtos(files);
         const records = searchVal
             ? await this.adminService.getFileSearchRecordCount(search.value)
             : await this.adminService.getFileRecordCount();
