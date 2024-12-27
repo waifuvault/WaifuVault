@@ -1,5 +1,4 @@
 import { Constant, Inject, InjectContext, Service } from "@tsed/di";
-import { BucketDto } from "../model/dto/BucketDto.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BucketModel } from "../model/db/Bucket.model.js";
 import { Logger } from "@tsed/logger";
@@ -23,9 +22,8 @@ export class BucketService {
     @Constant(GlobalEnv.BASE_URL)
     private readonly baseUrl: string;
 
-    public async createBucket(): Promise<BucketDto> {
-        const bucket = await this.bucketRepo.createBucket();
-        return BucketDto.fromModel(bucket, this.baseUrl);
+    public createBucket(): Promise<BucketModel> {
+        return this.bucketRepo.createBucket();
     }
 
     public async getBucket(id?: string | number | undefined): Promise<BucketModel | null> {
