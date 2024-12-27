@@ -31,8 +31,7 @@ export class AlbumService {
             .name(name)
             .albumToken(crypto.randomUUID())
             .build();
-        const createdAlbum = await this.albumRepo.saveOrUpdateAlbum(albumModel);
-        return createdAlbum;
+        return this.albumRepo.saveOrUpdateAlbum(albumModel);
     }
 
     public async deleteAlbum(albumToken: string, removeFiles: boolean): Promise<boolean> {
@@ -71,8 +70,7 @@ export class AlbumService {
 
         album.addFiles(filesToAssociate);
 
-        const updatedAlbum = await this.albumRepo.saveOrUpdateAlbum(album);
-        return updatedAlbum;
+        return this.albumRepo.saveOrUpdateAlbum(album);
     }
 
     private albumExists(name: string, bucketToken: string): Promise<boolean> {
