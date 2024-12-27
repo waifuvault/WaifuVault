@@ -27,8 +27,8 @@ export class BucketController extends BaseRestController {
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Create a new bucket")
     @Summary("Create a new bucket")
-    public createBucket(): Promise<BucketDto> {
-        return this.bucketService.createBucket();
+    public async createBucket(): Promise<BucketDto> {
+        return BucketDto.fromModel(await this.bucketService.createBucket(), this.baseUrl);
     }
 
     @Delete("/:token")

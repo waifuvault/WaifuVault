@@ -1,8 +1,5 @@
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
-import { AdminFileEntryDto } from "../model/dto/AdminFileEntryDto.js";
-import { IpBlockedAwareFileEntry } from "../utils/typeings.js";
 import { IpBlackListRepo } from "../db/repo/IpBlackListRepo.js";
-import { StatsDto } from "../model/dto/StatsDto.js";
 import { IAdminService } from "./IAdminService.js";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
@@ -15,33 +12,18 @@ export abstract class AbstractAdminService implements IAdminService {
         protected baseUrl: string,
     ) {}
 
-    public async getStatsData(): Promise<StatsDto> {
-        const entries = await this.getAllEntries();
-        return StatsDto.buildStats(entries);
+    public getStatsData(): Promise<FileUploadModel[]> {
+        return this.getAllEntries();
     }
 
-    protected async buildFileEntryDtos(entries: FileUploadModel[]): Promise<AdminFileEntryDto[]> {
-        const ipBlockedPArr = entries.map(entry => Promise.all([entry, this.ipBlackListRepo.isIpBlocked(entry.ip)]));
-        const ipBlockedArr = await Promise.all(ipBlockedPArr);
-        return Promise.all(
-            ipBlockedArr.map(([entry, ipBlocked]) => {
-                const ipBlockedAwareEntry: IpBlockedAwareFileEntry = {
-                    ipBlocked,
-                    entry,
-                };
-                return AdminFileEntryDto.fromModel(ipBlockedAwareEntry, this.baseUrl);
-            }),
-        );
-    }
-
-    public abstract getAllEntries(): Promise<AdminFileEntryDto[]>;
+    public abstract getAllEntries(): Promise<FileUploadModel[]>;
     public abstract getPagedEntries(
         start: number,
         length: number,
         sortColumn: string,
         sortDir: string,
         search?: string,
-    ): Promise<AdminFileEntryDto[]>;
+    ): Promise<FileUploadModel[]>;
 
     public getFileRecordCount(): Promise<number> {
         return this.repo.getRecordCount();

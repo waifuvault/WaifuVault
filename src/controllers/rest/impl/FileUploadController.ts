@@ -1,7 +1,8 @@
-import { Controller, Inject } from "@tsed/di";
+import { Constant, Controller, Inject } from "@tsed/di";
 import { Delete, Description, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
 import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto.js";
+import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { BadRequest } from "@tsed/exceptions";
 import { MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res } from "@tsed/common";
 import { BodyParams } from "@tsed/platform-params";
@@ -14,6 +15,7 @@ import type { Request, Response } from "express";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 import { FileUploadQueryParameters } from "../../../model/rest/FileUploadQueryParameters.js";
 import { FileService } from "../../../services/FileService.js";
+import GlobalEnv from "../../../model/constants/GlobalEnv.js";
 
 @Controller("/")
 @Description("API for uploading and sharing files.")
@@ -27,6 +29,9 @@ export class FileUploadController extends BaseRestController {
     ) {
         super();
     }
+
+    @Constant(GlobalEnv.BASE_URL)
+    private readonly baseUrl: string;
 
     @(Put().Description("Upload a file or specify URL to a file.").Summary("Upload a file or send URL"))
     @(Put("/:bucketToken")
@@ -88,7 +93,7 @@ export class FileUploadController extends BaseRestController {
             throw new BadRequest("Please supply a file or url");
         }
         const ip = NetworkUtils.getIp(req);
-        let uploadModelResponse: FileUploadResponseDto;
+        let uploadModelResponse: FileUploadModel;
         let alreadyExists: boolean;
         const secretToken = req.query["secret_token"]?.toString();
         try {
@@ -104,13 +109,15 @@ export class FileUploadController extends BaseRestController {
             this.logger.error(e.message);
             throw e;
         }
+
+        const returnDto = await FileUploadResponseDto.fromModel(uploadModelResponse, this.baseUrl, true, true);
         if (alreadyExists) {
             res.status(StatusCodes.OK);
         } else {
             res.status(StatusCodes.CREATED);
-            res.location(uploadModelResponse.url);
+            res.location(returnDto.url);
         }
-        return uploadModelResponse;
+        return returnDto;
     }
 
     @Get("/:token")
@@ -118,7 +125,7 @@ export class FileUploadController extends BaseRestController {
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Get entry info such as when it will expire and the URL")
     @Summary("Get entry info via token")
-    public getInfo(
+    public async getInfo(
         @PathParams("token")
         token: string,
         @QueryParams("formatted")
@@ -130,7 +137,12 @@ export class FileUploadController extends BaseRestController {
         if (!token) {
             throw new BadRequest("no token provided");
         }
-        return this.fileService.getFileInfo(token, humanReadable);
+        return FileUploadResponseDto.fromModel(
+            await this.fileService.getFileInfo(token),
+            this.baseUrl,
+            humanReadable,
+            true,
+        );
     }
 
     @Patch("/:token")
@@ -138,7 +150,7 @@ export class FileUploadController extends BaseRestController {
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Modify an entry such as password, expiry and other settings")
     @Summary("Modify components of an entry")
-    public modifyEntry(
+    public async modifyEntry(
         @PathParams("token")
         token: string,
         @BodyParams()
@@ -147,7 +159,12 @@ export class FileUploadController extends BaseRestController {
         if (!token) {
             throw new BadRequest("no token provided");
         }
-        return this.fileUploadService.modifyEntry(token, body);
+        return FileUploadResponseDto.fromModel(
+            await this.fileUploadService.modifyEntry(token, body),
+            this.baseUrl,
+            true,
+            true,
+        );
     }
 
     @Delete("/:token")

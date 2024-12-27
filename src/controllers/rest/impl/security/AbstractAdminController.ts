@@ -1,16 +1,47 @@
 import { PlatformResponse } from "@tsed/common";
 import { NotFound } from "@tsed/exceptions";
-import type { DatatableColumn, DatatableOrder, DatatableSearch } from "../../../../utils/typeings.js";
+import {
+    DatatableColumn,
+    DatatableOrder,
+    DatatableSearch,
+    IpBlockedAwareFileEntry,
+} from "../../../../utils/typeings.js";
 import { IAdminService } from "../../../../services/IAdminService.js";
 import { BaseRestController } from "../../BaseRestController.js";
+import { FileUploadModel } from "../../../../model/db/FileUpload.model.js";
+import { AdminFileEntryDto } from "../../../../model/dto/AdminFileEntryDto.js";
+import { StatsDto } from "../../../../model/dto/StatsDto.js";
+import GlobalEnv from "../../../../model/constants/GlobalEnv.js";
+import { Constant } from "@tsed/di";
+import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 
 export abstract class AbstractAdminController extends BaseRestController {
-    protected constructor(protected adminService: IAdminService) {
+    protected constructor(
+        protected adminService: IAdminService,
+        protected ipBlackListRepo: IpBlackListRepo,
+    ) {
         super();
     }
 
-    public getAllEntries(): Promise<unknown> {
-        return this.adminService.getAllEntries();
+    @Constant(GlobalEnv.BASE_URL)
+    private readonly baseUrl: string;
+
+    protected async buildFileEntryDtos(entries: FileUploadModel[]): Promise<AdminFileEntryDto[]> {
+        const ipBlockedPArr = entries.map(entry => Promise.all([entry, this.ipBlackListRepo.isIpBlocked(entry.ip)]));
+        const ipBlockedArr = await Promise.all(ipBlockedPArr);
+        return Promise.all(
+            ipBlockedArr.map(([entry, ipBlocked]) => {
+                const ipBlockedAwareEntry: IpBlockedAwareFileEntry = {
+                    ipBlocked,
+                    entry,
+                };
+                return AdminFileEntryDto.fromModel(ipBlockedAwareEntry, this.baseUrl);
+            }),
+        );
+    }
+
+    public async getAllEntries(): Promise<unknown> {
+        return this.buildFileEntryDtos(await this.adminService.getAllEntries());
     }
 
     public async deleteEntries(res: PlatformResponse, ids: number[]): Promise<unknown> {
@@ -21,8 +52,8 @@ export abstract class AbstractAdminController extends BaseRestController {
         return super.doSuccess(res, `Entries have been deleted.`);
     }
 
-    public getStatsData(): Promise<unknown> {
-        return this.adminService.getStatsData();
+    public async getStatsData(): Promise<unknown> {
+        return StatsDto.buildStats(await this.buildFileEntryDtos(await this.adminService.getStatsData()));
     }
 
     public abstract getDatatablesEntries(

@@ -1,5 +1,5 @@
 import { BaseRestController } from "../BaseRestController.js";
-import { Controller, Inject } from "@tsed/di";
+import { Constant, Controller, Inject } from "@tsed/di";
 import {
     CollectionOf,
     Default,
@@ -19,6 +19,7 @@ import { BodyParams } from "@tsed/platform-params";
 import { PathParams, PlatformResponse, QueryParams, Res } from "@tsed/common";
 import { AlbumService } from "../../../services/AlbumService.js";
 import { SuccessModel } from "../../../model/rest/SuccessModel.js";
+import GlobalEnv from "../../../model/constants/GlobalEnv.js";
 
 @Controller("/album")
 @Description("API for CRUD operations of albums and associating files with them.")
@@ -29,12 +30,15 @@ export class AlbumController extends BaseRestController {
         super();
     }
 
+    @Constant(GlobalEnv.BASE_URL)
+    private readonly baseUrl: string;
+
     @Post("/:bucketToken")
     @Returns(StatusCodes.OK, AlbumDto)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Create a new album in this bucket")
     @Summary("Create a new album")
-    public createAlbum(
+    public async createAlbum(
         @Description("The name of the album, must be unique")
         @Required()
         @BodyParams("name")
@@ -44,7 +48,7 @@ export class AlbumController extends BaseRestController {
         @PathParams("bucketToken")
         bucketToken: string,
     ): Promise<AlbumDto> {
-        return this.albumService.createAlbum(albumName, bucketToken);
+        return AlbumDto.fromModel(await this.albumService.createAlbum(albumName, bucketToken), this.baseUrl);
     }
 
     @Post("/:albumToken/associate")
@@ -54,7 +58,7 @@ export class AlbumController extends BaseRestController {
         "Associate files with an album, the album must exist and the files must be in the same bucket as the album",
     )
     @Summary("Associate a file with an album")
-    public associateFileWithAlbum(
+    public async associateFileWithAlbum(
         @Description("The album token to associate the file with")
         @PathParams("albumToken")
         albumToken: string,
@@ -64,7 +68,7 @@ export class AlbumController extends BaseRestController {
         @CollectionOf(String)
         fileTokens: string[],
     ): Promise<AlbumDto> {
-        return this.albumService.assignFilesToAlbum(albumToken, fileTokens);
+        return AlbumDto.fromModel(await this.albumService.assignFilesToAlbum(albumToken, fileTokens), this.baseUrl);
     }
 
     @Delete("/:albumToken")
