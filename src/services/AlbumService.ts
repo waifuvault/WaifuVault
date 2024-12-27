@@ -1,12 +1,10 @@
-import { Constant, Inject, Service } from "@tsed/di";
+import { Inject, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
-import { AlbumDto } from "../model/dto/AlbumDto.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BadRequest } from "@tsed/exceptions";
 import { AlbumModel } from "../model/db/Album.model.js";
 import { Builder } from "builder-pattern";
 import crypto from "node:crypto";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
 
@@ -19,10 +17,7 @@ export class AlbumService {
         @Inject() private fileService: FileService,
     ) {}
 
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
-
-    public async createAlbum(name: string, bucketToken: string): Promise<AlbumDto> {
+    public async createAlbum(name: string, bucketToken: string): Promise<AlbumModel> {
         const bucket = await this.bucketRepo.getBucket(bucketToken);
         if (!bucket) {
             throw new BadRequest(`Bucket with token ${bucketToken} not found`);
@@ -37,7 +32,7 @@ export class AlbumService {
             .albumToken(crypto.randomUUID())
             .build();
         const createdAlbum = await this.albumRepo.saveOrUpdateAlbum(albumModel);
-        return AlbumDto.fromModel(createdAlbum, this.baseUrl);
+        return createdAlbum;
     }
 
     public async deleteAlbum(albumToken: string, removeFiles: boolean): Promise<boolean> {
@@ -57,7 +52,7 @@ export class AlbumService {
         return true;
     }
 
-    public async assignFilesToAlbum(albumToken: string, files: string[]): Promise<AlbumDto> {
+    public async assignFilesToAlbum(albumToken: string, files: string[]): Promise<AlbumModel> {
         const album = await this.albumRepo.getAlbum(albumToken);
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
@@ -77,7 +72,7 @@ export class AlbumService {
         album.addFiles(filesToAssociate);
 
         const updatedAlbum = await this.albumRepo.saveOrUpdateAlbum(album);
-        return AlbumDto.fromModel(updatedAlbum, this.baseUrl);
+        return updatedAlbum;
     }
 
     private albumExists(name: string, bucketToken: string): Promise<boolean> {
