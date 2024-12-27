@@ -7,7 +7,6 @@ import { Builder, type IBuilder } from "builder-pattern";
 import path from "node:path";
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
-import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
 import { EntrySettings, FileUploadProps } from "../utils/typeings.js";
@@ -28,9 +27,6 @@ import { MimeService } from "./MimeService.js";
 
 @Service()
 export class FileUploadService {
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
-
     @Constant(GlobalEnv.UPLOAD_SECRET)
     private readonly secret?: string;
 
@@ -53,7 +49,7 @@ export class FileUploadService {
         password,
         secretToken,
         bucketToken,
-    }: FileUploadProps): Promise<[FileUploadResponseDto, boolean]> {
+    }: FileUploadProps): Promise<[FileUploadModel, boolean]> {
         const { expires } = options;
         let resourcePath: string | undefined;
         let originalFileName: string | undefined;
@@ -67,7 +63,7 @@ export class FileUploadService {
                 if (existingFileModel.hasExpired) {
                     await this.fileService.processDelete([existingFileModel.token]);
                 } else {
-                    return [await FileUploadResponseDto.fromModel(existingFileModel, this.baseUrl, true, true), true];
+                    return [existingFileModel, true];
                 }
             }
 
@@ -123,7 +119,7 @@ export class FileUploadService {
 
             await this.recordInfoSocket.emit();
 
-            return [FileUploadResponseDto.fromModel(savedEntry, this.baseUrl, true, false), false];
+            return [savedEntry, false];
         } catch (e) {
             if (e instanceof Exception) {
                 throw new ProcessUploadException(e.status, e.message, resourcePath, e);
@@ -203,7 +199,7 @@ export class FileUploadService {
         return Object.keys(retObj).length === 0 ? null : retObj;
     }
 
-    public async modifyEntry(token: string, dto: EntryModificationDto): Promise<FileUploadResponseDto> {
+    public async modifyEntry(token: string, dto: EntryModificationDto): Promise<FileUploadModel> {
         const [entryToModify] = await this.repo.getEntry([token]);
         if (!entryToModify) {
             throw new BadRequest(`Unknown token ${token}`);
@@ -253,8 +249,7 @@ export class FileUploadService {
             const fileSize = await FileUtils.getFileSize(entryToModify);
             builder.expires(FileUtils.getExpiresBySize(fileSize, entryToModify.createdAt.getTime()));
         }
-        const updatedEntry = await this.repo.saveEntry(builder.build());
-        return FileUploadResponseDto.fromModel(updatedEntry, this.baseUrl, false, true);
+        return this.repo.saveEntry(builder.build());
     }
 
     private async calculateCustomExpires(
