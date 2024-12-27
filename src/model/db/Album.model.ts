@@ -28,6 +28,19 @@ export class AlbumModel extends AbstractModel {
     })
     public albumToken: string;
 
+    @Column({
+        nullable: true,
+        type: "text",
+        unique: true,
+    })
+    public publicToken: string | null;
+
+    @Column({
+        nullable: false,
+        default: 0,
+    })
+    public views: number;
+
     @OneToMany("FileUploadModel", "album", {
         cascade: true,
     })
