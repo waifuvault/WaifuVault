@@ -1,4 +1,4 @@
-import { Constant, Controller, Inject } from "@tsed/di";
+import { Controller, Inject } from "@tsed/di";
 import { Delete, Description, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
 import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto.js";
@@ -15,7 +15,6 @@ import type { Request, Response } from "express";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 import { FileUploadQueryParameters } from "../../../model/rest/FileUploadQueryParameters.js";
 import { FileService } from "../../../services/FileService.js";
-import GlobalEnv from "../../../model/constants/GlobalEnv.js";
 
 @Controller("/")
 @Description("API for uploading and sharing files.")
@@ -29,9 +28,6 @@ export class FileUploadController extends BaseRestController {
     ) {
         super();
     }
-
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
 
     @(Put().Description("Upload a file or specify URL to a file.").Summary("Upload a file or send URL"))
     @(Put("/:bucketToken")
@@ -82,7 +78,7 @@ export class FileUploadController extends BaseRestController {
         @Description("The bucket you want to upload to")
         @PathParams("bucketToken")
         bucketToken?: string,
-    ): Promise<FileUploadResponseDto> {
+    ): Promise<FileUploadModel> {
         if (file && url) {
             if (file) {
                 await FileUtils.deleteFile(file);
@@ -110,14 +106,13 @@ export class FileUploadController extends BaseRestController {
             throw e;
         }
 
-        const returnDto = await FileUploadResponseDto.fromModel(uploadModelResponse, this.baseUrl, true, true);
         if (alreadyExists) {
             res.status(StatusCodes.OK);
         } else {
             res.status(StatusCodes.CREATED);
-            res.location(returnDto.url);
+            res.location(uploadModelResponse.getPublicUrl());
         }
-        return returnDto;
+        return uploadModelResponse;
     }
 
     @Get("/:token")
@@ -125,24 +120,19 @@ export class FileUploadController extends BaseRestController {
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Get entry info such as when it will expire and the URL")
     @Summary("Get entry info via token")
-    public async getInfo(
+    public getInfo(
         @PathParams("token")
         token: string,
         @QueryParams("formatted")
         @Description(
             "If true, this will format the time remaining to a human readable string instead of an epoch if set to false",
         )
-        humanReadable: boolean,
-    ): Promise<FileUploadResponseDto> {
+        _: boolean,
+    ): Promise<FileUploadModel> {
         if (!token) {
             throw new BadRequest("no token provided");
         }
-        return FileUploadResponseDto.fromModel(
-            await this.fileService.getFileInfo(token),
-            this.baseUrl,
-            humanReadable,
-            true,
-        );
+        return this.fileService.getFileInfo(token);
     }
 
     @Patch("/:token")
@@ -150,21 +140,16 @@ export class FileUploadController extends BaseRestController {
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Modify an entry such as password, expiry and other settings")
     @Summary("Modify components of an entry")
-    public async modifyEntry(
+    public modifyEntry(
         @PathParams("token")
         token: string,
         @BodyParams()
         body: EntryModificationDto,
-    ): Promise<FileUploadResponseDto> {
+    ): Promise<FileUploadModel> {
         if (!token) {
             throw new BadRequest("no token provided");
         }
-        return FileUploadResponseDto.fromModel(
-            await this.fileUploadService.modifyEntry(token, body),
-            this.baseUrl,
-            true,
-            true,
-        );
+        return this.fileUploadService.modifyEntry(token, body);
     }
 
     @Delete("/:token")

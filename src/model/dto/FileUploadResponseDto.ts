@@ -59,13 +59,11 @@ export class FileUploadResponseDto {
 
     public static fromModel<T extends boolean>(
         fileUploadModel: FileUploadModel,
-        baseUrl: string,
         format: boolean,
         lazyLoadRelations: T,
     ): T extends true ? Promise<FileUploadResponseDto> : FileUploadResponseDto;
     public static fromModel(
         fileUploadModel: FileUploadModel,
-        baseUrl: string,
         format: boolean,
         lazyLoadRelations = false,
     ): FileUploadResponseDto | Promise<FileUploadResponseDto> {
@@ -73,7 +71,7 @@ export class FileUploadResponseDto {
             .token(fileUploadModel.token)
             .bucket(fileUploadModel.bucketToken ?? null)
             .views(fileUploadModel.views)
-            .url(FileUploadResponseDto.getUrl(fileUploadModel, baseUrl));
+            .url(fileUploadModel.getPublicUrl());
         const expiresIn = fileUploadModel.expiresIn;
         if (format && expiresIn !== null) {
             builder.retentionPeriod(ObjectUtils.timeToHuman(expiresIn));
@@ -91,17 +89,6 @@ export class FileUploadResponseDto {
             });
         }
         return builder.build();
-    }
-
-    private static getUrl(fileUploadModel: FileUploadModel, baseUrl: string): string {
-        if (fileUploadModel.settings?.hideFilename || !fileUploadModel.originalFileName) {
-            return `${baseUrl}/f/${fileUploadModel.fullFileNameOnSystem}`;
-        }
-        let { originalFileName } = fileUploadModel;
-        if (originalFileName.startsWith("/")) {
-            originalFileName = originalFileName.substring(1);
-        }
-        return `${baseUrl}/f/${fileUploadModel.fileName}/${originalFileName}`;
     }
 
     private static makeOptions(settings: EntrySettings | null): ResponseOptions {

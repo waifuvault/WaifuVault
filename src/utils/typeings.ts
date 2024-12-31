@@ -25,6 +25,7 @@ export type AvScanResult = {
 
 export type CaptchaResponse = {
     success: boolean;
+    /* eslint-disable @typescript-eslint/naming-convention */
     challenge_ts: string;
     hostname: string;
     "error-codes": string[];

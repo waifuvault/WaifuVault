@@ -5,6 +5,8 @@ import type { EntrySettings, ProtectionLevel } from "../../utils/typeings.js";
 import path from "node:path";
 import type { BucketModel } from "./Bucket.model.js";
 import { AlbumModel } from "./Album.model.js";
+import { constant } from "@tsed/di";
+import GlobalEnv from "../constants/GlobalEnv.js";
 
 @Entity()
 @Index(["token"], {
@@ -162,5 +164,17 @@ export class FileUploadModel extends AbstractModel {
      */
     public get fullLocationOnDisk(): string {
         return path.resolve(`${filesDir}/${this.fullFileNameOnSystem}`);
+    }
+
+    public getPublicUrl(): string {
+        const baseUrl = constant(GlobalEnv.BASE_URL) as string;
+        if (this.settings?.hideFilename || !this.originalFileName) {
+            return `${baseUrl}/f/${this.fullFileNameOnSystem}`;
+        }
+        let { originalFileName } = this;
+        if (originalFileName.startsWith("/")) {
+            originalFileName = originalFileName.substring(1);
+        }
+        return `${baseUrl}/f/${this.fileName}/${originalFileName}`;
     }
 }

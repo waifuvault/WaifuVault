@@ -184,7 +184,7 @@ export class FileUploadService {
     private async buildEntrySettings({
         password,
         hideFilename,
-        one_time_download,
+        oneTimeDownload,
     }: FileUploadQueryParameters & { password?: string }): Promise<EntrySettings | null> {
         const retObj: EntrySettings = {};
         if (password) {
@@ -193,8 +193,8 @@ export class FileUploadService {
         if (hideFilename) {
             retObj["hideFilename"] = hideFilename;
         }
-        if (one_time_download) {
-            retObj["oneTimeDownload"] = one_time_download;
+        if (oneTimeDownload) {
+            retObj["oneTimeDownload"] = oneTimeDownload;
         }
         return Object.keys(retObj).length === 0 ? null : retObj;
     }
@@ -259,15 +259,15 @@ export class FileUploadService {
         bucketToken?: string,
     ): Promise<void> {
         let value: number = ObjectUtils.getNumber(expires);
-        let timeFactor: TimeUnit = TimeUnit.minutes;
+        let timeFactor: TimeUnit = TimeUnit.MINUTES;
 
         if (value === 0) {
             throw new BadRequest(`Unable to parse expire value from ${expires}`);
         }
         if (expires.includes("d")) {
-            timeFactor = TimeUnit.days;
+            timeFactor = TimeUnit.DAYS;
         } else if (expires.includes("h")) {
-            timeFactor = TimeUnit.hours;
+            timeFactor = TimeUnit.HOURS;
         }
         value = ObjectUtils.convertToMilli(value, timeFactor);
 

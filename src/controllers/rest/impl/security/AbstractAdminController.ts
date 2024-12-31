@@ -11,8 +11,6 @@ import { BaseRestController } from "../../BaseRestController.js";
 import { FileUploadModel } from "../../../../model/db/FileUpload.model.js";
 import { AdminFileEntryDto } from "../../../../model/dto/AdminFileEntryDto.js";
 import { StatsDto } from "../../../../model/dto/StatsDto.js";
-import GlobalEnv from "../../../../model/constants/GlobalEnv.js";
-import { Constant } from "@tsed/di";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 
 export abstract class AbstractAdminController extends BaseRestController {
@@ -23,9 +21,6 @@ export abstract class AbstractAdminController extends BaseRestController {
         super();
     }
 
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
-
     protected async buildFileEntryDtos(entries: FileUploadModel[]): Promise<AdminFileEntryDto[]> {
         const ipBlockedPArr = entries.map(entry => Promise.all([entry, this.ipBlackListRepo.isIpBlocked(entry.ip)]));
         const ipBlockedArr = await Promise.all(ipBlockedPArr);
@@ -35,7 +30,7 @@ export abstract class AbstractAdminController extends BaseRestController {
                     ipBlocked,
                     entry,
                 };
-                return AdminFileEntryDto.fromModel(ipBlockedAwareEntry, this.baseUrl);
+                return AdminFileEntryDto.fromModel(ipBlockedAwareEntry);
             }),
         );
     }
