@@ -1,13 +1,13 @@
 enum TimeUnit {
-    milliseconds,
-    seconds,
-    minutes,
-    hours,
-    days,
-    weeks,
-    months,
-    years,
-    decades,
+    MILLI_SECONDS,
+    SECONDS,
+    MINUTES,
+    HOURS,
+    DAYS,
+    WEEKS,
+    MONTHS,
+    YEARS,
+    DECADES,
 }
 
 export default TimeUnit;

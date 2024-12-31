@@ -23,9 +23,9 @@ export class BucketDto {
     @CollectionOf(AlbumInfo)
     public albums: AlbumInfo[];
 
-    public static async fromModel(model: BucketModel, baseUrl: string): Promise<BucketDto> {
+    public static async fromModel(model: BucketModel): Promise<BucketDto> {
         const fileDtos = model.files
-            ? await Promise.all(model.files.map(f => FileUploadResponseDto.fromModel(f, baseUrl, false, true))) // albums in files are resolved here in the query, so no lazy loading is done
+            ? await Promise.all(model.files.map(f => FileUploadResponseDto.fromModel(f, false, true))) // albums in files are resolved here in the query, so no lazy loading is done
             : [];
         const albums = model.albums ? model.albums.map(a => AlbumInfo.fromModel(a)) : [];
         return Builder(BucketDto).token(model.bucketToken).files(fileDtos).albums(albums).build();

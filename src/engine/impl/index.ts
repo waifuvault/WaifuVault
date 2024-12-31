@@ -16,3 +16,6 @@ export * from "./HttpErrorRenderers/BucketAuthenticationErrorRenderEngine.js";
 export * from "./HttpErrorRenderers/DefaultHttpRenderEngine.js";
 export * from "./HttpErrorRenderers/FileProtectedRenderEngine.js";
 export * from "./HttpErrorRenderers/ReCAPTCHALoginExceptionRenderEngine.js";
+export * from "./transfomers/dto/AlbumModelTransformer.js";
+export * from "./transfomers/dto/BucketModelTransformer.js";
+export * from "./transfomers/dto/FileModelTransformer.js";

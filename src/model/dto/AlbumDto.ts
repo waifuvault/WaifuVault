@@ -27,10 +27,8 @@ export class AlbumDto {
     @CollectionOf(FileUploadResponseDto)
     public files: FileUploadResponseDto[];
 
-    public static fromModel(model: AlbumModel, baseUrl: string): AlbumDto {
-        const fileDtos = model.files
-            ? model.files.map(f => FileUploadResponseDto.fromModel(f, baseUrl, false, false))
-            : [];
+    public static fromModel(model: AlbumModel): AlbumDto {
+        const fileDtos = model.files ? model.files.map(f => FileUploadResponseDto.fromModel(f, false, false)) : [];
         return Builder(AlbumDto)
             .token(model.albumToken)
             .bucketToken(model.bucketToken)

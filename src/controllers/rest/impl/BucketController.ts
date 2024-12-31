@@ -1,4 +1,4 @@
-import { Constant, Controller, Inject } from "@tsed/di";
+import { Controller, Inject } from "@tsed/di";
 import { Delete, Description, Get, Name, Post, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
@@ -7,7 +7,6 @@ import { BucketService } from "../../../services/BucketService.js";
 import { BucketDto } from "../../../model/dto/BucketDto.js";
 import { PathParams } from "@tsed/common";
 import { BadRequest } from "@tsed/exceptions";
-import GlobalEnv from "../../../model/constants/GlobalEnv.js";
 import { BodyParams } from "@tsed/platform-params";
 
 @Controller("/bucket")
@@ -19,16 +18,13 @@ export class BucketController extends BaseRestController {
         super();
     }
 
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
-
     @Get("/create")
     @Returns(StatusCodes.OK, BucketDto)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Create a new bucket")
     @Summary("Create a new bucket")
     public async createBucket(): Promise<BucketDto> {
-        return BucketDto.fromModel(await this.bucketService.createBucket(), this.baseUrl);
+        return BucketDto.fromModel(await this.bucketService.createBucket());
     }
 
     @Delete("/:token")
@@ -53,6 +49,6 @@ export class BucketController extends BaseRestController {
         if (!bucket) {
             throw new BadRequest(`Unable to find bucket with token ${bucketToken}`);
         }
-        return BucketDto.fromModel(bucket, this.baseUrl);
+        return BucketDto.fromModel(bucket);
     }
 }
