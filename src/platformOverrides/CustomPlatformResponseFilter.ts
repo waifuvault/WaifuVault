@@ -4,9 +4,9 @@ import { ModelTransformationManager } from "../manager/ModelTransformationManage
 
 @OverrideProvider(PlatformResponseFilter)
 export class CustomPlatformResponseFilter extends PlatformResponseFilter {
-    public constructor(@Inject() private modelTransformationManager: ModelTransformationManager) {
-        super();
-    }
+    // must be prop injection and not constructor due to an issue with `@OverrideProvider`
+    @Inject()
+    private readonly modelTransformationManager: ModelTransformationManager;
 
     public override async serialize(data: unknown, ctx: BaseContext): Promise<unknown> {
         if (await this.modelTransformationManager.transform(data)) {
@@ -18,10 +18,6 @@ export class CustomPlatformResponseFilter extends PlatformResponseFilter {
 
     public override async transform(data: unknown, ctx: BaseContext): Promise<unknown> {
         const transformedData = await this.modelTransformationManager.transform(ctx.data);
-        if (transformedData) {
-            return transformedData;
-        }
-
-        return super.transform(data, ctx);
+        return transformedData ? transformedData : super.transform(data, ctx);
     }
 }
