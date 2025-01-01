@@ -25,6 +25,7 @@ export type AvScanResult = {
 
 export type CaptchaResponse = {
     success: boolean;
+    /* eslint-disable @typescript-eslint/naming-convention */
     challenge_ts: string;
     hostname: string;
     "error-codes": string[];
@@ -72,7 +73,7 @@ export type RecordInfoPayload = {
     recordSize: string;
 };
 
-export type fileUploadProps = {
+export type FileUploadProps = {
     ip: string;
     source: PlatformMulterFile | string;
     options: FileUploadQueryParameters;

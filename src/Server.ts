@@ -17,6 +17,7 @@ import "./services/FileCleaner.js";
 import * as views from "./controllers/views/index.js";
 import * as adminViews from "./controllers/secure/index.js";
 import * as globalMiddleware from "./middleware/global/index.js";
+import "./platformOverrides/index.js";
 import { FileServerController } from "./controllers/serve/FileServerController.js";
 // import * as secureViews from "./controllers/secureViews";
 // custom index imports end
@@ -64,10 +65,10 @@ const opts: Partial<TsED.Configuration> = {
             fileSize: Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB as string) * 1048576,
         },
         storage: multer.diskStorage({
-            destination: (req, file, cb) => {
+            destination: (_, _2, cb) => {
                 cb(null, filesDir);
             },
-            filename: (req, file, cb) => {
+            filename: (_, file, cb) => {
                 const ext = FileUtils.getExtension(file.originalname);
                 const fileName = ext ? `${Date.now()}.${ext}` : `${Date.now()}`;
                 return cb(null, fileName);

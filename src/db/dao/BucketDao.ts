@@ -23,18 +23,27 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
 
     public getBucket(id: string | number, transaction?: EntityManager): Promise<BucketModel | null> {
         if (typeof id === "number") {
-            return this.getRepository(transaction).findOneBy({
-                id,
+            return this.getRepository(transaction).findOne({
+                relations: ["albums", "files.album"],
+                where: {
+                    id,
+                },
             });
         }
-        return this.getRepository(transaction).findOneBy({
-            bucketToken: id,
+        return this.getRepository(transaction).findOne({
+            relations: ["albums", "files.album"],
+            where: {
+                bucketToken: id,
+            },
         });
     }
 
     public getBucketByIp(ip: string, transaction?: EntityManager): Promise<BucketModel | null> {
-        return this.getRepository(transaction).findOneBy({
-            ip,
+        return this.getRepository(transaction).findOne({
+            relations: ["albums", "files.album"],
+            where: {
+                ip,
+            },
         });
     }
 }

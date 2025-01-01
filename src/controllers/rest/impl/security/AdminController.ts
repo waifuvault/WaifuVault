@@ -8,13 +8,17 @@ import { BodyParams } from "@tsed/platform-params";
 import { StatusCodes } from "http-status-codes";
 import { Authorize } from "@tsed/passport";
 import { IAdminController } from "../../IAdminController.js";
+import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 
 @Hidden()
 @Authorize("loginAuthProvider")
 @Controller("/admin")
 export class AdminController extends AbstractAdminController implements IAdminController {
-    public constructor(@Inject() private UserAdminService: UserAdminService) {
-        super(UserAdminService);
+    public constructor(
+        @Inject() private userAdminService: UserAdminService,
+        @Inject() blackListRepo: IpBlackListRepo,
+    ) {
+        super(userAdminService, blackListRepo);
     }
 
     @Get("/datatablesEntries")
@@ -33,7 +37,8 @@ export class AdminController extends AbstractAdminController implements IAdminCo
             sortOrder = order[0]?.dir.toUpperCase();
             sortColumn = columns[order[0]?.column ?? 0]?.data;
         }
-        const data = await this.adminService.getPagedEntries(start, length, sortColumn, sortOrder, searchVal);
+        const files = await this.adminService.getPagedEntries(start, length, sortColumn, sortOrder, searchVal);
+        const data = await this.buildFileEntryDtos(files);
         const records = searchVal
             ? await this.adminService.getFileSearchRecordCount(search.value)
             : await this.adminService.getFileRecordCount();
@@ -47,7 +52,7 @@ export class AdminController extends AbstractAdminController implements IAdminCo
 
     @Get("/blockedIps")
     public getAllBlockedIps(): Promise<unknown> {
-        return this.UserAdminService.getAllBlockedIps();
+        return this.userAdminService.getAllBlockedIps();
     }
 
     @Post("/blockIp")
@@ -56,13 +61,13 @@ export class AdminController extends AbstractAdminController implements IAdminCo
         @QueryParams("removeRelatedData", Boolean) removeRelatedData = false,
         @Required() @BodyParams("ip") ip: string,
     ): Promise<unknown> {
-        await this.UserAdminService.blockIp(ip, removeRelatedData);
+        await this.userAdminService.blockIp(ip, removeRelatedData);
         return super.doSuccess(res, "IP blocked");
     }
 
     @Post("/unblockIps")
     public async unblockIps(@Res() res: PlatformResponse, @BodyParams() ips: string[]): Promise<unknown> {
-        const success = await this.UserAdminService.removeBlockedIps(ips);
+        const success = await this.userAdminService.removeBlockedIps(ips);
         if (!success) {
             return super.doError(res, "Unable to remove selected ips", StatusCodes.INTERNAL_SERVER_ERROR);
         }

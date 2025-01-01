@@ -6,7 +6,9 @@
     "./src/controllers/secure",
     "./src/protocols",
     "./src/engine/impl",
-    "./src/filters"
+    "./src/filters",
+    "./src/responseFilters",
+    "./src/platformOverrides"
   ],
   "exclude": [
     "**/__mock__",

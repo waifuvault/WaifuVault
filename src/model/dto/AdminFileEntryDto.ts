@@ -2,7 +2,7 @@ import { Nullable, Property } from "@tsed/schema";
 import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
 import type { IpBlockedAwareFileEntry, ProtectionLevel } from "../../utils/typeings.js";
-import { FileUploadModel } from "../db/FileUpload.model.js";
+import { AlbumInfo } from "../rest/AlbumInfo.js";
 
 export class AdminFileEntryDto {
     @Property()
@@ -54,9 +54,13 @@ export class AdminFileEntryDto {
     @Property()
     public views: number;
 
-    public static fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry, baseUrl: string): AdminFileEntryDto {
+    @Property()
+    @Nullable(AlbumInfo)
+    public album: AlbumInfo | null = null;
+
+    public static async fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry): Promise<AdminFileEntryDto> {
         const fileEntryBuilder = Builder(AdminFileEntryDto)
-            .url(AdminFileEntryDto.getUrl(entry, baseUrl))
+            .url(entry.getPublicUrl())
             .fileExtension(entry.fileExtension)
             .createdAt(entry.createdAt)
             .id(entry.id)
@@ -74,17 +78,12 @@ export class AdminFileEntryDto {
         if (expiresIn !== null) {
             fileEntryBuilder.expires(ObjectUtils.timeToHuman(expiresIn));
         }
-        return fileEntryBuilder.build();
-    }
 
-    private static getUrl(fileUploadModel: FileUploadModel, baseUrl: string): string {
-        if (fileUploadModel.settings?.hideFilename || !fileUploadModel.originalFileName) {
-            return `${baseUrl}/f/${fileUploadModel.fullFileNameOnSystem}`;
+        // at this point, all albums should be loaded by the relation query
+        const album = await entry.album;
+        if (album) {
+            fileEntryBuilder.album(AlbumInfo.fromModel(album));
         }
-        let { originalFileName } = fileUploadModel;
-        if (originalFileName.startsWith("/")) {
-            originalFileName = originalFileName.substring(1);
-        }
-        return `${baseUrl}/f/${fileUploadModel.fileName}/${originalFileName}`;
+        return fileEntryBuilder.build();
     }
 }

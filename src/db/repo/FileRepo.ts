@@ -50,19 +50,31 @@ export class FileRepo {
         return res;
     }
 
-    public getEntriesFromChecksum(hash: string): Promise<FileUploadModel[]> {
-        // bypass cache
-        return this.fileDao.getEntriesFromChecksum(hash);
+    public async getEntriesFromChecksum(hash: string): Promise<FileUploadModel[]> {
+        const entriesFromChecksum = await this.fileDao.getEntriesFromChecksum(hash);
+        for (const entry of entriesFromChecksum) {
+            this.entryCache.set(entry.token, entry);
+        }
+        return entriesFromChecksum;
     }
 
-    public getExpiredFiles(): Promise<FileUploadModel[]> {
+    public async getExpiredFiles(): Promise<FileUploadModel[]> {
         // bypass cache
-        return this.fileDao.getExpiredFiles();
+        const fileUploadModels: FileUploadModel[] = await this.fileDao.getExpiredFiles();
+        for (const fileUploadModel of fileUploadModels) {
+            this.entryCache.set(fileUploadModel.token, fileUploadModel);
+        }
+        return fileUploadModels;
     }
 
-    public getAllEntries(ids: number[] = []): Promise<FileUploadModel[]> {
-        // bypass cache
-        return this.fileDao.getAllEntries(ids);
+    public async getAllEntries(ids: number[] = []): Promise<FileUploadModel[]> {
+        const fileUploadModels: FileUploadModel[] = await this.fileDao.getAllEntries(ids);
+
+        this.invalidateCache();
+        for (const fileUploadModel of fileUploadModels) {
+            this.entryCache.set(fileUploadModel.token, fileUploadModel);
+        }
+        return fileUploadModels;
     }
 
     public getTotalFileSize(): Promise<number | null> {
@@ -70,9 +82,13 @@ export class FileRepo {
         return this.fileDao.getTotalFileSize();
     }
 
-    public getAllEntriesForIp(ip: string): Promise<FileUploadModel[]> {
+    public async getAllEntriesForIp(ip: string): Promise<FileUploadModel[]> {
         // bypass cache
-        return this.fileDao.getAllEntriesForIp(ip);
+        const fileUploadModels: FileUploadModel[] = await this.fileDao.getAllEntriesForIp(ip);
+        for (const fileUploadModel of fileUploadModels) {
+            this.entryCache.set(fileUploadModel.token, fileUploadModel);
+        }
+        return fileUploadModels;
     }
 
     public async incrementViews(token: string): Promise<number> {

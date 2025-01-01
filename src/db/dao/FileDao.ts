@@ -2,9 +2,8 @@ import { Inject, Injectable } from "@tsed/di";
 import { AbstractTypeOrmDao } from "./AbstractTypeOrmDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
-import { DataSource, EntityManager, Equal, In, IsNull, LessThan, Like, MoreThan } from "typeorm";
+import { DataSource, EntityManager, Equal, FindOptionsRelations, In, IsNull, LessThan, Like, MoreThan } from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
-import { FindOptionsRelations } from "typeorm/find-options/FindOptionsRelations.js";
 
 @Injectable()
 export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
@@ -15,6 +14,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
     private readonly relation: { relations: FindOptionsRelations<FileUploadModel> } = {
         relations: {
             bucket: true,
+            album: true,
         },
     };
 
