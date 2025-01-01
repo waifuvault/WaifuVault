@@ -1,9 +1,8 @@
-import { Constant, Inject, InjectContext, Service } from "@tsed/di";
+import { Inject, InjectContext, Service } from "@tsed/di";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BucketModel } from "../model/db/Bucket.model.js";
 import { Logger } from "@tsed/logger";
 import type { PlatformContext } from "@tsed/common";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { FileService } from "./FileService.js";
 import { BucketSessionService } from "./BucketSessionService.js";
 
@@ -18,9 +17,6 @@ export class BucketService {
 
     @InjectContext()
     protected $ctx?: PlatformContext;
-
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
 
     public createBucket(): Promise<BucketModel> {
         return this.bucketRepo.createBucket();
