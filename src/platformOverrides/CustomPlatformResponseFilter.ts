@@ -8,16 +8,8 @@ export class CustomPlatformResponseFilter extends PlatformResponseFilter {
     @Inject()
     private readonly modelTransformationManager: ModelTransformationManager;
 
-    public override async serialize(data: unknown, ctx: BaseContext): Promise<unknown> {
-        if (await this.modelTransformationManager.transform(data)) {
-            return data;
-        }
-
-        return super.serialize(data, ctx);
-    }
-
     public override async transform(data: unknown, ctx: BaseContext): Promise<unknown> {
-        const transformedData = await this.modelTransformationManager.transform(ctx.data);
+        const transformedData = await this.modelTransformationManager.transform(data);
         return transformedData ? transformedData : super.transform(data, ctx);
     }
 }

@@ -3,4 +3,3 @@
  */
 export * from "./HttpExceptionFilter.js";
 export * from "./PassportExceptionFilter.js";
-export * from "./response/index.js";
