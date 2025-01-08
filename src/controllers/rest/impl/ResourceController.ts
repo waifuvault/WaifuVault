@@ -4,14 +4,15 @@ import { StatusCodes } from "http-status-codes";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 import { BaseRestController } from "../BaseRestController.js";
 import { Restriction } from "../../../model/rest/Restriction.js";
-import { RestrictionService } from "../../../services/RestrictionService.js";
+import { ResourceService } from "../../../services/ResourceService.js";
+import { RecordInfoPayload } from "../../../model/rest/RecordInfoPayload.js";
 
 @Controller("/resources")
 @Description("API for obtaining miscellaneous resources.")
 @Name("Resource Management")
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class ResourceController extends BaseRestController {
-    public constructor(@Inject() private restrictionService: RestrictionService) {
+    public constructor(@Inject() private resourceService: ResourceService) {
         super();
     }
 
@@ -21,6 +22,14 @@ export class ResourceController extends BaseRestController {
     @Description("Get all the restrictions that each file will be subject to when being uploaded")
     @Summary("Get all restrictions")
     public getRestrictions(): unknown {
-        return this.restrictionService.getAllRestrictions();
+        return this.resourceService.getAllRestrictions();
+    }
+
+    @Get("/stats/files")
+    @Returns(StatusCodes.OK, RecordInfoPayload)
+    @Description("Get info of all the files hosted and how much storage is used")
+    @Summary("Get stats on all files and storage used")
+    public storage(): Promise<RecordInfoPayload> {
+        return this.resourceService.getfileStats();
     }
 }

@@ -6,10 +6,15 @@ import { ObjectUtils } from "../utils/Utils.js";
 import { Builder } from "builder-pattern";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import type { RestrictionValueType } from "../utils/typeings.js";
+import { RecordInfoPayload } from "../model/rest/RecordInfoPayload.js";
+import { FileRepo } from "../db/repo/FileRepo.js";
 
 @Service()
-export class RestrictionService {
-    public constructor(@Inject() private settingsService: SettingsService) {}
+export class ResourceService {
+    public constructor(
+        @Inject() private settingsService: SettingsService,
+        @Inject() private repo: FileRepo,
+    ) {}
 
     public getAllRestrictions(): Restriction[] {
         const retArr: Restriction[] = [];
@@ -33,6 +38,10 @@ export class RestrictionService {
             }
         }
         return retArr;
+    }
+
+    public getfileStats(): Promise<RecordInfoPayload> {
+        return RecordInfoPayload.fromRepo(this.repo);
     }
 
     private getRestriction(type: RestrictionType, value: RestrictionValueType): Restriction {
