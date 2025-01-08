@@ -1,10 +1,39 @@
 import { Nullable, Property } from "@tsed/schema";
+import { AdminDataTaleEntryModel, IpBlockedAwareFileEntry, ProtectionLevel } from "../../utils/typeings.js";
+import { AlbumInfo } from "../rest/AlbumInfo.js";
 import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
-import type { IpBlockedAwareFileEntry, ProtectionLevel } from "../../utils/typeings.js";
-import { AlbumInfo } from "../rest/AlbumInfo.js";
 
-export class AdminFileEntryDto {
+export class AdminData {
+    @Property()
+    public draw: number;
+
+    @Property()
+    public recordsTotal: number;
+
+    @Property()
+    public recordsFiltered: number;
+
+    @Property()
+    public data: AdminFileData[];
+
+    public static async fromModel({
+        data,
+        recordsFiltered,
+        recordsTotal,
+        draw,
+    }: AdminDataTaleEntryModel): Promise<AdminData> {
+        const adminFileData = await Promise.all(data.map(entry => AdminFileData.fromModel(entry)));
+        return Builder(AdminData)
+            .draw(draw)
+            .data(adminFileData)
+            .recordsFiltered(recordsFiltered)
+            .recordsTotal(recordsTotal)
+            .build();
+    }
+}
+
+export class AdminFileData {
     @Property()
     public id: number;
 
@@ -58,8 +87,8 @@ export class AdminFileEntryDto {
     @Nullable(AlbumInfo)
     public album: AlbumInfo | null = null;
 
-    public static async fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry): Promise<AdminFileEntryDto> {
-        const fileEntryBuilder = Builder(AdminFileEntryDto)
+    public static async fromModel({ entry, ipBlocked }: IpBlockedAwareFileEntry): Promise<AdminFileData> {
+        const fileEntryBuilder = Builder(AdminFileData)
             .url(entry.getPublicUrl())
             .fileExtension(entry.fileExtension)
             .createdAt(entry.createdAt)

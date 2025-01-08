@@ -9,8 +9,6 @@ import {
 import { IAdminService } from "../../../../services/IAdminService.js";
 import { BaseRestController } from "../../BaseRestController.js";
 import { FileUploadModel } from "../../../../model/db/FileUpload.model.js";
-import { AdminFileEntryDto } from "../../../../model/dto/AdminFileEntryDto.js";
-import { StatsDto } from "../../../../model/dto/StatsDto.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 
 export abstract class AbstractAdminController extends BaseRestController {
@@ -21,25 +19,22 @@ export abstract class AbstractAdminController extends BaseRestController {
         super();
     }
 
-    protected async buildFileEntryDtos(entries: FileUploadModel[]): Promise<AdminFileEntryDto[]> {
+    protected async mapIpToFileEntries(entries: FileUploadModel[]): Promise<IpBlockedAwareFileEntry[]> {
         const ipBlockedPArr = entries.map(entry => Promise.all([entry, this.ipBlackListRepo.isIpBlocked(entry.ip)]));
         const ipBlockedArr = await Promise.all(ipBlockedPArr);
-        return Promise.all(
-            ipBlockedArr.map(([entry, ipBlocked]) => {
-                const ipBlockedAwareEntry: IpBlockedAwareFileEntry = {
-                    ipBlocked,
-                    entry,
-                };
-                return AdminFileEntryDto.fromModel(ipBlockedAwareEntry);
-            }),
-        );
+        return ipBlockedArr.map(([entry, ipBlocked]) => {
+            return {
+                ipBlocked,
+                entry,
+            };
+        });
     }
 
-    public async getAllEntries(): Promise<unknown> {
-        return this.buildFileEntryDtos(await this.adminService.getAllEntries());
+    public async getAllEntries(): Promise<IpBlockedAwareFileEntry[]> {
+        return this.mapIpToFileEntries(await this.adminService.getAllEntries());
     }
 
-    public async deleteEntries(res: PlatformResponse, ids: number[]): Promise<unknown> {
+    public async deleteEntries(res: PlatformResponse, ids: number[]): Promise<PlatformResponse> {
         const result = await this.adminService.deleteEntries(ids);
         if (!result) {
             throw new NotFound(`No entry with IDs ${ids.join(", ")} found.`);
@@ -47,8 +42,9 @@ export abstract class AbstractAdminController extends BaseRestController {
         return super.doSuccess(res, `Entries have been deleted.`);
     }
 
-    public async getStatsData(): Promise<unknown> {
-        return StatsDto.buildStats(await this.buildFileEntryDtos(await this.adminService.getStatsData()));
+    public async getStatsData(): Promise<IpBlockedAwareFileEntry[]> {
+        // return StatsDto.buildStats(await this.mapIpToFileEntries(await this.adminService.getStatsData()));
+        return this.mapIpToFileEntries(await this.adminService.getStatsData());
     }
 
     public abstract getDatatablesEntries(

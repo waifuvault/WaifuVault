@@ -94,3 +94,10 @@ export type RestrictionTypeMapping = {
 };
 
 export type RestrictionValueType = string | number | string[];
+
+export type AdminDataTaleEntryModel = {
+    draw: number;
+    recordsTotal: number;
+    recordsFiltered: number;
+    data: IpBlockedAwareFileEntry[];
+};

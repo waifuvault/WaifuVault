@@ -3,7 +3,13 @@ import { Controller, Inject } from "@tsed/di";
 import { UserAdminService } from "../../../../services/UserAdminService.js";
 import { Delete, Get, Hidden, Post, Required } from "@tsed/schema";
 import { PlatformResponse, QueryParams, Res } from "@tsed/common";
-import type { DatatableColumn, DatatableOrder, DatatableSearch } from "../../../../utils/typeings.js";
+import {
+    AdminDataTaleEntryModel,
+    DatatableColumn,
+    DatatableOrder,
+    DatatableSearch,
+    IpBlockedAwareFileEntry,
+} from "../../../../utils/typeings.js";
 import { BodyParams } from "@tsed/platform-params";
 import { StatusCodes } from "http-status-codes";
 import { Authorize } from "@tsed/passport";
@@ -29,7 +35,7 @@ export class AdminController extends AbstractAdminController implements IAdminCo
         @QueryParams("order") order: DatatableOrder[],
         @QueryParams("columns") columns: DatatableColumn[],
         @QueryParams("search") search: DatatableSearch,
-    ): Promise<unknown> {
+    ): Promise<AdminDataTaleEntryModel> {
         let sortColumn;
         let sortOrder;
         const searchVal = search ? search.value : undefined;
@@ -38,10 +44,11 @@ export class AdminController extends AbstractAdminController implements IAdminCo
             sortColumn = columns[order[0]?.column ?? 0]?.data;
         }
         const files = await this.adminService.getPagedEntries(start, length, sortColumn, sortOrder, searchVal);
-        const data = await this.buildFileEntryDtos(files);
+        const data = await this.mapIpToFileEntries(files);
         const records = searchVal
             ? await this.adminService.getFileSearchRecordCount(search.value)
             : await this.adminService.getFileRecordCount();
+
         return {
             draw: draw,
             recordsTotal: records,
@@ -75,17 +82,20 @@ export class AdminController extends AbstractAdminController implements IAdminCo
     }
 
     @Get("/allEntries")
-    public override getAllEntries(): Promise<unknown> {
+    public override getAllEntries(): Promise<IpBlockedAwareFileEntry[]> {
         return super.getAllEntries();
     }
 
     @Delete("/deleteEntries")
-    public override deleteEntries(@Res() res: PlatformResponse, @BodyParams() ids: number[]): Promise<unknown> {
+    public override deleteEntries(
+        @Res() res: PlatformResponse,
+        @BodyParams() ids: number[],
+    ): Promise<PlatformResponse> {
         return super.deleteEntries(res, ids);
     }
 
     @Get("/statsData")
-    public override getStatsData(): Promise<unknown> {
+    public override getStatsData(): Promise<IpBlockedAwareFileEntry[]> {
         return super.getStatsData();
     }
 }

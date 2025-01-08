@@ -2,7 +2,12 @@ import { AbstractAdminController } from "./AbstractAdminController.js";
 import { Controller, Inject } from "@tsed/di";
 import { Delete, Get, Hidden } from "@tsed/schema";
 import { PlatformResponse, QueryParams, Res, UseBefore } from "@tsed/common";
-import type { DatatableColumn, DatatableOrder, DatatableSearch } from "../../../../utils/typeings.js";
+import {
+    DatatableColumn,
+    DatatableOrder,
+    DatatableSearch,
+    IpBlockedAwareFileEntry,
+} from "../../../../utils/typeings.js";
 import { AuthoriseBucket } from "../../../../middleware/endpoint/AuthoriseBucket.js";
 import { BodyParams } from "@tsed/platform-params";
 import { IAdminController } from "../../IAdminController.js";
@@ -48,7 +53,7 @@ export class BucketAdminController extends AbstractAdminController implements IA
             bucketToken,
             searchVal,
         );
-        const data = await this.buildFileEntryDtos(files);
+        const data = await this.mapIpToFileEntries(files);
         const records = searchVal
             ? await this.bucketAdminService.getFileSearchRecordCount(search.value, bucketToken)
             : await this.bucketAdminService.getFileRecordCount(bucketToken);
@@ -61,17 +66,20 @@ export class BucketAdminController extends AbstractAdminController implements IA
     }
 
     @Get("/allEntries")
-    public override getAllEntries(): Promise<unknown> {
+    public override getAllEntries(): Promise<IpBlockedAwareFileEntry[]> {
         return super.getAllEntries();
     }
 
     @Delete("/deleteEntries")
-    public override deleteEntries(@Res() res: PlatformResponse, @BodyParams() ids: number[]): Promise<unknown> {
+    public override deleteEntries(
+        @Res() res: PlatformResponse,
+        @BodyParams() ids: number[],
+    ): Promise<PlatformResponse> {
         return super.deleteEntries(res, ids);
     }
 
     @Get("/statsData")
-    public override getStatsData(): Promise<unknown> {
+    public override getStatsData(): Promise<IpBlockedAwareFileEntry[]> {
         return super.getStatsData();
     }
 }
