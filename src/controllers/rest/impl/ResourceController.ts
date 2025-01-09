@@ -12,7 +12,7 @@ import { RecordInfoPayload } from "../../../model/rest/RecordInfoPayload.js";
 @Name("Resource Management")
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class ResourceController extends BaseRestController {
-    public constructor(@Inject() private resourceService: ResourceService) {
+    public constructor(@Inject() private restrictionService: ResourceService) {
         super();
     }
 
@@ -23,8 +23,6 @@ export class ResourceController extends BaseRestController {
     @Summary("Get all restrictions")
     public getRestrictions(): Restriction[] {
         return this.restrictionService.getAllRestrictions();
-    public getRestrictions(): unknown {
-        return this.resourceService.getAllRestrictions();
     }
 
     @Get("/stats/files")
@@ -32,6 +30,6 @@ export class ResourceController extends BaseRestController {
     @Description("Get info of all the files hosted and how much storage is used")
     @Summary("Get stats on all files and storage used")
     public storage(): Promise<RecordInfoPayload> {
-        return this.resourceService.getfileStats();
+        return this.restrictionService.getfileStats();
     }
 }
