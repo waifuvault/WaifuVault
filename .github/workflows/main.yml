@@ -22,3 +22,28 @@ jobs:
         run: npm run prettier
       - name: compile
         run: npm run build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+
+    - name: Add EC2 to known hosts
+      run: |
+        ssh-keyscan -H ec2-3-137-166-112.us-east-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+
+    - name: Deploy to EC2
+      run: |
+        ssh -i ~/.ssh/id_rsa ec2-3-137-166-112.us-east-2.compute.amazonaws.com << 'EOF'
+          cd ..
+          ls -l
+        EOF
