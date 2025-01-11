@@ -43,7 +43,7 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        ssh -i ~/.ssh/id_rsa ec2-3-137-166-112.us-east-2.compute.amazonaws.com << 'EOF'
+        ssh -i ~/.ssh/id_rsa ubuntu@ec2-3-137-166-112.us-east-2.compute.amazonaws.com << 'EOF'
           cd ..
           ls -l
         EOF
