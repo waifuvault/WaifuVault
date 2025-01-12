@@ -177,4 +177,15 @@ export class FileUploadModel extends AbstractModel {
         }
         return `${baseUrl}/f/${this.fileName}/${originalFileName}`;
     }
+
+    public get parsedFileName(): string {
+        if (this.settings?.hideFilename || !this.originalFileName) {
+            return this.fullFileNameOnSystem;
+        }
+        let { originalFileName } = this;
+        if (originalFileName.startsWith("/")) {
+            originalFileName = originalFileName.substring(1);
+        }
+        return originalFileName;
+    }
 }
