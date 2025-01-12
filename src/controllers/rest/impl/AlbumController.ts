@@ -129,7 +129,7 @@ export class AlbumController extends BaseRestController {
         return album;
     }
 
-    @Get("/share")
+    @Get("/share/:albumToken")
     @Returns(StatusCodes.OK, String)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
@@ -138,13 +138,13 @@ export class AlbumController extends BaseRestController {
     public shareAlbum(
         @Description("The private token to the album")
         @Required()
-        @QueryParams("albumToken")
+        @PathParams("albumToken")
         albumToken: string,
     ): Promise<string> {
         return this.albumService.shareAlbum(albumToken);
     }
 
-    @Get("/share/revoke")
+    @Get("/revoke/:albumToken")
     @Returns(StatusCodes.OK, PlatformResponse)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
@@ -155,7 +155,7 @@ export class AlbumController extends BaseRestController {
     public async revokeShare(
         @Description("The private token to the album")
         @Required()
-        @QueryParams("albumToken")
+        @PathParams("albumToken")
         albumToken: string,
 
         @Res() res: PlatformResponse,

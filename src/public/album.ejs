@@ -1,1 +1,104 @@
-<%- publicToken; -%>
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <%- include('snippets/head.ejs'); %>
+    <title>Waifuvault Album</title>
+</head>
+<body>
+<div>
+    <div id="overlay" class="hidden">
+        <div id="loader" class="hidden"></div>
+    </div>
+</div>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1><span id="albumName"></span></h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <button id="downloadFiles">Download Selected</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <ul id="albumFiles"></ul>
+        </div>
+    </div>
+</div>
+<%- include('snippets/scripts.ejs'); %>
+<script>
+    Site.loadPage(async site => {
+        const albumNameElt = document.getElementById("albumName");
+        const albumFilesElt = document.getElementById("albumFiles");
+
+        async function getAlbum() {
+            Site.loading(true);
+            let response;
+            try {
+                response = await fetch(`${baseUrl}/album/public/<%- publicToken; -%>`);
+            } catch(e) {
+                alert(e.message);
+                return null;
+            } finally {
+                Site.loading(false);
+            }
+            const responseStatus = response.status;
+            const responseJson = await response.json();
+            if (responseStatus !== 200) {
+                Site.showError(responseJson.message);
+                throw new Error(responseJson.message);
+            }
+            return responseJson;
+        }
+
+        document.getElementById('downloadFiles').addEventListener('click', () => {
+            const checkedIds = Array.from(document.querySelectorAll('.fileCheck:checked'))
+                .map(checkbox => parseInt(checkbox.dataset.id, 10))
+                .filter(id => !isNaN(id));
+
+            fetch(`${baseUrl}/album/download/<%- publicToken; -%>`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(checkedIds)
+            })
+                .then(response => {
+                    if(!response.ok) {
+                        Site.showError(response.status);
+                        throw new Error(response.status);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'files.zip';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(e => {
+                    alert(e.message);
+                })
+        });
+
+        const album = await getAlbum();
+        albumNameElt.innerText = album.name;
+        if(album.files.length === 0) {
+            const emptyWarning = document.createElement('p');
+            emptyWarning.textContent = 'Empty Album';
+            albumFilesElt.replaceWith(emptyWarning);
+        } else {
+            album.files.forEach(e => {
+                const li = document.createElement('li');
+                li.innerHTML = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck"></input>&nbsp;${e.id} : <a href='${e.url}'>${e.name}</a>, ${e.size}, ${e.protected ? "Padlock" : "No Padlock"}`;
+                albumFilesElt.appendChild(li);
+            })
+        }
+    })
+</script>
+</body>
+</html>
