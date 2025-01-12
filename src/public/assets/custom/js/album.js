@@ -80,8 +80,8 @@ Site.loadPage(async site => {
                     cardfooter.setAttribute('class','card-footer d-flex justify-content-between align-items-center');
                     const downloadSelect = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck" />`;
                     const rightJustify = '<div class="d-flex justify-content-end">';
-                    const directDownload = `<a href="${e.url}?download=true" target="_blank" class="btn btn-outline-primary border-0"><i class="bi bi-box-arrow-down"></i></a>`;
-                    const copyUrl = `<button class="copyUrl btn btn-outline-primary border-0" data-url="${e.url}"><i class="bi bi-clipboard"></i></button></div>`;
+                    const directDownload = `<a href="${e.url}?download=true" target="_blank" class="btn btn-outline-primary border-0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download"><i class="bi bi-box-arrow-down"></i></a>`;
+                    const copyUrl = `<button class="copyUrl btn btn-outline-primary border-0" data-url="${e.url}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Copy URL"><i class="bi bi-clipboard"></i></button></div>`;
                     cardfooter.innerHTML = downloadSelect + rightJustify + directDownload + copyUrl;
                     colmain.appendChild(cardmain);
                     cardmain.appendChild(cardbody);
