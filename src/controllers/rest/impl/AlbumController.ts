@@ -123,6 +123,9 @@ export class AlbumController extends BaseRestController {
         albumToken: string,
     ): Promise<AlbumModel> {
         const album = await this.albumService.getAlbum(albumToken);
+        if (!album.isShared) {
+            throw new BadRequest("This album is not public");
+        }
         if (!album.isPublicToken(albumToken)) {
             throw new BadRequest("Supplied token is not valid");
         }

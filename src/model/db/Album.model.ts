@@ -106,4 +106,8 @@ export class AlbumModel extends AbstractModel {
         const baseUrl = constant(GlobalEnv.BASE_URL) as string;
         return `${baseUrl}/album/${this.publicToken}`;
     }
+
+    public get isShared(): boolean {
+        return this.publicToken !== null;
+    }
 }
