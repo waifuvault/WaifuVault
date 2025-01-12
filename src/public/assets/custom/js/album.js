@@ -8,7 +8,7 @@ Site.loadPage(async site => {
     function sizeAsHuman(data) {
         const sizeKB = Math.floor(data / 1024);
         const sizeMB = sizeKB / 1024;
-        const sizeGB = sizeKB / 1024;
+        const sizeGB = sizeMB / 1024;
         if (data < 1024) {
             return `${data} B`;
         }
@@ -77,8 +77,12 @@ Site.loadPage(async site => {
                         </p>
                     `;
                     const cardfooter = document.createElement('div');
-                    cardfooter.setAttribute('class','card-footer');
-                    cardfooter.innerHTML = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck" />`;
+                    cardfooter.setAttribute('class','card-footer d-flex justify-content-between align-items-center');
+                    const downloadSelect = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck" />`;
+                    const rightJustify = '<div class="d-flex justify-content-end">';
+                    const directDownload = `<a href="${e.url}?download=true" target="_blank" class="btn btn-outline-primary border-0"><i class="bi bi-box-arrow-down"></i></a>`;
+                    const copyUrl = `<button class="copyUrl btn btn-outline-primary border-0" data-url="${e.url}"><i class="bi bi-clipboard"></i></button></div>`;
+                    cardfooter.innerHTML = downloadSelect + rightJustify + directDownload + copyUrl;
                     colmain.appendChild(cardmain);
                     cardmain.appendChild(cardbody);
                     cardmain.appendChild(cardfooter);
@@ -86,6 +90,23 @@ Site.loadPage(async site => {
                 })
                 cardsRendered = true;
             }
+            const copyButtons = document.querySelectorAll('.copyUrl');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const url = button.getAttribute('data-url');
+
+                    navigator.clipboard.writeText(url).then(() => {
+                        const icon = button.querySelector('i');
+                        const originalClass = icon.className;
+                        icon.className = 'bi bi-check2';
+                        setTimeout(() => {
+                            icon.className = originalClass;
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy URL: ', err);
+                    });
+                });
+            });
             albumFilesElt.style.visibility = 'hidden';
             albumFilesElt.style.display = 'none';
             albumCardsElt.style.visibility = 'visible';
