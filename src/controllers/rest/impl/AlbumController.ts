@@ -1,10 +1,11 @@
 import { BaseRestController } from "../BaseRestController.js";
-import { Constant, Controller, Inject } from "@tsed/di";
+import { Controller, Inject } from "@tsed/di";
 import {
     CollectionOf,
     Default,
     Delete,
     Description,
+    Get,
     Name,
     Optional,
     Post,
@@ -19,8 +20,9 @@ import { BodyParams } from "@tsed/platform-params";
 import { PathParams, PlatformResponse, QueryParams, Res } from "@tsed/common";
 import { AlbumService } from "../../../services/AlbumService.js";
 import { SuccessModel } from "../../../model/rest/SuccessModel.js";
-import GlobalEnv from "../../../model/constants/GlobalEnv.js";
 import { AlbumModel } from "../../../model/db/Album.model.js";
+import { PublicAlbumDto } from "../../../model/dto/PublicAlbumDto.js";
+import { BadRequest } from "@tsed/exceptions";
 
 @Controller("/album")
 @Description("API for CRUD operations of albums and associating files with them.")
@@ -30,9 +32,6 @@ export class AlbumController extends BaseRestController {
     public constructor(@Inject() private albumService: AlbumService) {
         super();
     }
-
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
 
     @Post("/:bucketToken")
     @Returns(StatusCodes.OK, AlbumDto)
@@ -92,5 +91,101 @@ export class AlbumController extends BaseRestController {
     ): Promise<PlatformResponse> {
         await this.albumService.deleteAlbum(albumToken, deleteFiles);
         return super.doSuccess(res, "album deleted");
+    }
+
+    @Get("/:albumToken")
+    @Returns(StatusCodes.OK, AlbumDto)
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
+    @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
+    @Description("Get an album and all files associated with it")
+    @Summary("Get full album")
+    public async getAlbum(
+        @Description("The album to get")
+        @PathParams("albumToken")
+        albumToken: string,
+    ): Promise<AlbumModel> {
+        const album = await this.albumService.getAlbum(albumToken);
+        if (album.isPublicToken(albumToken)) {
+            throw new BadRequest("Supplied token is not valid");
+        }
+        return album;
+    }
+
+    @Get("/public/:albumToken")
+    @Returns(StatusCodes.OK, PublicAlbumDto)
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
+    @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
+    @Description("Get the public sharable view of an album")
+    @Summary("Get an album in public view")
+    public async getPublicAlbum(
+        @Description("The album to get, this should be the public token")
+        @PathParams("albumToken")
+        albumToken: string,
+    ): Promise<AlbumModel> {
+        const album = await this.albumService.getAlbum(albumToken);
+        if (!album.isPublicToken(albumToken)) {
+            throw new BadRequest("Supplied token is not valid");
+        }
+        return album;
+    }
+
+    @Get("/share")
+    @Returns(StatusCodes.OK, String)
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
+    @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
+    @Description("Share album, this returns a public URL to the album")
+    @Summary("Share an album")
+    public shareAlbum(
+        @Description("The private token to the album")
+        @Required()
+        @QueryParams("albumToken")
+        albumToken: string,
+    ): Promise<string> {
+        return this.albumService.shareAlbum(albumToken);
+    }
+
+    @Get("/share/revoke")
+    @Returns(StatusCodes.OK, PlatformResponse)
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
+    @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
+    @Description(
+        "Revoke (unshare) a shared album, this will invalidate the URL and your album will no longer be publicly accessible",
+    )
+    @Summary("Revoke a shared album")
+    public async revokeShare(
+        @Description("The private token to the album")
+        @Required()
+        @QueryParams("albumToken")
+        albumToken: string,
+
+        @Res() res: PlatformResponse,
+    ): Promise<PlatformResponse> {
+        await this.albumService.revokeShare(albumToken);
+        return super.doSuccess(res, "album unshared");
+    }
+
+    @Post("/download/:albumToken")
+    @Returns(StatusCodes.OK, Buffer)
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
+    @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
+    @Description("Download files from an album as a zip")
+    @Summary("Download files")
+    public async downloadFiles(
+        @Description("the public token to the album")
+        @Required()
+        @PathParams("albumToken")
+        albumToken: string,
+
+        @Description("The files to download, if empty then all files will be downloaded")
+        @BodyParams()
+        @CollectionOf(Number)
+        fileIds: number[],
+
+        @Res() res: PlatformResponse,
+    ): Promise<Buffer> {
+        const b = await this.albumService.downloadFiles(albumToken, fileIds);
+        res.attachment("files.zip");
+        res.contentType("application/zip");
+        return b;
     }
 }

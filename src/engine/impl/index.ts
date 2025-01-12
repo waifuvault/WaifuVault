@@ -19,3 +19,4 @@ export * from "./HttpErrorRenderers/ReCAPTCHALoginExceptionRenderEngine.js";
 export * from "./transfomers/dto/AlbumModelTransformer.js";
 export * from "./transfomers/dto/BucketModelTransformer.js";
 export * from "./transfomers/dto/FileModelTransformer.js";
+export * from "./transfomers/dto/IpBlockedAwareFileEntryAdminDataTransformer.js";

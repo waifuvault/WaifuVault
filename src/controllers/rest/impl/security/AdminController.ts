@@ -15,6 +15,7 @@ import { StatusCodes } from "http-status-codes";
 import { Authorize } from "@tsed/passport";
 import { IAdminController } from "../../IAdminController.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
+import { IpBlackListModel } from "../../../../model/db/IpBlackList.model.js";
 
 @Hidden()
 @Authorize("loginAuthProvider")
@@ -58,7 +59,7 @@ export class AdminController extends AbstractAdminController implements IAdminCo
     }
 
     @Get("/blockedIps")
-    public getAllBlockedIps(): Promise<unknown> {
+    public getAllBlockedIps(): Promise<IpBlackListModel[]> {
         return this.userAdminService.getAllBlockedIps();
     }
 
@@ -67,7 +68,7 @@ export class AdminController extends AbstractAdminController implements IAdminCo
         @Res() res: PlatformResponse,
         @QueryParams("removeRelatedData", Boolean) removeRelatedData = false,
         @Required() @BodyParams("ip") ip: string,
-    ): Promise<unknown> {
+    ): Promise<PlatformResponse> {
         await this.userAdminService.blockIp(ip, removeRelatedData);
         return super.doSuccess(res, "IP blocked");
     }

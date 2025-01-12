@@ -2,6 +2,8 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from "typeorm
 import { AbstractModel } from "./AbstractModel.js";
 import type { FileUploadModel } from "./FileUpload.model.js";
 import type { BucketModel } from "./Bucket.model.js";
+import { constant } from "@tsed/di";
+import GlobalEnv from "../constants/GlobalEnv.js";
 
 @Entity()
 @Index(["albumToken"], {
@@ -91,5 +93,17 @@ export class AlbumModel extends AbstractModel {
 
     private fileExists(file: FileUploadModel): boolean {
         return this.files?.some(f => f.token === file.token) ?? false;
+    }
+
+    public isPublicToken(token: string): boolean {
+        return this.publicToken === token;
+    }
+
+    public get publicUrl(): string | null {
+        if (!this.publicToken) {
+            return null;
+        }
+        const baseUrl = constant(GlobalEnv.BASE_URL) as string;
+        return `${baseUrl}/album/${this.publicToken}`;
     }
 }

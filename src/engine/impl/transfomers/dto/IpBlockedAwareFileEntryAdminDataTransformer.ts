@@ -10,6 +10,9 @@ import { ITransformer } from "../../../ITransformer.js";
 })
 export class IpBlockedAwareFileEntryAdminDataTransformer implements ITransformer<AdminDataTaleEntryModel, AdminData> {
     public supportsInput(input: object): boolean {
+        if (!input) {
+            return false;
+        }
         const keys = Object.keys(input);
         return (
             keys.length === 4 &&

@@ -10,12 +10,12 @@ import type { PlatformContext } from "@tsed/common";
     type: TRANSFORMER,
 })
 export class FileModelTransformer implements ITransformer<FileUploadModel, FileUploadResponseDto> {
+    @InjectContext()
+    private $ctx?: PlatformContext;
+
     public supportsInput(input: unknown): boolean {
         return input instanceof FileUploadModel;
     }
-
-    @InjectContext()
-    protected $ctx?: PlatformContext;
 
     public transform(input: FileUploadModel): Promise<FileUploadResponseDto> {
         if (this.$ctx) {

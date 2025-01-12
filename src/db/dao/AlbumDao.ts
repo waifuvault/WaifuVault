@@ -21,20 +21,17 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
         return deleteResult.affected === 1;
     }
 
-    public getAlbum(id: string | number, transaction?: EntityManager): Promise<AlbumModel | null> {
-        if (typeof id === "number") {
-            return this.getRepository(transaction).findOne({
-                relations: ["files"],
-                where: {
-                    id,
-                },
-            });
-        }
+    public getAlbum(token: string, transaction?: EntityManager): Promise<AlbumModel | null> {
         return this.getRepository(transaction).findOne({
             relations: ["files"],
-            where: {
-                albumToken: id,
-            },
+            where: [
+                {
+                    albumToken: token,
+                },
+                {
+                    publicToken: token,
+                },
+            ],
         });
     }
 
@@ -42,6 +39,12 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
         return this.getRepository(transaction).existsBy({
             bucketToken,
             name,
+        });
+    }
+
+    public albumExists(publicToken: string, transaction?: EntityManager): Promise<boolean> {
+        return this.getRepository(transaction).existsBy({
+            publicToken,
         });
     }
 }
