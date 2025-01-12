@@ -65,17 +65,17 @@ Site.loadPage(async site => {
                     colmain.setAttribute('class', 'col-md-3 pb-3');
                     const cardmain = document.createElement('div');
                     cardmain.setAttribute('class','card');
+                    const cardimage = document.createElement('img');
+                    cardimage.setAttribute('src', `${e.metadata.thumbnail ? e.metadata.thumbnail : '/assets/custom/icons/file-earmark.svg'}`);
+                    cardimage.setAttribute('class', 'card-img-top');
+                    cardmain.appendChild(cardimage);
                     const cardbody = document.createElement('div');
                     cardbody.setAttribute('class','card-body');
                     cardbody.innerHTML = `
                         <h5 class="card-title card-itm" data-bs-toggle="tooltip" data-bs-title="${e.name}">
                             <a href="${e.url}" target="_blank">${e.name}</a>
                         </h5>
-                        <h6 class="card-subtitle mb-2 text-muted">${sizeAsHuman(e.size)}</h6>
-                        <p class="card-text">
-                            <i class="bi bi-file-earmark"></i>
-                        </p>
-                    `;
+                        <h6 class="card-subtitle mb-2 text-muted">${sizeAsHuman(e.size)}</h6>`;
                     const cardfooter = document.createElement('div');
                     cardfooter.setAttribute('class','card-footer d-flex justify-content-between align-items-center');
                     const downloadSelect = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck" />`;
