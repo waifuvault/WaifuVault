@@ -125,7 +125,8 @@ export class AlbumService {
             files = [];
         }
 
-        if (fileIds.length > 0 && !files.every(file => fileIds.includes(file.id))) {
+        const albumFileIds = files.map(f => f.id);
+        if (fileIds.length > 0 && !fileIds.every(file => albumFileIds.includes(file))) {
             throw new BadRequest("Some files were not found in the album");
         }
 
