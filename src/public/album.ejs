@@ -98,6 +98,8 @@
                 albumCardsElt.style.display = 'none';
                 albumFilesElt.style.visibility = 'visible';
                 albumFilesElt.style.display = ''
+                document.getElementById('tableView').setAttribute('class', 'btn btn-primary');
+                document.getElementById('cardView').setAttribute('class', 'btn btn-outline-primary');
             } else {
                 if(!cardsRendered) {
                     album.files.forEach( e => {
@@ -122,6 +124,8 @@
                 albumFilesElt.style.display = 'none';
                 albumCardsElt.style.visibility = 'visible';
                 albumCardsElt.style.display = '';
+                document.getElementById('tableView').setAttribute('class', 'btn btn-outline-primary');
+                document.getElementById('cardView').setAttribute('class', 'btn btn-primary');
             }
         }
 
@@ -187,7 +191,7 @@
 
         const album = await getAlbum();
         albumNameElt.innerText = album.name;
-        renderAlbum(album, true);
+        renderAlbum(album, false);
     })
 </script>
 </body>
