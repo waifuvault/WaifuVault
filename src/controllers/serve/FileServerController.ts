@@ -39,6 +39,7 @@ export class FileServerController {
         }
         res.contentType(mime);
         if (download) {
+            res.on("finish", () => this.postProcess(entryWrapper.entry));
             return entryWrapper.getBuffer(password);
         }
 
