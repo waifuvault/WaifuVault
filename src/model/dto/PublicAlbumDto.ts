@@ -30,7 +30,7 @@ export class PublicAlbumDto {
                   return {
                       url,
                       protected: options?.protected ?? false,
-                      name: f.fileName,
+                      name: f.originalFileName,
                       size: f.fileSize,
                       id: f.id,
                   };

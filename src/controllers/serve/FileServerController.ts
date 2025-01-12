@@ -35,7 +35,7 @@ export class FileServerController {
         const mime = entryWrapper.entry.mediaType ?? "application/octet-stream"; // unknown, send an octet-stream and let the client figure it out
 
         if (download) {
-            res.attachment(entryWrapper.entry.fileName);
+            res.attachment(entryWrapper.entry.originalFileName);
         }
         res.contentType(mime);
         if (download) {
