@@ -1,6 +1,5 @@
 import { FileRepo } from "../db/repo/FileRepo.js";
-import { Constant, Inject, Service } from "@tsed/di";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
+import { Inject, Service } from "@tsed/di";
 import { EncryptionService } from "./EncryptionService.js";
 import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
 import { Logger } from "@tsed/logger";
@@ -14,9 +13,6 @@ import { EntryEncryptionWrapper } from "../model/rest/EntryEncryptionWrapper.js"
  */
 @Service()
 export class FileService {
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
-
     public constructor(
         @Inject() private repo: FileRepo,
         @Inject() private encryptionService: EncryptionService,
