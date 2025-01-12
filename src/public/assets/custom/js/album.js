@@ -68,7 +68,7 @@ Site.loadPage(async site => {
                     const cardbody = document.createElement('div');
                     cardbody.setAttribute('class','card-body');
                     cardbody.innerHTML = `
-                        <h5 class="card-title">
+                        <h5 class="card-title card-itm" data-bs-toggle="tooltip" data-bs-title="${e.name}">
                             <a href="${e.url}" target="_blank">${e.name}</a>
                         </h5>
                         <h6 class="card-subtitle mb-2 text-muted">${sizeAsHuman(e.size)}</h6>
