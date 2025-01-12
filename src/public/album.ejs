@@ -34,9 +34,9 @@
                 </tr>
                 </thead>
             </table>
-            <div class="row row-cols-4" id="albumCards" style="visibility: hidden;"></div>
         </div>
     </div>
+    <div class="row row-cols-4" id="albumCards" style="visibility: hidden;"></div>
 </div>
 <%- include('snippets/scripts.ejs'); %>
 <script>
@@ -82,7 +82,7 @@
                         tr.appendChild(tdCheckbox);
 
                         const tdName = document.createElement('td');
-                        tdName.innerHTML = `${e.protected ? "<i class='bi bi-file-lock2-fill'></i>" : ""}<a href="${e.url}?download=true">${e.name}</a>`;
+                        tdName.innerHTML = `${e.protected ? "<i class='bi bi-file-lock2-fill'></i>" : ""}<a href="${e.url}" target="_blank">${e.name}</a>`;
                         tr.appendChild(tdName);
 
                         const tdSize = document.createElement('td');
