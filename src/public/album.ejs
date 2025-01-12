@@ -24,7 +24,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-12">
             <table class="table" id="albumFiles">
                 <thead>
                 <tr>
@@ -49,13 +49,16 @@
 
         function sizeAsHuman(data) {
             const sizeKB = Math.floor(data / 1024);
-            const sizeMB = Math.floor(sizeKB / 1024);
+            const sizeMB = sizeKB / 1024;
             const sizeGB = sizeKB / 1024;
             if (data < 1024) {
                 return `${data} B`;
             }
             if (sizeKB < 1024) {
                 return `${sizeKB} KB`;
+            }
+            if (sizeMB < 1024) {
+                return `${sizeMB.toFixed(2)} MB`;
             }
             return `${sizeGB.toFixed(2)} GB`;
         }
