@@ -22,8 +22,16 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12">
-            <ul id="albumFiles"></ul>
+        <div class="col-md-8">
+            <table class="table" id="albumFiles">
+                <thead>
+                <tr>
+                   <th scope="col"><i class="bi bi-cloud-arrow-down-fill"></i></th>
+                    <th scope="col">Filename</th>
+                    <th scope="col">Size</th>
+                </tr>
+                </thead>
+            </table>
         </div>
     </div>
 </div>
@@ -93,9 +101,23 @@
             albumFilesElt.replaceWith(emptyWarning);
         } else {
             album.files.forEach(e => {
-                const li = document.createElement('li');
-                li.innerHTML = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck"></input>&nbsp;${e.id} : <a href='${e.url}'>${e.name}</a>, ${e.size}, ${e.protected ? "Padlock" : "No Padlock"}`;
-                albumFilesElt.appendChild(li);
+                const tr = document.createElement('tr');
+
+                const tdCheckbox = document.createElement('th');
+                tdCheckbox.setAttribute('scope','row');
+                tdCheckbox.setAttribute('style', 'padding-top:10px !important;');
+                tdCheckbox.innerHTML = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck"></input>`;
+                tr.appendChild(tdCheckbox);
+
+                const tdName = document.createElement('td');
+                tdName.innerHTML = `${e.protected ? "<i class='bi bi-file-lock2-fill'></i>" : ""}&nbsp;<a href="${e.url}?download=true">${e.name}</a>`;
+                tr.appendChild(tdName);
+
+                const tdSize = document.createElement('td');
+                tdSize.textContent = e.size;
+                tr.appendChild(tdSize);
+
+                albumFilesElt.appendChild(tr);
             })
         }
     })
