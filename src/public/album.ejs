@@ -109,7 +109,7 @@
                         cardmain.setAttribute('class','card');
                         const cardbody = document.createElement('div');
                         cardbody.setAttribute('class','card-body');
-                        cardbody.innerHTML = `<h5 class="card-title" style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${e.name}</h5><h6 class="card-subtitle mb-2 text-muted">${sizeAsHuman(e.size)}</h6><p class="card-text"><i class="bi bi-file-earmark"></i></p>`;
+                        cardbody.innerHTML = `<h5 class="card-title" style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"><a href="${e.url}" target="_blank">${e.name}</a></h5><h6 class="card-subtitle mb-2 text-muted">${sizeAsHuman(e.size)}</h6><p class="card-text"><i class="bi bi-file-earmark"></i></p>`;
                         const cardfooter = document.createElement('div');
                         cardfooter.setAttribute('class','card-footer');
                         cardfooter.innerHTML = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck"></input>`;
