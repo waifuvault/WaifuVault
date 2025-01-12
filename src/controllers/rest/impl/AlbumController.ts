@@ -6,6 +6,7 @@ import {
     Delete,
     Description,
     Get,
+    Hidden,
     Name,
     Optional,
     Post,
@@ -190,5 +191,17 @@ export class AlbumController extends BaseRestController {
         res.attachment("files.zip");
         res.contentType("application/zip");
         return b;
+    }
+
+    @Get("/operations/:albumToken/thumbnail")
+    @Hidden()
+    public async thumbnail(
+        @QueryParams("imageId") imageId: number,
+        @PathParams("albumToken") albumToken: string,
+        @Res() res: PlatformResponse,
+    ): Promise<Buffer> {
+        const [thumbnail, mediaType] = await this.albumService.generateThumbnail(imageId, albumToken);
+        res.contentType(mediaType);
+        return thumbnail;
     }
 }

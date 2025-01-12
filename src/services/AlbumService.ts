@@ -8,6 +8,11 @@ import crypto from "node:crypto";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
 import AdmZip from "adm-zip";
+import { FileUtils } from "../utils/Utils.js";
+import Module from "node:module";
+
+const require = Module.createRequire(import.meta.url);
+const imageThumbnail = require("image-thumbnail");
 
 @Service()
 export class AlbumService {
@@ -112,6 +117,30 @@ export class AlbumService {
 
     public albumExists(publicToken: string): Promise<boolean> {
         return this.albumRepo.albumExists(publicToken);
+    }
+
+    public async generateThumbnail(imageId: number, albumToken: string): Promise<[Buffer, string]> {
+        const album = await this.albumRepo.getAlbum(albumToken);
+        if (!album) {
+            throw new NotFound("Album not found");
+        }
+        const entry = album.files?.find(f => f.id === imageId);
+
+        if (!entry) {
+            throw new NotFound("File not found");
+        }
+        if (!FileUtils.isImage(entry)) {
+            throw new BadRequest("File is not an image");
+        }
+        if (entry.fileProtectionLevel !== "None") {
+            throw new BadRequest("File is protected");
+        }
+        return [
+            imageThumbnail(entry.fullLocationOnDisk, {
+                withMetaData: true,
+            }),
+            entry.mediaType!,
+        ];
     }
 
     public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<Buffer> {

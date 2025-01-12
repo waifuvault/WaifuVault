@@ -111,6 +111,10 @@ export class FileUtils {
         return expired === null ? false : expired <= 0;
     }
 
+    public static isImage(file: FileUploadModel): boolean {
+        return file.mediaType?.startsWith("image/") ?? false;
+    }
+
     public static getExtension(file: string): string {
         return path.extname(file).slice(1);
     }

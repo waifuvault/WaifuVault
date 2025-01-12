@@ -69,6 +69,7 @@
     "file-type": "^19.6.0",
     "helmet": "^8.0.0",
     "http-status-codes": "^2.3.0",
+    "image-thumbnail": "^1.0.17",
     "is-localhost-ip": "^2.0.0",
     "lru-cache": "^11.0.2",
     "method-override": "^3.0.0",
