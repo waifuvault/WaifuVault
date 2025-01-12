@@ -12,13 +12,15 @@
 </div>
 <div class="container mt-4">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12 pb-4">
             <h1><span id="albumName"></span></h1>
         </div>
     </div>
     <div class="row">
         <div class="col-md-12 pb-2">
-            <button id="downloadFiles" class="btn btn-primary">Download Selected</button>
+            <button id="cardView" class="btn btn-outline-primary"><i class="bi bi-table"></i></button>
+            <button id="tableView" class="btn btn-outline-primary"><i class="bi bi-list"></i></button>
+            <button id="downloadFiles" class="btn btn-primary" style="margin-left:10px !important;">Download Selected</button>
         </div>
     </div>
     <div class="row">
@@ -32,6 +34,7 @@
                 </tr>
                 </thead>
             </table>
+            <div class="row" id="albumCards" style="visibility: hidden;"></div>
         </div>
     </div>
 </div>
@@ -40,6 +43,82 @@
     Site.loadPage(async site => {
         const albumNameElt = document.getElementById("albumName");
         const albumFilesElt = document.getElementById("albumFiles");
+        let filesRendered = false;
+        const albumCardsElt = document.getElementById("albumCards");
+        let cardsRendered = false;
+
+        function sizeAsHuman(data) {
+            const sizeKB = Math.floor(data / 1024);
+            const sizeMB = Math.floor(sizeKB / 1024);
+            const sizeGB = sizeKB / 1024;
+            if (data < 1024) {
+                return `${data} B`;
+            }
+            if (sizeKB < 1024) {
+                return `${sizeKB} KB`;
+            }
+            return `${sizeGB.toFixed(2)} GB`;
+        }
+
+        function renderAlbum(album, tableview) {
+            albumNameElt.innerText = album.name;
+            if(album.files.length === 0) {
+                const emptyWarning = document.createElement('p');
+                emptyWarning.textContent = 'Empty Album';
+                albumFilesElt.replaceWith(emptyWarning);
+            } else if(tableview) {
+                if(!filesRendered) {
+                    album.files.forEach(e => {
+                        const tr = document.createElement('tr');
+
+                        const tdCheckbox = document.createElement('th');
+                        tdCheckbox.setAttribute('scope','row');
+                        tdCheckbox.setAttribute('style', 'padding-top:8px !important; padding-left:8px !important;');
+                        tdCheckbox.innerHTML = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck"></input>`;
+                        tr.appendChild(tdCheckbox);
+
+                        const tdName = document.createElement('td');
+                        tdName.innerHTML = `${e.protected ? "<i class='bi bi-file-lock2-fill'></i>" : ""}&nbsp;<a href="${e.url}?download=true">${e.name}</a>`;
+                        tr.appendChild(tdName);
+
+                        const tdSize = document.createElement('td');
+                        tdSize.textContent = sizeAsHuman(e.size);
+                        tr.appendChild(tdSize);
+
+                        albumFilesElt.appendChild(tr);
+                    });
+                    filesRendered = true;
+                }
+                albumCardsElt.style.visibility = 'hidden';
+                albumCardsElt.style.display = 'none';
+                albumFilesElt.style.visibility = 'visible';
+                albumFilesElt.style.display = ''
+            } else {
+                if(!cardsRendered) {
+                    album.files.forEach( e => {
+                        const colmain = document.createElement('div');
+                        colmain.setAttribute('class', 'col-3');
+                        const cardmain = document.createElement('div');
+                        cardmain.setAttribute('class','card');
+                        const cardbody = document.createElement('div');
+                        cardbody.setAttribute('class','card-body');
+                        cardbody.innerHTML = `<h5 class="card-title">${e.name}</h5><h6 class="card-subtitle mb-2 text-muted">${sizeAsHuman(e.size)}</h6><p class="card-text"><i class="bi bi-file-earmark"></i></p>`;
+                        const cardfooter = document.createElement('div');
+                        cardfooter.setAttribute('class','card-footer');
+                        cardfooter.innerHTML = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck"></input>`;
+                        colmain.appendChild(cardmain);
+                        cardmain.appendChild(cardbody);
+                        cardmain.appendChild(cardfooter);
+                        albumCardsElt.appendChild(colmain);
+                    })
+                    cardsRendered = true;
+                }
+                albumFilesElt.style.visibility = 'hidden';
+                albumFilesElt.style.display = 'none';
+                albumCardsElt.style.visibility = 'visible';
+                albumCardsElt.style.display = '';
+            }
+        }
 
         async function getAlbum() {
             Site.loading(true);
@@ -60,6 +139,14 @@
             }
             return responseJson;
         }
+
+        document.getElementById('tableView').addEventListener('click', () => {
+            renderAlbum(album, true);
+        });
+
+        document.getElementById('cardView').addEventListener('click', () => {
+            renderAlbum(album, false);
+        });
 
         document.getElementById('downloadFiles').addEventListener('click', () => {
             const checkedIds = Array.from(document.querySelectorAll('.fileCheck:checked'))
@@ -95,31 +182,7 @@
 
         const album = await getAlbum();
         albumNameElt.innerText = album.name;
-        if(album.files.length === 0) {
-            const emptyWarning = document.createElement('p');
-            emptyWarning.textContent = 'Empty Album';
-            albumFilesElt.replaceWith(emptyWarning);
-        } else {
-            album.files.forEach(e => {
-                const tr = document.createElement('tr');
-
-                const tdCheckbox = document.createElement('th');
-                tdCheckbox.setAttribute('scope','row');
-                tdCheckbox.setAttribute('style', 'padding-top:8px !important;');
-                tdCheckbox.innerHTML = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck"></input>`;
-                tr.appendChild(tdCheckbox);
-
-                const tdName = document.createElement('td');
-                tdName.innerHTML = `${e.protected ? "<i class='bi bi-file-lock2-fill'></i>" : ""}&nbsp;<a href="${e.url}?download=true">${e.name}</a>`;
-                tr.appendChild(tdName);
-
-                const tdSize = document.createElement('td');
-                tdSize.textContent = e.size;
-                tr.appendChild(tdSize);
-
-                albumFilesElt.appendChild(tr);
-            })
-        }
+        renderAlbum(album, true);
     })
 </script>
 </body>
