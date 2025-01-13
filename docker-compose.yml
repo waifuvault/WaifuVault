@@ -1,14 +1,12 @@
-version: '3.8'
 services:
-  server:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    image: tsed/server:latest
+  waifuvault:
+    image: simonmcnair/waifuvault:main
+
+    environment:
+      - http_proxy
+      - https_proxy
+      - no_proxy
+
     restart: always
     ports:
       - "8081:8081"
