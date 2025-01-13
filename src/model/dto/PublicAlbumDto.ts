@@ -8,7 +8,7 @@ import GlobalEnv from "../constants/GlobalEnv.js";
 import { FileUploadModel } from "../db/FileUpload.model.js";
 
 @Name("WaifuPublicFileMetadata")
-@Description("Meatadata about a public file in an album")
+@Description("Metadata about a public file in an album")
 class WaifuPublicFileMetadata {
     @Property()
     @Description("The URL to the thumbnail of the file, if it is an image")

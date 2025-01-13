@@ -11,5 +11,8 @@
 }
 
 .card-svg-top {
-    object-fit: fill !important;
+    font-size: 9rem;
+    color: #6c757d;
+    overflow: hidden;
+    text-align: center;
 }

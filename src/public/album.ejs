@@ -19,25 +19,27 @@
     </div>
     <div class="row">
         <div class="col-md-12 pb-2">
-            <button id="cardView" class="btn btn-outline-primary"><i class="bi bi-table"></i></button>
-            <button id="tableView" class="btn btn-outline-primary"><i class="bi bi-list"></i></button>
-            <button id="downloadFiles" class="btn btn-primary" style="margin-left:10px !important;">Download Selected</button>
+            <button id="cardView" class="btn btn-outline-primary ms-1"><i class="bi bi-table"></i></button>
+            <button id="tableView" class="btn btn-outline-primary ms-1"><i class="bi bi-list"></i></button>
+            <button id="downloadFiles" class="btn btn-primary ms-1">Download Selected</button>
         </div>
     </div>
     <div class="row">
         <div class="col-md-12">
-            <table class="table" id="albumFiles">
-                <thead>
-                <tr>
-                   <th scope="col"><i class="bi bi-cloud-arrow-down-fill"></i></th>
-                    <th scope="col">Filename</th>
-                    <th scope="col">Size</th>
-                </tr>
-                </thead>
-            </table>
+            <div class="table-responsive">
+                <table class="table" id="albumFiles">
+                    <thead>
+                    <tr>
+                        <th scope="col"><i class="bi bi-cloud-arrow-down-fill"></i></th>
+                        <th scope="col">Filename</th>
+                        <th scope="col">Size</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
-    <div class="row row-cols-4" id="albumCards" style="visibility: hidden;"></div>
+    <div class="row row-cols-4" id="albumCards"></div>
 </div>
 <%- include('snippets/scripts.ejs'); %>
 <script>
