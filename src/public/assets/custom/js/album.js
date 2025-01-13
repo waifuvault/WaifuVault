@@ -6,6 +6,16 @@ Site.loadPage(async site => {
     let cardsRendered = false;
     const downloadButton = document.getElementById("downloadFiles");
 
+    const iconMap = new Map([
+        ['audio', 'bi-file-earmark-music'],
+        ['video', 'bi-file-earmark-play'],
+        ['text', 'bi-file-earmark-text'],
+        ['image', 'bi-file-earmark-image'],
+        ['octet', 'bi-file-earmark-binary'],
+        ['application/pdf', 'bi-file-earmark-pdf'],
+        ['application/x-pdf', 'bi-file-earmark-pdf']
+    ]);
+
     function sizeAsHuman(data) {
         const sizeKB = Math.floor(data / 1024);
         const sizeMB = sizeKB / 1024;
@@ -43,15 +53,6 @@ Site.loadPage(async site => {
     }
 
     function mimeIcon(mime) {
-        const iconMap = new Map([
-            ['audio', 'bi-file-earmark-music'],
-            ['video', 'bi-file-earmark-play'],
-            ['text', 'bi-file-earmark-text'],
-            ['image', 'bi-file-earmark-image'],
-            ['octet', 'bi-file-earmark-binary'],
-            ['application/pdf', 'bi-file-earmark-pdf'],
-            ['application/x-pdf', 'bi-file-earmark-pdf']
-        ]);
         const defaultIcon = "bi-file-earmark";
         if (!mime) {
             return defaultIcon;
