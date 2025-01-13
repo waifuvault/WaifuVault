@@ -52,6 +52,26 @@ Site.loadPage(async site => {
         });
     }
 
+    function linkCheckboxes(target) {
+        const checkboxes = document.querySelectorAll(`#${target} .fileCheck`);
+        checkboxes.forEach(chk => {
+            chk.addEventListener("change", () => {
+                const anySelected = Array.from(checkboxes).some(checkbox => checkbox.checked);
+                downloadButton.textContent = anySelected ? "Download Selected as Zip" : "Download Album as Zip";
+                if (target === "albumCards") {
+                    const card = chk.closest(".card");
+                    if (card) {
+                        if (chk.checked) {
+                            card.classList.add("rainbow-box");
+                        } else {
+                            card.classList.remove("rainbow-box");
+                        }
+                    }
+                }
+            });
+        });
+    }
+
     function mimeIcon(mime) {
         const defaultIcon = "bi-file-earmark";
         if (!mime) {
@@ -127,13 +147,7 @@ Site.loadPage(async site => {
             }
             albumFilesElt.appendChild(tbody);
             linkCopyButtons();
-            const checkboxes = document.querySelectorAll("#albumFiles .fileCheck");
-            checkboxes.forEach(chk => {
-                chk.addEventListener("change", () => {
-                    const anySelected = Array.from(checkboxes).some(checkbox => checkbox.checked);
-                    downloadButton.textContent = anySelected ? "Download Selected as Zip" : "Download Album as Zip";
-                });
-            });
+            linkCheckboxes("albumFiles");
             filesRendered = true;
         }
 
@@ -196,21 +210,7 @@ Site.loadPage(async site => {
                 i++;
             }
             linkCopyButtons();
-            const checkboxes = document.querySelectorAll("#albumCards .fileCheck");
-            checkboxes.forEach(chk => {
-                chk.addEventListener("change", () => {
-                    const anySelected = Array.from(checkboxes).some(checkbox => checkbox.checked);
-                    downloadButton.textContent = anySelected ? "Download Selected as Zip" : "Download Album as Zip";
-                    const card = chk.closest(".card");
-                    if (card) {
-                        if (chk.checked) {
-                            card.classList.add("rainbow-box");
-                        } else {
-                            card.classList.remove("rainbow-box");
-                        }
-                    }
-                });
-            });
+            linkCheckboxes("albumCards");
             cardsRendered = true;
         }
 
