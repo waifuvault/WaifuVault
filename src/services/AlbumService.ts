@@ -10,6 +10,7 @@ import { FileService } from "./FileService.js";
 import AdmZip from "adm-zip";
 import { FileUtils } from "../utils/Utils.js";
 import Module from "node:module";
+import { FileUploadModel } from "../model/db/FileUpload.model.js";
 
 const require = Module.createRequire(import.meta.url);
 const imageThumbnail = require("image-thumbnail");
@@ -160,29 +161,33 @@ export class AlbumService {
         }
 
         return this.createZip(
-            files
-                .filter(
-                    file => (fileIds.length === 0 || fileIds.includes(file.id)) && file.fileProtectionLevel === "None",
-                )
-                .map(file => file.fullLocationOnDisk),
+            files.filter(
+                file => (fileIds.length === 0 || fileIds.includes(file.id)) && file.fileProtectionLevel === "None",
+            ),
         );
     }
 
-    private async createZip(files: string[]): Promise<Buffer> {
+    private async createZip(files: FileUploadModel[]): Promise<Buffer> {
         const zip = new AdmZip();
-        await Promise.all(files.map(f => this.zipFile(f, zip)));
+        await Promise.all(files.map(f => this.zipFile(f.fullLocationOnDisk, f.parsedFileName, zip)));
         return zip.toBufferPromise();
     }
 
-    private zipFile(file: string, zip: AdmZip): Promise<void> {
+    private zipFile(file: string, filename: string, zip: AdmZip): Promise<void> {
         return new Promise((resolve, reject) => {
             // @ts-expect-error method doesn't exist
-            zip.addLocalFileAsync(file, (err?: string, success?: boolean) => {
-                if (!success) {
-                    reject(err);
-                }
-                resolve();
-            });
+            zip.addLocalFileAsync(
+                {
+                    localPath: file,
+                    zipName: filename,
+                },
+                (err?: string, success?: boolean) => {
+                    if (!success) {
+                        reject(err);
+                    }
+                    resolve();
+                },
+            );
         });
     }
 }
