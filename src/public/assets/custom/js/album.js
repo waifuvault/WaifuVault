@@ -243,16 +243,20 @@ Site.loadPage(async site => {
     });
 
     downloadButton.addEventListener("click", () => {
+
+        if (downloadButton.hasAttribute("disabled")) {
+            return;
+        }
+
         const checkedIds = Array.from(document.querySelectorAll(".fileCheck:checked"))
             .map(checkbox => parseInt(checkbox.dataset.id, 10))
             .filter(id => !isNaN(id));
 
-        downloadButton.disabled = true;
+        downloadButton.setAttribute("disabled", "true");
+        downloadButton.classList.add("disabled");
+
         const originalText = downloadButton.textContent;
         downloadButton.textContent = "Downloading...";
-        setTimeout(() => {
-            downloadButton.textContent = originalText;
-        }, 2000);
 
         fetch(`${baseUrl}/album/download/${publicToken}`, {
             method: "POST",
@@ -283,7 +287,12 @@ Site.loadPage(async site => {
             .catch(e => {
                 alert(e.message);
                 downloadButton.disabled = false;
-            });
+            }).finally(() => {
+                downloadButton.textContent = originalText;
+                downloadButton.removeAttribute("disabled");
+                downloadButton.classList.remove("disabled");
+            }
+        );
         downloadButton.disabled = false;
     });
 
