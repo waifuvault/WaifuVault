@@ -44,6 +44,10 @@ jobs:
     - name: Deploy to EC2
       run: |
         ssh -i ~/.ssh/id_rsa ubuntu@ec2-3-137-166-112.us-east-2.compute.amazonaws.com << 'EOF'
-          cd ..
-          ls -l
+          cd WaifuVault
+          git pull https://github.com/weddleben/hostMyShit.git
+          npm install
+          npm run build
+          pm2 flush waifu_vault
+          pm2 restart waifu_vault
         EOF
