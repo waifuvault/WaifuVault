@@ -187,10 +187,10 @@ export class AlbumController extends BaseRestController {
 
         @Res() res: PlatformResponse,
     ): Promise<Buffer> {
-        const b = await this.albumService.downloadFiles(albumToken, fileIds);
-        res.attachment("files.zip");
+        const [zipFile, albumName] = await this.albumService.downloadFiles(albumToken, fileIds);
+        res.attachment(`${albumName}.zip`);
         res.contentType("application/zip");
-        return b;
+        return zipFile;
     }
 
     @Get("/operations/:albumToken/thumbnail")

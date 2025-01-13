@@ -144,7 +144,7 @@ export class AlbumService {
         ];
     }
 
-    public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<Buffer> {
+    public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[Buffer, string]> {
         const album = await this.albumRepo.getAlbum(publicAlbumToken);
         if (!album) {
             throw new NotFound("Album not found");
@@ -160,11 +160,14 @@ export class AlbumService {
             throw new BadRequest("Some files were not found in the album");
         }
 
-        return this.createZip(
-            files.filter(
-                file => (fileIds.length === 0 || fileIds.includes(file.id)) && file.fileProtectionLevel === "None",
+        return Promise.all([
+            this.createZip(
+                files.filter(
+                    file => (fileIds.length === 0 || fileIds.includes(file.id)) && file.fileProtectionLevel === "None",
+                ),
             ),
-        );
+            album.name,
+        ]);
     }
 
     private async createZip(files: FileUploadModel[]): Promise<Buffer> {

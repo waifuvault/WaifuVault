@@ -204,13 +204,17 @@ Site.loadPage(async site => {
                     Site.showError(response.status);
                     throw new Error(response.status);
                 }
-                return response.blob();
+                const contentDisposition = response.headers.get('Content-Disposition');
+                const filenameRegex = /filename="([^"]+)"/;
+                const match = contentDisposition.match(filenameRegex);
+                const filename =  match ? match[1] : "files.zip";
+                return Promise.all([response.blob(), filename]);
             })
-            .then(blob => {
+            .then(([blob, filename]) => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = "files.zip";
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
