@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@tsed/di";
 import { AbstractTypeOrmDao } from "./AbstractTypeOrmDao.js";
 import { ThumbnailCacheModel } from "../../model/db/ThumbnailCache.model.js";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
-import { DataSource, EntityManager } from "typeorm";
+import { DataSource, EntityManager, In } from "typeorm";
 
 @Injectable()
 export class ThumbnailCacheDao extends AbstractTypeOrmDao<ThumbnailCacheModel> {
@@ -17,7 +17,9 @@ export class ThumbnailCacheDao extends AbstractTypeOrmDao<ThumbnailCacheModel> {
         return this.getRepository(transaction).save(thumbnailCache);
     }
 
-    public async deleteThumbnailCache(thumbnailCache: ThumbnailCacheModel, transaction?: EntityManager): Promise<void> {
-        await this.getRepository(transaction).remove(thumbnailCache);
+    public async deleteThumbnailCaches(fileIds: number[], transaction?: EntityManager): Promise<void> {
+        await this.getRepository(transaction).delete({
+            fileId: In(fileIds),
+        });
     }
 }

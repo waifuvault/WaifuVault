@@ -72,6 +72,24 @@ export class AlbumController extends BaseRestController {
         return this.albumService.assignFilesToAlbum(albumToken, fileTokens);
     }
 
+    @Post("/:albumToken/disassociate")
+    @Returns(StatusCodes.OK, AlbumDto)
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
+    @Description("Remove files from the album")
+    @Summary("Disassociate files with an album")
+    public disassociateFileWithAlbum(
+        @Description("The album token to associate the file with")
+        @PathParams("albumToken")
+        albumToken: string,
+
+        @Description("The file token to disassociate from the album")
+        @BodyParams("fileTokens")
+        @CollectionOf(String)
+        fileTokens: string[],
+    ): Promise<AlbumModel> {
+        return this.albumService.disassociateFilesFromAlbum(albumToken, fileTokens);
+    }
+
     @Delete("/:albumToken")
     @Returns(StatusCodes.OK, SuccessModel)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)

@@ -57,6 +57,7 @@ export class AlbumService {
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
+        this.checkPrivateToken(albumToken, album);
         const didDeleteAlbum = await this.albumRepo.deleteAlbum(albumToken, removeFiles);
         if (!didDeleteAlbum) {
             throw new BadRequest(`Unable to delete album with token: "${albumToken}"`);
@@ -69,12 +70,29 @@ export class AlbumService {
         return true;
     }
 
+    public async disassociateFilesFromAlbum(albumToken: string, files: string[]): Promise<AlbumModel> {
+        const album = await this.albumRepo.getAlbum(albumToken);
+        if (!album) {
+            throw new BadRequest(`Album with token ${albumToken} not found`);
+        }
+        this.checkPrivateToken(albumToken, album);
+        const filesToRemove = await this.fileRepo.getEntry(files);
+        if (filesToRemove.length !== files.length) {
+            throw new BadRequest(`some files were not found`);
+        }
+
+        album.removeFiles(filesToRemove);
+        await this.albumRepo.saveOrUpdateAlbum(album);
+        await this.thumbnailCacheReo.deleteThumbnailCaches(filesToRemove.map(f => f.id));
+        return album;
+    }
+
     public async assignFilesToAlbum(albumToken: string, files: string[]): Promise<AlbumModel> {
         const album = await this.albumRepo.getAlbum(albumToken);
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-
+        this.checkPrivateToken(albumToken, album);
         const filesToAssociate = await this.fileRepo.getEntry(files);
         if (filesToAssociate.length !== files.length) {
             throw new BadRequest(`some files were not found`);
@@ -96,9 +114,7 @@ export class AlbumService {
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-        if (!album.isPublicToken(albumToken)) {
-            throw new BadRequest("Supplied token is not valid");
-        }
+        this.checkPrivateToken(albumToken, album);
         album.publicToken = null;
         await this.albumRepo.saveOrUpdateAlbum(album);
     }
@@ -108,9 +124,7 @@ export class AlbumService {
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-        if (album.isPublicToken(albumToken)) {
-            throw new BadRequest("Supplied token is not valid");
-        }
+        this.checkPrivateToken(albumToken, album);
         if (album.publicToken) {
             return album.publicToken;
         }
@@ -123,11 +137,12 @@ export class AlbumService {
         return this.albumRepo.albumExists(publicToken);
     }
 
-    public async generateThumbnail(imageId: number, albumToken: string): Promise<[Buffer, string]> {
-        const album = await this.albumRepo.getAlbum(albumToken);
+    public async generateThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string]> {
+        const album = await this.albumRepo.getAlbum(publicAlbumToken);
         if (!album) {
             throw new NotFound("Album not found");
         }
+        this.checkPublicToken(publicAlbumToken, album);
         const entry = album.files?.find(f => f.id === imageId);
 
         if (!entry) {
@@ -164,6 +179,7 @@ export class AlbumService {
         if (!album) {
             throw new NotFound("Album not found");
         }
+        this.checkPublicToken(publicAlbumToken, album);
 
         let { files } = album;
         if (!files) {
@@ -207,5 +223,17 @@ export class AlbumService {
                 },
             );
         });
+    }
+
+    private checkPrivateToken(token: string, album: AlbumModel): void {
+        if (album.isPublicToken(token)) {
+            throw new BadRequest("Supplied token is not valid");
+        }
+    }
+
+    private checkPublicToken(token: string, album: AlbumModel): void {
+        if (!album.isPublicToken(token)) {
+            throw new BadRequest("Supplied token is not valid");
+        }
     }
 }
