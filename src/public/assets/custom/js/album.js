@@ -22,6 +22,26 @@ Site.loadPage(async site => {
         return `${sizeGB.toFixed(2)} GB`;
     }
 
+    function linkCopyButtons() {
+        const copyButtons = document.querySelectorAll(".copyUrl");
+        copyButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                const url = button.getAttribute("data-url");
+
+                navigator.clipboard.writeText(url).then(() => {
+                    const icon = button.querySelector("i");
+                    const originalClass = icon.className;
+                    icon.className = "bi bi-check2";
+                    setTimeout(() => {
+                        icon.className = originalClass;
+                    }, 2000);
+                }).catch(err => {
+                    console.error("Failed to copy URL: ", err);
+                });
+            });
+        });
+    }
+
     function mimeIcon(mime) {
         const iconMap = new Map([
             ['audio', 'bi-file-earmark-music'],
@@ -93,9 +113,16 @@ Site.loadPage(async site => {
                 tdSize.textContent = sizeAsHuman(e.size);
                 tr.appendChild(tdSize);
 
+                const tdActions = document.createElement("td");
+                const directDownload = `<a href="${e.url}?download=true" target="_blank" class="btn btn-outline-primary border-0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download"><i class="bi bi-box-arrow-down"></i></a>`;
+                const copyUrl = `<button class="copyUrl btn btn-outline-primary border-0" data-url="${e.url}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Copy URL"><i class="bi bi-clipboard"></i></button></div>`;
+                tdActions.innerHTML = directDownload + copyUrl;
+                tr.appendChild(tdActions);
+
                 tbody.appendChild(tr);
             }
             albumFilesElt.appendChild(tbody);
+            linkCopyButtons();
             filesRendered = true;
         }
 
@@ -156,23 +183,7 @@ Site.loadPage(async site => {
                 rowopen.appendChild(colmain);
                 i++;
             }
-            const copyButtons = document.querySelectorAll(".copyUrl");
-            copyButtons.forEach(button => {
-                button.addEventListener("click", () => {
-                    const url = button.getAttribute("data-url");
-
-                    navigator.clipboard.writeText(url).then(() => {
-                        const icon = button.querySelector("i");
-                        const originalClass = icon.className;
-                        icon.className = "bi bi-check2";
-                        setTimeout(() => {
-                            icon.className = originalClass;
-                        }, 2000);
-                    }).catch(err => {
-                        console.error("Failed to copy URL: ", err);
-                    });
-                });
-            });
+            linkCopyButtons();
             const checkboxes = document.querySelectorAll(".fileCheck");
             checkboxes.forEach(chk => {
                 chk.addEventListener("change", () => {
