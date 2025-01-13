@@ -93,7 +93,7 @@ export class PublicAlbumDto {
     }
 
     private static getThumbnail(album: AlbumModel, file: FileUploadModel): string | null {
-        if (!FileUtils.isImage(file)) {
+        if (!FileUtils.isImage(file) || file.fileProtectionLevel !== "None") {
             return null;
         }
         const baseUrl = constant(GlobalEnv.BASE_URL) as string;

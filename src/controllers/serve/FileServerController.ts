@@ -40,7 +40,7 @@ export class FileServerController {
         res.contentType(mime);
         if (download) {
             res.on("finish", () => this.postProcess(entryWrapper.entry));
-            return entryWrapper.getBuffer(password);
+            return entryWrapper.getStream(password);
         }
 
         // no chunking if your video is encrypted or one time download
@@ -54,11 +54,9 @@ export class FileServerController {
             await this.chunkData(res, req, mime, entryWrapper);
             return;
         }
+
         res.on("finish", () => this.postProcess(entryWrapper.entry));
-        if (this.allowedChunkMimeTypes.some(substr => mime.startsWith(substr))) {
-            return entryWrapper.getStream(password);
-        }
-        return entryWrapper.getBuffer(password);
+        return entryWrapper.getStream(password);
     }
 
     private async chunkData(
