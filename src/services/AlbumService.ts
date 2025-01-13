@@ -148,6 +148,7 @@ export class AlbumService {
 
         const thumbnail: Buffer = await imageThumbnail(entry.fullLocationOnDisk, {
             withMetaData: true,
+            percentage: 30,
         });
 
         const thumbnailCache = new ThumbnailCacheModel();
