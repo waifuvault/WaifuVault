@@ -286,7 +286,6 @@ Site.loadPage(async site => {
             })
             .catch(e => {
                 alert(e.message);
-                downloadButton.disabled = false;
             }).finally(() => {
                 downloadButton.textContent = originalText;
                 downloadButton.removeAttribute("disabled");
