@@ -51,6 +51,15 @@ Site.loadPage(async site => {
             return;
         }
 
+        const newViewMode = document.querySelector("#albumViewControls .btn-outline-primary")?.id;
+        if (newViewMode === "tableView") {
+            resetSelectedFiles("card");
+        } else if (newViewMode === "cardView") {
+            resetSelectedFiles("table");
+        } else {
+            resetSelectedFiles();
+        }
+
         switch (viewMode) {
             case "table":
                 renderTable(album);
@@ -140,7 +149,7 @@ Site.loadPage(async site => {
                 const copyUrl = `<button class="copyUrl btn btn-outline-primary border-0" data-url="${e.url}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Copy URL"><i class="bi bi-clipboard"></i></button></div>`;
                 cardfooter.innerHTML = downloadSelect + rightJustify + directDownload + copyUrl;
 
-                if(i%4 === 0) {
+                if (i % 4 === 0) {
                     rowopen = document.createElement("div");
                     rowopen.setAttribute("class", "row pb-3");
                     albumCardsElt.appendChild(rowopen);
@@ -171,11 +180,19 @@ Site.loadPage(async site => {
             });
             const checkboxes = document.querySelectorAll(".fileCheck");
             checkboxes.forEach(chk => {
-                chk.addEventListener('change', () => {
+                chk.addEventListener("change", () => {
                     const anySelected = Array.from(checkboxes).some(checkbox => checkbox.checked);
-                    downloadButton.textContent = anySelected ? 'Download Selected as Zip' : 'Download Album as Zip';
-                })
-            })
+                    downloadButton.textContent = anySelected ? "Download Selected as Zip" : "Download Album as Zip";
+                    const card = chk.closest(".card");
+                    if (card) {
+                        if (chk.checked) {
+                            card.classList.add("rainbow-box");
+                        } else {
+                            card.classList.remove("rainbow-box");
+                        }
+                    }
+                });
+            });
             cardsRendered = true;
         }
 
@@ -199,6 +216,22 @@ Site.loadPage(async site => {
             throw new Error(responseJson.message);
         }
         return responseJson;
+    }
+
+    function resetSelectedFiles(type) {
+        let checkboxes;
+        if (type === "table") {
+            checkboxes = document.querySelectorAll("#albumFiles .fileCheck");
+        } else if (type === "card") {
+            checkboxes = document.querySelectorAll("#albumCards .fileCheck");
+        } else {
+            checkboxes = document.querySelectorAll(".fileCheck");
+        }
+        const evt = new Event("change");
+        checkboxes.forEach(chk => {
+            chk.checked = false;
+            chk.dispatchEvent(evt);
+        });
     }
 
     document.getElementById("tableView").addEventListener("click", () => {
@@ -231,10 +264,10 @@ Site.loadPage(async site => {
                     alert(response.status);
                     throw new Error(response.status);
                 }
-                const contentDisposition = response.headers.get('Content-Disposition');
+                const contentDisposition = response.headers.get("Content-Disposition");
                 const filenameRegex = /filename="([^"]+)"/;
                 const match = contentDisposition.match(filenameRegex);
-                const filename =  match ? match[1] : "files.zip";
+                const filename = match ? match[1] : "files.zip";
                 return Promise.all([response.blob(), filename]);
             })
             .then(([blob, filename]) => {
