@@ -53,9 +53,11 @@ Site.loadPage(async site => {
         switch (viewMode) {
             case "table":
                 renderTable(album);
+                window.location.hash = "table";
                 break;
             case "card":
                 renderCard(album);
+                window.location.hash = "card";
         }
 
 
@@ -228,5 +230,7 @@ Site.loadPage(async site => {
     const album = await getAlbum();
     albumNameElt.innerText = album.name;
     document.title = `Waifuvault|${album.name}`;
-    renderAlbum(album, "card");
+
+    const hash = window.location.hash.substring(1);
+    renderAlbum(album, hash ? hash : "table");
 });
