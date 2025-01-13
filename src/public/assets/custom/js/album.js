@@ -104,9 +104,11 @@ Site.loadPage(async site => {
                 return;
             }
 
+            let i = 0;
+            let rowopen;
             for (const e of album.files) {
                 const colmain = document.createElement("div");
-                colmain.setAttribute("class", "col-md-3 pb-3");
+                colmain.setAttribute("class", "col-md-3");
                 const cardmain = document.createElement("div");
                 cardmain.setAttribute("class", "card");
 
@@ -136,10 +138,18 @@ Site.loadPage(async site => {
                 const directDownload = `<a href="${e.url}?download=true" target="_blank" class="btn btn-outline-primary border-0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download"><i class="bi bi-box-arrow-down"></i></a>`;
                 const copyUrl = `<button class="copyUrl btn btn-outline-primary border-0" data-url="${e.url}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Copy URL"><i class="bi bi-clipboard"></i></button></div>`;
                 cardfooter.innerHTML = downloadSelect + rightJustify + directDownload + copyUrl;
+
+                if(i%4 === 0) {
+                    rowopen = document.createElement("div");
+                    rowopen.setAttribute("class", "row pb-3");
+                    albumCardsElt.appendChild(rowopen);
+                }
+
                 colmain.appendChild(cardmain);
                 cardmain.appendChild(cardbody);
                 cardmain.appendChild(cardfooter);
-                albumCardsElt.appendChild(colmain);
+                rowopen.appendChild(colmain);
+                i++;
             }
             const copyButtons = document.querySelectorAll(".copyUrl");
             copyButtons.forEach(button => {
@@ -158,6 +168,14 @@ Site.loadPage(async site => {
                     });
                 });
             });
+            const checkboxes = document.querySelectorAll(".fileCheck");
+            checkboxes.forEach(chk => {
+                chk.addEventListener('change', () => {
+                    const anySelected = Array.from(checkboxes).some(checkbox => checkbox.checked);
+                    const downloadBtn = document.getElementById("downloadFiles");
+                    downloadBtn.textContent = anySelected ? 'Download Selected as Zip' : 'Download Album as Zip';
+                })
+            })
             cardsRendered = true;
         }
 
@@ -177,7 +195,7 @@ Site.loadPage(async site => {
         const responseStatus = response.status;
         const responseJson = await response.json();
         if (responseStatus !== 200) {
-            Site.showError(responseJson.message);
+            alert(responseJson.message);
             throw new Error(responseJson.message);
         }
         return responseJson;
@@ -203,7 +221,7 @@ Site.loadPage(async site => {
         })
             .then(response => {
                 if (!response.ok) {
-                    Site.showError(response.status);
+                    alert(response.status);
                     throw new Error(response.status);
                 }
                 const contentDisposition = response.headers.get('Content-Disposition');
