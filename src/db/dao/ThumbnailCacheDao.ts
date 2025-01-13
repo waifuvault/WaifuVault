@@ -16,4 +16,8 @@ export class ThumbnailCacheDao extends AbstractTypeOrmDao<ThumbnailCacheModel> {
     ): Promise<ThumbnailCacheModel> {
         return this.getRepository(transaction).save(thumbnailCache);
     }
+
+    public async deleteThumbnailCache(thumbnailCache: ThumbnailCacheModel, transaction?: EntityManager): Promise<void> {
+        await this.getRepository(transaction).remove(thumbnailCache);
+    }
 }

@@ -9,4 +9,8 @@ export class ThumbnailCacheReo {
     public saveThumbnailCache(thumbnailCache: ThumbnailCacheModel): Promise<ThumbnailCacheModel> {
         return this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
     }
+
+    public async deleteThumbnailCache(thumbnailCache: ThumbnailCacheModel): Promise<void> {
+        await this.thumbnailCacheReo.deleteThumbnailCache(thumbnailCache);
+    }
 }

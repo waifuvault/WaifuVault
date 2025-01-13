@@ -127,19 +127,7 @@ export class FileUploadModel extends AbstractModel {
     })
     public album: Promise<AlbumModel | null>;
 
-    @Column({
-        nullable: true,
-        unique: true,
-    })
-    public thumbnailId: number;
-
-    @OneToOne("ThumbnailCacheModel", {
-        ...AbstractModel.cascadeOps,
-    })
-    @JoinColumn({
-        name: "thumbnailId",
-        referencedColumnName: "id",
-    })
+    @OneToOne("ThumbnailCacheModel", "file")
     public thumbnailCache: Promise<ThumbnailCacheModel | null>;
 
     public get expiresIn(): number | null {

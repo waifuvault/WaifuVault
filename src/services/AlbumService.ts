@@ -152,10 +152,8 @@ export class AlbumService {
 
         const thumbnailCache = new ThumbnailCacheModel();
         thumbnailCache.data = thumbnail.toString("base64");
-
-        const c = await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
-        entry.thumbnailId = c.id;
-        await this.fileRepo.saveEntry(entry);
+        thumbnailCache.fileId = entry.id;
+        await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
 
         return [thumbnail, entry.mediaType!];
     }
