@@ -4,6 +4,7 @@ Site.loadPage(async site => {
     let filesRendered = false;
     const albumCardsElt = document.getElementById("albumCards");
     let cardsRendered = false;
+    const downloadButton = document.getElementById("downloadFiles");
 
     function sizeAsHuman(data) {
         const sizeKB = Math.floor(data / 1024);
@@ -172,8 +173,7 @@ Site.loadPage(async site => {
             checkboxes.forEach(chk => {
                 chk.addEventListener('change', () => {
                     const anySelected = Array.from(checkboxes).some(checkbox => checkbox.checked);
-                    const downloadBtn = document.getElementById("downloadFiles");
-                    downloadBtn.textContent = anySelected ? 'Download Selected as Zip' : 'Download Album as Zip';
+                    downloadButton.textContent = anySelected ? 'Download Selected as Zip' : 'Download Album as Zip';
                 })
             })
             cardsRendered = true;
@@ -209,10 +209,17 @@ Site.loadPage(async site => {
         renderAlbum(album, "card");
     });
 
-    document.getElementById("downloadFiles").addEventListener("click", () => {
+    downloadButton.addEventListener("click", () => {
         const checkedIds = Array.from(document.querySelectorAll(".fileCheck:checked"))
             .map(checkbox => parseInt(checkbox.dataset.id, 10))
             .filter(id => !isNaN(id));
+
+        downloadButton.disabled = true;
+        const originalText = downloadButton.textContent;
+        downloadButton.textContent = "Downloading...";
+        setTimeout(() => {
+            downloadButton.textContent = originalText;
+        }, 2000);
 
         fetch(`${baseUrl}/album/download/${publicToken}`, {
             method: "POST",
@@ -242,7 +249,9 @@ Site.loadPage(async site => {
             })
             .catch(e => {
                 alert(e.message);
+                downloadButton.disabled = false;
             });
+        downloadButton.disabled = false;
     });
 
     const album = await getAlbum();
