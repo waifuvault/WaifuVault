@@ -104,6 +104,10 @@ export class AlbumService {
             throw new BadRequest(`All files must be in the same bucket`);
         }
 
+        for (const file of filesToAssociate) {
+            this.validateForAssociation(file);
+        }
+
         album.addFiles(filesToAssociate);
 
         return this.albumRepo.saveOrUpdateAlbum(album);
@@ -234,6 +238,12 @@ export class AlbumService {
     private checkPublicToken(token: string, album: AlbumModel): void {
         if (!album.isPublicToken(token)) {
             throw new BadRequest("Supplied token is not valid");
+        }
+    }
+
+    private validateForAssociation(file: FileUploadModel): void {
+        if (file.settings?.oneTimeDownload) {
+            throw new BadRequest("One time downloads are not allowed");
         }
     }
 }

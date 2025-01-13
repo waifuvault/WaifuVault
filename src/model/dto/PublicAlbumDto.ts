@@ -21,11 +21,6 @@ class WaifuPublicFileMetadata {
     @Name("mediaType")
     @Nullable(string)
     public mediaType: string | null;
-
-    @Property()
-    @Description("If the file is a one time download")
-    @Name("oneTimeDownload")
-    public oneTimeDownload: boolean;
 }
 
 @Name("WaifuPublicFile")
@@ -83,7 +78,6 @@ export class PublicAlbumDto {
                   const metadata = Builder(WaifuPublicFileMetadata)
                       .thumbnail(PublicAlbumDto.getThumbnail(model, f))
                       .mediaType(f.mediaType)
-                      .oneTimeDownload(f.settings?.oneTimeDownload ?? false)
                       .build();
                   return Builder(WaifuPublicFile)
                       .url(url)
