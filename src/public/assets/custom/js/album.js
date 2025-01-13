@@ -21,6 +21,25 @@ Site.loadPage(async site => {
         return `${sizeGB.toFixed(2)} GB`;
     }
 
+    function mimeIcon(mime) {
+        if(!mime) {
+            return 'file-earmark.svg';
+        }
+        if(mime.startsWith('audio')) {
+            return 'file-earmark-music.svg';
+        }
+        if(mime.startsWith('video')) {
+            return 'file-earmark-play.svg';
+        }
+        if(mime.startsWith('text')) {
+            return 'file-earmark-text.svg';
+        }
+        if(mime.startsWith('octet')) {
+            return 'file-earmark-binary.svg';
+        }
+        return 'file-earmark.svg';
+    }
+
     function renderAlbum(album, tableview) {
         albumNameElt.innerText = album.name;
         if(album.files.length === 0) {
@@ -36,7 +55,7 @@ Site.loadPage(async site => {
                     const tdCheckbox = document.createElement('th');
                     tdCheckbox.setAttribute('scope','row');
                     tdCheckbox.setAttribute('style', 'padding-top:8px !important; padding-left:8px !important;');
-                    tdCheckbox.innerHTML = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck" />`;
+                    tdCheckbox.innerHTML = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Select File" />`;
                     tr.appendChild(tdCheckbox);
 
                     const tdName = document.createElement('td');
@@ -66,8 +85,9 @@ Site.loadPage(async site => {
                     const cardmain = document.createElement('div');
                     cardmain.setAttribute('class','card');
                     const cardimage = document.createElement('img');
-                    cardimage.setAttribute('src', `${e.metadata.thumbnail ? e.metadata.thumbnail : '/assets/custom/icons/file-earmark.svg'}`);
-                    cardimage.setAttribute('class', 'card-img-top');
+                    cardimage.setAttribute('src', `${e.metadata.thumbnail ? e.metadata.thumbnail : '/assets/custom/icons/' + mimeIcon(e.metadata.mediaType)}`);
+                    const imgclass = e.metadata.thumbnail ? 'card-img-top' : 'card-img-top card-svg-top';
+                    cardimage.setAttribute('class', imgclass);
                     cardmain.appendChild(cardimage);
                     const cardbody = document.createElement('div');
                     cardbody.setAttribute('class','card-body');
@@ -78,7 +98,7 @@ Site.loadPage(async site => {
                         <h6 class="card-subtitle mb-2 text-muted">${sizeAsHuman(e.size)}</h6>`;
                     const cardfooter = document.createElement('div');
                     cardfooter.setAttribute('class','card-footer d-flex justify-content-between align-items-center');
-                    const downloadSelect = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck" />`;
+                    const downloadSelect = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Select File" />`;
                     const rightJustify = '<div class="d-flex justify-content-end">';
                     const directDownload = `<a href="${e.url}?download=true" target="_blank" class="btn btn-outline-primary border-0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download"><i class="bi bi-box-arrow-down"></i></a>`;
                     const copyUrl = `<button class="copyUrl btn btn-outline-primary border-0" data-url="${e.url}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Copy URL"><i class="bi bi-clipboard"></i></button></div>`;
@@ -178,5 +198,6 @@ Site.loadPage(async site => {
 
     const album = await getAlbum();
     albumNameElt.innerText = album.name;
+    document.title = `Waifuvault|${album.name}`;
     renderAlbum(album, false);
 })
