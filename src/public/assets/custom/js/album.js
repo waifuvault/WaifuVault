@@ -232,5 +232,5 @@ Site.loadPage(async site => {
     document.title = `Waifuvault|${album.name}`;
 
     const hash = window.location.hash.substring(1);
-    renderAlbum(album, hash ? hash : "table");
+    renderAlbum(album, hash ? hash : "card");
 });
