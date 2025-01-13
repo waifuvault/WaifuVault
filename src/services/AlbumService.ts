@@ -11,6 +11,8 @@ import AdmZip from "adm-zip";
 import { FileUtils } from "../utils/Utils.js";
 import Module from "node:module";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
+import { ThumbnailCacheModel } from "../model/db/ThumbnailCache.model.js";
+import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
 
 const require = Module.createRequire(import.meta.url);
 const imageThumbnail = require("image-thumbnail");
@@ -22,6 +24,7 @@ export class AlbumService {
         @Inject() private bucketRepo: BucketRepo,
         @Inject() private fileRepo: FileRepo,
         @Inject() private fileService: FileService,
+        @Inject() private thumbnailCacheReo: ThumbnailCacheReo,
     ) {}
 
     public async createAlbum(name: string, bucketToken: string): Promise<AlbumModel> {
@@ -136,12 +139,25 @@ export class AlbumService {
         if (entry.fileProtectionLevel !== "None") {
             throw new BadRequest("File is protected");
         }
-        return [
-            imageThumbnail(entry.fullLocationOnDisk, {
-                withMetaData: true,
-            }),
-            entry.mediaType!,
-        ];
+
+        const thumbnailFromCache = await entry.thumbnailCache;
+        if (thumbnailFromCache) {
+            const b = Buffer.from(thumbnailFromCache.data, "base64");
+            return Promise.all([b, entry.mediaType!]);
+        }
+
+        const thumbnail: Buffer = await imageThumbnail(entry.fullLocationOnDisk, {
+            withMetaData: true,
+        });
+
+        const thumbnailCache = new ThumbnailCacheModel();
+        thumbnailCache.data = thumbnail.toString("base64");
+
+        const c = await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
+        entry.thumbnailId = c.id;
+        await this.fileRepo.saveEntry(entry);
+
+        return [thumbnail, entry.mediaType!];
     }
 
     public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[Buffer, string]> {

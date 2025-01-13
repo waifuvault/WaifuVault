@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import { AbstractModel } from "./AbstractModel.js";
 import { filesDir, FileUtils } from "../../utils/Utils.js";
 import type { EntrySettings, ProtectionLevel } from "../../utils/typeings.js";
@@ -7,6 +7,7 @@ import type { BucketModel } from "./Bucket.model.js";
 import { AlbumModel } from "./Album.model.js";
 import { constant } from "@tsed/di";
 import GlobalEnv from "../constants/GlobalEnv.js";
+import type { ThumbnailCacheModel } from "./ThumbnailCache.model.js";
 
 @Entity()
 @Index(["token"], {
@@ -125,6 +126,21 @@ export class FileUploadModel extends AbstractModel {
         referencedColumnName: "albumToken",
     })
     public album: Promise<AlbumModel | null>;
+
+    @Column({
+        nullable: true,
+        unique: true,
+    })
+    public thumbnailId: number;
+
+    @OneToOne("ThumbnailCacheModel", {
+        ...AbstractModel.cascadeOps,
+    })
+    @JoinColumn({
+        name: "thumbnailId",
+        referencedColumnName: "id",
+    })
+    public thumbnailCache: Promise<ThumbnailCacheModel | null>;
 
     public get expiresIn(): number | null {
         if (this.expires === null) {
