@@ -47,14 +47,17 @@ Site.loadPage(async site => {
             ['audio', 'bi-file-earmark-music'],
             ['video', 'bi-file-earmark-play'],
             ['text', 'bi-file-earmark-text'],
-            ['octet', 'bi-file-earmark-binary']
+            ['image', 'bi-file-earmark-image'],
+            ['octet', 'bi-file-earmark-binary'],
+            ['application/pdf', 'bi-file-earmark-pdf'],
+            ['application/x-pdf', 'bi-file-earmark-pdf']
         ]);
         const defaultIcon = "bi-file-earmark";
         if (!mime) {
             return defaultIcon;
         }
         const key = mime.split('/')[0];
-        return iconMap.get(key) ?? defaultIcon;
+        return iconMap.get(key) ?? iconMap.get(mime) ?? defaultIcon;
     }
 
     function renderAlbum(album, viewMode) {
@@ -106,7 +109,7 @@ Site.loadPage(async site => {
                 tr.appendChild(tdCheckbox);
 
                 const tdName = document.createElement("td");
-                tdName.innerHTML = `${e.protected ? "<i class='bi bi-file-lock2-fill'></i>" : ""}<a href="${e.url}" target="_blank">${e.name}</a>`;
+                tdName.innerHTML = `<a href="${e.url}" target="_blank">${e.name}</a> ${e.protected ? "<i class='bi bi-file-lock2-fill'></i>" : ""}`;
                 tr.appendChild(tdName);
 
                 const tdSize = document.createElement("td");
@@ -160,7 +163,7 @@ Site.loadPage(async site => {
                 cardbody.setAttribute("class", "card-body");
                 cardbody.innerHTML = `
                         <h5 class="card-title card-itm" data-bs-toggle="tooltip" data-bs-title="${e.name}">
-                            <a href="${e.url}" target="_blank">${e.name}</a>
+                            <a href="${e.url}" target="_blank">${e.name}</a> ${e.protected ? "<i class='bi bi-file-lock2-fill'></i>" : ""}
                         </h5>
                         <h6 class="card-subtitle mb-2 text-muted">${sizeAsHuman(e.size)}</h6>`;
                 const cardfooter = document.createElement("div");
