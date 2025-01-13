@@ -23,23 +23,18 @@ Site.loadPage(async site => {
     }
 
     function mimeIcon(mime) {
+        const iconMap = new Map([
+            ['audio', 'bi-file-earmark-music'],
+            ['video', 'bi-file-earmark-play'],
+            ['text', 'bi-file-earmark-text'],
+            ['octet', 'bi-file-earmark-binary']
+        ]);
         const defaultIcon = "bi-file-earmark";
         if (!mime) {
             return defaultIcon;
         }
-        if (mime.startsWith("audio")) {
-            return "bi-file-earmark-music";
-        }
-        if (mime.startsWith("video")) {
-            return "bi-file-earmark-play";
-        }
-        if (mime.startsWith("text")) {
-            return "bi-file-earmark-text";
-        }
-        if (mime.startsWith("octet")) {
-            return "bi-file-earmark-binary.svg";
-        }
-        return defaultIcon;
+        const key = mime.split('/')[0];
+        return iconMap.get(key) ?? defaultIcon;
     }
 
     function renderAlbum(album, viewMode) {
