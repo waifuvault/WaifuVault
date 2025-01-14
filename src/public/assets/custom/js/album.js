@@ -175,7 +175,7 @@ Site.loadPage(async site => {
                     cardimage.src = e.metadata.thumbnail;
                     cardimage.setAttribute("class", "card-img-top");
                 } else {
-                    const icon = e.protected ? 'bi bi-lock' : mimeIcon(e.metadata.mediaType);
+                    const icon = e.protected ? 'bi-lock' : mimeIcon(e.metadata.mediaType);
                     cardimage = document.createElement("i");
                     cardimage.setAttribute("class", `bi ${icon} card-svg-top card-img-top`);
                 }
@@ -188,7 +188,9 @@ Site.loadPage(async site => {
                         <h5 class="card-title card-itm" data-bs-toggle="tooltip" data-bs-title="${e.name}">
                             <a href="${e.url}" target="_blank">${e.name}</a> 
                         </h5>
-                        <h6 class="card-subtitle mb-2 text-muted">${sizeAsHuman(e.size)} ${e.protected ? "<span class=\"badge rounded-pill text-bg-secondary\">Protected</span></h6>" : ""}`;
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            ${sizeAsHuman(e.size)} ${e.protected ? "<span class=\"badge rounded-pill text-bg-secondary\">Protected</span>" : ""}
+                        </h6>`;
                 const cardfooter = document.createElement("div");
                 cardfooter.setAttribute("class", "card-footer d-flex justify-content-between align-items-center");
                 const downloadSelect = `<input type="checkbox" data-id="${e.id}" id="${e.id}" class="fileCheck" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Select File" />`;
@@ -310,7 +312,6 @@ Site.loadPage(async site => {
                 downloadButton.classList.remove("disabled");
             }
         );
-        downloadButton.disabled = false;
     });
 
     const album = await getAlbum();
