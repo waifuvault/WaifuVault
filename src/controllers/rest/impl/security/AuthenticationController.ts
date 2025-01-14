@@ -13,6 +13,7 @@ import { DefaultRenderException } from "../../../../model/rest/DefaultRenderExce
 import type { Request, Response } from "express";
 import { AuthenticateBucket } from "../../../../middleware/endpoint/AuthenticateBucket.js";
 import { BucketSessionService } from "../../../../services/BucketSessionService.js";
+import { SuccessModel } from "../../../../model/rest/SuccessModel.js";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
@@ -70,7 +71,7 @@ export class AuthenticationController extends BaseRestController {
     @Post("/changeDetails")
     @Authorize("loginAuthProvider")
     @Security("loginAuthProvider")
-    @Returns(StatusCodes.OK)
+    @Returns(StatusCodes.OK, SuccessModel)
     public async changeDetails(
         @Res() res: PlatformResponse,
         @Req() req: Request,

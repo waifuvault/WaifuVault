@@ -150,22 +150,24 @@ export class AlbumController extends BaseRestController {
     }
 
     @Get("/share/:albumToken")
-    @Returns(StatusCodes.OK, String)
+    @(Returns(StatusCodes.OK, SuccessModel).Description("description will contain the URL"))
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
     @Description("Share album, this returns a public URL to the album")
     @Summary("Share an album")
-    public shareAlbum(
+    public async shareAlbum(
         @Description("The private token to the album")
         @Required()
         @PathParams("albumToken")
         albumToken: string,
-    ): Promise<string> {
-        return this.albumService.shareAlbum(albumToken);
+        @Res() res: PlatformResponse,
+    ): Promise<PlatformResponse> {
+        const url = await this.albumService.shareAlbum(albumToken);
+        return super.doSuccess(res, url);
     }
 
     @Get("/revoke/:albumToken")
-    @Returns(StatusCodes.OK, PlatformResponse)
+    @Returns(StatusCodes.OK, SuccessModel)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
     @Description(
@@ -184,7 +186,7 @@ export class AlbumController extends BaseRestController {
     }
 
     @Post("/download/:albumToken")
-    @Returns(StatusCodes.OK, Buffer)
+    @(Returns(StatusCodes.OK).ContentType("application/zip"))
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
     @Description("Download files from an album as a zip")
@@ -194,10 +196,12 @@ export class AlbumController extends BaseRestController {
         @Required()
         @PathParams("albumToken")
         albumToken: string,
-        @Description("The files to download, if empty then all files will be downloaded")
+
+        @Description("The files ids to download, if empty then all files will be downloaded")
         @BodyParams()
         @CollectionOf(Number)
         fileIds: number[],
+
         @Res() res: Response,
     ): Promise<ReadStream> {
         const [zipFile, albumName, zipLocation] = await this.albumService.downloadFiles(albumToken, fileIds);

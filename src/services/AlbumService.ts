@@ -186,10 +186,7 @@ export class AlbumService {
         }
         this.checkPublicToken(publicAlbumToken, album);
 
-        let { files } = album;
-        if (!files) {
-            files = [];
-        }
+        const files = album.files ?? [];
 
         const albumFileIds = files.map(f => f.id);
         if (fileIds.length > 0 && !fileIds.every(file => albumFileIds.includes(file))) {
@@ -218,7 +215,6 @@ export class AlbumService {
         }
 
         await archive.finalize();
-
         return fs.createReadStream(zipLocation);
     }
 
