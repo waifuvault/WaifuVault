@@ -3,14 +3,7 @@
   "minify": true,
   "sourceMaps": true,
   "jsc": {
-    "minify": {
-      "compress": {
-        "unused": true
-      },
-      "mangle": {
-        "topLevel": false
-      }
-    },
+    "minify": {},
     "target": "esnext",
     "parser": {
       "syntax": "typescript",
