@@ -226,6 +226,40 @@
 
         const bucketId = <%- loginType === "bucket" ? `"${bucket.bucketToken}";` : "null;"; -%>
 
+        async function getAlbums() {
+            const resp = await fetch(`${baseUrl}/bucket/get`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({bucket_token: bucketId})
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                alert(`error ${err.status} - ${err.message}`);
+                return;
+            }
+            const bucketObj = await resp.json();
+            return bucketObj.albums;
+        }
+
+        function buildAddTo(albums) {
+            const addBtn = document.createElement('button');
+            addBtn.innerText = "Add to Album";
+            addBtn.setAttribute('class', 'btn btn-secondary dropdown-toggle');
+            addBtn.setAttribute('type', 'button');
+            addBtn.setAttribute('id', 'addToAlbumBtn');
+            addBtn.setAttribute('data-bs-toggle', 'dropdown');
+            addBtn.setAttribute('aria-expanded', 'false');
+            const menu = document.createElement('ul');
+            menu.setAttribute('class', 'dropdown-menu');
+            menu.setAttribute('aria-labelledby', 'addToAlbumBtn');
+            for(const a of albums) {
+                const item = document.createElement('li');
+                item.innerHTML = `<button class="dropdown-item sendToAlbum" type="button" data-token="${a.token}">${a.name}</button>`;
+                menu.appendChild(item);
+            }
+            addBtn.appendChild(menu);
+            return addBtn;
+        }
 
             function loadDt() {
                 const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
@@ -816,8 +850,14 @@
                 return;
             }
             const albumObj = await resp.json();
+            const newAlbums = await getAlbums();
+            document.getElementById('addToAlbumBtn').replaceWith(buildAddTo(newAlbums));
             alert(`Album ${albumName} created with private token ${albumObj.token}`);
-        })
+        });
+
+        const bucketAlbums = await getAlbums();
+        const dtButtons = document.querySelector('#DataTables_Table_0_wrapper .dt-buttons');
+        dtButtons?.appendChild(buildAddTo(bucketAlbums))
     });
 </script>
 </body>
