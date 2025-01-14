@@ -18,7 +18,15 @@ Site.loadPage(async site => {
         ['application/x-zip-compressed', 'bi-file-earmark-zip'],
         ['application/x-7z-compressed', 'bi-file-earmark-zip'],
         ['application/vnd.rar', 'bi-file-earmark-zip'],
-        ['application/x-rar-compressed', 'bi-file-earmark-zip']
+        ['application/x-rar-compressed', 'bi-file-earmark-zip'],
+        ['application/tar', 'bi-file-earmark-zip'],
+        ['application/x-tar', 'bi-file-earmark-zip'],
+        ['application/x-gtar', 'bi-file-earmark-zip'],
+        ['application/gzip', 'bi-file-earmark-zip'],
+        ['application/x-gzip', 'bi-file-earmark-zip'],
+        ['application/x-tgz', 'bi-file-earmark-zip'],
+        ['application/x-compress', 'bi-file-earmark-zip'],
+        ['application/x-compressed', 'bi-file-earmark-zip']
     ]);
 
     function sizeAsHuman(data) {
