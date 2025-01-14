@@ -1,18 +1,19 @@
 import { Inject, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
-import { BadRequest, NotFound } from "@tsed/exceptions";
+import { BadRequest, InternalServerError, NotFound } from "@tsed/exceptions";
 import { AlbumModel } from "../model/db/Album.model.js";
 import { Builder } from "builder-pattern";
 import crypto from "node:crypto";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
-import AdmZip from "adm-zip";
-import { FileUtils } from "../utils/Utils.js";
+import { filesDir, FileUtils } from "../utils/Utils.js";
 import Module from "node:module";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { ThumbnailCacheModel } from "../model/db/ThumbnailCache.model.js";
 import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
+import fs, { ReadStream } from "node:fs";
+import archiver from "archiver";
 
 const require = Module.createRequire(import.meta.url);
 const imageThumbnail = require("image-thumbnail");
@@ -178,7 +179,7 @@ export class AlbumService {
         return [thumbnail, entry.mediaType!];
     }
 
-    public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[Buffer, string]> {
+    public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[ReadStream, string, string]> {
         const album = await this.albumRepo.getAlbum(publicAlbumToken);
         if (!album) {
             throw new NotFound("Album not found");
@@ -195,38 +196,30 @@ export class AlbumService {
             throw new BadRequest("Some files were not found in the album");
         }
 
-        return Promise.all([
-            this.createZip(
-                files.filter(
-                    file => (fileIds.length === 0 || fileIds.includes(file.id)) && file.fileProtectionLevel === "None",
-                ),
-            ),
-            album.name,
-        ]);
+        const filesToZip = files.filter(
+            file => (fileIds.length === 0 || fileIds.includes(file.id)) && file.fileProtectionLevel === "None",
+        );
+
+        const zipLocation = filesDir + `/${album.name}_${crypto.randomUUID()}.zip`;
+        return Promise.all([this.createZip(filesToZip, zipLocation), album.name, zipLocation]);
     }
 
-    private async createZip(files: FileUploadModel[]): Promise<Buffer> {
-        const zip = new AdmZip();
-        await Promise.all(files.map(f => this.zipFile(f.fullLocationOnDisk, f.parsedFileName, zip)));
-        return zip.toBufferPromise();
-    }
+    private async createZip(files: FileUploadModel[], zipLocation: string): Promise<ReadStream> {
+        const output = fs.createWriteStream(zipLocation);
+        const archive = archiver("zip");
 
-    private zipFile(file: string, filename: string, zip: AdmZip): Promise<void> {
-        return new Promise((resolve, reject) => {
-            // @ts-expect-error method doesn't exist
-            zip.addLocalFileAsync(
-                {
-                    localPath: file,
-                    zipName: filename,
-                },
-                (err?: string, success?: boolean) => {
-                    if (!success) {
-                        reject(err);
-                    }
-                    resolve();
-                },
-            );
+        archive.on("error", err => {
+            throw new InternalServerError(err.message);
         });
+
+        archive.pipe(output);
+        for (const file of files) {
+            archive.file(file.fullLocationOnDisk, { name: file.parsedFileName });
+        }
+
+        await archive.finalize();
+
+        return fs.createReadStream(zipLocation);
     }
 
     private checkPrivateToken(token: string, album: AlbumModel): void {

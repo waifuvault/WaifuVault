@@ -24,6 +24,9 @@ import { SuccessModel } from "../../../model/rest/SuccessModel.js";
 import { AlbumModel } from "../../../model/db/Album.model.js";
 import { PublicAlbumDto } from "../../../model/dto/PublicAlbumDto.js";
 import { BadRequest } from "@tsed/exceptions";
+import { ReadStream } from "node:fs";
+import type { Response } from "express";
+import fs from "node:fs/promises";
 
 @Controller("/album")
 @Description("API for CRUD operations of albums and associating files with them.")
@@ -44,7 +47,6 @@ export class AlbumController extends BaseRestController {
         @Required()
         @BodyParams("name")
         albumName: string,
-
         @Description("The bucket token to associate the album with")
         @PathParams("bucketToken")
         bucketToken: string,
@@ -63,7 +65,6 @@ export class AlbumController extends BaseRestController {
         @Description("The album token to associate the file with")
         @PathParams("albumToken")
         albumToken: string,
-
         @Description("The file token to associate to the album")
         @BodyParams("fileTokens")
         @CollectionOf(String)
@@ -81,7 +82,6 @@ export class AlbumController extends BaseRestController {
         @Description("The album token to associate the file with")
         @PathParams("albumToken")
         albumToken: string,
-
         @Description("The file token to disassociate from the album")
         @BodyParams("fileTokens")
         @CollectionOf(String)
@@ -99,13 +99,11 @@ export class AlbumController extends BaseRestController {
         @Description("The album token to associate the file with")
         @PathParams("albumToken")
         albumToken: string,
-
         @Description("Delete files, if false then the files will remain in the bucket")
         @QueryParams("deleteFiles")
         @Default(false)
         @Optional()
         deleteFiles: boolean,
-
         @Res() res: PlatformResponse,
     ): Promise<PlatformResponse> {
         await this.albumService.deleteAlbum(albumToken, deleteFiles);
@@ -179,7 +177,6 @@ export class AlbumController extends BaseRestController {
         @Required()
         @PathParams("albumToken")
         albumToken: string,
-
         @Res() res: PlatformResponse,
     ): Promise<PlatformResponse> {
         await this.albumService.revokeShare(albumToken);
@@ -197,17 +194,18 @@ export class AlbumController extends BaseRestController {
         @Required()
         @PathParams("albumToken")
         albumToken: string,
-
         @Description("The files to download, if empty then all files will be downloaded")
         @BodyParams()
         @CollectionOf(Number)
         fileIds: number[],
-
-        @Res() res: PlatformResponse,
-    ): Promise<Buffer> {
-        const [zipFile, albumName] = await this.albumService.downloadFiles(albumToken, fileIds);
+        @Res() res: Response,
+    ): Promise<ReadStream> {
+        const [zipFile, albumName, zipLocation] = await this.albumService.downloadFiles(albumToken, fileIds);
         res.attachment(`${albumName}.zip`);
         res.contentType("application/zip");
+        res.on("finish", async () => {
+            await fs.rm(zipLocation, { recursive: true, force: true });
+        });
         return zipFile;
     }
 
