@@ -69,10 +69,9 @@
                     </table>
                 </div>
                 <% if(loginType === "bucket") { %>
-                    <div class="card-footer">
-                        <div class="float-end">
-                            <button class="btn btn-danger" id="deleteBucket">Delete bucket</button>
-                        </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <button class="btn btn-secondary" id="createAlbum">Create album</button>
+                        <button class="btn btn-danger" id="deleteBucket">Delete bucket</button>
                     </div>
                 <% } %>
             </div>
@@ -803,6 +802,22 @@
             await resp.text();
             window.location.replace(mainRul);
         });
+
+        document.getElementById("createAlbum")?.addEventListener("click", async () => {
+            const albumName = prompt("Enter new album name");
+            const resp = await fetch(`${baseUrl}/album/${bucketId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({name: albumName})
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                alert(`error ${err.status} - ${err.message}`);
+                return;
+            }
+            const albumObj = await resp.json();
+            alert(`Album ${albumName} created with private token ${albumObj.token}`);
+        })
     });
 </script>
 </body>
