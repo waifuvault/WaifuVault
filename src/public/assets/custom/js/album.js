@@ -13,7 +13,12 @@ Site.loadPage(async site => {
         ['image', 'bi-file-earmark-image'],
         ['octet', 'bi-file-earmark-binary'],
         ['application/pdf', 'bi-file-earmark-pdf'],
-        ['application/x-pdf', 'bi-file-earmark-pdf']
+        ['application/x-pdf', 'bi-file-earmark-pdf'],
+        ['application/zip', 'bi-file-earmark-zip'],
+        ['application/x-zip-compressed', 'bi-file-earmark-zip'],
+        ['application/x-7z-compressed', 'bi-file-earmark-zip'],
+        ['application/vnd.rar', 'bi-file-earmark-zip'],
+        ['application/x-rar-compressed', 'bi-file-earmark-zip']
     ]);
 
     function sizeAsHuman(data) {
