@@ -306,19 +306,20 @@
                 pane.setAttribute('role', 'tabpanel');
                 pane.setAttribute('aria-labelledby',a.name+'-tab');
                 pane.setAttribute('tabindex', '0');
-                const contents = buildAlbumCard(a.token);
+                const contents = buildAlbumCard(a.token, a.publicToken);
                 pane.appendChild(contents);
                 albumContents.appendChild(pane);
                 doneFirst = true;
             }
         }
 
-        function buildAlbumCard(token) {
+        function buildAlbumCard(token, pubToken) {
             const card = document.createElement('div');
             card.setAttribute('class', 'card border-primary mb-3');
+            const shareButton = `<button class="btn btn-secondary ${pubToken ? "unshareAlbum" : "shareAlbum"}" data-token="${token}">${pubToken ? "Unshare Album" : "Share Album"}</button>`;
             card.innerHTML = `<div class="card-header"><div>Current Entries for Album: ${token}</div></div>
                               <div class="card-body"><p>FILES GO HERE</p></div>
-                              <div class="card-footer d-flex justify-content-end"><button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
+                              <div class="card-footer d-flex justify-content-between">${shareButton}<button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
             return card;
         }
 
