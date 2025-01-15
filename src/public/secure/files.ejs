@@ -360,9 +360,10 @@
             const card = document.createElement('div');
             card.setAttribute('class', 'card border-primary mb-3');
             const shareButton = `<button class="btn btn-secondary ${pubToken ? "unshareAlbum" : "shareAlbum"}" data-token="${token}">${pubToken ? "Unshare Album" : "Share Album"}</button>`;
+            const albumUrl = pubToken ? `<button class="btn btn-success">${mainRul}/album/${pubToken}</button>` : '';
             card.innerHTML = `<div class="card-header"><div>Current Entries for Album: ${token}</div></div>
                               <div class="card-body"><p>FILES GO HERE</p></div>
-                              <div class="card-footer d-flex justify-content-between">${shareButton}<button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
+                              <div class="card-footer d-flex justify-content-between">${shareButton}${albumUrl}<button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
             return card;
         }
 
@@ -398,9 +399,8 @@
             shareButtons.forEach(sb => {
                 sb.addEventListener('click', async () => {
                     const albumToken = sb.dataset.token;
-                    const publicUrl = await shareAlbum(albumToken);
+                    await shareAlbum(albumToken);
                     buildAlbumTabs(await getAlbums());
-                    alert("Public URL: " + publicUrl);
                 })
             })
 
