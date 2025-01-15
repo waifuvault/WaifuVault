@@ -78,6 +78,9 @@ export class AdminFileData {
     public bucket: string | null = null;
 
     @Property()
+    public fileToken: string;
+
+    @Property()
     public fileProtectionLevel: ProtectionLevel;
 
     @Property()
@@ -102,7 +105,8 @@ export class AdminFileData {
             .fileProtectionLevel(entry.fileProtectionLevel)
             .ip(entry.ip)
             .views(entry.views)
-            .bucket(entry.bucketToken);
+            .bucket(entry.bucketToken)
+            .fileToken(entry.token);
         const expiresIn = entry.expiresIn;
         if (expiresIn !== null) {
             fileEntryBuilder.expires(ObjectUtils.timeToHuman(expiresIn));

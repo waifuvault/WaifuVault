@@ -64,6 +64,8 @@
                             <th scope="col">file Name on system</th>
                             <th scope="col">url</th>
                             <th scope="col">Bucket</th>
+                            <th scope="col">file Token</th>
+                            <th scope="col">Album</th>
                         </tr>
                         </thead>
                     </table>
@@ -241,6 +243,21 @@
             return bucketObj.albums;
         }
 
+        async function addFilesToAlbum(token, files) {
+            const resp = await fetch(`${baseUrl}/album/${token}/associate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({fileTokens: files})
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                alert(`error ${err.status} - ${err.message}`);
+                return;
+            }
+            const albumObj = await resp.json();
+            return albumObj;
+        }
+
         function buildAddTo(albums) {
             const addBtn = document.getElementById('addToAlbumPlaceholder');
             addBtn.classList.add('dropdown-toggle');
@@ -256,6 +273,23 @@
                 menu.appendChild(item);
             }
             addBtn.appendChild(menu);
+        }
+
+        function linkAlbumButtons() {
+            const albumButtons = document.querySelectorAll('.sendToAlbum');
+            albumButtons.forEach(b => {
+                b.addEventListener('click', async () => {
+                    const albumToken = b.dataset.token;
+                    const dt = dtMap.get("entries");
+                    const idArr = [];
+                    dt.rows({ selected: true }).every(function() {
+                        const data = this.data();
+                        idArr.push(data.fileToken);
+                    });
+                    await addFilesToAlbum(albumToken, idArr);
+                    dt.ajax.reload();
+                })
+            })
         }
 
             function loadDt() {
@@ -433,6 +467,12 @@
                     };
                 }
 
+                function renderAlbumField() {
+                    return function(data, type, row) {
+                        return data?.name ?? "N/A";
+                    }
+                }
+
                 function colouredIP() {
                     return function(data, type, row) {
                         if (type === "display") {
@@ -506,7 +546,9 @@
                                 { data: "views" },
                                 { data: "fileName" },
                                 { data: "url" },
-                                { data: "bucket", render: renderNullField() }
+                                { data: "bucket", render: renderNullField() },
+                                { data: "fileToken" },
+                                { data: "album", render: renderAlbumField() }
                             ];
                     }
                 }
@@ -861,6 +903,7 @@
 
         const bucketAlbums = await getAlbums();
         buildAddTo(bucketAlbums);
+        linkAlbumButtons();
     });
 </script>
 </body>
