@@ -353,6 +353,7 @@
                 albumContents.appendChild(pane);
                 doneFirst = true;
             }
+            linkAlbumTabButtons();
         }
 
         function buildAlbumCard(token, pubToken) {
@@ -387,13 +388,30 @@
             deleteButtons.forEach(db => {
                 db.addEventListener('click', async () => {
                     const albumToken = db.dataset.token;
-                    const alsoFiles = confirm("Do you wish to also delete the files (choosing no will return them to the bucket) ?");
+                    const alsoFiles = confirm("Do you wish to also delete the files (choosing cancel will return them to the bucket) ?");
                     await deleteAlbum(albumToken, alsoFiles);
-                    buildAlbumTabs(await getAlbums())
+                    buildAlbumTabs(await getAlbums());
                 })
             })
 
             const shareButtons = document.querySelectorAll('.shareAlbum');
+            shareButtons.forEach(sb => {
+                sb.addEventListener('click', async () => {
+                    const albumToken = sb.dataset.token;
+                    const publicUrl = await shareAlbum(albumToken);
+                    buildAlbumTabs(await getAlbums());
+                    alert("Public URL: " + publicUrl);
+                })
+            })
+
+            const unshareButtons = document.querySelectorAll('.unshareAlbum');
+            unshareButtons.forEach(ub => {
+                ub.addEventListener('click', async () => {
+                    const albumToken = ub.dataset.token;
+                    const publicUrl = await unshareAlbum(albumToken);
+                    buildAlbumTabs(await getAlbums());
+                })
+            })
         }
 
             function loadDt() {
