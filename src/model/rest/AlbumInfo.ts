@@ -8,6 +8,10 @@ export class AlbumInfo {
     public token: string;
 
     @Property()
+    @Description("The public token of the album that this file belongs to")
+    public publicToken: string | null;
+
+    @Property()
     @Description("The name of the album")
     public name: string;
 
@@ -16,6 +20,11 @@ export class AlbumInfo {
     public bucket: string;
 
     public static fromModel(model: AlbumModel): AlbumInfo {
-        return Builder(AlbumInfo).token(model.albumToken).name(model.name).bucket(model.bucketToken).build();
+        return Builder(AlbumInfo)
+            .token(model.albumToken)
+            .publicToken(model.publicToken)
+            .name(model.name)
+            .bucket(model.bucketToken)
+            .build();
     }
 }

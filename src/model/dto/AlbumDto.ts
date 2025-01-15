@@ -17,6 +17,11 @@ export class AlbumDto {
     public bucketToken: string;
 
     @Property()
+    @Description("The public token of the album")
+    @Name("publicToken")
+    public publicToken: string | null;
+
+    @Property()
     @Description("The name of the album")
     @Name("name")
     public name: string;
@@ -32,6 +37,7 @@ export class AlbumDto {
         return Builder(AlbumDto)
             .token(model.albumToken)
             .bucketToken(model.bucketToken)
+            .publicToken(model.publicToken)
             .name(model.name)
             .files(fileDtos)
             .build();
