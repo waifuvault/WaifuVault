@@ -13,7 +13,6 @@ import { ThumbnailCacheModel } from "../model/db/ThumbnailCache.model.js";
 import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
 import fs, { ReadStream } from "node:fs";
 import archiver from "archiver";
-// @ts-expect-error no bindings
 import sharp from "sharp";
 
 @Service()
