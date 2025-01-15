@@ -8,21 +8,13 @@ import crypto from "node:crypto";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
 import { filesDir, FileUtils } from "../utils/Utils.js";
-import Module from "node:module";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { ThumbnailCacheModel } from "../model/db/ThumbnailCache.model.js";
 import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
 import fs, { ReadStream } from "node:fs";
 import archiver from "archiver";
 // @ts-expect-error no bindings
-import gifResize from "@gumlet/gif-resize";
-import sizeOf from "image-size";
-import { promisify } from "node:util";
-
-const sizeOfAsync = promisify(sizeOf);
-
-const require = Module.createRequire(import.meta.url);
-const imageThumbnail = require("image-thumbnail");
+import sharp from "sharp";
 
 @Service()
 export class AlbumService {
@@ -186,16 +178,33 @@ export class AlbumService {
             return Promise.all([b, entry.mediaType!]);
         }
 
-        let thumbnail: Buffer;
+        const fileBuffer = await fs.promises.readFile(entry.fullLocationOnDisk);
 
-        if (entry.mediaType === "image/gif") {
-            thumbnail = await this.generateGifThumbnail(entry.fullLocationOnDisk);
+        const metadata = await sharp(fileBuffer).withMetadata().metadata();
+        const SCALING_FACTOR = 0.3;
+        const DEFAULT_GIF_WIDTH = 200;
+
+        const thumbnailBuilder = sharp(fileBuffer, {
+            animated: true,
+            ignoreIcc: false,
+        }).withMetadata();
+
+        if (metadata.width && metadata.height && metadata.height > 200) {
+            const resizedWidth = Math.floor(metadata.width * SCALING_FACTOR);
+            const resizedHeight = Math.floor(metadata.height * SCALING_FACTOR);
+            thumbnailBuilder.resize({
+                withoutEnlargement: true,
+                width: resizedWidth,
+                height: resizedHeight,
+            });
         } else {
-            thumbnail = await imageThumbnail(entry.fullLocationOnDisk, {
-                withMetaData: true,
-                percentage: 30,
+            thumbnailBuilder.resize({
+                width: DEFAULT_GIF_WIDTH,
+                withoutEnlargement: true,
             });
         }
+
+        const thumbnail = await thumbnailBuilder.toBuffer();
 
         const thumbnailCache = new ThumbnailCacheModel();
         thumbnailCache.data = thumbnail.toString("base64");
@@ -203,22 +212,6 @@ export class AlbumService {
         await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
 
         return [thumbnail, entry.mediaType!];
-    }
-
-    public async generateGifThumbnail(filePath: string): Promise<Buffer> {
-        const SCALING_FACTOR = 0.3; // 30% of the file size
-        const DEFAULT_GIF_WIDTH = 200;
-
-        const gifBuffer = await fs.promises.readFile(filePath);
-        const gifDimensions = await sizeOfAsync(filePath);
-
-        if (gifDimensions?.width && gifDimensions?.height) {
-            const resizedWidth = Math.floor(gifDimensions.width * SCALING_FACTOR);
-            const resizedHeight = Math.floor(gifDimensions.height * SCALING_FACTOR);
-            return gifResize({ width: resizedWidth, height: resizedHeight })(gifBuffer);
-        }
-
-        return gifResize({ width: DEFAULT_GIF_WIDTH })(gifBuffer);
     }
 
     public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[ReadStream, string, string]> {
