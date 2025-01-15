@@ -255,6 +255,48 @@
             return bucketObj.albums;
         }
 
+        async function deleteAlbum(token, alsoFiles) {
+            const resp = await fetch(`${baseUrl}/album/${token}?deleteFiles=${alsoFiles.toString()}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" }
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                alert(`error ${err.status} - ${err.message}`);
+                return;
+            }
+            const delObj = await resp.json();
+            return delObj.success;
+        }
+
+        async function shareAlbum(token) {
+            const resp = await fetch(`${baseUrl}/album/share/${token}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                alert(`error ${err.status} - ${err.message}`);
+                return;
+            }
+            const shareObj = await resp.json();
+            return shareObj.description;
+        }
+
+        async function unshareAlbum(token) {
+            const resp = await fetch(`${baseUrl}/album/revoke/${token}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                alert(`error ${err.status} - ${err.message}`);
+                return;
+            }
+            const shareObj = await resp.json();
+            return shareObj.success;
+        }
+
         async function addFilesToAlbum(token, files) {
             const resp = await fetch(`${baseUrl}/album/${token}/associate`, {
                 method: "POST",
@@ -338,6 +380,20 @@
                     dt.ajax.reload();
                 })
             })
+        }
+
+        function linkAlbumTabButtons() {
+            const deleteButtons = document.querySelectorAll('.deleteAlbum');
+            deleteButtons.forEach(db => {
+                db.addEventListener('click', async () => {
+                    const albumToken = db.dataset.token;
+                    const alsoFiles = confirm("Do you wish to also delete the files (choosing no will return them to the bucket) ?");
+                    await deleteAlbum(albumToken, alsoFiles);
+                    buildAlbumTabs(await getAlbums())
+                })
+            })
+
+            const shareButtons = document.querySelectorAll('.shareAlbum');
         }
 
             function loadDt() {
