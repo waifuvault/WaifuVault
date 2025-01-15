@@ -98,6 +98,18 @@
             </div>
         </div>
         <% } %>
+    <% if(loginType === "bucket") { %>
+        <div class="col-md-12">
+            <div class="card border-primary mb-3">
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="albumTabs" role="tablist">
+                    </ul>
+                    <div class="tab-content" id="albumTabContent">
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% } %>
     </div>
 </div>
 <!--modals-->
@@ -273,6 +285,41 @@
                 menu.appendChild(item);
             }
             addBtn.appendChild(menu);
+        }
+
+        function buildAlbumTabs(albums) {
+            const albumTabs = document.getElementById('albumTabs');
+            const albumContents = document.getElementById('albumTabContent');
+            albumTabs.innerHTML = '';
+            albumContents.innerHTML = '';
+            let doneFirst = false;
+            for(const a of albums) {
+                const item = document.createElement('li');
+                const itemClass = doneFirst ? "nav-link" : "nav-link active";
+                const itemSelected = doneFirst ? "false" : "true";
+                item.innerHTML = `<button id="${a.name}-tab" class="${itemClass}" type="button" data-bs-toggle="tab" data-bs-target="#${a.name}-tab-pane" role="tab" aria-controls="${a.name}-tab-pane" aria-selected="${itemSelected}">${a.name}</button>`;
+                albumTabs.appendChild(item);
+                const pane = document.createElement('div');
+                const paneClass = doneFirst ? "tab-pane fade" : "tab-pane fade show active";
+                pane.setAttribute('class', paneClass);
+                pane.setAttribute('id', a.name+'-tab-pane');
+                pane.setAttribute('role', 'tabpanel');
+                pane.setAttribute('aria-labelledby',a.name+'-tab');
+                pane.setAttribute('tabindex', '0');
+                const contents = buildAlbumCard(a.token);
+                pane.appendChild(contents);
+                albumContents.appendChild(pane);
+                doneFirst = true;
+            }
+        }
+
+        function buildAlbumCard(token) {
+            const card = document.createElement('div');
+            card.setAttribute('class', 'card border-primary mb-3');
+            card.innerHTML = `<div class="card-header"><div>Current Entries for Album: ${token}</div></div>
+                              <div class="card-body"><p>FILES GO HERE</p></div>
+                              <div class="card-footer d-flex justify-content-end"><button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
+            return card;
         }
 
         function linkAlbumButtons() {
@@ -904,6 +951,7 @@
         const bucketAlbums = await getAlbums();
         buildAddTo(bucketAlbums);
         linkAlbumButtons();
+        buildAlbumTabs(bucketAlbums);
     });
 </script>
 </body>
