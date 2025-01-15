@@ -14,6 +14,12 @@ import { ThumbnailCacheModel } from "../model/db/ThumbnailCache.model.js";
 import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
 import fs, { ReadStream } from "node:fs";
 import archiver from "archiver";
+// @ts-expect-error no bindings
+import gifResize from "@gumlet/gif-resize";
+import sizeOf from "image-size";
+import { promisify } from "node:util";
+
+const sizeOfAsync = promisify(sizeOf);
 
 const require = Module.createRequire(import.meta.url);
 const imageThumbnail = require("image-thumbnail");
@@ -180,10 +186,16 @@ export class AlbumService {
             return Promise.all([b, entry.mediaType!]);
         }
 
-        const thumbnail: Buffer = await imageThumbnail(entry.fullLocationOnDisk, {
-            withMetaData: true,
-            percentage: 30,
-        });
+        let thumbnail: Buffer;
+
+        if (entry.mediaType === "image/gif") {
+            thumbnail = await this.generateGifThumbnail(entry.fullLocationOnDisk);
+        } else {
+            thumbnail = await imageThumbnail(entry.fullLocationOnDisk, {
+                withMetaData: true,
+                percentage: 30,
+            });
+        }
 
         const thumbnailCache = new ThumbnailCacheModel();
         thumbnailCache.data = thumbnail.toString("base64");
@@ -191,6 +203,22 @@ export class AlbumService {
         await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
 
         return [thumbnail, entry.mediaType!];
+    }
+
+    public async generateGifThumbnail(filePath: string): Promise<Buffer> {
+        const SCALING_FACTOR = 0.3; // 30% of the file size
+        const DEFAULT_GIF_WIDTH = 200;
+
+        const gifBuffer = await fs.promises.readFile(filePath);
+        const gifDimensions = await sizeOfAsync(filePath);
+
+        if (gifDimensions?.width && gifDimensions?.height) {
+            const resizedWidth = Math.floor(gifDimensions.width * SCALING_FACTOR);
+            const resizedHeight = Math.floor(gifDimensions.height * SCALING_FACTOR);
+            return gifResize({ width: resizedWidth, height: resizedHeight })(gifBuffer);
+        }
+
+        return gifResize({ width: DEFAULT_GIF_WIDTH })(gifBuffer);
     }
 
     public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[ReadStream, string, string]> {
