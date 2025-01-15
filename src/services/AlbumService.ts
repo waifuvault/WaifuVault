@@ -72,18 +72,18 @@ export class AlbumService {
     }
 
     public async disassociateFilesFromAlbum(albumToken: string, files: string[]): Promise<AlbumModel> {
-        const album = await this.albumRepo.getAlbum(albumToken);
+        let album = await this.albumRepo.getAlbum(albumToken);
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
         this.checkPrivateToken(albumToken, album);
         const filesToRemove = await this.fileRepo.getEntry(files);
 
-        if (album.files && !files.every(file => album.files!.find(f => f.token === file))) {
+        if (album.files && !files.every(file => album!.files!.find(f => f.token === file))) {
             throw new BadRequest(`Every file must be in the same album`);
         }
 
-        await this.removeFilesFromAlbum(albumToken, filesToRemove);
+        album = await this.removeFilesFromAlbum(albumToken, filesToRemove);
         await this.thumbnailCacheReo.deleteThumbnailCaches(filesToRemove.map(f => f.id));
         return album;
     }
