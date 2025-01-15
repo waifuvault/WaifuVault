@@ -242,23 +242,20 @@
         }
 
         function buildAddTo(albums) {
-            const addBtn = document.createElement('button');
-            addBtn.innerText = "Add to Album";
-            addBtn.setAttribute('class', 'btn btn-secondary dropdown-toggle');
-            addBtn.setAttribute('type', 'button');
-            addBtn.setAttribute('id', 'addToAlbumBtn');
+            const addBtn = document.getElementById('addToAlbumPlaceholder');
+            addBtn.classList.add('dropdown-toggle');
             addBtn.setAttribute('data-bs-toggle', 'dropdown');
             addBtn.setAttribute('aria-expanded', 'false');
             const menu = document.createElement('ul');
             menu.setAttribute('class', 'dropdown-menu');
             menu.setAttribute('aria-labelledby', 'addToAlbumBtn');
+            menu.setAttribute('id','albumMenu');
             for(const a of albums) {
                 const item = document.createElement('li');
                 item.innerHTML = `<button class="dropdown-item sendToAlbum" type="button" data-token="${a.token}">${a.name}</button>`;
                 menu.appendChild(item);
             }
             addBtn.appendChild(menu);
-            return addBtn;
         }
 
             function loadDt() {
@@ -694,6 +691,11 @@
                                     uploadModal?.show();
                                 }
                             },
+                            {
+                                extend: "selected",
+                                text: "Add to Album",
+                                attr: { id: "addToAlbumPlaceholder" },
+                            },
                         );
                     } else if (type === "ips") {
                         buttons.push({
@@ -850,14 +852,15 @@
                 return;
             }
             const albumObj = await resp.json();
-            const newAlbums = await getAlbums();
-            document.getElementById('addToAlbumBtn').replaceWith(buildAddTo(newAlbums));
+            const albumMenu = document.getElementById('albumMenu');
+            const newEntry = document.createElement('li');
+            newEntry.innerHTML = `<button class="dropdown-item sendToAlbum" type="button" data-token="${albumObj.token}">${albumObj.name}</button>`;
+            albumMenu.appendChild(newEntry);
             alert(`Album ${albumName} created with private token ${albumObj.token}`);
         });
 
         const bucketAlbums = await getAlbums();
-        const dtButtons = document.querySelector('#DataTables_Table_0_wrapper .dt-buttons');
-        dtButtons?.appendChild(buildAddTo(bucketAlbums))
+        buildAddTo(bucketAlbums);
     });
 </script>
 </body>
