@@ -16,6 +16,14 @@ export class FileRepo {
         return res;
     }
 
+    public async saveEntries(entries: FileUploadModel[]): Promise<FileUploadModel[]> {
+        const res = await this.fileDao.saveEntries(entries);
+        for (const entry of res) {
+            this.entryCache.set(entry.token, entry);
+        }
+        return res;
+    }
+
     public async getEntry(tokens: string[]): Promise<FileUploadModel[]> {
         const ret: FileUploadModel[] = [];
         const tokensClone = [...tokens];

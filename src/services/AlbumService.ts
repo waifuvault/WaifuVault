@@ -78,12 +78,12 @@ export class AlbumService {
         }
         this.checkPrivateToken(albumToken, album);
         const filesToRemove = await this.fileRepo.getEntry(files);
-        if (filesToRemove.length !== files.length) {
-            throw new BadRequest(`some files were not found`);
+
+        if (album.files && !files.every(file => album.files!.find(f => f.token === file))) {
+            throw new BadRequest(`Every file must be in the same album`);
         }
 
-        album.removeFiles(filesToRemove);
-        await this.albumRepo.saveOrUpdateAlbum(album);
+        await this.removeFilesFromAlbum(albumToken, filesToRemove);
         await this.thumbnailCacheReo.deleteThumbnailCaches(filesToRemove.map(f => f.id));
         return album;
     }
@@ -109,9 +109,23 @@ export class AlbumService {
             this.validateForAssociation(file);
         }
 
-        album.addFiles(filesToAssociate);
+        return this.addFilesToAlbum(albumToken, filesToAssociate);
+    }
 
-        return this.albumRepo.saveOrUpdateAlbum(album);
+    public async addFilesToAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
+        for (const file of files) {
+            file.albumToken = albumToken;
+        }
+        await this.fileRepo.saveEntries(files);
+        return (await this.albumRepo.getAlbum(albumToken))!;
+    }
+
+    public async removeFilesFromAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
+        for (const file of files) {
+            file.albumToken = null;
+        }
+        await this.fileRepo.saveEntries(files);
+        return (await this.albumRepo.getAlbum(albumToken))!;
     }
 
     public async revokeShare(albumToken: string): Promise<void> {

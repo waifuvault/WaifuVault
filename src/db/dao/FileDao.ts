@@ -22,6 +22,10 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         return this.getRepository(transaction).save(entry);
     }
 
+    public saveEntries(entries: FileUploadModel[], transaction?: EntityManager): Promise<FileUploadModel[]> {
+        return this.getRepository(transaction).save(entries);
+    }
+
     public getEntry(tokens: string[], transaction?: EntityManager): Promise<FileUploadModel[]> {
         return this.getRepository(transaction).find({
             where: {

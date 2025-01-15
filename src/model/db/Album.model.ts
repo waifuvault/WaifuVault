@@ -72,29 +72,6 @@ export class AlbumModel extends AbstractModel {
         }
     }
 
-    public addFiles(filesToAdd: FileUploadModel[] | FileUploadModel): void {
-        if (!this.files) {
-            this.files = [];
-        }
-        if (Array.isArray(filesToAdd)) {
-            for (const fileToAdd of filesToAdd) {
-                if (!this.fileExists(fileToAdd)) {
-                    fileToAdd.albumToken = this.albumToken;
-                    this.files.push(fileToAdd);
-                }
-            }
-        } else {
-            if (!this.fileExists(filesToAdd)) {
-                filesToAdd.albumToken = this.albumToken;
-                this.files.push(filesToAdd);
-            }
-        }
-    }
-
-    private fileExists(file: FileUploadModel): boolean {
-        return this.files?.some(f => f.token === file.token) ?? false;
-    }
-
     public isPublicToken(token: string): boolean {
         return this.publicToken === token;
     }
