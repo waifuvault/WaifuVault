@@ -1,4 +1,4 @@
-import { CollectionOf, Description, Name, Property } from "@tsed/schema";
+import { CollectionOf, Description, Name, Nullable, Property } from "@tsed/schema";
 import { FileUploadResponseDto } from "./FileUploadResponseDto.js";
 import { AlbumModel } from "../db/Album.model.js";
 import { Builder } from "builder-pattern";
@@ -19,6 +19,7 @@ export class AlbumDto {
     @Property()
     @Description("The public token of the album")
     @Name("publicToken")
+    @Nullable(String)
     public publicToken: string | null;
 
     @Property()

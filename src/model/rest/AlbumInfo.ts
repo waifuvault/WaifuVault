@@ -1,4 +1,4 @@
-import { Description, Property } from "@tsed/schema";
+import { Description, Nullable, Property } from "@tsed/schema";
 import { AlbumModel } from "../db/Album.model.js";
 import { Builder } from "builder-pattern";
 
@@ -9,6 +9,7 @@ export class AlbumInfo {
 
     @Property()
     @Description("The public token of the album that this file belongs to")
+    @Nullable(String)
     public publicToken: string | null;
 
     @Property()
