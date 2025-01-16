@@ -266,6 +266,12 @@
                 return;
             }
             const delObj = await resp.json();
+            const addButtons = document.querySelectorAll('.sendToAlbum');
+            for(const b of addButtons) {
+                if(b.dataset.token === token) {
+                    b.remove();
+                }
+            }
             return delObj.success;
         }
 
@@ -329,20 +335,20 @@
             addBtn.appendChild(menu);
         }
 
-        function buildAlbumTabs(albums) {
+        function buildAlbumTabs(albums, token) {
             const albumTabs = document.getElementById('albumTabs');
             const albumContents = document.getElementById('albumTabContent');
             albumTabs.innerHTML = '';
             albumContents.innerHTML = '';
-            let doneFirst = false;
+            if(!token) token = albums[0].token;
             for(const a of albums) {
                 const item = document.createElement('li');
-                const itemClass = doneFirst ? "nav-link" : "nav-link active";
-                const itemSelected = doneFirst ? "false" : "true";
+                const itemClass = a.token === token ? "nav-link active" : "nav-link";
+                const itemSelected = a.token === token ? "true" : "false";
                 item.innerHTML = `<button id="${a.name}-tab" class="${itemClass}" type="button" data-bs-toggle="tab" data-bs-target="#${a.name}-tab-pane" role="tab" aria-controls="${a.name}-tab-pane" aria-selected="${itemSelected}">${a.name}</button>`;
                 albumTabs.appendChild(item);
                 const pane = document.createElement('div');
-                const paneClass = doneFirst ? "tab-pane fade" : "tab-pane fade show active";
+                const paneClass = a.token === token ? "tab-pane fade show active" : "tab-pane fade";
                 pane.setAttribute('class', paneClass);
                 pane.setAttribute('id', a.name+'-tab-pane');
                 pane.setAttribute('role', 'tabpanel');
@@ -351,7 +357,6 @@
                 const contents = buildAlbumCard(a.token, a.publicToken);
                 pane.appendChild(contents);
                 albumContents.appendChild(pane);
-                doneFirst = true;
             }
             linkAlbumTabButtons();
         }
@@ -360,7 +365,7 @@
             const card = document.createElement('div');
             card.setAttribute('class', 'card border-primary mb-3');
             const shareButton = `<button class="btn btn-secondary ${pubToken ? "unshareAlbum" : "shareAlbum"}" data-token="${token}">${pubToken ? "Unshare Album" : "Share Album"}</button>`;
-            const albumUrl = pubToken ? `<button class="btn btn-success">${mainRul}/album/${pubToken}</button>` : '';
+            const albumUrl = pubToken ? `<button class="btn btn-success pubUrlButton" data-token="${pubToken}">${mainRul}/album/${pubToken}</button>` : '';
             card.innerHTML = `<div class="card-header"><div>Current Entries for Album: ${token}</div></div>
                               <div class="card-body"><p>FILES GO HERE</p></div>
                               <div class="card-footer d-flex justify-content-between">${shareButton}${albumUrl}<button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
@@ -400,7 +405,7 @@
                 sb.addEventListener('click', async () => {
                     const albumToken = sb.dataset.token;
                     await shareAlbum(albumToken);
-                    buildAlbumTabs(await getAlbums());
+                    buildAlbumTabs(await getAlbums(), albumToken);
                 })
             })
 
@@ -409,7 +414,23 @@
                 ub.addEventListener('click', async () => {
                     const albumToken = ub.dataset.token;
                     const publicUrl = await unshareAlbum(albumToken);
-                    buildAlbumTabs(await getAlbums());
+                    buildAlbumTabs(await getAlbums(), albumToken);
+                })
+            })
+
+            const urlButtons = document.querySelectorAll('.pubUrlButton');
+            urlButtons.forEach(ub => {
+                ub.addEventListener('click', async () => {
+                    const albumToken = ub.dataset.token;
+                    navigator.clipboard.writeText(`${mainRul}/album/${albumToken}`).then(() => {
+                        const originalText = ub.innerText;
+                        ub.innerText = "Copied to Clipboard";
+                        setTimeout(() => {
+                            ub.innerText = originalText;
+                        }, 2000);
+                    }).catch(err => {
+                        console.error("Failed to copy URL: ", err);
+                    });
                 })
             })
         }
@@ -1020,6 +1041,7 @@
             const newEntry = document.createElement('li');
             newEntry.innerHTML = `<button class="dropdown-item sendToAlbum" type="button" data-token="${albumObj.token}">${albumObj.name}</button>`;
             albumMenu.appendChild(newEntry);
+            buildAlbumTabs(await getAlbums());
             alert(`Album ${albumName} created with private token ${albumObj.token}`);
         });
 
