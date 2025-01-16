@@ -7,6 +7,77 @@
     const mainRul = "<%- process.env.BASE_URL; -%>";
     const fileSizeLimit = <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB * 1048576; -%>;
     const baseUrlSecureRest = `${baseUrl}/<%-baseSecurePath-%>`;
+
+    function createBasicModal(id, title, body, yesText, yesCallback, noText, noCallback) {
+        const modal = document.createElement('div');
+        modal.setAttribute('class', 'modal fade');
+        modal.setAttribute('id', id);
+        modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-hidden', 'true');
+
+        const modalDialog = document.createElement('div');
+        modalDialog.setAttribute('class', 'modal-dialog modal-md modal-dialog-centered');
+        modal.appendChild(modalDialog);
+
+        const modalContent = document.createElement('div');
+        modalContent.setAttribute('class', 'modal-content');
+        modalDialog.appendChild(modalContent);
+
+        const modalHeader = document.createElement('div');
+        modalHeader.setAttribute('class', 'modal-header');
+        modalContent.appendChild(modalHeader);
+
+        const modalTitle = document.createElement('h1');
+        modalTitle.setAttribute('class', 'modal-title fs-5');
+        modalTitle.innerText = title;
+        const modalCloseBtn = document.createElement('button');
+        modalCloseBtn.setAttribute('type','button');
+        modalCloseBtn.setAttribute('class', 'btn-close');
+        modalCloseBtn.setAttribute('data-bs-dismiss', 'modal');
+        modalCloseBtn.setAttribute('aria-label', 'Close');
+        modalHeader.appendChild(modalTitle);
+        modalHeader.appendChild(modalCloseBtn);
+
+        const modalBody = document.createElement('div');
+        modalBody.setAttribute('class', 'modal-body');
+        modalBody.innerHTML = body;
+        modalContent.appendChild(modalBody);
+
+        const modalFooter = document.createElement('div');
+        modalFooter.setAttribute('class', 'modal-footer');
+
+        if(yesText || noText) {
+            const yesBtn = document.createElement('button');
+            yesBtn.setAttribute('type','button');
+            yesBtn.setAttribute('class', 'btn btn-primary');
+            yesBtn.setAttribute('data-bs-dismiss', 'modal');
+            yesBtn.innerText = yesText;
+            if(yesCallback) {
+                yesBtn.addEventListener('click', async () => await yesCallback());
+            }
+            const noBtn = document.createElement('button');
+            noBtn.setAttribute('type','button');
+            noBtn.setAttribute('class', 'btn btn-secondary');
+            noBtn.setAttribute('data-bs-dismiss', 'modal');
+            noBtn.innerText = noText;
+            if(noCallback) {
+                noBtn.addEventListener('click', async () => await noCallback());
+            }
+            modalFooter.appendChild(yesBtn);
+            modalFooter.appendChild(noBtn);
+        } else {
+            const closeBtn = document.createElement('button');
+            closeBtn.setAttribute('type','button');
+            closeBtn.setAttribute('class', 'btn btn-primary');
+            closeBtn.setAttribute('data-bs-dismiss', 'modal');
+            closeBtn.innerText = "Close";
+            modalFooter.appendChild(closeBtn);
+        }
+        modalContent.appendChild(modalFooter);
+
+        return modal;
+    }
 </script>
 <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
