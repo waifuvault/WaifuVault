@@ -370,8 +370,25 @@
             card.setAttribute('class', 'card border-primary mb-3');
             const shareButton = `<button class="btn btn-secondary ${pubToken ? "unshareAlbum" : "shareAlbum"}" data-token="${token}">${pubToken ? "Unshare Album" : "Share Album"}</button>`;
             const albumUrl = pubToken ? `<button class="btn btn-success pubUrlButton" data-token="${pubToken}">${mainRul}/album/${pubToken}</button>` : '';
+            const fileEntries = `<table class="table albumFilesTable datatables display nowrap" data-type="albumEntries" data-album="${token}">
+                                 <thead><tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">file Name</th>
+                                    <th scope="col">file Extension</th>
+                                    <th scope="col">file Size</th>
+                                    <th scope="col">Created At</th>
+                                    <th scope="col">expires</th>
+                                    <th scope="col">mediaType</th>
+                                    <th scope="col">Views</th>
+                                    <th scope="col">file Name on system</th>
+                                    <th scope="col">url</th>
+                                    <th scope="col">Bucket</th>
+                                    <th scope="col">file Token</th>
+                                    <th scope="col">Album</th>
+                                 </tr></thead>
+                                 </table>`;
             card.innerHTML = `<div class="card-header"><div>Current Entries for Album: ${token}</div></div>
-                              <div class="card-body"><p>FILES GO HERE</p></div>
+                              <div class="card-body">${fileEntries}</div>
                               <div class="card-footer d-flex justify-content-between">${shareButton}${albumUrl}<button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
             return card;
         }
@@ -693,6 +710,7 @@
                                 { data: "ip" },
                                 { data: "createdAt", render: customDate() }
                             ];
+                        case "albumEntries":
                         case "entries":
                             return [
                                 { data: "id" },
@@ -918,6 +936,25 @@
                                 reloadTable(["entries"]);
                             }
                         });
+                    } else if (type === "albumEntries") {
+                        buttons.push({
+                            extend: "selected",
+                            text: "Remove file",
+                            attr: { id: "removeFilesButton" },
+                            action: async (e, dt) => {
+                                const accepted = confirm("Are you sure you want to remove these entries?");
+                                if (!accepted) {
+                                    return;
+                                }
+                                const idArr = [];
+                                dt.rows({ selected: true }).every(function() {
+                                    const data = this.data();
+                                    idArr.push(data.id);
+                                });
+                                //await deleteEntry(idArr);
+                                reloadTable(["albumEntries"]);
+                            }
+                        })
                     }
                     return buttons;
                 }
@@ -938,7 +975,7 @@
                     }
 
                     const table = dtMap.get(type);
-                    if (type === "entries") {
+                    if (type === "entries" || type === "albumEntries") {
                         table.on("select", function(e, dt, type, indexes) {
                             if (type === "row") {
                                 const data = table
@@ -962,6 +999,7 @@
                         case "ips":
                             url = `${baseUrlSecureRest}/blockedIps`;
                             break;
+                        case "albumEntries":
                         case "entries":
                             url = `${baseUrlSecureRest}/datatablesEntries`;
                     }
@@ -1021,7 +1059,7 @@
                 });
             }
 
-        loadDt();
+        //loadDt();
 
         document.getElementById("deleteBucket")?.addEventListener("click", async () => {
             const confirmation = confirm("Are you sure you want to delete this bucket? all files associated with it will also be deleted");
@@ -1068,9 +1106,10 @@
         });
 
         const bucketAlbums = await getAlbums();
+        buildAlbumTabs(bucketAlbums, null);
+        loadDt();
         buildAddTo(bucketAlbums);
         linkAlbumButtons();
-        buildAlbumTabs(bucketAlbums, null);
     });
 </script>
 </body>
