@@ -378,19 +378,24 @@
 
         function linkAlbumButtons() {
             const albumButtons = document.querySelectorAll('.sendToAlbum');
+
+            async function handleSendToClick(event) {
+                const b = event.currentTarget; // Reference to the button
+                const albumToken = b.dataset.token;
+                const dt = dtMap.get("entries");
+                const idArr = [];
+                dt.rows({ selected: true }).every(function() {
+                    const data = this.data();
+                    idArr.push(data.fileToken);
+                });
+                await addFilesToAlbum(albumToken, idArr);
+                dt.ajax.reload();
+            }
+
             albumButtons.forEach(b => {
-                b.addEventListener('click', async () => {
-                    const albumToken = b.dataset.token;
-                    const dt = dtMap.get("entries");
-                    const idArr = [];
-                    dt.rows({ selected: true }).every(function() {
-                        const data = this.data();
-                        idArr.push(data.fileToken);
-                    });
-                    await addFilesToAlbum(albumToken, idArr);
-                    dt.ajax.reload();
-                })
-            })
+                b.removeEventListener('click', handleSendToClick);
+                b.addEventListener('click', handleSendToClick);
+            });
         }
 
         function linkAlbumTabButtons() {
@@ -1059,6 +1064,7 @@
                 const newEntry = document.createElement('li');
                 newEntry.innerHTML = `<button class="dropdown-item sendToAlbum" type="button" data-token="${albumObj.token}">${albumObj.name}</button>`;
                 albumMenu.appendChild(newEntry);
+                linkAlbumButtons();
                 buildAlbumTabs(await getAlbums());
                 document.querySelector('#createAlbumModal .modal-body').innerHTML = `<div class="row"><div class="col-12">Album ${albumName.value} created with private token:<br/> ${albumObj.token}</div></div>`;
                 const caModal = new bootstrap.Modal(document.getElementById('createAlbumModal'));
