@@ -79,8 +79,8 @@
             </div>
         </div>
     </div>
-    <div class="row mt-4"
-    <% if(loginType === "user") { %>>
+    <div class="row mt-4">
+    <% if(loginType === "user") { %>
         <div class="col-md-12">
             <div class="card border-primary mb-3">
                 <div class="card-header">Blocked Ips</div>
@@ -340,6 +340,10 @@
             const albumContents = document.getElementById('albumTabContent');
             albumTabs.innerHTML = '';
             albumContents.innerHTML = '';
+            if(albums.length === 0) {
+                albumTabs.innerHTML = '<li><h3>No Albums Have Been Defined</h3></li>';
+                return;
+            }
             if(!token) token = albums[0].token;
             for(const a of albums) {
                 const item = document.createElement('li');
@@ -1068,7 +1072,7 @@
         const bucketAlbums = await getAlbums();
         buildAddTo(bucketAlbums);
         linkAlbumButtons();
-        buildAlbumTabs(bucketAlbums);
+        buildAlbumTabs(bucketAlbums, null);
     });
 </script>
 </body>
