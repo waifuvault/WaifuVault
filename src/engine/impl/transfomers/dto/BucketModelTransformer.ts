@@ -20,7 +20,7 @@ export class BucketModelTransformer implements ITransformer<BucketModel, BucketD
 
     public transform(input: BucketModel): Promise<BucketDto | AdminBucketDto> {
         if (!this.$ctx) {
-            return Promise.resolve(AdminBucketDto.fromModel(input));
+            return Promise.resolve(BucketDto.fromModel(input));
         }
         if (this.$ctx.request.url.includes("/admin/bucket")) {
             return Promise.resolve(AdminBucketDto.fromModel(input));
