@@ -3,8 +3,9 @@ import { Property } from "@tsed/schema";
 import { AlbumInfo } from "../rest/AlbumInfo.js";
 import { BucketModel } from "../db/Bucket.model.js";
 import { Builder } from "builder-pattern";
+import { ObjectUtils } from "../../utils/Utils.js";
 
-type UrlFileMixin = FileUploadModel & { url: string; parsedFilename: string };
+type UrlFileMixin = FileUploadModel & { url: string; parsedFilename: string; expiresString: string | null };
 
 export class AdminBucketDto {
     @Property()
@@ -23,6 +24,7 @@ export class AdminBucketDto {
                     ...f,
                     url: f.getPublicUrl(),
                     parsedFilename: f.parsedFileName,
+                    expiresString: f.expiresIn ? ObjectUtils.timeToHuman(f.expiresIn) : null,
                 } as UrlFileMixin;
             }) ?? [];
         const albums = model.albums?.map(a => AlbumInfo.fromModel(a)) ?? [];
