@@ -46,7 +46,7 @@
                         <% } %>
                     </div>
                     <% if(loginType === "bucket" && bucket.type === "PREMIUM") { %>
-                        <div class="alert alert-info mt-3"><i class="bi bi-question-circle"></i> This is a <%-bucket.type-%> bucket, this means that you get unlimited expiry.</div>
+                    <div class="alert alert-info mt-3"><i class="bi bi-question-circle"></i> This is a <%-bucket.type-%> bucket, this means that you get unlimited expiry.</div>
                     <% } %>
                 </div>
                 <div class="card-body">
@@ -80,36 +80,36 @@
         </div>
     </div>
     <div class="row mt-4">
-    <% if(loginType === "user") { %>
-        <div class="col-md-12">
-            <div class="card border-primary mb-3">
-                <div class="card-header">Blocked Ips</div>
-                <div class="card-body">
-                    <table class="table blockedIpsTable datatables display nowrap" data-type="ips">
-                        <thead>
-                        <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">ip</th>
-                            <th scope="col">Blocked On</th>
-                        </tr>
-                        </thead>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <% } %>
-    <% if(loginType === "bucket") { %>
-        <div class="col-md-12">
-            <div class="card border-primary mb-3">
-                <div class="card-body">
-                    <ul class="nav nav-tabs" id="albumTabs" role="tablist">
-                    </ul>
-                    <div class="tab-content" id="albumTabContent">
+        <% if(loginType === "user") { %>
+            <div class="col-md-12">
+                <div class="card border-primary mb-3">
+                    <div class="card-header">Blocked Ips</div>
+                    <div class="card-body">
+                        <table class="table blockedIpsTable datatables display nowrap" data-type="ips">
+                            <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">ip</th>
+                                <th scope="col">Blocked On</th>
+                            </tr>
+                            </thead>
+                        </table>
                     </div>
                 </div>
             </div>
-        </div>
-    <% } %>
+        <% } %>
+        <% if(loginType === "bucket") { %>
+            <div class="col-md-12">
+                <div class="card border-primary mb-3">
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="albumTabs" role="tablist">
+                        </ul>
+                        <div class="tab-content" id="albumTabContent">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } %>
     </div>
 </div>
 <!--modals-->
@@ -240,19 +240,32 @@
 
         const bucketId = <%- loginType === "bucket" ? `"${bucket.bucketToken}";` : "null;"; -%>
 
-        async function getAlbums() {
-            const resp = await fetch(`${baseUrl}/bucket/get`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({bucket_token: bucketId})
+            async function getAlbums() {
+                const resp = await fetch(`${baseUrl}/bucket/get`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({bucket_token: bucketId})
+                });
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    alert(`error ${err.status} - ${err.message}`);
+                    return;
+                }
+                const bucketObj = await resp.json();
+                return bucketObj.albums;
+            }
+
+        async function getEntries() {
+            const resp = await fetch(`${baseUrlSecureRest}/allEntries`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
             });
             if (!resp.ok) {
                 const err = await resp.json();
                 alert(`error ${err.status} - ${err.message}`);
                 return;
             }
-            const bucketObj = await resp.json();
-            return bucketObj.albums;
+            return await resp.json();
         }
 
         async function deleteAlbum(token, alsoFiles) {
@@ -318,6 +331,28 @@
             return albumObj;
         }
 
+        async function removeFilesFromAlbum(token, files) {
+            const resp = await fetch(`${baseUrl}/album/${token}/disassociate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({fileTokens: files})
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                alert(`error ${err.status} - ${err.message}`);
+                return;
+            }
+            const albumObj = await resp.json();
+            return albumObj;
+        }
+
+        function resize(entryId) {
+            const tables = dtMap.get(entryId);
+            for (const table of tables) {
+                table.columns.adjust().draw();
+            }
+        }
+
         function buildAddTo(albums) {
             const addBtn = document.getElementById('addToAlbumPlaceholder');
             addBtn.classList.add('dropdown-toggle');
@@ -380,11 +415,6 @@
                                     <th scope="col">expires</th>
                                     <th scope="col">mediaType</th>
                                     <th scope="col">Views</th>
-                                    <th scope="col">file Name on system</th>
-                                    <th scope="col">url</th>
-                                    <th scope="col">Bucket</th>
-                                    <th scope="col">file Token</th>
-                                    <th scope="col">Album</th>
                                  </tr></thead>
                                  </table>`;
             card.innerHTML = `<div class="card-header"><div>Current Entries for Album: ${token}</div></div>
@@ -399,7 +429,7 @@
             async function handleSendToClick(event) {
                 const b = event.currentTarget; // Reference to the button
                 const albumToken = b.dataset.token;
-                const dt = dtMap.get("entries");
+                const dt = dtMap.get("entries")[0];
                 const idArr = [];
                 dt.rows({ selected: true }).every(function() {
                     const data = this.data();
@@ -407,6 +437,7 @@
                 });
                 await addFilesToAlbum(albumToken, idArr);
                 dt.ajax.reload();
+                await refreshAlbumFiles();
             }
 
             albumButtons.forEach(b => {
@@ -468,481 +499,393 @@
             })
         }
 
-            function loadDt() {
-                const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
+        async function refreshAlbumFiles() {
+            allEntries = (await getEntries()).map(e => e.entry);
+            const albumList = (await getAlbums()).map(e => e.token);
+            const albumDT = dtMap.get("albumEntries");
+            for(const tab of albumDT) {
+                const curToken = albumList.pop();
+                tab.data = allEntries.filter(e => e.albumToken === curToken);
+                tab.draw();
+            }
+        }
 
-                const uploadModal = new bootstrap.Modal(document.getElementById("fileUploadModel"), { keyboard: false });
-                const progressWrapper = document.getElementById("progressWrapper");
-                const progressbar = document.getElementById("uploadProgress");
+        function loadDt() {
+            const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
 
-                document.querySelector('.btn-file-upload').addEventListener('click', () => {
-                    const file = document.getElementById('uploadFile').files[0];
-                    const url = document.getElementById('url').value;
-                    const expires = document.getElementById('expires').value;
-                    const password = document.getElementById('password').value;
-                    const hideFileName = document.getElementById('hideFilename').checked;
-                    const oneTimeDownload = document.getElementById('oneTimeDownload').checked;
+            const uploadModal = new bootstrap.Modal(document.getElementById("fileUploadModel"), { keyboard: false });
+            const progressWrapper = document.getElementById("progressWrapper");
+            const progressbar = document.getElementById("uploadProgress");
 
-                    uploadFile(file, url, bucketId, expires, password, hideFileName, oneTimeDownload);
-                });
+            document.querySelector('.btn-file-upload').addEventListener('click', () => {
+                const file = document.getElementById('uploadFile').files[0];
+                const url = document.getElementById('url').value;
+                const expires = document.getElementById('expires').value;
+                const password = document.getElementById('password').value;
+                const hideFileName = document.getElementById('hideFilename').checked;
+                const oneTimeDownload = document.getElementById('oneTimeDownload').checked;
 
-                document.getElementById('radioFileSelectFile').addEventListener('change', function() {
-                    const radioFile = document.getElementById('radioFileSelectFile');
-                    const urlInput = document.getElementById('url');
-                    const fileInput = document.getElementById('uploadFile');
-                    if (radioFile.checked) {
-                        urlInput.value = null;
-                        urlInput.disabled = true;
-                        fileInput.disabled = false;
-                    }
-                });
+                uploadFile(file, url, bucketId, expires, password, hideFileName, oneTimeDownload);
+            });
 
-                document.getElementById('radioFileSelectUrl').addEventListener('change', function() {
-                    const radioUrl = document.getElementById('radioFileSelectUrl');
-                    const urlInput = document.getElementById('url');
-                    const fileInput = document.getElementById('uploadFile');
-                    if (radioUrl.checked) {
-                        fileInput.value = null;
-                        fileInput.disabled = true;
-                        urlInput.disabled = false;
-                    }
-                });
+            document.getElementById('radioFileSelectFile').addEventListener('change', function() {
+                const radioFile = document.getElementById('radioFileSelectFile');
+                const urlInput = document.getElementById('url');
+                const fileInput = document.getElementById('uploadFile');
+                if (radioFile.checked) {
+                    urlInput.value = null;
+                    urlInput.disabled = true;
+                    fileInput.disabled = false;
+                }
+            });
 
-                function resetProgress() {
-                    progressbar.style.width = "0%";
-                    progressbar.innerText = "";
-                    progressWrapper.setAttribute("aria-valuenow", "0");
+            document.getElementById('radioFileSelectUrl').addEventListener('change', function() {
+                const radioUrl = document.getElementById('radioFileSelectUrl');
+                const urlInput = document.getElementById('url');
+                const fileInput = document.getElementById('uploadFile');
+                if (radioUrl.checked) {
+                    fileInput.value = null;
+                    fileInput.disabled = true;
+                    urlInput.disabled = false;
+                }
+            });
+
+            function resetProgress() {
+                progressbar.style.width = "0%";
+                progressbar.innerText = "";
+                progressWrapper.setAttribute("aria-valuenow", "0");
+            }
+
+            async function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
+                const restrictions = await getRestrictions();
+                const max_upload_size = restrictions ? restrictions.filter(x => x.type === "MAX_FILE_SIZE")[0].value : null;
+                const banned_mime_type = restrictions ? restrictions.filter(x => x.type === "BANNED_MIME_TYPE")[0].value : null;
+                const uploadButton = document.querySelector('.btn-file-upload');
+                const fileUploadSuccess = document.getElementById("fileUploadedUrl");
+                fileUploadSuccess.innerHTML = null;
+
+                uploadButton.disabled = true;
+                let params = `hide_filename=${hideFilename}&one_time_download=${oneTimeDownload}`;
+                if (expires) {
+                    params += `&expires=${expires}`;
                 }
 
-                async function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
-                    const restrictions = await getRestrictions();
-                    const max_upload_size = restrictions ? restrictions.filter(x => x.type === "MAX_FILE_SIZE")[0].value : null;
-                    const banned_mime_type = restrictions ? restrictions.filter(x => x.type === "BANNED_MIME_TYPE")[0].value : null;
-                    const uploadButton = document.querySelector('.btn-file-upload');
-                    const fileUploadSuccess = document.getElementById("fileUploadedUrl");
-                    fileUploadSuccess.innerHTML = null;
+                if (file && max_upload_size && file.size > max_upload_size) {
+                    Site.showError(`File is too large (server limit is ${sizeAsMB()(max_upload_size,"display","")})`);
+                    uploadButton.disabled = false;
+                    return;
+                }
 
-                    uploadButton.disabled = true;
-                    let params = `hide_filename=${hideFilename}&one_time_download=${oneTimeDownload}`;
-                    if (expires) {
-                        params += `&expires=${expires}`;
+                if (file && file.type!=="" && banned_mime_type && banned_mime_type.indexOf(file.type) !== -1) {
+                    Site.showError(`File is a banned type (server bans ${banned_mime_type})`);
+                    uploadButton.disabled = false;
+                    return;
+                }
+
+                const formData = new FormData();
+                if (url) {
+                    formData.append('url', url)
+                } else {
+                    formData.append('file', file);
+                }
+
+                if (password) {
+                    formData.append('password', password);
+                }
+
+                const xhr = new XMLHttpRequest();
+                let fileUploadUrl = `${baseUrl}`;
+                if(bucket){
+                    fileUploadUrl += `/${bucket}?${params}`;
+                }else{
+                    fileUploadUrl += `?${params}`;
+                }
+                xhr.open('PUT', fileUploadUrl, true);
+
+                xhr.upload.onprogress = function(event) {
+                    if (event.lengthComputable) {
+                        const uploadDone = Math.round((event.loaded / event.total) * 100) + "%";
+                        progressbar.innerText = uploadDone;
+                        progressbar.style.width = uploadDone;
+                        progressWrapper.setAttribute("aria-valuenow", Math.round((event.loaded / event.total) * 100).toString());
                     }
+                };
 
-                    if (file && max_upload_size && file.size > max_upload_size) {
-                        Site.showError(`File is too large (server limit is ${sizeAsMB()(max_upload_size,"display","")})`);
-                        uploadButton.disabled = false;
-                        return;
-                    }
+                xhr.onload = function() {
+                    const response =  JSON.parse(xhr.response);
+                    if (xhr.status === 200 || xhr.status === 201) {
+                        const url = encodeURI(response.url);
+                        const btn = document.createElement("button");
+                        btn.className = "btn btn-sm btn-outline-primary mt-3 d-block";
+                        btn.addEventListener("click", () => navigator.clipboard.writeText(url));
+                        btn.textContent = "Copy to clipboard";
 
-                    if (file && file.type!=="" && banned_mime_type && banned_mime_type.indexOf(file.type) !== -1) {
-                        Site.showError(`File is a banned type (server bans ${banned_mime_type})`);
-                        uploadButton.disabled = false;
-                        return;
-                    }
-
-                    const formData = new FormData();
-                    if (url) {
-                        formData.append('url', url)
+                        const anchor = document.createElement("a");
+                        anchor.setAttribute("target", "_blank");
+                        anchor.setAttribute("href", url);
+                        anchor.textContent = url;
+                        fileUploadSuccess.append(anchor);
+                        anchor.after(btn);
+                        // fileUploadSuccess.innerHTML = `<a target="_blank" href="${response.url}">${response.url}</a> <button class="btn btn-sm btn-outline-primary" role="button" onclick="navigator.clipboard.writeText(response);">Copy to clipboard</button>`;
+                        Site.showSuccess();
                     } else {
-                        formData.append('file', file);
+                        Site.showError('Error uploading file: ' + response.message);
                     }
+                    resetProgress();
+                    reloadTable(["entries"]);
+                    uploadButton.disabled = false;
+                };
 
-                    if (password) {
-                        formData.append('password', password);
-                    }
+                xhr.onerror = function() {
+                    Site.showError('Network error.');
+                    resetProgress();
+                    uploadButton.disabled = false;
+                };
 
-                    const xhr = new XMLHttpRequest();
-                    let fileUploadUrl = `${baseUrl}`;
-                    if(bucket){
-                        fileUploadUrl += `/${bucket}?${params}`;
-                    }else{
-                        fileUploadUrl += `?${params}`;
-                    }
-                    xhr.open('PUT', fileUploadUrl, true);
+                xhr.send(formData);
+            }
 
-                    xhr.upload.onprogress = function(event) {
-                        if (event.lengthComputable) {
-                            const uploadDone = Math.round((event.loaded / event.total) * 100) + "%";
-                            progressbar.innerText = uploadDone;
-                            progressbar.style.width = uploadDone;
-                            progressWrapper.setAttribute("aria-valuenow", Math.round((event.loaded / event.total) * 100).toString());
+            function sizeAsMB() {
+                return function(data, type, row) {
+                    if (type === "display") {
+                        const sizeKB = Math.floor(data / 1024);
+                        const sizeMB = Math.floor(sizeKB / 1024);
+                        if (data < 1024) {
+                            return `${data} B`;
                         }
-                    };
-
-                    xhr.onload = function() {
-                        const response =  JSON.parse(xhr.response);
-                        if (xhr.status === 200 || xhr.status === 201) {
-                            const url = encodeURI(response.url);
-                            const btn = document.createElement("button");
-                            btn.className = "btn btn-sm btn-outline-primary mt-3 d-block";
-                            btn.addEventListener("click", () => navigator.clipboard.writeText(url));
-                            btn.textContent = "Copy to clipboard";
-
-                            const anchor = document.createElement("a");
-                            anchor.setAttribute("target", "_blank");
-                            anchor.setAttribute("href", url);
-                            anchor.textContent = url;
-                            fileUploadSuccess.append(anchor);
-                            anchor.after(btn);
-                            // fileUploadSuccess.innerHTML = `<a target="_blank" href="${response.url}">${response.url}</a> <button class="btn btn-sm btn-outline-primary" role="button" onclick="navigator.clipboard.writeText(response);">Copy to clipboard</button>`;
-                            Site.showSuccess();
-                        } else {
-                            Site.showError('Error uploading file: ' + response.message);
+                        if (sizeKB < 1024) {
+                            return `${sizeKB} KB`;
                         }
-                        resetProgress();
-                        reloadTable(["entries"]);
-                        uploadButton.disabled = false;
-                    };
+                        return `${sizeMB} MB`;
+                    }
+                    return data;
+                };
+            }
 
-                    xhr.onerror = function() {
-                        Site.showError('Network error.');
-                        resetProgress();
-                        uploadButton.disabled = false;
-                    };
+            function addDetailInfo(detailArr) {
+                const copyButtons = ["IP", "URL", "Original Name"];
+                document.getElementById("detailsTableBody").innerHTML = detailArr.map(details => {
+                    const header = details[0];
+                    let data = details[1];
+                    if (header === "URL") {
+                        data = `<a href='${data}' target='_blank'><span>${data}</span></a>`;
+                    } else {
+                        data = `<span>${data}</span>`;
+                    }
+                    if (copyButtons.includes(header)) {
+                        data += `<i title="Copy value to clipboard" class='bi bi-clipboard ms-1' onclick='navigator.clipboard.writeText("${encodeURI(details[1])}");'></i>`;
+                    }
+                    return `<tr><th>${header}</th><td>${data}</td></tr>`;
+                }).join("");
+            }
 
-                    xhr.send(formData);
+            function renderNullField() {
+                return function(data, type, row) {
+                    return data ?? "N/A";
+                };
+            }
+
+            function renderAlbumField() {
+                return function(data, type, row) {
+                    return data?.name ?? "N/A";
                 }
+            }
 
-                function sizeAsMB() {
-                    return function(data, type, row) {
-                        if (type === "display") {
-                            const sizeKB = Math.floor(data / 1024);
-                            const sizeMB = Math.floor(sizeKB / 1024);
-                            if (data < 1024) {
-                                return `${data} B`;
-                            }
-                            if (sizeKB < 1024) {
-                                return `${sizeKB} KB`;
-                            }
-                            return `${sizeMB} MB`;
+            function colouredIP() {
+                return function(data, type, row) {
+                    if (type === "display") {
+                        let sizedData = data;
+                        if (data.length > 15) {
+                            const splitData = data.split(":");
+                            sizedData = `${splitData[0]}: ... :${splitData[splitData.length - 1]}`;
                         }
-                        return data;
-                    };
-                }
-
-                function addDetailInfo(detailArr) {
-                    const copyButtons = ["IP", "URL", "Original Name"];
-                    document.getElementById("detailsTableBody").innerHTML = detailArr.map(details => {
-                        const header = details[0];
-                        let data = details[1];
-                        if (header === "URL") {
-                            data = `<a href='${data}' target='_blank'><span>${data}</span></a>`;
-                        } else {
-                            data = `<span>${data}</span>`;
+                        if (row.ipBanned) {
+                            return `<span class="text-danger">${sizedData}</span>`;
                         }
-                        if (copyButtons.includes(header)) {
-                            data += `<i title="Copy value to clipboard" class='bi bi-clipboard ms-1' onclick='navigator.clipboard.writeText("${encodeURI(details[1])}");'></i>`;
+                        return sizedData;
+                    }
+                    return data;
+                };
+            }
+
+            function customDate() {
+                return function(data, type, row) {
+                    if (type === "display") {
+                        return new Date(Date.parse(data)).toLocaleString();
+                    }
+                    return data;
+                };
+            }
+
+            function fileEmbedRender() {
+                return function(data, type, row) {
+                    const url = row.url;
+                    const notProtected = row.fileProtectionLevel === "None" && !row.oneTimeDownload;
+                    const ext = url.match(/\.(mp4|ogg|webm)$/)?.[1];
+                    let filename = data || `${row.fileName}`; // filename here is originalFileName. but hidden files do not have it, so get the filename on disk
+                    if (ext && !data) {
+                        filename += `.${ext}`;
+                    }
+                    if (notProtected) {
+                        if (url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null) {
+                            const imageTag = `<img width='auto' height='240' src='${url}' />`
+                            return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${imageTag}">${filename}</span>`;
+                        } else if (url.match(/\.(mp4|ogg|webm)$/) != null) {
+                            let type = `video/${ext}`;
+                            const videoTag = `<video width='auto' height='240' autoplay><source src='${url}' type='${type}'></video>`;
+                            return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${videoTag}">${filename}</span>`;
+                        } else if (url.match(/\.(pdf)$/) != null) {
+                            const pdfTag = `<embed class='pdf' width='auto' height='240' src='${url}'>`
+                            return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${pdfTag}">${filename}</span>`;
                         }
-                        return `<tr><th>${header}</th><td>${data}</td></tr>`;
-                    }).join("");
-                }
-
-                function renderNullField() {
-                    return function(data, type, row) {
-                        return data ?? "N/A";
-                    };
-                }
-
-                function renderAlbumField() {
-                    return function(data, type, row) {
-                        return data?.name ?? "N/A";
                     }
+                    return `<span>${filename}</span>`;
+                };
+            }
+
+
+            function getDataMapping(type) {
+                switch (type) {
+                    case "ips":
+                        return [
+                            { data: "id" },
+                            { data: "ip" },
+                            { data: "createdAt", render: customDate() }
+                        ];
+                    case "albumEntries":
+                        return [
+                            { data: "id" },
+                            { data: "originalFileName", className: "col-filename" },
+                            { data: "fileExtension", className: "col-fileext" },
+                            { data: "fileSize", render: sizeAsMB() },
+                            { data: "createdAt", render: customDate() },
+                            { data: "expires", render: renderNullField() },
+                            { data: "mediaType", render: renderNullField() },
+                            { data: "views" }
+                        ];
+                    case "entries":
+                        return [
+                            { data: "id" },
+                            { data: "originalFileName", className: "col-filename", render: fileEmbedRender() },
+                            { data: "fileExtension", className: "col-fileext" },
+                            { data: "fileSize", render: sizeAsMB() },
+                            { data: "createdAt", render: customDate() },
+                            { data: "expires", render: renderNullField() },
+                            { data: "mediaType", render: renderNullField() },
+                            { data: "views" },
+                            { data: "fileName" },
+                            { data: "url" },
+                            { data: "bucket", render: renderNullField() },
+                            { data: "fileToken" },
+                            { data: "album", render: renderAlbumField() }
+                        ];
                 }
+            }
 
-                function colouredIP() {
-                    return function(data, type, row) {
-                        if (type === "display") {
-                            let sizedData = data;
-                            if (data.length > 15) {
-                                const splitData = data.split(":");
-                                sizedData = `${splitData[0]}: ... :${splitData[splitData.length - 1]}`;
-                            }
-                            if (row.ipBanned) {
-                                return `<span class="text-danger">${sizedData}</span>`;
-                            }
-                            return sizedData;
-                        }
-                        return data;
-                    };
+            async function unBanIps(ips) {
+                Site.loading(true);
+                let response;
+                try {
+                    response = await fetch(`${baseUrlSecureRest}/unblockIps`, {
+                        method: "POST",
+                        headers: {
+                            "Accept": "application/json",
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(ips)
+                    });
+                } catch (e) {
+                    alert(e.message);
+                    return false;
+                } finally {
+                    Site.loading(false);
                 }
-
-                function customDate() {
-                    return function(data, type, row) {
-                        if (type === "display") {
-                            return new Date(Date.parse(data)).toLocaleString();
-                        }
-                        return data;
-                    };
+                const responseStatus = response.status;
+                const responseJson = await response.json();
+                if (responseStatus !== 200) {
+                    alert(responseJson.message);
+                    throw new Error(responseJson.message);
                 }
+            }
 
-                function fileEmbedRender() {
-                    return function(data, type, row) {
-                        const url = row.url;
-                        const notProtected = row.fileProtectionLevel === "None" && !row.oneTimeDownload;
-                        const ext = url.match(/\.(mp4|ogg|webm)$/)?.[1];
-                        let filename = data || `${row.fileName}`; // filename here is originalFileName. but hidden files do not have it, so get the filename on disk
-                        if (ext && !data) {
-                            filename += `.${ext}`;
-                        }
-                        if (notProtected) {
-                            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null) {
-                                const imageTag = `<img width='auto' height='240' src='${url}' />`
-                                return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${imageTag}">${filename}</span>`;
-                            } else if (url.match(/\.(mp4|ogg|webm)$/) != null) {
-                                let type = `video/${ext}`;
-                                const videoTag = `<video width='auto' height='240' autoplay><source src='${url}' type='${type}'></video>`;
-                                return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${videoTag}">${filename}</span>`;
-                            } else if (url.match(/\.(pdf)$/) != null) {
-                                const pdfTag = `<embed class='pdf' width='auto' height='240' src='${url}'>`
-                                return `<span class="text-primary" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="${pdfTag}">${filename}</span>`;
-                            }
-                        }
-                        return `<span>${filename}</span>`;
-                    };
+            async function banIp(ip, removeRelatedData = false) {
+                Site.loading(true);
+                let response;
+                try {
+                    response = await fetch(`${baseUrlSecureRest}/blockIp?removeRelatedData=${removeRelatedData}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: new URLSearchParams({ ip })
+                    });
+                } catch (e) {
+                    alert(e.message);
+                    return false;
+                } finally {
+                    Site.loading(false);
                 }
-
-
-                function getDataMapping(type) {
-                    switch (type) {
-                        case "ips":
-                            return [
-                                { data: "id" },
-                                { data: "ip" },
-                                { data: "createdAt", render: customDate() }
-                            ];
-                        case "albumEntries":
-                        case "entries":
-                            return [
-                                { data: "id" },
-                                { data: "originalFileName", className: "col-filename", render: fileEmbedRender() },
-                                { data: "fileExtension", className: "col-fileext" },
-                                { data: "fileSize", render: sizeAsMB() },
-                                { data: "createdAt", render: customDate() },
-                                { data: "expires", render: renderNullField() },
-                                { data: "mediaType", render: renderNullField() },
-                                { data: "views" },
-                                { data: "fileName" },
-                                { data: "url" },
-                                { data: "bucket", render: renderNullField() },
-                                { data: "fileToken" },
-                                { data: "album", render: renderAlbumField() }
-                            ];
-                    }
+                const responseStatus = response.status;
+                const responseJson = await response.json();
+                if (responseStatus !== 200) {
+                    alert(responseJson.message);
+                    throw new Error(responseJson.message);
                 }
+            }
 
-                async function unBanIps(ips) {
-                    Site.loading(true);
-                    let response;
-                    try {
-                        response = await fetch(`${baseUrlSecureRest}/unblockIps`, {
-                            method: "POST",
-                            headers: {
-                                "Accept": "application/json",
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify(ips)
-                        });
-                    } catch (e) {
-                        alert(e.message);
-                        return false;
-                    } finally {
-                        Site.loading(false);
-                    }
-                    const responseStatus = response.status;
-                    const responseJson = await response.json();
-                    if (responseStatus !== 200) {
-                        alert(responseJson.message);
-                        throw new Error(responseJson.message);
-                    }
+            async function deleteEntry(ids) {
+                Site.loading(true);
+                let response;
+                try {
+                    response = await fetch(`${baseUrlSecureRest}/deleteEntries`, {
+                        method: "DELETE",
+                        headers: {
+                            "Accept": "application/json",
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(ids)
+                    });
+                } catch (e) {
+                    alert(e.message);
+                    return false;
+                } finally {
+                    Site.loading(false);
                 }
-
-                async function banIp(ip, removeRelatedData = false) {
-                    Site.loading(true);
-                    let response;
-                    try {
-                        response = await fetch(`${baseUrlSecureRest}/blockIp?removeRelatedData=${removeRelatedData}`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: new URLSearchParams({ ip })
-                        });
-                    } catch (e) {
-                        alert(e.message);
-                        return false;
-                    } finally {
-                        Site.loading(false);
-                    }
-                    const responseStatus = response.status;
-                    const responseJson = await response.json();
-                    if (responseStatus !== 200) {
-                        alert(responseJson.message);
-                        throw new Error(responseJson.message);
-                    }
+                const responseStatus = response.status;
+                const responseJson = await response.json();
+                if (responseStatus !== 200) {
+                    alert(responseJson.message);
+                    throw new Error(responseJson.message);
                 }
+            }
 
-                async function deleteEntry(ids) {
-                    Site.loading(true);
-                    let response;
-                    try {
-                        response = await fetch(`${baseUrlSecureRest}/deleteEntries`, {
-                            method: "DELETE",
-                            headers: {
-                                "Accept": "application/json",
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify(ids)
-                        });
-                    } catch (e) {
-                        alert(e.message);
-                        return false;
-                    } finally {
-                        Site.loading(false);
-                    }
-                    const responseStatus = response.status;
-                    const responseJson = await response.json();
-                    if (responseStatus !== 200) {
-                        alert(responseJson.message);
-                        throw new Error(responseJson.message);
-                    }
+            async function getRestrictions() {
+                Site.loading(true);
+                let response;
+                try {
+                    response = await fetch(`${baseUrl}/resources/restrictions`);
+                } catch(e) {
+                    alert(e.message);
+                    return null;
+                } finally {
+                    Site.loading(false);
                 }
-
-                async function getRestrictions() {
-                    Site.loading(true);
-                    let response;
-                    try {
-                        response = await fetch(`${baseUrl}/resources/restrictions`);
-                    } catch(e) {
-                        alert(e.message);
-                        return null;
-                    } finally {
-                        Site.loading(false);
-                    }
-                    const responseStatus = response.status;
-                    const responseJson = await response.json();
-                    if (responseStatus !== 200) {
-                        Site.showError(responseJson.message);
-                        throw new Error(responseJson.message);
-                    }
-                    return responseJson;
+                const responseStatus = response.status;
+                const responseJson = await response.json();
+                if (responseStatus !== 200) {
+                    Site.showError(responseJson.message);
+                    throw new Error(responseJson.message);
                 }
+                return responseJson;
+            }
 
-                function getButtons(type) {
-                    const buttons = [];
-                    if (type === "entries") {
-                        buttons.push({
-                                extend: "selected",
-                                text: "Delete file",
-                                attr: { id: "deleteFilesButton" },
-                                action: async (e, dt) => {
-                                    const accepted = confirm("Are you sure you want to delete these entries?, the files will also be deleted");
-                                    if (!accepted) {
-                                        return;
-                                    }
-                                    const idArr = [];
-                                    dt.rows({ selected: true }).every(function() {
-                                        const data = this.data();
-                                        idArr.push(data.id);
-                                    });
-                                    await deleteEntry(idArr);
-                                    reloadTable(["entries"]);
-                                }
-                            },
-                                <% if(loginType === "user") { %>
-                            {
-                                extend: "selectedSingle",
-                                text: "Ban IP",
-                                attr: { id: "banIpButton" },
-                                action: async (e, dt) => {
-                                    const accepted = confirm("Are you sure you want to ban this IP?");
-                                    if (!accepted) {
-                                        return;
-                                    }
-                                    const deleteRelatedData = confirm("Do you want to also delete all related data?\nPress 'Cancel' for no and 'Ok' for Yes");
-                                    const selectedRow = dt.row({ selected: true }).data();
-                                    const ip = selectedRow.ip;
-                                    await banIp(ip, deleteRelatedData);
-                                    reloadTable(["entries", "ips"]);
-                                }
-                            },
-                                <% } %>
-                            {
-                                extend: "selectedSingle",
-                                text: "Details",
-                                attr: { id: "detailsButton" },
-                                action: async (e, dt) => {
-                                    const selectedRow = dt.row({ selected: true }).data();
-                                    const detailArr = [
-                                        ["ID", selectedRow.id],
-                                        ["File Name", selectedRow.fileName],
-                                        ["File Ext", selectedRow.fileExtension],
-                                        ["Original Name", selectedRow.originalFileName],
-                                        ["Media Type", selectedRow.mediaType],
-                                        ["File Size", selectedRow.fileSize],
-                                        ["File Protection Level", selectedRow.fileProtectionLevel],
-                                        ["Created At", customDate()(selectedRow.createdAt, "display", selectedRow)],
-                                        ["Expires", selectedRow.expires ?? "N/A"],
-                                        ["IP", selectedRow.ip],
-                                        ["URL", selectedRow.url],
-                                        ["Bucket", selectedRow.bucket ?? "N/A"],
-                                    ];
-                                    addDetailInfo(detailArr);
-                                    detailsModal.show();
-                                }
-                            },
-                            {
-                                extend: "selectedSingle",
-                                text: "Download file",
-                                attr: { id: "downloadFileButton" },
-                                action: async (e, dt) => {
-                                    const selectedRow = dt.row({ selected: true }).data();
-                                    const url = selectedRow.url;
-                                    window.open(url, "_blank");
-                                    if (selectedRow.oneTimeDownload) {
-                                        setTimeout(function() {
-                                            reloadTable(["entries"]);
-                                        }, 1000);
-                                    }
-                                }
-                            },
-                            {
-                                text: "Upload file",
-                                attr: { id: "uploadFileButton" },
-                                action: async (e, dt) => {
-                                    uploadModal?.show();
-                                }
-                            },
-                            {
-                                extend: "selected",
-                                text: "Add to Album",
-                                attr: { id: "addToAlbumPlaceholder" },
-                            },
-                        );
-                    } else if (type === "ips") {
-                        buttons.push({
+            function getButtons(type) {
+                const buttons = [];
+                if (type === "entries") {
+                    buttons.push({
                             extend: "selected",
-                            text: "Un-ban",
-                            attr: { id: "downloadFileButton" },
+                            text: "Delete file",
+                            attr: { id: "deleteFilesButton" },
                             action: async (e, dt) => {
-                                const accepted = confirm("Are you sure you want to remove the ban for the selected ip(s)?");
-                                if (!accepted) {
-                                    return;
-                                }
-                                const ipArr = [];
-                                dt.rows({ selected: true }).every(function() {
-                                    const data = this.data();
-                                    ipArr.push(data.ip);
-                                });
-                                await unBanIps(ipArr);
-                                dt.rows({ selected: true }).remove().draw(false);
-                                reloadTable(["entries"]);
-                            }
-                        });
-                    } else if (type === "albumEntries") {
-                        buttons.push({
-                            extend: "selected",
-                            text: "Remove file",
-                            attr: { id: "removeFilesButton" },
-                            action: async (e, dt) => {
-                                const accepted = confirm("Are you sure you want to remove these entries?");
+                                const accepted = confirm("Are you sure you want to delete these entries?, the files will also be deleted");
                                 if (!accepted) {
                                     return;
                                 }
@@ -951,113 +894,227 @@
                                     const data = this.data();
                                     idArr.push(data.id);
                                 });
-                                //await deleteEntry(idArr);
-                                reloadTable(["albumEntries"]);
+                                await deleteEntry(idArr);
+                                reloadTable(["entries"]);
                             }
-                        })
-                    }
-                    return buttons;
-                }
-
-                function reloadTable(types) {
-                    for (const type of types) {
-                        dtMap.get(type)?.ajax.reload();
-                    }
-                }
-
-                function initSelectListeners(type) {
-                    function disableButtonsOnSelection(value, buttons) {
-                        if (value) {
-                            buttons.disable();
-                        } else {
-                            buttons.enable();
+                        },
+                            <% if(loginType === "user") { %>
+                        {
+                            extend: "selectedSingle",
+                            text: "Ban IP",
+                            attr: { id: "banIpButton" },
+                            action: async (e, dt) => {
+                                const accepted = confirm("Are you sure you want to ban this IP?");
+                                if (!accepted) {
+                                    return;
+                                }
+                                const deleteRelatedData = confirm("Do you want to also delete all related data?\nPress 'Cancel' for no and 'Ok' for Yes");
+                                const selectedRow = dt.row({ selected: true }).data();
+                                const ip = selectedRow.ip;
+                                await banIp(ip, deleteRelatedData);
+                                reloadTable(["entries", "ips"]);
+                            }
+                        },
+                            <% } %>
+                        {
+                            extend: "selectedSingle",
+                            text: "Details",
+                            attr: { id: "detailsButton" },
+                            action: async (e, dt) => {
+                                const selectedRow = dt.row({ selected: true }).data();
+                                const detailArr = [
+                                    ["ID", selectedRow.id],
+                                    ["File Name", selectedRow.fileName],
+                                    ["File Ext", selectedRow.fileExtension],
+                                    ["Original Name", selectedRow.originalFileName],
+                                    ["Media Type", selectedRow.mediaType],
+                                    ["File Size", selectedRow.fileSize],
+                                    ["File Protection Level", selectedRow.fileProtectionLevel],
+                                    ["Created At", customDate()(selectedRow.createdAt, "display", selectedRow)],
+                                    ["Expires", selectedRow.expires ?? "N/A"],
+                                    ["IP", selectedRow.ip],
+                                    ["URL", selectedRow.url],
+                                    ["Bucket", selectedRow.bucket ?? "N/A"],
+                                ];
+                                addDetailInfo(detailArr);
+                                detailsModal.show();
+                            }
+                        },
+                        {
+                            extend: "selectedSingle",
+                            text: "Download file",
+                            attr: { id: "downloadFileButton" },
+                            action: async (e, dt) => {
+                                const selectedRow = dt.row({ selected: true }).data();
+                                const url = selectedRow.url;
+                                window.open(url, "_blank");
+                                if (selectedRow.oneTimeDownload) {
+                                    setTimeout(function() {
+                                        reloadTable(["entries"]);
+                                    }, 1000);
+                                }
+                            }
+                        },
+                        {
+                            text: "Upload file",
+                            attr: { id: "uploadFileButton" },
+                            action: async (e, dt) => {
+                                uploadModal?.show();
+                            }
+                        },
+                        {
+                            extend: "selected",
+                            text: "Add to Album",
+                            attr: { id: "addToAlbumPlaceholder" },
+                        },
+                    );
+                } else if (type === "ips") {
+                    buttons.push({
+                        extend: "selected",
+                        text: "Un-ban",
+                        attr: { id: "downloadFileButton" },
+                        action: async (e, dt) => {
+                            const accepted = confirm("Are you sure you want to remove the ban for the selected ip(s)?");
+                            if (!accepted) {
+                                return;
+                            }
+                            const ipArr = [];
+                            dt.rows({ selected: true }).every(function() {
+                                const data = this.data();
+                                ipArr.push(data.ip);
+                            });
+                            await unBanIps(ipArr);
+                            dt.rows({ selected: true }).remove().draw(false);
+                            reloadTable(["entries"]);
                         }
-                    }
+                    });
+                } else if (type === "albumEntries") {
+                    buttons.push({
+                        extend: "selected",
+                        text: "Remove file",
+                        attr: { id: "removeFilesButton" },
+                        action: async (e, dt) => {
+                            const idArr = [];
+                            const albumArr = [];
+                            dt.rows({ selected: true }).every(function() {
+                                const data = this.data();
+                                idArr.push(data.token);
+                                albumArr.push(data.albumToken);
+                            });
+                            await removeFilesFromAlbum(albumArr[0],idArr);
+                            dt.rows({ selected: true }).remove().draw(false);
+                        }
+                    })
+                }
+                return buttons;
+            }
 
-                    const table = dtMap.get(type);
+            function reloadTable(types) {
+                for (const type of types) {
+                    const tables = dtMap.get(type);
+                    tables?.forEach(t => {
+                        t.ajax.reload();
+                    });
+                }
+            }
+
+            function initSelectListeners(type) {
+                function disableButtonsOnSelection(value, buttons) {
+                    if (value) {
+                        buttons.disable();
+                    } else {
+                        buttons.enable();
+                    }
+                }
+
+                const table = dtMap.get(type);
+                table.forEach(t => {
                     if (type === "entries" || type === "albumEntries") {
-                        table.on("select", function(e, dt, type, indexes) {
+                        t.on("select", function(e, dt, type, indexes) {
                             if (type === "row") {
-                                const data = table
+                                const data = t
                                     .rows(indexes)
                                     .data()
                                     .pluck("ipBanned");
-                                disableButtonsOnSelection(data.get(0), table.buttons(["#banIpButton"]));
+                                disableButtonsOnSelection(data.get(0), t.buttons(["#banIpButton"]));
                             }
                         });
                     }
-                    table.on("draw.dt", () => {
+                    t.on("draw.dt", () => {
                         site.initTooltips();
                     });
-                }
-
-                $(".datatables").each(async function() {
-                    const el = $(this)[0];
-                    const type = el.dataset.type;
-                    let url = null;
-                    switch (type) {
-                        case "ips":
-                            url = `${baseUrlSecureRest}/blockedIps`;
-                            break;
-                        case "albumEntries":
-                        case "entries":
-                            url = `${baseUrlSecureRest}/datatablesEntries`;
-                    }
-                    const dtOpts = {
-                        layout: {
-                            top2Start: "buttons",
-                            topStart: {
-                                pageLength: {
-                                    menu: [10, 25, 50, 100]
-                                }
-                            },
-                            topEnd: {
-                                search: {
-                                    placeholder: "Type search here"
-                                }
-                            },
-                            bottomEnd: "paging"
-                        },
-                        stateSave: true,
-                        paging: true,
-                        fixedHeader: {
-                            header: true
-                        },
-                        responsive: true,
-                        autoWidth: false,
-                        scrollY: 600,
-                        scrollX: false,
-                        scrollCollapse: true,
-                        select: {
-                            style: "multi"
-                        },
-                        columns: getDataMapping(type),
-                        buttons: getButtons(type)
-                    };
-                    if (type === "entries") {
-                        dtOpts.ajax = url;
-                        dtOpts.processing = true;
-                        dtOpts.serverSide = true;
-                        dtOpts.language = {
-                            loadingRecords: "No data available"
-                        };
-                    } else if (type === "ips") {
-                        dtOpts.ajax = {
-                            url,
-                            dataSrc: ""
-                        };
-                    }
-                    site.loading(true);
-                    const table = new DataTable(el, dtOpts);
-                    site.loading(false);
-                    if (dtMap.has(type)) {
-                        dtMap.get(type).push(table);
-                    } else {
-                        dtMap.set(type, table);
-                    }
-                    initSelectListeners(type);
-                });
+                })
             }
+
+            $(".datatables").each(async function() {
+                const el = $(this)[0];
+                const type = el.dataset.type;
+                let url = null;
+                switch (type) {
+                    case "ips":
+                        url = `${baseUrlSecureRest}/blockedIps`;
+                        break;
+                    case "albumEntries":
+                    case "entries":
+                        url = `${baseUrlSecureRest}/datatablesEntries`;
+                }
+                const dtOpts = {
+                    layout: {
+                        top2Start: "buttons",
+                        topStart: {
+                            pageLength: {
+                                menu: [10, 25, 50, 100]
+                            }
+                        },
+                        topEnd: {
+                            search: {
+                                placeholder: "Type search here"
+                            }
+                        },
+                        bottomEnd: "paging"
+                    },
+                    stateSave: true,
+                    paging: true,
+                    fixedHeader: {
+                        header: true
+                    },
+                    responsive: true,
+                    autoWidth: false,
+                    scrollY: 600,
+                    scrollX: false,
+                    scrollCollapse: true,
+                    select: {
+                        style: "multi"
+                    },
+                    columns: getDataMapping(type),
+                    buttons: getButtons(type)
+                };
+                if (type === "entries") {
+                    dtOpts.ajax = url;
+                    dtOpts.processing = true;
+                    dtOpts.serverSide = true;
+                    dtOpts.language = {
+                        loadingRecords: "No data available"
+                    };
+                } else if (type === "albumEntries") {
+                    dtOpts.data = allEntries.filter(e => e.albumToken === el.dataset.album);
+                } else if (type === "ips") {
+                    dtOpts.ajax = {
+                        url,
+                        dataSrc: ""
+                    };
+                }
+                site.loading(true);
+                const table = new DataTable(el, dtOpts);
+                site.loading(false);
+                if (dtMap.has(type)) {
+                    dtMap.get(type).push(table);
+                } else {
+                    dtMap.set(type, [table]);
+                }
+                initSelectListeners(type);
+            });
+        }
 
         //loadDt();
 
@@ -1106,8 +1163,10 @@
         });
 
         const bucketAlbums = await getAlbums();
+        let allEntries = (await getEntries()).map(e => e.entry);
         buildAlbumTabs(bucketAlbums, null);
         loadDt();
+        resize("albumEntries");
         buildAddTo(bucketAlbums);
         linkAlbumButtons();
     });
