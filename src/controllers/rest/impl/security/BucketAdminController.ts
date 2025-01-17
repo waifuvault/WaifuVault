@@ -14,6 +14,7 @@ import { IAdminController } from "../../IAdminController.js";
 import { BucketAdminService } from "../../../../services/BucketAdminService.js";
 import { BucketService } from "../../../../services/BucketService.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
+import { BucketModel } from "../../../../model/db/Bucket.model.js";
 
 @Hidden()
 @Controller("/admin/bucket")
@@ -68,6 +69,11 @@ export class BucketAdminController extends AbstractAdminController implements IA
     @Get("/allEntries")
     public override getAllEntries(): Promise<IpBlockedAwareFileEntry[]> {
         return super.getAllEntries();
+    }
+
+    @Get("/")
+    public getAdminBucket(): Promise<BucketModel | null> {
+        return this.bucketService.getBucket();
     }
 
     @Delete("/deleteEntries")
