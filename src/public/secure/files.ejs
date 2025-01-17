@@ -497,13 +497,16 @@
         }
 
         async function refreshAlbumFiles() {
-            allEntries = (await getEntries()).map(e => e.entry);
-            const albumList = (await getAlbums()).map(e => e.token);
+            const bucketEntries = await getAlbums();
+            bucketAlbums = bucketEntries.albums;
+            allEntries = bucketEntries.files;
+            const albumList = bucketAlbums.map(e => e.token).reverse();
             const albumDT = dtMap.get("albumEntries");
             for(const tab of albumDT) {
                 const curToken = albumList.pop();
-                tab.data = allEntries.filter(e => e.albumToken === curToken);
-                tab.draw();
+                tab.clear();
+                tab.rows.add(allEntries.filter(e => e.albumToken === curToken));
+                tab.draw(false);
             }
         }
 
@@ -755,7 +758,7 @@
                             { data: "originalFileName", className: "col-filename", render: fileEmbedRender() },
                             { data: "fileExtension", className: "col-fileext" },
                             { data: "fileSize", render: sizeAsMB() },
-                            { data: "expires", render: renderNullField() },
+                            { data: "expiresString", render: renderNullField() },
                             { data: "views" }
                         ];
                     case "entries":
