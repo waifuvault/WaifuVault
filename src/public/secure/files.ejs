@@ -1001,6 +1001,7 @@
                             });
                             await removeFilesFromAlbum(albumArr[0],idArr);
                             dt.rows({ selected: true }).remove().draw(false);
+                            reloadTable(["entries"]);
                         }
                     })
                 }
