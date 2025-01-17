@@ -4,7 +4,7 @@ import { AlbumInfo } from "../rest/AlbumInfo.js";
 import { BucketModel } from "../db/Bucket.model.js";
 import { Builder } from "builder-pattern";
 
-type UrlFileMixin = FileUploadModel & { url: string };
+type UrlFileMixin = FileUploadModel & { url: string; parsedFilename: string };
 
 export class AdminBucketDto {
     @Property()
@@ -22,6 +22,7 @@ export class AdminBucketDto {
                 return {
                     ...f,
                     url: f.getPublicUrl(),
+                    parsedFilename: f.parsedFileName,
                 } as UrlFileMixin;
             }) ?? [];
         const albums = model.albums?.map(a => AlbumInfo.fromModel(a)) ?? [];
