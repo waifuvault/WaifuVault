@@ -241,18 +241,17 @@
         const bucketId = <%- loginType === "bucket" ? `"${bucket.bucketToken}";` : "null;"; -%>
 
             async function getAlbums() {
-                const resp = await fetch(`${baseUrl}/bucket/get`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({bucket_token: bucketId})
+                const resp = await fetch(`${baseUrlSecureRest}/`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" }
                 });
                 if (!resp.ok) {
                     const err = await resp.json();
                     alert(`error ${err.status} - ${err.message}`);
                     return;
                 }
-                const bucketObj = await resp.json();
-                return bucketObj.albums;
+                const bucketContents = await resp.json();
+                return bucketContents;
             }
 
         async function getEntries() {
@@ -411,9 +410,7 @@
                                     <th scope="col">file Name</th>
                                     <th scope="col">file Extension</th>
                                     <th scope="col">file Size</th>
-                                    <th scope="col">Created At</th>
                                     <th scope="col">expires</th>
-                                    <th scope="col">mediaType</th>
                                     <th scope="col">Views</th>
                                  </tr></thead>
                                  </table>`;
@@ -755,12 +752,10 @@
                     case "albumEntries":
                         return [
                             { data: "id" },
-                            { data: "originalFileName", className: "col-filename" },
+                            { data: "originalFileName", className: "col-filename", render: fileEmbedRender() },
                             { data: "fileExtension", className: "col-fileext" },
                             { data: "fileSize", render: sizeAsMB() },
-                            { data: "createdAt", render: customDate() },
                             { data: "expires", render: renderNullField() },
-                            { data: "mediaType", render: renderNullField() },
                             { data: "views" }
                         ];
                     case "entries":
@@ -1162,8 +1157,9 @@
             getnameModal.show();
         });
 
-        const bucketAlbums = await getAlbums();
-        let allEntries = (await getEntries()).map(e => e.entry);
+        const bucketEntries = await getAlbums();
+        let bucketAlbums = bucketEntries.albums;
+        let allEntries = bucketEntries.files;
         buildAlbumTabs(bucketAlbums, null);
         loadDt();
         resize("albumEntries");
