@@ -491,7 +491,7 @@
                     }
 
                     const albumToken = db.dataset.token;
-                    const modalElt = createBasicModal("deleteAlbumModal", "Delete Album", "Do you wish to also delete the files (choosing No will return them to the bucket) ?", "Yes", yes, "No", no);
+                    const modalElt = createBasicModal("deleteAlbumModal", "Delete Files from Album", "Do you wish to also delete the files (choosing No will return them to the bucket) ?", "Yes", yes, "btn-danger", "No", no, "btn-secondary");
                     modalElt.show();
                 });
             });
@@ -1193,7 +1193,7 @@
                 loadDt("albumEntries");
             }
 
-            const getnameModal = createBasicModal("getAlbumNameModal", "Album Name", "<form><label for=\"newAlbumName\" class=\"form-label\">Enter New Album Name</label><input type=\"text\" class=\"form-control\" id=\"newAlbumName\"></form>", "Create Album", yes, "Cancel");
+            const getnameModal = createBasicModal("getAlbumNameModal", "Album Name", "<form><label for=\"newAlbumName\" class=\"form-label\">Enter New Album Name</label><input type=\"text\" class=\"form-control\" id=\"newAlbumName\"></form>", "Create Album", yes, "btn-primary");
             getnameModal.show();
         });
 

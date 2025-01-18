@@ -8,7 +8,7 @@
     const fileSizeLimit = <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB * 1048576; -%>;
     const baseUrlSecureRest = `${baseUrl}/<%-baseSecurePath-%>`;
 
-    function createBasicModal(id, title, body, yesText, yesCallback, noText, noCallback) {
+    function createBasicModal(id, title, body, yesText, yesCallback, yesClassAdd, noText, noCallback, noClassAdd) {
         const modal = document.createElement('div');
         modal.setAttribute('class', 'modal fade');
         modal.setAttribute('id', id);
@@ -60,29 +60,29 @@
         if(yesText || noText) {
             const yesBtn = document.createElement('button');
             yesBtn.setAttribute('type','button');
-            yesBtn.setAttribute('class', 'btn btn-primary');
+            yesBtn.setAttribute('class', yesClassAdd ? 'btn '+yesClassAdd : 'btn');
             yesBtn.setAttribute('data-bs-dismiss', 'modal');
             yesBtn.innerText = yesText;
             if(yesCallback) {
                 yesBtn.addEventListener('click', async () => await yesCallback());
             }
-            const noBtn = document.createElement('button');
-            noBtn.setAttribute('type','button');
-            noBtn.setAttribute('class', 'btn btn-secondary');
-            noBtn.setAttribute('data-bs-dismiss', 'modal');
-            noBtn.innerText = noText;
-            if(noCallback) {
-                noBtn.addEventListener('click', async () => await noCallback());
+            modalFooter.appendChild(yesBtn);
+            if(noText) {
+                const noBtn = document.createElement('button');
+                noBtn.setAttribute('type', 'button');
+                noBtn.setAttribute('class', noClassAdd ? 'btn ' + noClassAdd : 'btn');
+                noBtn.setAttribute('data-bs-dismiss', 'modal');
+                noBtn.innerText = noText;
+                if (noCallback) {
+                    noBtn.addEventListener('click', async () => await noCallback());
+                }
+                modalFooter.appendChild(noBtn);
             }
             const cancelBtn = document.createElement('button');
             cancelBtn.setAttribute('type','button');
             cancelBtn.setAttribute('class', 'btn btn-secondary');
             cancelBtn.setAttribute('data-bs-dismiss', 'modal');
             cancelBtn.innerText = "Cancel";
-            modalFooter.appendChild(cancelBtn);
-
-            modalFooter.appendChild(yesBtn);
-            modalFooter.appendChild(noBtn);
             modalFooter.appendChild(cancelBtn);
         } else {
             const closeBtn = document.createElement('button');
