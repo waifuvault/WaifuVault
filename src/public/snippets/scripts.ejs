@@ -74,8 +74,16 @@
             if(noCallback) {
                 noBtn.addEventListener('click', async () => await noCallback());
             }
+            const cancelBtn = document.createElement('button');
+            cancelBtn.setAttribute('type','button');
+            cancelBtn.setAttribute('class', 'btn btn-secondary');
+            cancelBtn.setAttribute('data-bs-dismiss', 'modal');
+            cancelBtn.innerText = "Cancel";
+            modalFooter.appendChild(cancelBtn);
+
             modalFooter.appendChild(yesBtn);
             modalFooter.appendChild(noBtn);
+            modalFooter.appendChild(cancelBtn);
         } else {
             const closeBtn = document.createElement('button');
             closeBtn.setAttribute('type','button');
