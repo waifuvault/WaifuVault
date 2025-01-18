@@ -381,6 +381,7 @@
             if(!token) token = albums[0].token;
             for(const a of albums) {
                 const item = document.createElement('li');
+                item.setAttribute('id', `${a.token}`)
                 const itemClass = a.token === token ? "nav-link active" : "nav-link";
                 const itemSelected = a.token === token ? "true" : "false";
                 item.innerHTML = `<button id="${a.name}-tab" class="${itemClass}" type="button" data-bs-toggle="tab" data-bs-target="#${a.name}-tab-pane" role="tab" aria-controls="${a.name}-tab-pane" aria-selected="${itemSelected}">${a.name}</button>`;
@@ -416,8 +417,16 @@
                                  </table>`;
             card.innerHTML = `<div class="card-header"><div>Current Entries for Album: ${token}</div></div>
                               <div class="card-body">${fileEntries}</div>
-                              <div class="card-footer d-flex justify-content-between">${shareButton}${albumUrl}<button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
+                              <div id="footer-${token}" class="card-footer d-flex justify-content-between">${shareButton}${albumUrl}<button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
             return card;
+        }
+
+        function updateCardFooter(albumToken) {
+            const pubToken = bucketAlbums.filter(x => x.token === albumToken)[0].publicToken;
+            const shareButton = `<button class="btn btn-secondary ${pubToken ? "unshareAlbum" : "shareAlbum"}" data-token="${albumToken}">${pubToken ? "Unshare Album" : "Share Album"}</button>`;
+            const albumUrl = pubToken ? `<button class="btn btn-success pubUrlButton" data-token="${pubToken}">${mainRul}/album/${pubToken}</button>` : '';
+            const footer = document.getElementById(`footer-${albumToken}`);
+            footer.innerHTML = `${shareButton}${albumUrl}<button class="btn btn-danger deleteAlbum" data-token="${albumToken}">Delete Album</button>`
         }
 
         function linkAlbumButtons() {
@@ -449,11 +458,11 @@
                 db.addEventListener('click', async () => {
                     async function yes() {
                         await deleteAlbum(albumToken, true);
-                        buildAlbumTabs(await getAlbums());
+                        document.getElementById(albumToken).remove();
                     }
                     async function no() {
                         await deleteAlbum(albumToken, false);
-                        buildAlbumTabs(await getAlbums());
+                        document.getElementById(albumToken).remove();
                     }
                     const albumToken = db.dataset.token;
                     const modalElt = createBasicModal("deleteAlbumModal", "Delete Album", 'Do you wish to also delete the files (choosing No will return them to the bucket) ?',"Yes",yes,"No",no);
@@ -466,7 +475,8 @@
                 sb.addEventListener('click', async () => {
                     const albumToken = sb.dataset.token;
                     await shareAlbum(albumToken);
-                    buildAlbumTabs(await getAlbums(), albumToken);
+                    bucketAlbums = (await getAlbums()).albums;
+                    updateCardFooter(albumToken);
                 })
             })
 
@@ -475,7 +485,8 @@
                 ub.addEventListener('click', async () => {
                     const albumToken = ub.dataset.token;
                     const publicUrl = await unshareAlbum(albumToken);
-                    buildAlbumTabs(await getAlbums(), albumToken);
+                    bucketAlbums = (await getAlbums()).albums;
+                    updateCardFooter(albumToken);
                 })
             })
 
@@ -1153,7 +1164,7 @@
                 newEntry.innerHTML = `<button class="dropdown-item sendToAlbum" type="button" data-token="${albumObj.token}">${albumObj.name}</button>`;
                 albumMenu.appendChild(newEntry);
                 linkAlbumButtons();
-                buildAlbumTabs(await getAlbums());
+                buildAlbumTabs((await getAlbums()).albums);
                 const caModal = createBasicModal('createAlbumModal', 'Album Created', `Album ${albumName.value} created with private token:<br/> ${albumObj.token}`);
                 caModal.show();
             }
