@@ -20,12 +20,17 @@ export class AlbumInfo {
     @Description("The bucket this album belongs to")
     public bucket: string;
 
+    @Property()
+    @Description("When the album was created")
+    public dateCreated: number;
+
     public static fromModel(model: AlbumModel): AlbumInfo {
         return Builder(AlbumInfo)
             .token(model.albumToken)
             .publicToken(model.publicToken)
             .name(model.name)
             .bucket(model.bucketToken)
+            .dateCreated(model.createdAt.getTime())
             .build();
     }
 }

@@ -27,7 +27,8 @@ export class AdminBucketDto {
                     expiresString: f.expiresIn ? ObjectUtils.timeToHuman(f.expiresIn) : null,
                 } as UrlFileMixin;
             }) ?? [];
-        const albums = model.albums?.map(a => AlbumInfo.fromModel(a)) ?? [];
+        const albums =
+            model.albums?.map(a => AlbumInfo.fromModel(a)).sort((a, b) => a.dateCreated - b.dateCreated) ?? [];
         return Builder(AdminBucketDto).token(model.bucketToken).files(files).albums(albums).build();
     }
 }
