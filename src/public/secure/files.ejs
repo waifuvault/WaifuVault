@@ -518,6 +518,7 @@
             unshareButtons.forEach(ub => {
                 ub.addEventListener("click", async () => {
                     const albumToken = ub.dataset.token;
+                    await unshareAlbum(albumToken);
                     bucketAlbums = (await getBucketData()).albums;
                     updateCardFooter(albumToken);
                 });
