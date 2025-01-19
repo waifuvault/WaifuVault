@@ -156,6 +156,111 @@ This page shows overall statistics for the files uploaded to the site:
 
 ![Stats](https://waifuvault.moe/f/1724107884794/BucketStats.png)
 
+## Albums Admin Feature
+
+Albums are sub-collections of files within a bucket.  Albums can be publicly shared, to provide simple access to
+a collection of files.
+
+> **Note Well** One time download files cannot be included in albums.
+
+### Creating Albums
+
+To create an album, click on the `Create album` button in the main upper table.
+Fill in the name you would like for the album and then click `Create Album` in the dialog.
+
+
+A new tab for the album will then appear in the bottom Albums table.
+
+![CreateAlbum](https://waifuvault.moe/f/1737302267058/CreateAlbum.png)
+
+### Deleting Albums
+
+To delete an album, in the bottom albums table, select the tab for the album you wish to delete.  Then
+in the bottom right, click on the `Delete Album` button.
+
+A dialog will then come up asking you if you want to also delete the files in the album.  If you choose 
+`Yes` then the files will be deleted from both the album and the bucket.  If you choose `No` then the
+files will be removed from the album, but not deleted from the bucket.
+
+![DeleteAlbum](https://waifuvault.moe/f/1737302605135/DeleteAlbum.png)
+
+### Sharing Albums
+
+Albums can be publicly shared.  This will provide you with a URL that can be used to view and download the 
+files within the album.
+
+> **Note Well** One time download files cannot be included in albums, and files which are protected will 
+> still need the password to download.
+
+To share an album, select the tab for the album in the bottom albums section, and then click on the `Share Album`
+button in the bottom left.
+
+This will add a new button with the public URL in the middle of the bottom bar.  Clicking on this button
+will copy the URL to the clipboard for you.
+
+![ShareAlbum](https://waifuvault.moe/f/1737303000335/ShareAlbum.png)
+
+To revoke sharing an album, select the tab for the album in the bottom albums section, and then click on
+the `Unshare Album` button in the bottom left.
+
+The green URL button will now disappear and the album will be private only again.
+
+> **Note Well** If you unshare an album, the original album share URL is destroyed.  If you share it again afterwards
+> the URL will be different.
+
+![UnshareAlbum](https://waifuvault.moe/f/1737303226165/UnshareAlbum.png)
+
+### Public Album Interface
+
+The public album access interface is available using the URL provided by sharing an album.
+
+This provides the ability to view and download files within an album from a public URL.  It also provides the
+ability to download the files within an album as a zip file.
+
+> **Note Well** The password will still be required for individual protected files within an album and
+> they will not be included in the zip file download.
+
+Two views are provided.  The default view is the card view, which provides a thumbnail for those file
+types that support it.  Type icons will be shown for those that do not.
+
+The card view can also be selected by clicking on the grid icon at the top right of the page.
+
+Selecting individual files by using the checkboxes in the bottom left of the file card allows you to
+select the files you want to download in the zip file.
+
+If no files are selected then all files will be downloaded in the zip file.
+
+![PublicCCards](https://waifuvault.moe/f/1737303700564/PublicCardsAlbum.png)
+
+A table view of the files within the album is also available by clicking on the hamburger icon in the top
+left of the page.
+
+Selecting individual files by using the checkboxes next to the filename allows you to
+select the files you want to download in the zip file.
+
+If no files are selected then all files will be downloaded in the zip file.
+
+![PublicTable](https://waifuvault.moe/f/1737304001712/PublicTableAlbum.png)
+
+### Album File Management
+
+To add files from the main bucket table to an album, select the files you want to add from the upper bucket table
+and then click on `Add to Album`, and select the name of the album you wish to add the files to.
+
+> **Note Well** Files can only be assigned to one album at a time.  If you choose a file which is already assigned
+> to another album, it will be moved to the chosen album.
+
+![AddFilesToAlbum](https://waifuvault.moe/f/1737304346693/AddFilesAlbum.png)
+
+To remove files from an album, click on the album tab in the lower table, select the file and then click
+on the `Remove File` button.
+
+The file will no longer be associated with the album.
+
+![RemoveFilesFromAlbum](https://waifuvault.moe/f/1737304567646/RemoveFilesAlbum.png)
+
+> **Note Well** For both add and remove, multiple files can be selected
+
 ## Admin Feature
 
 This application comes with a useful admin site that will allow you to control the files that are uploaded, and to
