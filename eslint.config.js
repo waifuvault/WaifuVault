@@ -36,16 +36,58 @@ export default tseslint.config(
             camelcase: "off",
             // TypeScript
             "@typescript-eslint/explicit-function-return-type": "error",
-            "@typescript-eslint/no-unused-vars": "error",
             "@typescript-eslint/no-loss-of-precision": "error",
             "@typescript-eslint/no-inferrable-types": "error",
             "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
             "@typescript-eslint/no-var-requires": "error",
             "@typescript-eslint/no-explicit-any": "error",
+            "@typescript-eslint/naming-convention": [
+                "error",
+                {
+                    selector: "objectLiteralProperty",
+                    format: null,
+                },
+                {
+                    selector: "default",
+                    format: ["camelCase"],
+                    leadingUnderscore: "allow",
+                    trailingUnderscore: "allow",
+                },
+                {
+                    selector: "import",
+                    format: ["camelCase", "PascalCase"],
+                },
+                {
+                    selector: "variable",
+                    format: ["camelCase", "UPPER_CASE"],
+                    leadingUnderscore: "allow",
+                    trailingUnderscore: "allow",
+                },
+                {
+                    selector: "enumMember",
+                    format: ["UPPER_CASE"],
+                },
+                {
+                    selector: "typeLike",
+                    format: ["PascalCase"],
+                },
+            ],
             "@typescript-eslint/explicit-member-accessibility": [
                 "error",
                 {
                     accessibility: "explicit",
+                },
+            ],
+            "@typescript-eslint/no-unused-vars": [
+                "error",
+                {
+                    args: "all",
+                    argsIgnorePattern: "^_",
+                    caughtErrors: "all",
+                    caughtErrorsIgnorePattern: "^_",
+                    destructuredArrayIgnorePattern: "^_",
+                    varsIgnorePattern: "^_",
+                    ignoreRestSiblings: true,
                 },
             ],
         },

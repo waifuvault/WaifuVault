@@ -19,15 +19,15 @@ const punycode = require("punycode/");
 @Service()
 export class FileUrlService {
     @Constant(GlobalEnv.FILE_SIZE_UPLOAD_LIMIT_MB)
-    private readonly MAX_SIZE: string;
+    private readonly maxSize: string;
 
     @Constant(GlobalEnv.MAX_URL_LENGTH)
-    private readonly MAX_URL_LENGTH: string;
+    private readonly maxUrlLength: string;
 
     public constructor(@Inject() private logger: Logger) {}
 
     public async getFile(url: string): Promise<[string, string]> {
-        let maxUrlLength = Number.parseInt(this.MAX_URL_LENGTH);
+        let maxUrlLength = Number.parseInt(this.maxUrlLength);
         if (Number.isNaN(maxUrlLength)) {
             maxUrlLength = -1;
         }
@@ -55,7 +55,7 @@ export class FileUrlService {
         if (!contentLengthStr) {
             throw new HTTPException(headCheck.status, "Unable to determine file size of URL");
         }
-        const maxSizeBits = Number.parseInt(this.MAX_SIZE) * 1048576;
+        const maxSizeBits = Number.parseInt(this.maxSize) * 1048576;
         const contentLength = Number.parseInt(contentLengthStr);
         if (contentLength > maxSizeBits) {
             throw new BadRequest("file too big");

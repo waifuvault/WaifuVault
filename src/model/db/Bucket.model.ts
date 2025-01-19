@@ -1,7 +1,8 @@
 import { AbstractModel } from "./AbstractModel.js";
-import { Column, Entity, Index, OneToMany } from "typeorm";
+import { Column, Entity, Index, JoinColumn, OneToMany } from "typeorm";
 import type { FileUploadModel } from "./FileUpload.model.js";
 import BucketType from "../constants/BucketType.js";
+import { AlbumModel } from "./Album.model.js";
 
 @Entity()
 @Index(["bucketToken"], {
@@ -33,4 +34,14 @@ export class BucketModel extends AbstractModel {
         eager: true,
     })
     public files?: FileUploadModel[];
+
+    @OneToMany("AlbumModel", "bucket", {
+        cascade: true,
+        eager: true,
+    })
+    @JoinColumn({
+        name: "bucketToken",
+        referencedColumnName: "bucketToken",
+    })
+    public albums?: AlbumModel[];
 }

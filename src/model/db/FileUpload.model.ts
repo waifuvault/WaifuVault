@@ -1,9 +1,13 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import { AbstractModel } from "./AbstractModel.js";
 import { filesDir, FileUtils } from "../../utils/Utils.js";
 import type { EntrySettings, ProtectionLevel } from "../../utils/typeings.js";
 import path from "node:path";
 import type { BucketModel } from "./Bucket.model.js";
+import { AlbumModel } from "./Album.model.js";
+import { constant } from "@tsed/di";
+import GlobalEnv from "../constants/GlobalEnv.js";
+import type { ThumbnailCacheModel } from "./ThumbnailCache.model.js";
 
 @Entity()
 @Index(["token"], {
@@ -94,6 +98,12 @@ export class FileUploadModel extends AbstractModel {
     public bucketToken: string | null;
 
     @Column({
+        nullable: true,
+        type: "text",
+    })
+    public albumToken: string | null;
+
+    @Column({
         nullable: false,
         default: 0,
     })
@@ -106,7 +116,19 @@ export class FileUploadModel extends AbstractModel {
         name: "bucketToken",
         referencedColumnName: "bucketToken",
     })
-    public bucket: BucketModel;
+    public bucket: Promise<BucketModel | null>;
+
+    @ManyToOne("AlbumModel", "files", {
+        ...AbstractModel.cascadeOps,
+    })
+    @JoinColumn({
+        name: "albumToken",
+        referencedColumnName: "albumToken",
+    })
+    public album: Promise<AlbumModel | null>;
+
+    @OneToOne("ThumbnailCacheModel", "file")
+    public thumbnailCache: Promise<ThumbnailCacheModel | null>;
 
     public get expiresIn(): number | null {
         if (this.expires === null) {
@@ -146,5 +168,28 @@ export class FileUploadModel extends AbstractModel {
      */
     public get fullLocationOnDisk(): string {
         return path.resolve(`${filesDir}/${this.fullFileNameOnSystem}`);
+    }
+
+    public getPublicUrl(): string {
+        const baseUrl = constant(GlobalEnv.BASE_URL) as string;
+        if (this.settings?.hideFilename || !this.originalFileName) {
+            return `${baseUrl}/f/${this.fullFileNameOnSystem}`;
+        }
+        let { originalFileName } = this;
+        if (originalFileName.startsWith("/")) {
+            originalFileName = originalFileName.substring(1);
+        }
+        return `${baseUrl}/f/${this.fileName}/${originalFileName}`;
+    }
+
+    public get parsedFileName(): string {
+        if (this.settings?.hideFilename || !this.originalFileName) {
+            return this.fullFileNameOnSystem;
+        }
+        let { originalFileName } = this;
+        if (originalFileName.startsWith("/")) {
+            originalFileName = originalFileName.substring(1);
+        }
+        return originalFileName;
     }
 }

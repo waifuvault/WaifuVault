@@ -1,4 +1,4 @@
-import { Inject, InjectContext, Service } from "@tsed/di";
+import { Inject, Injectable, InjectContext } from "@tsed/di";
 import type { PlatformContext } from "@tsed/common";
 import { BucketModel } from "../../model/db/Bucket.model.js";
 import { Builder } from "builder-pattern";
@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 import { BucketDao } from "../dao/BucketDao.js";
 import { FileRepo } from "./FileRepo.js";
 
-@Service()
+@Injectable()
 export class BucketRepo {
     @InjectContext()
     protected $ctx?: PlatformContext;

@@ -1,6 +1,6 @@
 import { Get, Hidden } from "@tsed/schema";
 import { Controller, Inject } from "@tsed/di";
-import { HeaderParams, PathParams, Req, Res } from "@tsed/common";
+import { HeaderParams, PathParams, QueryParams, Req, Res } from "@tsed/common";
 import * as Path from "node:path";
 import { FileProtectedException } from "../../model/exceptions/FileProtectedException.js";
 import type { Request, Response } from "express";
@@ -28,12 +28,20 @@ export class FileServerController {
         @PathParams("t") resource: string,
         @HeaderParams("x-password") password?: string,
         @PathParams("file") requestedFileName?: string,
+        @QueryParams("download") download?: boolean,
     ): Promise<unknown> {
         await this.hasPassword(resource, password);
         const entryWrapper = await this.fileService.getEntry(resource, requestedFileName, password);
         const mime = entryWrapper.entry.mediaType ?? "application/octet-stream"; // unknown, send an octet-stream and let the client figure it out
 
+        if (download) {
+            res.attachment(entryWrapper.entry.parsedFileName);
+        }
         res.contentType(mime);
+        if (download) {
+            res.on("finish", () => this.postProcess(entryWrapper.entry));
+            return entryWrapper.getStream(password);
+        }
 
         // no chunking if your video is encrypted or one time download
         if (
@@ -46,11 +54,9 @@ export class FileServerController {
             await this.chunkData(res, req, mime, entryWrapper);
             return;
         }
+
         res.on("finish", () => this.postProcess(entryWrapper.entry));
-        if (this.allowedChunkMimeTypes.some(substr => mime.startsWith(substr))) {
-            return entryWrapper.getStream(password);
-        }
-        return entryWrapper.getBuffer(password);
+        return entryWrapper.getStream(password);
     }
 
     private async chunkData(
