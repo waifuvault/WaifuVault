@@ -384,7 +384,7 @@
 
         async function buildAlbumTabs() {
             const albums = (await getBucketData()).albums;
-            const token = albums[0].token;
+            const token = albums.length > 0 ? albums[0].token : null;
             const albumTabs = document.getElementById("albumTabs");
             const albumContents = document.getElementById("albumTabContent");
             albumTabs.innerHTML = "";
