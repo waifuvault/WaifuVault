@@ -1219,8 +1219,14 @@
                 } finally {
                     site.loading(false);
                 }
+                const albumObj = await resp.json();
                 await buildAlbumTabs();
                 loadDt("albumEntries");
+                const albumMenu = document.getElementById('albumMenu');
+                const newEntry = document.createElement('li');
+                newEntry.innerHTML = `<button class="dropdown-item sendToAlbum" type="button" data-token="${albumObj.token}">${albumObj.name}</button>`;
+                albumMenu.appendChild(newEntry);
+                linkAlbumButtons();
             }
 
             const getnameModal = createBasicModal("getAlbumNameModal", "Album Name", "<form><label for=\"newAlbumName\" class=\"form-label\">Enter New Album Name</label><input type=\"text\" class=\"form-control\" id=\"newAlbumName\"></form>", "Create Album", yes, "btn-primary");
