@@ -144,6 +144,6 @@
 }
 
 .card.glow-hover:hover {
-    box-shadow: 0 0 15px 5px rgba(0, 123, 255, 0.5); /* Add a glowing blue effect */
+    box-shadow: 0 0 15px 5px rgba(0, 123, 255, 0.5) !important; /* Add a glowing blue effect */
     transform: scale(1.03); /* Slight zoom for a dynamic effect */
 }
