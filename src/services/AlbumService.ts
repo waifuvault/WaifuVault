@@ -109,7 +109,7 @@ export class AlbumService {
         return this.addFilesToAlbum(albumToken, filesToAssociate);
     }
 
-    public async addFilesToAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
+    private async addFilesToAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
         for (const file of files) {
             file.albumToken = albumToken;
         }
@@ -117,7 +117,7 @@ export class AlbumService {
         return (await this.albumRepo.getAlbum(albumToken))!;
     }
 
-    public async removeFilesFromAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
+    private async removeFilesFromAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
         for (const file of files) {
             file.albumToken = null;
         }
