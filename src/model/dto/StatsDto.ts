@@ -1,4 +1,4 @@
-import { Property } from "@tsed/schema";
+import { CollectionOf, Property } from "@tsed/schema";
 import { Builder } from "builder-pattern";
 import { AdminFileData } from "./AdminData.js";
 import { FileUtils } from "../../utils/Utils.js";
@@ -14,6 +14,7 @@ export class StatsDto {
     public totalFileSize: number;
 
     @Property()
+    @CollectionOf(AdminFileData)
     public entries: AdminFileData[];
 
     public static async buildStats(entries: AdminFileData[]): Promise<StatsDto> {

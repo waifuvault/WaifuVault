@@ -1,37 +1,8 @@
-import { Nullable, Property } from "@tsed/schema";
+import { CollectionOf, Nullable, Property } from "@tsed/schema";
 import { AdminDataTaleEntryModel, IpBlockedAwareFileEntry, ProtectionLevel } from "../../utils/typeings.js";
 import { AlbumInfo } from "../rest/AlbumInfo.js";
 import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
-
-export class AdminData {
-    @Property()
-    public draw: number;
-
-    @Property()
-    public recordsTotal: number;
-
-    @Property()
-    public recordsFiltered: number;
-
-    @Property()
-    public data: AdminFileData[];
-
-    public static async fromModel({
-        data,
-        recordsFiltered,
-        recordsTotal,
-        draw,
-    }: AdminDataTaleEntryModel): Promise<AdminData> {
-        const adminFileData = await Promise.all(data.map(entry => AdminFileData.fromModel(entry)));
-        return Builder(AdminData)
-            .draw(draw)
-            .data(adminFileData)
-            .recordsFiltered(recordsFiltered)
-            .recordsTotal(recordsTotal)
-            .build();
-    }
-}
 
 export class AdminFileData {
     @Property()
@@ -118,5 +89,35 @@ export class AdminFileData {
             fileEntryBuilder.album(AlbumInfo.fromModel(album));
         }
         return fileEntryBuilder.build();
+    }
+}
+
+export class AdminData {
+    @Property()
+    public draw: number;
+
+    @Property()
+    public recordsTotal: number;
+
+    @Property()
+    public recordsFiltered: number;
+
+    @Property()
+    @CollectionOf(AdminFileData)
+    public data: AdminFileData[];
+
+    public static async fromModel({
+        data,
+        recordsFiltered,
+        recordsTotal,
+        draw,
+    }: AdminDataTaleEntryModel): Promise<AdminData> {
+        const adminFileData = await Promise.all(data.map(entry => AdminFileData.fromModel(entry)));
+        return Builder(AdminData)
+            .draw(draw)
+            .data(adminFileData)
+            .recordsFiltered(recordsFiltered)
+            .recordsTotal(recordsTotal)
+            .build();
     }
 }

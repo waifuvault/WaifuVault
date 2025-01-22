@@ -12,8 +12,6 @@ import { PublicAlbumDto } from "../../../../model/dto/PublicAlbumDto.js";
     type: TRANSFORMER,
 })
 export class AlbumModelTransformer implements ITransformer<AlbumModel, AlbumDto | PublicAlbumDto> {
-    public constructor() {}
-
     @InjectContext()
     private $ctx?: PlatformContext;
 

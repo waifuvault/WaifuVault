@@ -43,7 +43,6 @@ export abstract class AbstractAdminController extends BaseRestController {
     }
 
     public async getStatsData(): Promise<IpBlockedAwareFileEntry[]> {
-        // return StatsDto.buildStats(await this.mapIpToFileEntries(await this.adminService.getStatsData()));
         return this.mapIpToFileEntries(await this.adminService.getStatsData());
     }
 
