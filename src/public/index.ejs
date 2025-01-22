@@ -8,6 +8,133 @@
 <body>
 
 <main>
+    <!-- Modal for Albums -->
+    <div class="modal fade" id="albumsModal" tabindex="-1" aria-labelledby="albumsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="albumsModalLabel">Albums Feature</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        <strong>Albums</strong> are a powerful way to organise and share collections of files hosted in your buckets.
+                        This feature allows you to group multiple files into a single album and share it using a public URL.
+                        Anyone with the link gets a <strong>read-only view</strong>, ensuring that your content remains secure and unalterable.
+                    </p>
+                    <p>
+                        Whether you're showcasing media collections, collaborating on a project, or simply sharing files with friends,
+                        Albums make it easy to:
+                    </p>
+                    <ul>
+                        <li><strong>Organise Files:</strong> Group files logically within your buckets for easy access and management.</li>
+                        <li><strong>Share Seamlessly:</strong> Generate a single public URL for the entire album and share it with anyone.</li>
+                        <li><strong>Privacy Focus:</strong> Maintain control with read-only access for viewers, preventing unauthorised edits.</li>
+                        <li><strong>Custom Views:</strong> Display albums beautifully for a great sharing experience.</li>
+                        <li><strong>Multiple albums per bucket:</strong> Each bucket can contain multiple albums, share and revoke the share at will.</li>
+                    </ul>
+                    <p>
+                        Create a bucket now and start using Albums to and enjoy effortless file sharing with enhanced organisation and privacy!
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="/bucketAccess" target="_blank" class="btn btn-primary">Create a bucket</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modals -->
+    <!-- Encrypted Files Modal -->
+    <div class="modal fade" id="encryptedFilesModal" tabindex="-1" aria-labelledby="encryptedFilesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="encryptedFilesModalLabel">Encrypted Files</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Secure your files with industry-leading AES-256 encryption. Set a password during upload, and only users with the password can access your files. Perfect for sensitive data and secure file sharing.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hide Filenames Modal -->
+    <div class="modal fade" id="hideFilenamesModal" tabindex="-1" aria-labelledby="hideFilenamesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="hideFilenamesModalLabel">Hide Filenames</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Keep your files private by hiding their original filenames. Use shortened, anonymous URLs to share files without revealing sensitive details.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Retention Period Modal -->
+    <div class="modal fade" id="customRetentionModal" tabindex="-1" aria-labelledby="customRetentionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customRetentionModalLabel">Custom Retention Period</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Choose how long your files are stored. From as little as 1 minute to up to 365 days, you're in control of your data's lifespan.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buckets Modal -->
+    <div class="modal fade" id="bucketsModal" tabindex="-1" aria-labelledby="bucketsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bucketsModalLabel">Buckets</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Organise your uploads with anonymous buckets. Track stats, manage files, and keep everything neatly sorted without needing an account.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secure Sharing Modal -->
+    <div class="modal fade" id="secureSharingModal" tabindex="-1" aria-labelledby="secureSharingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="secureSharingModalLabel">Secure Sharing</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Share files confidently with end-to-end encryption, ensuring only the intended recipients can view your files.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container py-4">
         <header class="pb-3 mb-4 border-bottom d-flex justify-content-between">
             <a href="/" class="text-body-emphasis text-decoration-none">
@@ -73,54 +200,95 @@
         <div class="row align-items-md-stretch mb-4">
             <div class="col-md-12">
                 <div class="h-100 p-5 text-bg-dark rounded-3 border border-warning-subtle bg-body-tertiary">
-                    <h2 class="mb-4 text-center">Features</h2>
-                    <div class="row align-items-md-stretch mb-4">
-                        <div class="col-md-4">
-                            <div class="card text-center border-0 bg-transparent">
-                                <i class="bi bi-key"></i>
-                                <div class="card-body">
-                                    <h5 class="card-title">Encrypted files</h5>
-                                    <p class="card-text">
-                                        When you specify a password with your upload, your file is encrypted using AES-256 on the server, so no one other than those with the password can download it.
-                                    </p>
+                    <div class="py-5">
+                        <h2 class="mb-4 text-center">Features</h2>
+                        <div class="alert alert-info text-center" role="alert">
+                            Explore our cool features! Secure, private, and easy-to-use file hosting.
+                        </div>
+                        <div class="row g-4">
+                            <!-- Feature 1: Encrypted Files -->
+                            <div class="col-md-4">
+                                <div class="card h-100 text-center border-0 shadow-sm p-3 rounded glow-hover">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#encryptedFilesModal" class="text-decoration-none text-reset">
+                                        <i class="bi bi-key display-4 text-primary"></i>
+                                        <div class="card-body">
+                                            <h5 class="card-title">Encrypted Files</h5>
+                                            <p class="card-text">Upload files securely with AES-256 encryption using a password. Only those with the password can access the file. Click to learn more.</p>
+                                        </div>
+                                    </a>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card text-center border-0 bg-transparent">
-                                <i class="bi bi-binoculars"></i>
-                                <div class="card-body text-center">
-                                    <h5 class="card-title">Hide filenames</h5>
-                                    <p class="card-text">
-                                        Hide the original filename, the result would be a shortened URL that you can use that won't contain the original filename.
-                                    </p>
+
+                            <!-- Feature 2: Hide Filenames -->
+                            <div class="col-md-4">
+                                <div class="card h-100 text-center border-0 shadow-sm p-3 rounded glow-hover">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#hideFilenamesModal" class="text-decoration-none text-reset">
+                                        <i class="bi bi-binoculars display-4 text-success"></i>
+                                        <div class="card-body">
+                                            <h5 class="card-title">Hide Filenames</h5>
+                                            <p class="card-text">Share files anonymously with shortened URLs, Ideal for anonymous file sharing. Click to learn more.</p>
+                                        </div>
+                                    </a>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card text-center border-0 bg-transparent">
-                                <i class="bi bi-stopwatch"></i>
-                                <div class="card-body text-center">
-                                    <h5 class="card-title">Custom retention period</h5>
-                                    <p class="card-text">
-                                        You are able to specify a shorter expiry for files on upload down to 1 minute.
-                                    </p>
+
+                            <!-- Feature 3: Custom Retention Period -->
+                            <div class="col-md-4">
+                                <div class="card h-100 text-center border-0 shadow-sm p-3 rounded glow-hover">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#customRetentionModal" class="text-decoration-none text-reset">
+                                        <i class="bi bi-stopwatch display-4 text-danger"></i>
+                                        <div class="card-body">
+                                            <h5 class="card-title">Custom Retention Period</h5>
+                                            <p class="card-text">Choose a custom expiry time for files, with options as short as one minute. Click to learn more.</p>
+                                        </div>
+                                    </a>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row align-items-md-stretch mb-4">
-                        <div class="col-md-12">
-                            <div class="card text-center border-0 bg-transparent">
-                                <i class="bi bi-bucket"></i>
-                                <div class="card-body">
-                                    <h5 class="card-title">Buckets</h5>
-                                    <p class="card-text">
-                                         Create anonymous buckets to manage and see stats of your files.
-                                        No need to signup,
-                                        just call our createBucket endpoint
-                                        and use the returned token to access the bucket
-                                    </p>
+
+                            <!-- Feature 4: Buckets -->
+                            <div class="col-md-6">
+                                <div class="card h-100 text-center border-0 shadow-sm p-3 rounded glow-hover">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#bucketsModal" class="text-decoration-none text-reset">
+                                        <i class="bi bi-bucket display-4 text-warning"></i>
+                                        <div class="card-body">
+                                            <h5 class="card-title">Buckets</h5>
+                                            <p class="card-text">Create anonymous buckets to manage your files and track their stats with ease. Click to learn more.</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Feature 5: Secure Sharing -->
+                            <div class="col-md-6">
+                                <div class="card h-100 text-center border-0 shadow-sm p-3 rounded glow-hover">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#secureSharingModal" class="text-decoration-none text-reset">
+                                        <i class="bi bi-shield-lock display-4 text-secondary"></i>
+                                        <div class="card-body">
+                                            <h5 class="card-title">Secure Sharing</h5>
+                                            <p class="card-text">Share files safely with end-to-end encryption. Click to learn more.</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Feature 6: Albums -->
+                            <div class="col-md-12">
+                                <div class="card h-100 text-center border-0 shadow-sm p-4 rounded glow-hover">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#albumsModal" class="text-decoration-none text-reset">
+                                        <i class="bi bi-images display-4 text-info"></i>
+                                        <div class="card-body">
+                                            <h5 class="card-title">Albums</h5>
+                                            <p class="card-text">
+                                                Organise and share collections of files seamlessly!
+                                                Albums let you group files inside buckets and share them via a public URL,
+                                                offering a read-only view for others.
+                                                Perfect for collaboration, showcasing projects,
+                                                or sharing media collections
+                                                without compromising privacy or control.
+                                                Click to learn more.
+                                            </p>
+                                        </div>
+                                    </a>
                                 </div>
                             </div>
                         </div>
