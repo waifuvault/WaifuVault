@@ -9,7 +9,7 @@ of hosting.
 
 ## Getting started
 
-> **Important!** this requires Node >= 14, Express >= 4 and TypeScript >= 4.
+> **Important!** This requires Node >= 20 and TypeScript >= 5.5
 
 `.env` file must be created for this application to work. Rename `.envExample` to `.env`
 
