@@ -1,12 +1,10 @@
 import { FileRepo } from "../db/repo/FileRepo.js";
-import { Constant, Inject, Service } from "@tsed/di";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
+import { Inject, Service } from "@tsed/di";
 import { EncryptionService } from "./EncryptionService.js";
 import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
 import { Logger } from "@tsed/logger";
 import { FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
-import { FileUploadResponseDto } from "../model/dto/FileUploadResponseDto.js";
 import { BadRequest, Forbidden, NotFound } from "@tsed/exceptions";
 import { EntryEncryptionWrapper } from "../model/rest/EntryEncryptionWrapper.js";
 
@@ -15,9 +13,6 @@ import { EntryEncryptionWrapper } from "../model/rest/EntryEncryptionWrapper.js"
  */
 @Service()
 export class FileService {
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
-
     public constructor(
         @Inject() private repo: FileRepo,
         @Inject() private encryptionService: EncryptionService,
@@ -100,7 +95,7 @@ export class FileService {
         return !!entry.settings?.password;
     }
 
-    public async getFileInfo(token: string, humanReadable: boolean): Promise<FileUploadResponseDto> {
+    public async getFileInfo(token: string): Promise<FileUploadModel> {
         const foundEntries = await this.repo.getEntry([token]);
         if (foundEntries.length !== 1) {
             this.unknownToken(token);
@@ -110,7 +105,7 @@ export class FileService {
             await this.processDelete([entry.token]);
             this.unknownToken(token);
         }
-        return FileUploadResponseDto.fromModel(entry, this.baseUrl, humanReadable);
+        return entry;
     }
 
     private resourceNotFound(resource: string): never {

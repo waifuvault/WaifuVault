@@ -3,6 +3,7 @@ import { FileUploadModel } from "../db/FileUpload.model.js";
 import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
 import { EntrySettings } from "../../utils/typeings.js";
+import { AlbumInfo } from "../rest/AlbumInfo.js";
 
 class ResponseOptions implements Required<Omit<EntrySettings, "password">> {
     @Property(Boolean)
@@ -42,6 +43,11 @@ export class FileUploadResponseDto {
     public bucket: string | null = null;
 
     @Property()
+    @Description("The album that this file belongs to")
+    @Nullable(AlbumInfo)
+    public album: AlbumInfo | null = null;
+
+    @Property()
     @Description("How long this file will exist for")
     @Nullable(Number, String)
     @Default(Number)
@@ -51,12 +57,21 @@ export class FileUploadResponseDto {
     @Description("The options for this entry")
     public options: ResponseOptions;
 
-    public static fromModel(fileUploadModel: FileUploadModel, baseUrl: string, format = false): FileUploadResponseDto {
+    public static fromModel<T extends boolean>(
+        fileUploadModel: FileUploadModel,
+        format: boolean,
+        lazyLoadRelations: T,
+    ): T extends true ? Promise<FileUploadResponseDto> : FileUploadResponseDto;
+    public static fromModel(
+        fileUploadModel: FileUploadModel,
+        format: boolean,
+        lazyLoadRelations = false,
+    ): FileUploadResponseDto | Promise<FileUploadResponseDto> {
         const builder = Builder(FileUploadResponseDto)
             .token(fileUploadModel.token)
             .bucket(fileUploadModel.bucketToken ?? null)
             .views(fileUploadModel.views)
-            .url(FileUploadResponseDto.getUrl(fileUploadModel, baseUrl));
+            .url(fileUploadModel.getPublicUrl());
         const expiresIn = fileUploadModel.expiresIn;
         if (format && expiresIn !== null) {
             builder.retentionPeriod(ObjectUtils.timeToHuman(expiresIn));
@@ -65,18 +80,15 @@ export class FileUploadResponseDto {
         }
 
         builder.options(FileUploadResponseDto.makeOptions(fileUploadModel.settings));
+        if (lazyLoadRelations) {
+            return fileUploadModel.album.then(album => {
+                if (!album) {
+                    return builder.build();
+                }
+                return builder.album(AlbumInfo.fromModel(album)).build();
+            });
+        }
         return builder.build();
-    }
-
-    private static getUrl(fileUploadModel: FileUploadModel, baseUrl: string): string {
-        if (fileUploadModel.settings?.hideFilename || !fileUploadModel.originalFileName) {
-            return `${baseUrl}/f/${fileUploadModel.fullFileNameOnSystem}`;
-        }
-        let { originalFileName } = fileUploadModel;
-        if (originalFileName.startsWith("/")) {
-            originalFileName = originalFileName.substring(1);
-        }
-        return `${baseUrl}/f/${fileUploadModel.fileName}/${originalFileName}`;
     }
 
     private static makeOptions(settings: EntrySettings | null): ResponseOptions {

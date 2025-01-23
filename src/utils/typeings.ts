@@ -25,6 +25,7 @@ export type AvScanResult = {
 
 export type CaptchaResponse = {
     success: boolean;
+    /* eslint-disable @typescript-eslint/naming-convention */
     challenge_ts: string;
     hostname: string;
     "error-codes": string[];
@@ -67,7 +68,12 @@ export type ProtectionLevel = "Encrypted" | "Password" | "None";
 
 export type Awaitable<T> = Promise<T> | T;
 
-export type fileUploadProps = {
+export type RecordInfoPayload = {
+    recordCount: number;
+    recordSize: string;
+};
+
+export type FileUploadProps = {
     ip: string;
     source: PlatformMulterFile | string;
     options: FileUploadQueryParameters;
@@ -88,3 +94,10 @@ export type RestrictionTypeMapping = {
 };
 
 export type RestrictionValueType = string | number | string[];
+
+export type AdminDataTaleEntryModel = {
+    draw: number;
+    recordsTotal: number;
+    recordsFiltered: number;
+    data: IpBlockedAwareFileEntry[];
+};

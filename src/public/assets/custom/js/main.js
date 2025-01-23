@@ -39,10 +39,18 @@ const Site = (function() {
         }
     };
 
-    const display = function display(hide, element) {
+    const display = function display(hide, element, directElement = false) {
         if (hide) {
+            if (directElement) {
+                element.classList.add("hidden");
+                return;
+            }
             element.closest("div").classList.add("hidden");
         } else {
+            if (directElement) {
+                element.classList.remove("hidden");
+                return;
+            }
             element.closest("div").classList.remove("hidden");
         }
     };

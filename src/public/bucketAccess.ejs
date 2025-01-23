@@ -30,6 +30,7 @@ function getHtml() {
 <html lang="en" data-bs-theme="dark">
 <head>
     <%- include('snippets/head.ejs'); %>
+    <title>Bucket Access - WaifuVault</title>
 
     <style>
 
@@ -69,7 +70,11 @@ function getHtml() {
                 </div>
                 <div class="card-body p-lg-3">
                     <div class="alert alert-info">
-                        Buckets are virtual collections of files, accessible via a token.
+                        Buckets are virtual collections of files, accessible via a private token. <br/>
+                        Once created, you can upload and manage files and create albums.
+                    </div>
+                    <div class="alert alert-light">
+                        You can create a bucket by clicking "Create bucket" below (no signup required).
                     </div>
                     <form action="/rest/auth/authenticate_bucket" method="post">
                         <div class="form-floating mb-3">

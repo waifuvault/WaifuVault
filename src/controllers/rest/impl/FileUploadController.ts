@@ -2,6 +2,7 @@ import { Controller, Inject } from "@tsed/di";
 import { Delete, Description, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
 import { FileUploadResponseDto } from "../../../model/dto/FileUploadResponseDto.js";
+import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { BadRequest } from "@tsed/exceptions";
 import { MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res } from "@tsed/common";
 import { BodyParams } from "@tsed/platform-params";
@@ -17,7 +18,7 @@ import { FileService } from "../../../services/FileService.js";
 
 @Controller("/")
 @Description("API for uploading and sharing files.")
-@Name("File Uploader")
+@Name("File Upload")
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class FileUploadController extends BaseRestController {
     public constructor(
@@ -28,17 +29,16 @@ export class FileUploadController extends BaseRestController {
         super();
     }
 
-    @Put("/:bucketToken?")
+    @(Put().Description("Upload a file or specify URL to a file.").Summary("Upload a file or send URL"))
+    @(Put("/:bucketToken")
+        .Description("Upload a file or a URL to a specific bucket, the bucket must exist")
+        .Summary("Upload a file or send URL to a specific bucket"))
     @(Returns(StatusCodes.CREATED, FileUploadResponseDto).Description("If the file was stored successfully"))
     @(Returns(StatusCodes.BAD_REQUEST, DefaultRenderException).Description("If the request was malformed"))
     @(Returns(StatusCodes.OK, FileUploadResponseDto).Description("If the file already exists"))
     @(Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, DefaultRenderException).Description(
         "If the media type of the file specified was blocked",
     ))
-    @Summary("Upload a file or send URL")
-    @Description(
-        "Upload a file or specify URL to a file. Use the location header in the response or the url prop in the JSON to get the URL of the file",
-    )
     public async addEntry(
         @Req() req: Request,
         @Res() res: Response,
@@ -74,9 +74,11 @@ export class FileUploadController extends BaseRestController {
         )
         @BodyParams("password")
         password?: string,
+
+        @Description("The bucket you want to upload to")
         @PathParams("bucketToken")
         bucketToken?: string,
-    ): Promise<unknown> {
+    ): Promise<FileUploadModel> {
         if (file && url) {
             if (file) {
                 await FileUtils.deleteFile(file);
@@ -87,7 +89,7 @@ export class FileUploadController extends BaseRestController {
             throw new BadRequest("Please supply a file or url");
         }
         const ip = NetworkUtils.getIp(req);
-        let uploadModelResponse: FileUploadResponseDto;
+        let uploadModelResponse: FileUploadModel;
         let alreadyExists: boolean;
         const secretToken = req.query["secret_token"]?.toString();
         try {
@@ -103,11 +105,12 @@ export class FileUploadController extends BaseRestController {
             this.logger.error(e.message);
             throw e;
         }
+
         if (alreadyExists) {
             res.status(StatusCodes.OK);
         } else {
             res.status(StatusCodes.CREATED);
-            res.location(uploadModelResponse.url);
+            res.location(uploadModelResponse.getPublicUrl());
         }
         return uploadModelResponse;
     }
@@ -124,12 +127,12 @@ export class FileUploadController extends BaseRestController {
         @Description(
             "If true, this will format the time remaining to a human readable string instead of an epoch if set to false",
         )
-        humanReadable: boolean,
-    ): Promise<unknown> {
+        _: boolean,
+    ): Promise<FileUploadModel> {
         if (!token) {
             throw new BadRequest("no token provided");
         }
-        return this.fileService.getFileInfo(token, humanReadable);
+        return this.fileService.getFileInfo(token);
     }
 
     @Patch("/:token")
@@ -142,7 +145,7 @@ export class FileUploadController extends BaseRestController {
         token: string,
         @BodyParams()
         body: EntryModificationDto,
-    ): Promise<unknown> {
+    ): Promise<FileUploadModel> {
         if (!token) {
             throw new BadRequest("no token provided");
         }
@@ -154,7 +157,7 @@ export class FileUploadController extends BaseRestController {
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Delete a file via the token")
     @Summary("Delete a file from a token")
-    public async deleteEntry(@PathParams("token") token: string): Promise<unknown> {
+    public async deleteEntry(@PathParams("token") token: string): Promise<boolean> {
         if (!token) {
             throw new BadRequest("no token provided");
         }

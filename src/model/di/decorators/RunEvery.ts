@@ -13,6 +13,7 @@ const scheduler = new ToadScheduler();
  * @returns {(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void}
  * @constructor
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function RunEvery<T>(
     cronExpression: string | ((instance: T) => string),
     runImmediately = false,

@@ -1,10 +1,8 @@
-import { Constant, Inject, InjectContext, Service } from "@tsed/di";
-import { BucketDto } from "../model/dto/BucketDto.js";
+import { Inject, InjectContext, Service } from "@tsed/di";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BucketModel } from "../model/db/Bucket.model.js";
 import { Logger } from "@tsed/logger";
 import type { PlatformContext } from "@tsed/common";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { FileService } from "./FileService.js";
 import { BucketSessionService } from "./BucketSessionService.js";
 
@@ -20,24 +18,15 @@ export class BucketService {
     @InjectContext()
     protected $ctx?: PlatformContext;
 
-    @Constant(GlobalEnv.BASE_URL)
-    private readonly baseUrl: string;
-
-    public async createBucket(): Promise<BucketDto> {
-        const bucket = await this.bucketRepo.createBucket();
-        return BucketDto.fromModel(bucket, this.baseUrl);
+    public createBucket(): Promise<BucketModel> {
+        return this.bucketRepo.createBucket();
     }
 
     public async getBucket(id?: string | number | undefined): Promise<BucketModel | null> {
-        let bucket: BucketModel | null;
         if (!id) {
             return this.getLoggedInUserBucket();
         }
-        if (typeof id === "number") {
-            bucket = await this.bucketRepo.getBucket(id);
-        } else {
-            bucket = await this.bucketRepo.getBucket(id);
-        }
+        const bucket = await this.bucketRepo.getBucket(id);
         if (!bucket) {
             return null;
         }

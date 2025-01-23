@@ -22,5 +22,5 @@ export class FileUploadQueryParameters {
     @Optional()
     @Property()
     @Default(false)
-    public one_time_download?: boolean;
+    public oneTimeDownload?: boolean;
 }
