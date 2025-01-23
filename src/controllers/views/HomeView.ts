@@ -1,5 +1,5 @@
 import { Get, Hidden, Required, View } from "@tsed/schema";
-import { constant, Controller, Inject } from "@tsed/di";
+import { Constant, Controller, Inject } from "@tsed/di";
 import { PathParams, Req, Res } from "@tsed/common";
 import CaptchaServices from "../../model/constants/CaptchaServices.js";
 import { CaptchaManager } from "../../manager/CaptchaManager.js";
@@ -13,6 +13,9 @@ import GlobalEnv from "../../model/constants/GlobalEnv.js";
 @Controller("/")
 @Hidden()
 export class HomeView {
+    @Constant(GlobalEnv.BASE_URL)
+    private baseUrl: string | undefined;
+
     public constructor(
         @Inject() private captchaManager: CaptchaManager,
         @Inject() private bucketSessionService: BucketSessionService,
@@ -56,12 +59,12 @@ export class HomeView {
         if (!albumExists) {
             throw new NotFound("Album does not exist");
         }
-        const baseUrl = constant(GlobalEnv.BASE_URL) as string;
         const album = await this.albumService.getAlbum(publicToken);
         const dto = PublicAlbumDto.fromModel(album);
         const thumbs = dto.files.filter(f => f.metadata.thumbnail).map(x => x.metadata.thumbnail ?? "");
         const chosenThumb = thumbs.length > 0 ? Math.floor(Math.random() * thumbs.length) : 0;
-        const albumThumb = thumbs.length > 0 ? thumbs[chosenThumb] : `${baseUrl}/assets/custom/images/albumNoImage.png`;
+        const albumThumb =
+            thumbs.length > 0 ? thumbs[chosenThumb] : `${this.baseUrl ?? ""}/assets/custom/images/albumNoImage.png`;
         const albumName = album.name;
         return {
             publicToken,
