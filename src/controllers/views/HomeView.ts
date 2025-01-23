@@ -6,6 +6,7 @@ import { CaptchaManager } from "../../manager/CaptchaManager.js";
 import type { Request, Response } from "express";
 import { BucketSessionService } from "../../services/BucketSessionService.js";
 import { AlbumService } from "../../services/AlbumService.js";
+import { PublicAlbumDto } from "../../model/dto/PublicAlbumDto.js";
 import { NotFound } from "@tsed/exceptions";
 
 @Controller("/")
@@ -54,8 +55,13 @@ export class HomeView {
         if (!albumExists) {
             throw new NotFound("Album does not exist");
         }
+        const album = await this.albumService.getAlbum(publicToken);
+        const dto = PublicAlbumDto.fromModel(album);
+        const thumbs = dto.files.filter(f => f.metadata.thumbnail).map(x => x.metadata.thumbnail ?? "");
+        const albumThumb = thumbs.length > 0 ? thumbs[0] : "/assets/custom/images/albumNoImage.png";
         return {
             publicToken,
+            albumThumb,
         };
     }
 
