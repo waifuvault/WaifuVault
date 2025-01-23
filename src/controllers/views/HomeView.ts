@@ -60,10 +60,13 @@ export class HomeView {
         const album = await this.albumService.getAlbum(publicToken);
         const dto = PublicAlbumDto.fromModel(album);
         const thumbs = dto.files.filter(f => f.metadata.thumbnail).map(x => x.metadata.thumbnail ?? "");
-        const albumThumb = thumbs.length > 0 ? thumbs[0] : `${baseUrl}/assets/custom/images/albumNoImage.png`;
+        const chosenThumb = thumbs.length > 0 ? Math.floor(Math.random() * thumbs.length) : 0;
+        const albumThumb = thumbs.length > 0 ? thumbs[chosenThumb] : `${baseUrl}/assets/custom/images/albumNoImage.png`;
+        const albumName = album.name;
         return {
             publicToken,
             albumThumb,
+            albumName,
         };
     }
 
