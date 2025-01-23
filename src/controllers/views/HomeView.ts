@@ -1,5 +1,5 @@
 import { Get, Hidden, Required, View } from "@tsed/schema";
-import { Controller, Inject } from "@tsed/di";
+import { constant, Controller, Inject } from "@tsed/di";
 import { PathParams, Req, Res } from "@tsed/common";
 import CaptchaServices from "../../model/constants/CaptchaServices.js";
 import { CaptchaManager } from "../../manager/CaptchaManager.js";
@@ -8,6 +8,7 @@ import { BucketSessionService } from "../../services/BucketSessionService.js";
 import { AlbumService } from "../../services/AlbumService.js";
 import { PublicAlbumDto } from "../../model/dto/PublicAlbumDto.js";
 import { NotFound } from "@tsed/exceptions";
+import GlobalEnv from "../../model/constants/GlobalEnv";
 
 @Controller("/")
 @Hidden()
@@ -55,10 +56,11 @@ export class HomeView {
         if (!albumExists) {
             throw new NotFound("Album does not exist");
         }
+        const baseUrl = constant(GlobalEnv.BASE_URL) as string;
         const album = await this.albumService.getAlbum(publicToken);
         const dto = PublicAlbumDto.fromModel(album);
         const thumbs = dto.files.filter(f => f.metadata.thumbnail).map(x => x.metadata.thumbnail ?? "");
-        const albumThumb = thumbs.length > 0 ? thumbs[0] : "/assets/custom/images/albumNoImage.png";
+        const albumThumb = thumbs.length > 0 ? thumbs[0] : `${baseUrl}/assets/custom/images/albumNoImage.png`;
         return {
             publicToken,
             albumThumb,
