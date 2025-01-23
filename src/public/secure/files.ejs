@@ -365,7 +365,8 @@
             }
         }
 
-        function buildAddTo(albums) {
+        async function buildAddTo() {
+            await getBucketData()
             const addBtn = document.getElementById("addToAlbumPlaceholder");
             addBtn.classList.add("dropdown-toggle");
             addBtn.setAttribute("data-bs-toggle", "dropdown");
@@ -374,7 +375,7 @@
             menu.setAttribute("class", "dropdown-menu");
             menu.setAttribute("aria-labelledby", "addToAlbumBtn");
             menu.setAttribute("id", "albumMenu");
-            for (const a of albums) {
+            for (const a of bucketAlbums) {
                 const item = document.createElement("li");
                 item.innerHTML = `<button class="dropdown-item sendToAlbum" type="button" data-token="${a.token}">${a.name}</button>`;
                 menu.appendChild(item);
@@ -1187,6 +1188,7 @@
                 } finally {
                     site.loading(false);
                 }
+                await buildAddTo();
                 await resp.text();
                 window.location.replace(mainRul);
             }
@@ -1219,6 +1221,7 @@
                 } finally {
                     site.loading(false);
                 }
+                await buildAddTo();
                 const albumObj = await resp.json();
                 await buildAlbumTabs();
                 loadDt("albumEntries");
@@ -1236,8 +1239,10 @@
         if (bucketId) {
             await buildAlbumTabs();
             loadDt();
-            resize("albumEntries");
-            buildAddTo(bucketAlbums);
+            if(bucketAlbums && bucketAlbums.length > 0){
+                resize("albumEntries");
+            }
+            await buildAddTo();
             linkAlbumButtons();
         } else {
             loadDt();
