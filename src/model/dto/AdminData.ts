@@ -1,5 +1,5 @@
 import { CollectionOf, Nullable, Property } from "@tsed/schema";
-import { AdminDataTaleEntryModel, IpBlockedAwareFileEntry, ProtectionLevel } from "../../utils/typeings.js";
+import type { AdminDataTaleEntryModel, IpBlockedAwareFileEntry, ProtectionLevel } from "../../utils/typeings.js";
 import { AlbumInfo } from "../rest/AlbumInfo.js";
 import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";

@@ -2,7 +2,7 @@ import { AbstractAdminController } from "./AbstractAdminController.js";
 import { Controller, Inject } from "@tsed/di";
 import { Delete, Get, Hidden } from "@tsed/schema";
 import { PlatformResponse, QueryParams, Res, UseBefore } from "@tsed/common";
-import {
+import type {
     DatatableColumn,
     DatatableOrder,
     DatatableSearch,

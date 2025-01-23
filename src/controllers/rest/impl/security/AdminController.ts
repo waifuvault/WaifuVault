@@ -3,7 +3,7 @@ import { Controller, Inject } from "@tsed/di";
 import { UserAdminService } from "../../../../services/UserAdminService.js";
 import { Delete, Get, Hidden, Post, Required } from "@tsed/schema";
 import { PlatformResponse, QueryParams, Res } from "@tsed/common";
-import {
+import type {
     AdminDataTaleEntryModel,
     DatatableColumn,
     DatatableOrder,
