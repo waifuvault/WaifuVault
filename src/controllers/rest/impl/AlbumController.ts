@@ -6,6 +6,7 @@ import {
     Delete,
     Description,
     Get,
+    Header,
     Hidden,
     Name,
     Optional,
@@ -214,6 +215,11 @@ export class AlbumController extends BaseRestController {
     }
 
     @Get("/operations/:albumToken/thumbnail")
+    @Header("Cache-Control", "public, max-age=31557600") // cache content for a year
+    @Returns(StatusCodes.OK)
+    @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
+    @Description("Get a thumbnail for an image")
+    @Summary("Get a thumbnail for an image")
     @Hidden()
     public async thumbnail(
         @QueryParams("imageId") imageId: number,
