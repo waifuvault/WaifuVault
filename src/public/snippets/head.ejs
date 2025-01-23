@@ -4,10 +4,10 @@
 <meta name="description" content="Quick, free and easy temporary file hosting">
 <meta name="keywords" content="File, Hosting, Temporary">
 <meta property="og:type" content="website">
-<meta property="og:title" content="WaifuVault Temporary File Hosting">
+<meta property="og:title" content="<%- typeof albumName !== 'undefined' ? "Album|" + albumName : "WaifuVault Temporary File Hosting"; -%>">
 <meta property="og:url" content="<%- process.env.BASE_URL; -%>">
 <meta property="og:site_name" content="WaifuVault">
-<meta property="og:description" content="<%- typeof albumName !== 'undefined' ? "Album|" + albumName : "Quick, free and easy temporary file hosting" -%>">
+<meta property="og:description" content="<%- typeof albumName !== 'undefined' ? "An album shared through WaifuVault.moe" : "Quick, free and easy temporary file hosting" -%>">
 <meta property="og:image" content="<%- typeof albumThumb !== 'undefined' ? albumThumb : process.env.BASE_URL+'/assets/custom/images/08.png'; -%>">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="300">
