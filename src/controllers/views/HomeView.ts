@@ -8,7 +8,7 @@ import { BucketSessionService } from "../../services/BucketSessionService.js";
 import { AlbumService } from "../../services/AlbumService.js";
 import { PublicAlbumDto } from "../../model/dto/PublicAlbumDto.js";
 import { NotFound } from "@tsed/exceptions";
-import GlobalEnv from "../../model/constants/GlobalEnv";
+import GlobalEnv from "../../model/constants/GlobalEnv.js";
 
 @Controller("/")
 @Hidden()
