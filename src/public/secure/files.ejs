@@ -608,14 +608,18 @@
             }
 
             async function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
+                const uploadButton = document.querySelector(".btn-file-upload");
+                if(uploadButton.hasAttribute("disabled")) {
+                    return;
+                }
                 const restrictions = await getRestrictions();
                 const max_upload_size = restrictions ? restrictions.filter(x => x.type === "MAX_FILE_SIZE")[0].value : null;
                 const banned_mime_type = restrictions ? restrictions.filter(x => x.type === "BANNED_MIME_TYPE")[0].value : null;
-                const uploadButton = document.querySelector(".btn-file-upload");
                 const fileUploadSuccess = document.getElementById("fileUploadedUrl");
                 fileUploadSuccess.innerHTML = null;
 
-                uploadButton.disabled = true;
+                uploadButton.setAttribute("disabled", "true");
+                uploadButton.classList.add("disabled");
                 let params = `hide_filename=${hideFilename}&one_time_download=${oneTimeDownload}`;
                 if (expires) {
                     params += `&expires=${expires}`;
@@ -683,13 +687,15 @@
                     }
                     resetProgress();
                     reloadTable(["entries"]);
-                    uploadButton.disabled = false;
+                    uploadButton.removeAttribute("disabled");
+                    uploadButton.classList.remove("disabled");
                 };
 
                 xhr.onerror = function() {
                     Site.showError("Network error.");
                     resetProgress();
-                    uploadButton.disabled = false;
+                    uploadButton.removeAttribute("disabled");
+                    uploadButton.classList.remove("disabled");
                 };
 
                 xhr.send(formData);

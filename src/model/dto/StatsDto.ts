@@ -2,6 +2,7 @@ import { CollectionOf, Property } from "@tsed/schema";
 import { Builder } from "builder-pattern";
 import { AdminFileData } from "./AdminData.js";
 import { FileUtils } from "../../utils/Utils.js";
+import { IpBlockedAwareFileEntry } from "../../utils/typeings.js";
 
 export class StatsDto {
     @Property()
@@ -27,4 +28,9 @@ export class StatsDto {
             .entries(entries);
         return statsBuilder.build();
     }
+}
+
+export class StatsModel {
+    @Property()
+    public files: IpBlockedAwareFileEntry[];
 }

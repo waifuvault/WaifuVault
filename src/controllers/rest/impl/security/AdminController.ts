@@ -16,6 +16,7 @@ import { Authorize } from "@tsed/passport";
 import { IAdminController } from "../../IAdminController.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 import { IpBlackListModel } from "../../../../model/db/IpBlackList.model.js";
+import { StatsModel } from "../../../../model/dto/StatsDto.js";
 
 @Hidden()
 @Authorize("loginAuthProvider")
@@ -96,7 +97,7 @@ export class AdminController extends AbstractAdminController implements IAdminCo
     }
 
     @Get("/statsData")
-    public override getStatsData(): Promise<IpBlockedAwareFileEntry[]> {
+    public override getStatsData(): Promise<StatsModel> {
         return super.getStatsData();
     }
 }
