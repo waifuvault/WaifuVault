@@ -15,6 +15,7 @@ import { BucketAdminService } from "../../../../services/BucketAdminService.js";
 import { BucketService } from "../../../../services/BucketService.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 import { BucketModel } from "../../../../model/db/Bucket.model.js";
+import { StatsModel } from "../../../../model/dto/StatsDto.js";
 
 @Hidden()
 @Controller("/admin/bucket")
@@ -85,7 +86,7 @@ export class BucketAdminController extends AbstractAdminController implements IA
     }
 
     @Get("/statsData")
-    public override getStatsData(): Promise<IpBlockedAwareFileEntry[]> {
+    public override getStatsData(): Promise<StatsModel> {
         return super.getStatsData();
     }
 }

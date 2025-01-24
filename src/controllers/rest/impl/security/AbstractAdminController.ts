@@ -10,6 +10,7 @@ import { IAdminService } from "../../../../services/IAdminService.js";
 import { BaseRestController } from "../../BaseRestController.js";
 import { FileUploadModel } from "../../../../model/db/FileUpload.model.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
+import { StatsModel } from "../../../../model/dto/StatsDto.js";
 
 export abstract class AbstractAdminController extends BaseRestController {
     protected constructor(
@@ -42,8 +43,10 @@ export abstract class AbstractAdminController extends BaseRestController {
         return super.doSuccess(res, `Entries have been deleted.`);
     }
 
-    public async getStatsData(): Promise<IpBlockedAwareFileEntry[]> {
-        return this.mapIpToFileEntries(await this.adminService.getStatsData());
+    public async getStatsData(): Promise<StatsModel> {
+        const stats = new StatsModel();
+        stats.files = await this.mapIpToFileEntries(await this.adminService.getStatsData());
+        return stats;
     }
 
     public abstract getDatatablesEntries(
