@@ -118,10 +118,18 @@ export class AlbumService {
     }
 
     private async removeFilesFromAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
-        for (const file of files) {
-            file.albumToken = null;
+        const removeTokens = files.map(f => f.token);
+        const album = await this.albumRepo.getAlbum(albumToken);
+        if (!album) {
+            throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-        await this.fileRepo.saveEntries(files);
+        this.checkPrivateToken(albumToken, album);
+        for (const file of album.files ?? []) {
+            if (removeTokens.includes(file.token)) {
+                file.albumToken = null;
+            }
+        }
+        await this.albumRepo.saveOrUpdateAlbum(album);
         return (await this.albumRepo.getAlbum(albumToken))!;
     }
 
