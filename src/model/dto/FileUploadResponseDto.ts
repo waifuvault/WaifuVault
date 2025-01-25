@@ -50,7 +50,7 @@ export class FileUploadResponseDto {
     @Property()
     @Description("How long this file will exist for")
     @Nullable(Number, String)
-    @Default(Number)
+    @Default(null)
     public retentionPeriod: string | number | null = null;
 
     @Property()
