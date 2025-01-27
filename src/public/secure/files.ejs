@@ -930,28 +930,6 @@
                 }
             }
 
-            async function getRestrictions() {
-                Site.loading(true);
-                let response;
-                try {
-                    response = await fetch(`${baseUrl}/resources/restrictions`);
-                } catch (e) {
-                    const errModal = createBasicModal('restrictionsErrModal', 'Error', `<span class="alert alert-danger">${e.message}</span>`);
-                    errModal.show();
-                    return null;
-                } finally {
-                    Site.loading(false);
-                }
-                const responseStatus = response.status;
-                const responseJson = await response.json();
-                if (responseStatus !== 200) {
-                    const errModal = createBasicModal('restrictionsJsonErrModal', 'Error', `<span class="alert alert-danger">${responseJson.message}</span>`);
-                    errModal.show();
-                    throw new Error(responseJson.message);
-                }
-                return responseJson;
-            }
-
             function getButtons(type) {
                 const buttons = [];
                 if (type === "entries") {
@@ -1227,8 +1205,6 @@
                 } finally {
                     site.loading(false);
                 }
-                await buildAddTo();
-                await resp.text();
                 window.location.replace(mainRul);
             }
 
