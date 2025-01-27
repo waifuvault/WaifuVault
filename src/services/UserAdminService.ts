@@ -27,15 +27,14 @@ export class UserAdminService extends AbstractAdminService {
         return allEntries.filter(e => !e.hasExpired);
     }
 
-    public override async getPagedEntries(
+    public override getPagedEntries(
         start: number,
         length: number,
         sortColumn = "id",
         sortDir = "ASC",
         search?: string,
     ): Promise<FileUploadModel[]> {
-        const entries = await this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search);
-        return entries.filter(e => !e.hasExpired);
+        return this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search);
     }
 
     public getAllBlockedIps(): Promise<IpBlackListModel[]> {
