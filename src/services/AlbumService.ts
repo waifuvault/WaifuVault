@@ -193,8 +193,7 @@ export class AlbumService {
 
         const thumbnailBuilder = sharp(fileBuffer, {
             animated: true,
-            ignoreIcc: false,
-        }).withMetadata();
+        }).rotate();
 
         if (metadata.width && metadata.height && metadata.height > 200) {
             const resizedWidth = Math.floor(metadata.width * SCALING_FACTOR);
