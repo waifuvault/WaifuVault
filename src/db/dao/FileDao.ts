@@ -2,7 +2,18 @@ import { Inject, Injectable } from "@tsed/di";
 import { AbstractTypeOrmDao } from "./AbstractTypeOrmDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
-import { DataSource, EntityManager, Equal, FindOptionsRelations, In, IsNull, LessThan, Like, MoreThan } from "typeorm";
+import {
+    DataSource,
+    EntityManager,
+    Equal,
+    FindOptionsRelations,
+    In,
+    IsNull,
+    LessThan,
+    Like,
+    MoreThan,
+    Or,
+} from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
 
 @Injectable()
@@ -17,6 +28,10 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
             album: true,
         },
     };
+
+    private get expiresCondition(): FindOperator<number> {
+        return Or(MoreThan(Date.now()), IsNull());
+    }
 
     public saveEntry(entry: FileUploadModel, transaction?: EntityManager): Promise<FileUploadModel> {
         return this.getRepository(transaction).save(entry);
@@ -61,14 +76,9 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
     }
 
     public getTotalFileSize(transaction?: EntityManager): Promise<number | null> {
-        return this.getRepository(transaction).sum("fileSize", [
-            {
-                expires: IsNull(),
-            },
-            {
-                expires: MoreThan(Date.now()),
-            },
-        ]);
+        return this.getRepository(transaction).sum("fileSize", {
+            expires: this.expiresCondition,
+        });
     }
 
     public getAllEntriesOrdered(
@@ -94,7 +104,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
             return this.getRepository(transaction).find({
                 where: {
                     bucketToken: Equal(bucket),
-                    expires: MoreThan(Date.now()),
+                    expires: this.expiresCondition,
                 },
                 order: orderOptions,
                 skip: start,
@@ -103,7 +113,9 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
             });
         }
         return this.getRepository(transaction).find({
-            where: { expires: MoreThan(Date.now()) },
+            where: {
+                expires: this.expiresCondition,
+            },
             order: orderOptions,
             skip: start,
             take: records,
@@ -120,27 +132,14 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
     public getRecordCount(bucket?: string, transaction?: EntityManager): Promise<number> {
         if (bucket) {
             return this.getRepository(transaction).count({
-                where: [
-                    {
-                        expires: IsNull(),
-                        bucketToken: Equal(bucket),
-                    },
-                    {
-                        expires: MoreThan(Date.now()),
-                        bucketToken: Equal(bucket),
-                    },
-                ],
+                where: {
+                    expires: this.expiresCondition,
+                    bucketToken: Equal(bucket),
+                },
             });
         }
         return this.getRepository(transaction).count({
-            where: [
-                {
-                    expires: IsNull(),
-                },
-                {
-                    expires: MoreThan(Date.now()),
-                },
-            ],
+            where: { expires: this.expiresCondition },
         });
     }
 
@@ -152,19 +151,20 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
 
     private getSearchQuery(search: string, bucket?: string): Record<string, FindOperator<unknown>>[] {
         search = `%${search}%`;
+
         if (bucket) {
             return [
-                { fileName: Like(search), bucketToken: Equal(bucket), expires: MoreThan(Date.now()) },
-                { fileExtension: Like(search), bucketToken: Equal(bucket), expires: MoreThan(Date.now()) },
-                { ip: Like(search), bucketToken: Equal(bucket), expires: MoreThan(Date.now()) },
-                { originalFileName: Like(search), bucketToken: Equal(bucket), expires: MoreThan(Date.now()) },
+                { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { fileExtension: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { ip: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { originalFileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
             ];
         }
         return [
-            { fileName: Like(search), expires: MoreThan(Date.now()) },
-            { fileExtension: Like(search), expires: MoreThan(Date.now()) },
-            { ip: Like(search), expires: MoreThan(Date.now()) },
-            { originalFileName: Like(search), expires: MoreThan(Date.now()) },
+            { fileName: Like(search), expires: this.expiresCondition },
+            { fileExtension: Like(search), expires: this.expiresCondition },
+            { ip: Like(search), expires: this.expiresCondition },
+            { originalFileName: Like(search), expires: this.expiresCondition },
         ];
     }
 
@@ -172,6 +172,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         return this.getRepository(transaction).find({
             where: {
                 ip,
+                expires: this.expiresCondition,
             },
             ...this.relation,
         });
