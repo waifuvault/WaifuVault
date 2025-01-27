@@ -92,7 +92,10 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         }
         if (bucket) {
             return this.getRepository(transaction).find({
-                where: [{ bucketToken: Equal(bucket) }],
+                where: {
+                    bucketToken: Equal(bucket),
+                    expires: MoreThan(Date.now()),
+                },
                 order: orderOptions,
                 skip: start,
                 take: records,
@@ -100,6 +103,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
             });
         }
         return this.getRepository(transaction).find({
+            where: { expires: MoreThan(Date.now()) },
             order: orderOptions,
             skip: start,
             take: records,
@@ -146,21 +150,21 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         });
     }
 
-    private getSearchQuery(search: string, bucket?: string): Record<string, FindOperator<string>>[] {
+    private getSearchQuery(search: string, bucket?: string): Record<string, FindOperator<unknown>>[] {
         search = `%${search}%`;
         if (bucket) {
             return [
-                { fileName: Like(search), bucketToken: Equal(bucket) },
-                { fileExtension: Like(search), bucketToken: Equal(bucket) },
-                { ip: Like(search), bucketToken: Equal(bucket) },
-                { originalFileName: Like(search), bucketToken: Equal(bucket) },
+                { fileName: Like(search), bucketToken: Equal(bucket), expires: MoreThan(Date.now()) },
+                { fileExtension: Like(search), bucketToken: Equal(bucket), expires: MoreThan(Date.now()) },
+                { ip: Like(search), bucketToken: Equal(bucket), expires: MoreThan(Date.now()) },
+                { originalFileName: Like(search), bucketToken: Equal(bucket), expires: MoreThan(Date.now()) },
             ];
         }
         return [
-            { fileName: Like(search) },
-            { fileExtension: Like(search) },
-            { ip: Like(search) },
-            { originalFileName: Like(search) },
+            { fileName: Like(search), expires: MoreThan(Date.now()) },
+            { fileExtension: Like(search), expires: MoreThan(Date.now()) },
+            { ip: Like(search), expires: MoreThan(Date.now()) },
+            { originalFileName: Like(search), expires: MoreThan(Date.now()) },
         ];
     }
 

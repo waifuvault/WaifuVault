@@ -5,6 +5,7 @@
     <title>Files - WaifuVault</title>
     <link href="/assets/custom/css/index.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.4/b-3.1.1/b-colvis-3.1.1/fh-4.0.1/r-3.0.2/sc-2.4.3/sl-2.0.5/sr-1.4.1/datatables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
     <style>
         table.dataTable td.dt-type-numeric, table.dataTable th.dt-type-numeric {
             text-align: initial;
@@ -24,6 +25,40 @@
 
         :root {
             --dt-row-selected: var(--bs-tertiary-bg-rgb);
+        }
+
+        .centerIcon {
+            width: 100%;
+            height: 100%;
+        }
+
+        .centerIcon:before {
+            width: 100%;
+            height: 100%;
+            font-size: 5.0em;
+            text-align: center;
+            display: block;
+            line-height: 100px;
+        }
+
+        .dz-image {
+            border-radius: 0 !important;
+        }
+
+        .btnCopy {
+            font-size: 14px;
+            text-align: center;
+            display: block;
+            cursor: pointer !important;
+            border: none;
+        }
+
+        .dropzone .dz-preview.dz-image-preview {
+            background: #fff0;
+        }
+
+        .dropzone.dz-drag-hover i {
+            opacity: .5;
         }
     </style>
 </head>
@@ -47,7 +82,7 @@
                     </div>
                     <% if(loginType === "bucket" && bucket.type === "PREMIUM") { %>
                         <div class="alert alert-info mt-3">
-                            <i class="bi bi-question-circle"></i> This is a <%- bucket.type -%> bucket, this means that you get unlimited expiry.
+                            <i class="bi bi-question-circle"></i> This is a <%- bucket.type; -%> bucket, this means that you get unlimited expiry.
                         </div>
                     <% } %>
                 </div>
@@ -145,7 +180,7 @@
     </div>
     <div class="modal fade" id="fileUploadModel" tabindex="-1" aria-labelledby="fileUploadModelLabel"
          aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="fileDetailsModelLabel">File Upload</h1>
@@ -153,24 +188,34 @@
                 </div>
                 <div class="modal-body" id="fileDetailsModelInfoContent">
                     <div class="container-fluid">
-                        <div class="row">
+                        <div class="row py-2" id="dropzoneRow">
                             <div class="col-md-12 mb-3">
-                                <div>
-                                    <label for="radioFileSelectFile" class="form-label">File</label>
-                                    <div class="input-group">
-                                        <div class="input-group-text">
-                                            <input class="form-check-input mt-0" name="radioFileSelect" id="radioFileSelectFile" type="radio" aria-label="Radio button for selecting file" checked>
-                                        </div>
-                                        <input class="form-control" type="file" id="uploadFile" aria-label="Choose file">
+                                <div id="uploadDropzone" class="dropzone rounded mb-4 bg-dark border border-success text-white">
+                                    <i class="bi bi-cloud-arrow-up centerIcon"></i>
+                                    <div class="fallback">
+                                        <input name="file" type="file" />
                                     </div>
                                 </div>
-                                <div class="mt-3">
-                                    <label for="radioFileSelectUrl" class="form-label">URL</label>
-                                    <div class="input-group">
-                                        <div class="input-group-text">
-                                            <input class="form-check-input mt-0" id="radioFileSelectUrl" name="radioFileSelect" type="radio" aria-label="Radio button for following selecting URL">
-                                        </div>
-                                        <input type="text" id="url" class="form-control" aria-label="URL text input" placeholder="https://somedomain.com/your-file.jpg" disabled="disabled">
+                            </div>
+                        </div>
+                        <div class="row py-2">
+                            <div class="col-md-12">
+                                <hr />
+                            </div>
+                        </div>
+                        <div class="row py-2" id="urlRow">
+                            <div class="col-md-12 mb-3">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" id="urlLabel">Or upload via url</span>
+                                    <input type="text" class="form-control" id="url" aria-label="urlLabel">
+                                    <button class="btn btn-primary btn-file-upload" type="button" id="button-addon2">Upload</button>
+                                </div>
+                                <div class="hidden" id="error">
+                                    <div class="alert alert-danger" id="errorContent"></div>
+                                </div>
+                                <div class="hidden" id="success">
+                                    <div class="alert alert-success" style="overflow: hidden;text-overflow: ellipsis;">
+                                        File from URL Successfully Uploaded <br /> <span id="fileUploadedUrl"></span>
                                     </div>
                                 </div>
                             </div>
@@ -203,27 +248,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row py-2">
-                            <div class="col-md-12 hidden" id="error">
-                                <div class="alert alert-danger" id="errorContent"></div>
-                            </div>
-                            <div class="col-md-12 hidden" id="success">
-                                <div class="alert alert-success" style="overflow: hidden;text-overflow: ellipsis;">
-                                    File Successfully Uploaded <br /> <span id="fileUploadedUrl"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row py-2">
-                            <div class="col-md-12">
-                                <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressWrapper">
-                                    <div id="uploadProgress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0"></div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary btn-file-upload">Upload File</button>
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -233,14 +260,16 @@
 
 
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.4/b-3.1.1/b-colvis-3.1.1/fh-4.0.1/r-3.0.2/sc-2.4.3/sl-2.0.5/sr-1.4.1/datatables.min.js"></script>
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 <%- include('../snippets/scripts.ejs'); %>
 <script>
     const bucketId = <%- loginType === "bucket" ? `"${bucket.bucketToken}";` : "null;"; -%>
 </script>
 <script>
-
+    Dropzone.autoDiscover = false;
     Site.loadPage(async site => {
         let bucketAlbums = null;
+        let dz = null;
 
         async function getBucketData() {
             if (!bucketId) {
@@ -338,8 +367,7 @@
                 errModal.show();
                 return;
             }
-            const albumObj = await resp.json();
-            return albumObj;
+            return await resp.json();
         }
 
         async function removeFilesFromAlbum(token, files) {
@@ -354,8 +382,7 @@
                 errModal.show();
                 return;
             }
-            const albumObj = await resp.json();
-            return albumObj;
+            return await resp.json();
         }
 
         function resize(entryId) {
@@ -485,6 +512,7 @@
                         await buildAlbumTabs();
                         loadDt("albumEntries");
                     }
+
                     async function yes() {
                         await deleteAlbum(albumToken, true);
                         document.getElementById(albumToken).remove();
@@ -562,143 +590,145 @@
                 dtMap.get(dtToLoad).forEach(d => d.destroy(true));
                 dtMap.delete(dtToLoad);
             }
+
             const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
 
-            const uploadModal = new bootstrap.Modal(document.getElementById("fileUploadModel"), { keyboard: false });
-            const progressWrapper = document.getElementById("progressWrapper");
-            const progressbar = document.getElementById("uploadProgress");
+            const uploadModalEl = document.getElementById("fileUploadModel");
+            const uploadModal = new bootstrap.Modal(uploadModalEl, { keyboard: false });
+            uploadModalEl.addEventListener("hidden.bs.modal", () => {
+                if(dz){
+                    dz.removeAllFiles();
+                }
+            });
 
-            document.querySelector(".btn-file-upload").addEventListener("click", () => {
-                const file = document.getElementById("uploadFile").files[0];
+            document.querySelector(".btn-file-upload")?.addEventListener("click", async () => {
                 const url = document.getElementById("url").value;
                 const expires = document.getElementById("expires").value;
                 const password = document.getElementById("password").value;
                 const hideFileName = document.getElementById("hideFilename").checked;
                 const oneTimeDownload = document.getElementById("oneTimeDownload").checked;
-
-                uploadFile(file, url, bucketId, expires, password, hideFileName, oneTimeDownload);
-            });
-
-            document.getElementById("radioFileSelectFile").addEventListener("change", function() {
-                const radioFile = document.getElementById("radioFileSelectFile");
-                const urlInput = document.getElementById("url");
-                const fileInput = document.getElementById("uploadFile");
-                if (radioFile.checked) {
-                    urlInput.value = null;
-                    urlInput.disabled = true;
-                    fileInput.disabled = false;
-                }
-            });
-
-            document.getElementById("radioFileSelectUrl").addEventListener("change", function() {
-                const radioUrl = document.getElementById("radioFileSelectUrl");
-                const urlInput = document.getElementById("url");
-                const fileInput = document.getElementById("uploadFile");
-                if (radioUrl.checked) {
-                    fileInput.value = null;
-                    fileInput.disabled = true;
-                    urlInput.disabled = false;
-                }
-            });
-
-            function resetProgress() {
-                progressbar.style.width = "0%";
-                progressbar.innerText = "";
-                progressWrapper.setAttribute("aria-valuenow", "0");
-            }
-
-            async function uploadFile(file, url, bucket, expires, password, hideFilename, oneTimeDownload) {
                 const uploadButton = document.querySelector(".btn-file-upload");
-                if(uploadButton.hasAttribute("disabled")) {
-                    return;
-                }
-                const restrictions = await getRestrictions();
-                const max_upload_size = restrictions ? restrictions.filter(x => x.type === "MAX_FILE_SIZE")[0].value : null;
-                const banned_mime_type = restrictions ? restrictions.filter(x => x.type === "BANNED_MIME_TYPE")[0].value : null;
                 const fileUploadSuccess = document.getElementById("fileUploadedUrl");
                 fileUploadSuccess.innerHTML = null;
 
                 uploadButton.setAttribute("disabled", "true");
                 uploadButton.classList.add("disabled");
-                let params = `hide_filename=${hideFilename}&one_time_download=${oneTimeDownload}`;
+
+                let params = `hide_filename=${hideFileName}&one_time_download=${oneTimeDownload}`;
                 if (expires) {
                     params += `&expires=${expires}`;
                 }
 
-                if (file && max_upload_size && file.size > max_upload_size) {
-                    Site.showError(`File is too large (server limit is ${sizeAsMB()(max_upload_size, "display", "")})`);
-                    uploadButton.disabled = false;
-                    return;
-                }
-
-                if (file && file.type !== "" && banned_mime_type && banned_mime_type.indexOf(file.type) !== -1) {
-                    Site.showError(`File is a banned type (server bans ${banned_mime_type})`);
-                    uploadButton.disabled = false;
-                    return;
+                let fileUploadUrl = `${baseUrl}`;
+                if (bucketId) {
+                    fileUploadUrl += `/${bucketId}?${params}`;
+                } else {
+                    fileUploadUrl += `?${params}`;
                 }
 
                 const formData = new FormData();
-                if (url) {
-                    formData.append("url", url);
-                } else {
-                    formData.append("file", file);
-                }
+                formData.append("url", url);
 
                 if (password) {
                     formData.append("password", password);
                 }
-
-                const xhr = new XMLHttpRequest();
-                let fileUploadUrl = `${baseUrl}`;
-                if (bucket) {
-                    fileUploadUrl += `/${bucket}?${params}`;
-                } else {
-                    fileUploadUrl += `?${params}`;
+                Site.loading(true);
+                let resp;
+                try {
+                    resp = await fetch(fileUploadUrl, {
+                        method: "PUT",
+                        body: formData,
+                    });
+                } catch (e) {
+                    alert(e.message);
+                    return null;
+                } finally {
+                    Site.loading(false);
                 }
-                xhr.open("PUT", fileUploadUrl, true);
+                const json = await resp.json();
 
-                xhr.upload.onprogress = function(event) {
-                    if (event.lengthComputable) {
-                        const uploadDone = Math.round((event.loaded / event.total) * 100) + "%";
-                        progressbar.innerText = uploadDone;
-                        progressbar.style.width = uploadDone;
-                        progressWrapper.setAttribute("aria-valuenow", Math.round((event.loaded / event.total) * 100).toString());
+                if (resp.ok) {
+                    const url = encodeURI(json.url);
+                    const btn = document.createElement("button");
+                    btn.className = "btn btn-sm btn-outline-primary mt-3 d-block";
+                    btn.addEventListener("click", () => navigator.clipboard.writeText(url));
+                    btn.textContent = "Copy to clipboard";
+
+                    const anchor = document.createElement("a");
+                    anchor.setAttribute("target", "_blank");
+                    anchor.setAttribute("href", url);
+                    anchor.textContent = url;
+                    fileUploadSuccess.append(anchor);
+                    anchor.after(btn);
+                    Site.showSuccess();
+                } else {
+                    if(json.message) {
+                        Site.showError(json.message);
+                    }else{
+                        Site.showSuccess("Network Error.");
                     }
-                };
+                }
 
-                xhr.onload = function() {
-                    const response = JSON.parse(xhr.response);
-                    if (xhr.status === 200 || xhr.status === 201) {
-                        const url = encodeURI(response.url);
-                        const btn = document.createElement("button");
-                        btn.className = "btn btn-sm btn-outline-primary mt-3 d-block";
-                        btn.addEventListener("click", () => navigator.clipboard.writeText(url));
-                        btn.textContent = "Copy to clipboard";
+                reloadTable(["entries"]);
+                uploadButton.removeAttribute("disabled");
+                uploadButton.classList.remove("disabled");
+            });
 
-                        const anchor = document.createElement("a");
-                        anchor.setAttribute("target", "_blank");
-                        anchor.setAttribute("href", url);
-                        anchor.textContent = url;
-                        fileUploadSuccess.append(anchor);
-                        anchor.after(btn);
-                        Site.showSuccess();
+            function initDropzone() {
+                dz = new Dropzone("#uploadDropzone", {
+                    url: "/rest",
+                    method: "PUT",
+                    uploadMultiple: false,
+                    addRemoveLinks: false,
+                    maxThumbnailFilesize: 50,
+                    maxFiles: 10,
+                    maxFilesize: <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>,
+                });
+                dz.on("sending", (file, xhr, formData) => {
+                    const password = document.getElementById("password").value;
+                    if (password) {
+                        formData.append("password", password);
+                    }
+                });
+                dz.on("processing", function() {
+                    const expires = document.getElementById("expires").value;
+                    const hideFileName = document.getElementById("hideFilename").checked;
+                    const oneTimeDownload = document.getElementById("oneTimeDownload").checked;
+                    let params = `hide_filename=${hideFileName}&one_time_download=${oneTimeDownload}`;
+                    if (expires) {
+                        params += `&expires=${expires}`;
+                    }
+
+                    let fileUploadUrl = baseUrl;
+                    if (bucketId) {
+                        fileUploadUrl += `/${bucketId}?${params}`;
                     } else {
-                        Site.showError("Error uploading file: " + response.message);
+                        fileUploadUrl += `?${params}`;
                     }
-                    resetProgress();
+
+                    this.options.url = fileUploadUrl;
+                });
+                dz.on("complete", file => {
+                    const dzPreview = file.previewElement;
+                    const response = JSON.parse(file.xhr.response);
+                    if (file.status === "success") {
+                        const btn = document.createElement("a");
+                        btn.classList.add("btn-primary", "btn-sm", "btn", "btnCopy", "rounded-0");
+                        btn.textContent = "Copy URL";
+                        btn.addEventListener("click", () => {
+                            navigator.clipboard.writeText(response.url);
+                            btn.textContent = "URL Copied!";
+                            setTimeout(() => {
+                                btn.textContent = "Copy URL";
+                            }, 1000);
+                        });
+                        btn.setAttribute("href", "javascript:undefined;")
+                        dzPreview.appendChild(btn);
+                    } else {
+                        file.previewElement.querySelector('.dz-error-message>span').textContent = response.message;
+                    }
                     reloadTable(["entries"]);
-                    uploadButton.removeAttribute("disabled");
-                    uploadButton.classList.remove("disabled");
-                };
-
-                xhr.onerror = function() {
-                    Site.showError("Network error.");
-                    resetProgress();
-                    uploadButton.removeAttribute("disabled");
-                    uploadButton.classList.remove("disabled");
-                };
-
-                xhr.send(formData);
+                });
             }
 
             function sizeAsMB() {
@@ -938,7 +968,7 @@
                                     });
                                     await deleteEntry(idArr);
                                     reloadTable(["entries"]);
-                                    if(bucketId) {
+                                    if (bucketId) {
                                         await refreshAlbumFiles();
                                     }
                                 }
@@ -1174,6 +1204,9 @@
                 $(".datatables").each(async function() {
                     await loadDt($(this)[0]);
                 });
+                if(!dz){
+                    initDropzone();
+                }
             }
         }
 
@@ -1245,7 +1278,7 @@
         if (bucketId) {
             await buildAlbumTabs();
             loadDt();
-            if(bucketAlbums && bucketAlbums.length > 0){
+            if (bucketAlbums && bucketAlbums.length > 0) {
                 resize("albumEntries");
             }
             await buildAddTo();
