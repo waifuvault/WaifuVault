@@ -15,10 +15,14 @@ import {
     Or,
 } from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
+import { AlbumDao } from "./AlbumDao.js";
 
 @Injectable()
 export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
-    public constructor(@Inject(SQLITE_DATA_SOURCE) ds: DataSource) {
+    public constructor(
+        @Inject(SQLITE_DATA_SOURCE) ds: DataSource,
+        @Inject() private albumDao: AlbumDao,
+    ) {
         super(ds, FileUploadModel);
     }
 
@@ -81,7 +85,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         });
     }
 
-    public getAllEntriesOrdered(
+    public async getAllEntriesOrdered(
         start: number,
         records: number,
         sortColumn?: string,
@@ -92,8 +96,9 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
     ): Promise<FileUploadModel[]> {
         const orderOptions = sortColumn ? { [sortColumn]: sortOrder } : {};
         if (search) {
+            const album = await this.albumDao.getAlbumByName(search, bucket ?? "");
             return this.getRepository(transaction).find({
-                where: this.getSearchQuery(search, bucket),
+                where: this.getSearchQuery(search, bucket, album?.albumToken),
                 order: orderOptions,
                 skip: start,
                 take: records,
@@ -143,15 +148,25 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         });
     }
 
-    public getSearchRecordCount(search: string, bucket?: string, transaction?: EntityManager): Promise<number> {
+    public async getSearchRecordCount(search: string, bucket?: string, transaction?: EntityManager): Promise<number> {
+        const album = await this.albumDao.getAlbumByName(search, bucket ?? "");
         return this.getRepository(transaction).count({
-            where: this.getSearchQuery(search, bucket),
+            where: this.getSearchQuery(search, bucket, album?.albumToken),
         });
     }
 
-    private getSearchQuery(search: string, bucket?: string): Record<string, FindOperator<unknown>>[] {
+    private getSearchQuery(search: string, bucket?: string, album?: string): Record<string, FindOperator<unknown>>[] {
         search = `%${search}%`;
 
+        if (bucket && album) {
+            return [
+                { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { fileExtension: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { ip: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { originalFileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { albumToken: Equal(album), expires: this.expiresCondition },
+            ];
+        }
         if (bucket) {
             return [
                 { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
