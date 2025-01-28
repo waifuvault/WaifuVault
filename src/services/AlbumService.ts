@@ -1,4 +1,4 @@
-import { Inject, Service } from "@tsed/di";
+import { Constant, Inject, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BadRequest, InternalServerError, NotFound } from "@tsed/exceptions";
@@ -14,6 +14,7 @@ import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
 import fs, { ReadStream } from "node:fs";
 import archiver from "archiver";
 import sharp from "sharp";
+import GlobalEnv from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class AlbumService {
@@ -25,6 +26,9 @@ export class AlbumService {
         @Inject() private thumbnailCacheReo: ThumbnailCacheReo,
     ) {}
 
+    @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, 512)
+    private readonly zipMaxFileSize: number;
+
     public async createAlbum(name: string, bucketToken: string): Promise<AlbumModel> {
         const bucket = await this.bucketRepo.getBucket(bucketToken);
         if (!bucket) {
@@ -34,6 +38,7 @@ export class AlbumService {
         if (albumWithNameExists) {
             throw new BadRequest(`Album with name ${name} already exists`);
         }
+
         const albumModel = Builder(AlbumModel)
             .bucketToken(bucketToken)
             .name(name)
@@ -63,6 +68,11 @@ export class AlbumService {
         if (removeFiles) {
             if (album.files) {
                 await this.fileService.deleteFilesFromDisk(album.files);
+            }
+        } else {
+            if (album.files) {
+                const fileIds = album.files.map(f => f.id);
+                await this.thumbnailCacheReo.deleteThumbnailCaches(fileIds);
             }
         }
         return true;
@@ -237,6 +247,12 @@ export class AlbumService {
         const filesToZip = files.filter(
             file => (fileIds.length === 0 || fileIds.includes(file.id)) && file.fileProtectionLevel === "None",
         );
+
+        const sumFileSize = filesToZip.reduce((n, { fileSize }) => n + fileSize, 0);
+
+        if (this.zipMaxFileSize > 0 && sumFileSize > this.zipMaxFileSize * 1024 * 1024) {
+            throw new BadRequest("Zip file is too large");
+        }
 
         const zipLocation = filesDir + `/${album.name}_${crypto.randomUUID()}.zip`;
         return Promise.all([this.createZip(filesToZip, zipLocation), album.name, zipLocation]);

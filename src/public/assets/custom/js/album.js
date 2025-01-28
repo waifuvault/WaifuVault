@@ -275,8 +275,7 @@ Site.loadPage(async site => {
         renderAlbum(album, "card");
     });
 
-    downloadButton.addEventListener("click", () => {
-
+    downloadButton.addEventListener("click", async () => {
         if (downloadButton.hasAttribute("disabled")) {
             return;
         }
@@ -289,42 +288,46 @@ Site.loadPage(async site => {
         downloadButton.classList.add("disabled");
 
         const originalText = downloadButton.textContent;
-        downloadButton.textContent = "Downloading...";
+        downloadButton.textContent = "Compressing and Downloading, please wait...";
 
-        fetch(`${baseUrl}/album/download/${publicToken}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(checkedIds)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    alert(response.status);
-                    throw new Error(response.status);
-                }
-                const contentDisposition = response.headers.get("Content-Disposition");
-                const filenameRegex = /filename="([^"]+)"/;
-                const match = contentDisposition.match(filenameRegex);
-                const filename = match ? match[1] : "files.zip";
-                return Promise.all([response.blob(), filename]);
-            })
-            .then(([blob, filename]) => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-            })
-            .catch(e => {
-                alert(e.message);
-            }).finally(() => {
-                downloadButton.textContent = originalText;
-                downloadButton.removeAttribute("disabled");
-                downloadButton.classList.remove("disabled");
+        try {
+            const response = await fetch(`${baseUrl}/album/download/${publicToken}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(checkedIds),
+            });
+
+            if (!response.ok) {
+                const json = await response.json();
+                const errModal = createBasicModal('zipDownloadError', 'Error', `<div class="alert alert-danger">error ${json.status} - ${json.message}</div>`);
+                errModal.show();
+                return;
             }
-        );
+
+            const contentDisposition = response.headers.get("Content-Disposition");
+            const filenameRegex = /filename="([^"]+)"/;
+            const match = contentDisposition.match(filenameRegex);
+            const filename = match ? match[1] : "files.zip";
+
+            const blob = await response.blob();
+
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error("An error occurred during the download process:", error);
+        } finally {
+            // Restore the state of the download button
+            downloadButton.textContent = originalText;
+            downloadButton.removeAttribute("disabled");
+            downloadButton.classList.remove("disabled");
+        }
     });
 
     const album = await getAlbum();

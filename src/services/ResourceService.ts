@@ -35,6 +35,15 @@ export class ResourceService {
                     }
                     break;
                 }
+                case RestrictionType.ZIP_MAX_SIZE_MB: {
+                    const settingValue = this.settingsService.getSetting(GlobalEnv.ZIP_MAX_SIZE_MB);
+                    if (settingValue) {
+                        const parsedValue = Number.parseInt(settingValue);
+                        if (parsedValue > 0) {
+                            retArr.push(this.getRestriction(restrictionType, parsedValue));
+                        }
+                    }
+                }
             }
         }
         return retArr;
