@@ -49,6 +49,7 @@ Optional Settings
 | MAX_URL_LENGTH     | Maximum URL length that can be specified                                                                                                             |
 | HTTPS              | True if using HTTPS, False otherwise                                                                                                                 |
 | HTTPS_PORT         | Port to listen on if using HTTPS                                                                                                                     |
+| ZIP_MAX_SIZE_MB    | The max size an album can be before it is allowed to be downloaded as a zip. set to '0' to disable. defaults to 100mb                                |
 
 The available `CAPTCHA_SERVICE` values are:
 
@@ -57,11 +58,11 @@ The available `CAPTCHA_SERVICE` values are:
 * hCaptcha
 
 > For rate limiting, if `RATE_LIMIT` was 1 and `RATE_LIMIT_MS` is `1000`. Then this means 1 request every second
- 
-> **HTTPS** Note well if running behind a reverse proxy (normal deployment) then HTTPS terminates at the proxy, 
+
+> **HTTPS** Note well if running behind a reverse proxy (normal deployment) then HTTPS terminates at the proxy,
 > and this should be set False
 
-> **Google V2 Recaptcha** 
+> **Google V2 Recaptcha**
 > If you want to use google reCaptcha, then select the non-invisible one.
 
 > **Note Well** if a path to an Antivirus engine is not defined it will not be used, if no paths are defined then no
@@ -89,10 +90,11 @@ The available `CAPTCHA_SERVICE` values are:
 
 ## Buckets Admin Feature
 
-Buckets are virtual collections of files that can be accessed with a token.  When a bucket is created, the token is 
+Buckets are virtual collections of files that can be accessed with a token. When a bucket is created, the token is
 provided.
 
-> **Note Well** The bucket key provides full access to the files, including the ability to delete them, do not share the bucket key.
+> **Note Well** The bucket key provides full access to the files, including the ability to delete them, do not share the
+> bucket key.
 > It is intended to provide users the ability to manage their own files.
 
 ### Usage
@@ -103,10 +105,10 @@ To login to the bucket admin page, use the following URL, relative to the base U
 /admin/bucket
 ```
 
-Once the key is provided, the user will be taken to the file management page.  This is very similar to the main file 
+Once the key is provided, the user will be taken to the file management page. This is very similar to the main file
 management page of the admin feature, but restricted to the files contained in the bucket.
 
-Buckets can be created from the login page by using the `Create Bucket` button.  This will create and populate a bucket 
+Buckets can be created from the login page by using the `Create Bucket` button. This will create and populate a bucket
 token.
 
 ![CreateBucket](https://waifuvault.moe/f/1724958169898/CreateBucket.png)
@@ -137,7 +139,7 @@ panel.
 
 ![Details](https://waifuvault.moe/f/1724958342820/FileDetails.png)
 
-Finally you can choose to delete the entire bucket.  Be aware this will also delete all of the files in the bucket.
+Finally you can choose to delete the entire bucket. Be aware this will also delete all of the files in the bucket.
 You do this by clicking on the red `Delete Bucket` button in the bottom right.
 
 ![DeleteBucket](https://waifuvault.moe/f/1724959398024/BucketDeleteBucket.png)
@@ -158,7 +160,7 @@ This page shows overall statistics for the files uploaded to the site:
 
 ## Albums Admin Feature
 
-Albums are sub-collections of files within a bucket.  Albums can be publicly shared, to provide simple access to
+Albums are sub-collections of files within a bucket. Albums can be publicly shared, to provide simple access to
 a collection of files.
 
 > **Note Well** One time download files cannot be included in albums.
@@ -168,34 +170,33 @@ a collection of files.
 To create an album, click on the `Create album` button in the main upper table.
 Fill in the name you would like for the album and then click `Create Album` in the dialog.
 
-
 A new tab for the album will then appear in the bottom Albums table.
 
 ![CreateAlbum](https://waifuvault.moe/f/1737302267058/CreateAlbum.png)
 
 ### Deleting Albums
 
-To delete an album, in the bottom albums table, select the tab for the album you wish to delete.  Then
+To delete an album, in the bottom albums table, select the tab for the album you wish to delete. Then
 in the bottom right, click on the `Delete Album` button.
 
-A dialog will then come up asking you if you want to also delete the files in the album.  If you choose 
-`Yes` then the files will be deleted from both the album and the bucket.  If you choose `No` then the
+A dialog will then come up asking you if you want to also delete the files in the album. If you choose
+`Yes` then the files will be deleted from both the album and the bucket. If you choose `No` then the
 files will be removed from the album, but not deleted from the bucket.
 
 ![DeleteAlbum](https://waifuvault.moe/f/1737302605135/DeleteAlbum.png)
 
 ### Sharing Albums
 
-Albums can be publicly shared.  This will provide you with a URL that can be used to view and download the 
+Albums can be publicly shared. This will provide you with a URL that can be used to view and download the
 files within the album.
 
-> **Note Well** One time download files cannot be included in albums, and files which are protected will 
+> **Note Well** One time download files cannot be included in albums, and files which are protected will
 > still need the password to download.
 
 To share an album, select the tab for the album in the bottom albums section, and then click on the `Share Album`
 button in the bottom left.
 
-This will add a new button with the public URL in the middle of the bottom bar.  Clicking on this button
+This will add a new button with the public URL in the middle of the bottom bar. Clicking on this button
 will copy the URL to the clipboard for you.
 
 ![ShareAlbum](https://waifuvault.moe/f/1737303000335/ShareAlbum.png)
@@ -205,7 +206,7 @@ the `Unshare Album` button in the bottom left.
 
 The green URL button will now disappear and the album will be private only again.
 
-> **Note Well** If you unshare an album, the original album share URL is destroyed.  If you share it again afterwards
+> **Note Well** If you unshare an album, the original album share URL is destroyed. If you share it again afterwards
 > the URL will be different.
 
 ![UnshareAlbum](https://waifuvault.moe/f/1737303226165/UnshareAlbum.png)
@@ -214,14 +215,14 @@ The green URL button will now disappear and the album will be private only again
 
 The public album access interface is available using the URL provided by sharing an album.
 
-This provides the ability to view and download files within an album from a public URL.  It also provides the
+This provides the ability to view and download files within an album from a public URL. It also provides the
 ability to download the files within an album as a zip file.
 
 > **Note Well** The password will still be required for individual protected files within an album and
 > they will not be included in the zip file download.
 
-Two views are provided.  The default view is the card view, which provides a thumbnail for those file
-types that support it.  Type icons will be shown for those that do not.
+Two views are provided. The default view is the card view, which provides a thumbnail for those file
+types that support it. Type icons will be shown for those that do not.
 
 The card view can also be selected by clicking on the grid icon at the top right of the page.
 
@@ -247,7 +248,7 @@ If no files are selected then all files will be downloaded in the zip file.
 To add files from the main bucket table to an album, select the files you want to add from the upper bucket table
 and then click on `Add to Album`, and select the name of the album you wish to add the files to.
 
-> **Note Well** Files can only be assigned to one album at a time.  If you choose a file which is already assigned
+> **Note Well** Files can only be assigned to one album at a time. If you choose a file which is already assigned
 > to another album, it will be moved to the chosen album.
 
 ![AddFilesToAlbum](https://waifuvault.moe/f/1737304346693/AddFilesAlbum.png)

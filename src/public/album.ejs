@@ -21,7 +21,11 @@
         <div class="col-md-12 pb-2">
             <button id="cardView" class="btn btn-outline-primary ms-1"><i class="bi bi-table"></i></button>
             <button id="tableView" class="btn btn-outline-primary ms-1"><i class="bi bi-list"></i></button>
-            <button id="downloadFiles" class="btn btn-outline-primary ms-1">Download Album as Zip</button>
+            <% if (albumTooBigToDownload){ %>
+                <button id="downloadFiles" class="btn btn-outline-primary ms-1 disabled" disabled>Album too large to download</button>
+            <% }else{ %>
+                <button id="downloadFiles" class="btn btn-outline-primary ms-1">Download Album as Zip</button>
+            <% } %>
         </div>
     </div>
     <div class="row">
@@ -44,7 +48,8 @@
 </div>
 <%- include('snippets/scripts.ejs'); %>
 <script>
-const publicToken = "<%= publicToken %>";
+    const publicToken = "<%= publicToken %>";
+    const albumTooBigToDownload = <%= albumTooBigToDownload %>;
 </script>
 <script src="/assets/custom/js/album.js"></script>
 </body>

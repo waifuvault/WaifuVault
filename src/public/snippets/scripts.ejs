@@ -41,12 +41,17 @@
 
         const modalBody = document.createElement('div');
         modalBody.setAttribute('class', 'modal-body');
+
+        const container = document.createElement('div');
+        container.setAttribute('class', 'container');
+        modalBody.appendChild(container);
+
         const innerRow = document.createElement('div');
         innerRow.setAttribute('class', 'row');
         const innerCol = document.createElement('div');
         innerCol.setAttribute('class', 'col-md-12');
         innerRow.appendChild(innerCol);
-        modalBody.appendChild(innerRow);
+        container.appendChild(innerRow);
         if(typeof body === 'string') {
             innerCol.innerHTML = `${body}`;
         } else {
