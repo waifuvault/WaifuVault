@@ -193,7 +193,7 @@ export class AlbumController extends BaseRestController {
     @Description("Download files from an album as a zip")
     @Summary("Download files")
     public async downloadFiles(
-        @Description("the public token to the album")
+        @Description("the public or private token to the album")
         @Required()
         @PathParams("albumToken")
         albumToken: string,
