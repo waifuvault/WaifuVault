@@ -15,14 +15,10 @@ import {
     Or,
 } from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
-import { AlbumDao } from "./AlbumDao.js";
 
 @Injectable()
 export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
-    public constructor(
-        @Inject(SQLITE_DATA_SOURCE) ds: DataSource,
-        @Inject() private albumDao: AlbumDao,
-    ) {
+    public constructor(@Inject(SQLITE_DATA_SOURCE) ds: DataSource) {
         super(ds, FileUploadModel);
     }
 
@@ -85,20 +81,20 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         });
     }
 
-    public async getAllEntriesOrdered(
+    public getAllEntriesOrdered(
         start: number,
         records: number,
         sortColumn?: string,
         sortOrder?: string,
         search?: string,
         bucket?: string,
+        album?: string,
         transaction?: EntityManager,
     ): Promise<FileUploadModel[]> {
         const orderOptions = sortColumn ? { [sortColumn]: sortOrder } : {};
         if (search) {
-            const album = await this.albumDao.getAlbumByName(search, bucket ?? "");
             return this.getRepository(transaction).find({
-                where: this.getSearchQuery(search, bucket, album?.albumToken),
+                where: this.getSearchQuery(search, bucket, album),
                 order: orderOptions,
                 skip: start,
                 take: records,
@@ -148,10 +144,14 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         });
     }
 
-    public async getSearchRecordCount(search: string, bucket?: string, transaction?: EntityManager): Promise<number> {
-        const album = await this.albumDao.getAlbumByName(search, bucket ?? "");
+    public getSearchRecordCount(
+        search: string,
+        bucket?: string,
+        album?: string,
+        transaction?: EntityManager,
+    ): Promise<number> {
         return this.getRepository(transaction).count({
-            where: this.getSearchQuery(search, bucket, album?.albumToken),
+            where: this.getSearchQuery(search, bucket, album),
         });
     }
 
