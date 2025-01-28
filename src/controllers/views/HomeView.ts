@@ -66,10 +66,12 @@ export class HomeView {
         const albumThumb =
             thumbs.length > 0 ? thumbs[chosenThumb] : `${this.baseUrl ?? ""}/assets/custom/images/albumNoImage.png`;
         const albumName = album.name;
+        const albumTooBigToDownload = this.albumService.isAlbumTooBigToDownload(album);
         return {
             publicToken,
             albumThumb,
             albumName,
+            albumTooBigToDownload,
         };
     }
 

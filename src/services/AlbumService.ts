@@ -1,4 +1,4 @@
-import { Constant, Inject, Service } from "@tsed/di";
+import { constant, Constant, Inject, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BadRequest, InternalServerError, NotFound } from "@tsed/exceptions";
@@ -26,8 +26,8 @@ export class AlbumService {
         @Inject() private thumbnailCacheReo: ThumbnailCacheReo,
     ) {}
 
-    @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, 512)
-    private readonly zipMaxFileSize: number;
+    @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
+    private readonly zipMaxFileSize: string;
 
     public async createAlbum(name: string, bucketToken: string): Promise<AlbumModel> {
         const bucket = await this.bucketRepo.getBucket(bucketToken);
@@ -249,13 +249,22 @@ export class AlbumService {
         );
 
         const sumFileSize = filesToZip.reduce((n, { fileSize }) => n + fileSize, 0);
-
-        if (this.zipMaxFileSize > 0 && sumFileSize > this.zipMaxFileSize * 1024 * 1024) {
+        const parsedZipSize = Number.parseInt(this.zipMaxFileSize);
+        if (parsedZipSize > 0 && sumFileSize > parsedZipSize * 1024 * 1024) {
             throw new BadRequest("Zip file is too large");
         }
 
         const zipLocation = filesDir + `/${album.name}_${crypto.randomUUID()}.zip`;
         return Promise.all([this.createZip(filesToZip, zipLocation), album.name, zipLocation]);
+    }
+
+    public isAlbumTooBigToDownload(album: AlbumModel): boolean {
+        const maxFileSizeMb = constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512");
+        const parsedValue = Number.parseInt(maxFileSizeMb);
+        if (album.files && parsedValue > 0) {
+            return album.files.reduce((acc, file) => acc + file.fileSize, 0) > parsedValue * 1024 * 1024;
+        }
+        return false;
     }
 
     private async createZip(files: FileUploadModel[], zipLocation: string): Promise<ReadStream> {

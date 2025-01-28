@@ -67,10 +67,20 @@ Site.loadPage(async site => {
 
     function linkCheckboxes(target) {
         const checkboxes = document.querySelectorAll(`#${target} .fileCheck`);
+        const originalText = downloadButton.textContent;
         checkboxes.forEach(chk => {
             chk.addEventListener("change", () => {
                 const anySelected = Array.from(checkboxes).some(checkbox => checkbox.checked);
-                downloadButton.textContent = anySelected ? "Download Selected as Zip" : "Download Album as Zip";
+                downloadButton.textContent = anySelected ? "Download Selected as Zip" : originalText;
+                if(albumTooBigToDownload){
+                    if(anySelected){
+                        downloadButton.removeAttribute("disabled");
+                        downloadButton.classList.remove("disabled");
+                    }else{
+                        downloadButton.setAttribute("disabled", "true");
+                        downloadButton.classList.add("disabled");
+                    }
+                }
                 if (target === "albumCards") {
                     const card = chk.closest(".card");
                     if (card) {
@@ -276,7 +286,7 @@ Site.loadPage(async site => {
     });
 
     downloadButton.addEventListener("click", async () => {
-        if (downloadButton.hasAttribute("disabled")) {
+        if (downloadButton.hasAttribute("disabled") || albumTooBigToDownload) {
             return;
         }
 
@@ -299,7 +309,7 @@ Site.loadPage(async site => {
 
             if (!response.ok) {
                 const json = await response.json();
-                const errModal = createBasicModal('zipDownloadError', 'Error', `<div class="alert alert-danger">error ${json.status} - ${json.message}</div>`);
+                const errModal = createBasicModal('zipDownloadError', 'Error', `<div class="alert alert-danger">${json.message}</div>`);
                 errModal.show();
                 return;
             }
