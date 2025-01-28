@@ -88,12 +88,13 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         sortOrder?: string,
         search?: string,
         bucket?: string,
+        album?: string,
         transaction?: EntityManager,
     ): Promise<FileUploadModel[]> {
         const orderOptions = sortColumn ? { [sortColumn]: sortOrder } : {};
         if (search) {
             return this.getRepository(transaction).find({
-                where: this.getSearchQuery(search, bucket),
+                where: this.getSearchQuery(search, bucket, album),
                 order: orderOptions,
                 skip: start,
                 take: records,
@@ -143,15 +144,29 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         });
     }
 
-    public getSearchRecordCount(search: string, bucket?: string, transaction?: EntityManager): Promise<number> {
+    public getSearchRecordCount(
+        search: string,
+        bucket?: string,
+        album?: string,
+        transaction?: EntityManager,
+    ): Promise<number> {
         return this.getRepository(transaction).count({
-            where: this.getSearchQuery(search, bucket),
+            where: this.getSearchQuery(search, bucket, album),
         });
     }
 
-    private getSearchQuery(search: string, bucket?: string): Record<string, FindOperator<unknown>>[] {
+    private getSearchQuery(search: string, bucket?: string, album?: string): Record<string, FindOperator<unknown>>[] {
         search = `%${search}%`;
 
+        if (bucket && album) {
+            return [
+                { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { fileExtension: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { ip: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { originalFileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                { albumToken: Equal(album), expires: this.expiresCondition },
+            ];
+        }
         if (bucket) {
             return [
                 { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },

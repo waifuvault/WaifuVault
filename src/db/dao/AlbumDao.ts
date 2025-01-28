@@ -35,6 +35,13 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
         });
     }
 
+    public getAlbumByName(name: string, bucket: string, transaction?: EntityManager): Promise<AlbumModel | null> {
+        return this.getRepository(transaction).findOne({
+            where: { name: name, bucketToken: bucket },
+            select: ["name", "bucketToken", "albumToken"],
+        });
+    }
+
     public albumNameExists(name: string, bucketToken: string, transaction?: EntityManager): Promise<boolean> {
         return this.getRepository(transaction).existsBy({
             bucketToken,
