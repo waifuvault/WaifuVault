@@ -8,7 +8,11 @@ export class ExpiresDataMigration1708275216281 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         const MIN_EXPIRATION = 30 * 24 * 60 * 60 * 1000;
         const MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000;
-        const FILE_SIZE_UPLOAD_LIMIT_MB = Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB as string);
+
+        let FILE_SIZE_UPLOAD_LIMIT_MB = 100;
+        if(!process?.env?.FILE_SIZE_UPLOAD_LIMIT_MB){
+            FILE_SIZE_UPLOAD_LIMIT_MB = Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB as string);
+        }
 
         const query_sql =
             `UPDATE file_upload_model
