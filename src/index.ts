@@ -68,16 +68,25 @@ async function bootstrap(): Promise<void> {
                 platform.stop();
             }
         });
+        await stopOnTest(platform, false);
     } catch (error) {
         $log.error({ event: "SERVER_BOOTSTRAP_ERROR", message: error.message, stack: error.stack });
-    } finally {
-        const argv = process.argv.slice(2);
-        if (argv.includes("-closeOnStart")) {
-            if (platform) {
-                await platform.stop();
-            }
-            process.exit(1);
-        }
+        await stopOnTest(platform, true);
+    }
+}
+
+async function stopOnTest(platform: PlatformBuilder<Application> | null, error: boolean): Promise<void> {
+    const argv = process.argv.slice(2);
+    if (!argv.includes("-closeOnStart")) {
+        return;
+    }
+    if (platform) {
+        await platform.stop();
+    }
+    if (error) {
+        process.exit(1);
+    } else {
+        process.exit(0);
     }
 }
 
