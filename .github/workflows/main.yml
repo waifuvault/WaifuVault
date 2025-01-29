@@ -23,5 +23,7 @@ jobs:
         run: npm run prettier
       - name: compile
         run: npm run build
+      - name: migration
+        run: npm run runmigration
       - name: start-test
         run: npm run start_js:ci
