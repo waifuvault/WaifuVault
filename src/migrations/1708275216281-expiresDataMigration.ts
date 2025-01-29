@@ -12,6 +12,9 @@ export class ExpiresDataMigration1708275216281 implements MigrationInterface {
         let FILE_SIZE_UPLOAD_LIMIT_MB = 100;
         if(!process?.env?.FILE_SIZE_UPLOAD_LIMIT_MB){
             FILE_SIZE_UPLOAD_LIMIT_MB = Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB as string);
+            if(Number.isNaN(FILE_SIZE_UPLOAD_LIMIT_MB)){
+                FILE_SIZE_UPLOAD_LIMIT_MB = 100;
+            }
         }
 
         const query_sql =
