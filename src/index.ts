@@ -76,7 +76,7 @@ async function bootstrap(): Promise<void> {
             if (platform) {
                 await platform.stop();
             }
-            process.exit(0);
+            process.exit(1);
         }
     }
 }
