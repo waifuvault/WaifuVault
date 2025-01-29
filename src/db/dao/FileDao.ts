@@ -88,13 +88,29 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         sortOrder?: string,
         search?: string,
         bucket?: string,
-        album?: string,
         transaction?: EntityManager,
     ): Promise<FileUploadModel[]> {
         const orderOptions = sortColumn ? { [sortColumn]: sortOrder } : {};
+        if (search && bucket) {
+            search = `%${search}%`;
+            return this.getRepository(transaction).find({
+                where: [
+                    { album: { name: Like(search) }, bucketToken: Equal(bucket), expires: this.expiresCondition },
+                    { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                    { fileExtension: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                    { ip: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                    { originalFileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                ],
+                order: orderOptions,
+                skip: start,
+                take: records,
+                ...this.relation,
+            });
+        }
+
         if (search) {
             return this.getRepository(transaction).find({
-                where: this.getSearchQuery(search, bucket, album),
+                where: this.getSearchQuery(search, bucket),
                 order: orderOptions,
                 skip: start,
                 take: records,
@@ -144,29 +160,27 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
         });
     }
 
-    public getSearchRecordCount(
-        search: string,
-        bucket?: string,
-        album?: string,
-        transaction?: EntityManager,
-    ): Promise<number> {
+    public getSearchRecordCount(search: string, bucket?: string, transaction?: EntityManager): Promise<number> {
+        if (bucket) {
+            search = `%${search}%`;
+            return this.getRepository(transaction).count({
+                where: [
+                    { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                    { fileExtension: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                    { ip: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                    { originalFileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
+                    { album: { name: Like(search) }, bucketToken: Equal(bucket), expires: this.expiresCondition },
+                ],
+            });
+        }
         return this.getRepository(transaction).count({
-            where: this.getSearchQuery(search, bucket, album),
+            where: this.getSearchQuery(search, bucket),
         });
     }
 
-    private getSearchQuery(search: string, bucket?: string, album?: string): Record<string, FindOperator<unknown>>[] {
+    private getSearchQuery(search: string, bucket?: string): Record<string, FindOperator<unknown>>[] {
         search = `%${search}%`;
 
-        if (bucket && album) {
-            return [
-                { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                { fileExtension: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                { ip: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                { originalFileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                { albumToken: Equal(album), expires: this.expiresCondition },
-            ];
-        }
         if (bucket) {
             return [
                 { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
