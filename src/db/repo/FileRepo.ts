@@ -1,6 +1,5 @@
 import { Inject, Service } from "@tsed/di";
 import { FileDao } from "../dao/FileDao.js";
-import { AlbumDao } from "../dao/AlbumDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import Path from "node:path";
 import { ObjectUtils } from "../../utils/Utils.js";
@@ -9,10 +8,7 @@ import { ObjectUtils } from "../../utils/Utils.js";
 export class FileRepo {
     private readonly entryCache: Map<string, FileUploadModel> = new Map();
 
-    public constructor(
-        @Inject() private fileDao: FileDao,
-        @Inject() private albumDao: AlbumDao,
-    ) {}
+    public constructor(@Inject() private fileDao: FileDao) {}
 
     public async saveEntry(entry: FileUploadModel): Promise<FileUploadModel> {
         const res = await this.fileDao.saveEntry(entry);
@@ -116,7 +112,7 @@ export class FileRepo {
         }
     }
 
-    public async getAllEntriesOrdered(
+    public getAllEntriesOrdered(
         start: number,
         records: number,
         sortColumn?: string,
@@ -125,9 +121,7 @@ export class FileRepo {
         bucket?: string,
     ): Promise<FileUploadModel[]> {
         // bypass cache
-        const album = await this.albumDao.getAlbumByName(search ?? "", bucket ?? "");
-        const albumToken = album?.albumToken;
-        return this.fileDao.getAllEntriesOrdered(start, records, sortColumn, sortDir, search, bucket, albumToken);
+        return this.fileDao.getAllEntriesOrdered(start, records, sortColumn, sortDir, search, bucket);
     }
 
     public deleteEntries(tokens: string[]): Promise<boolean> {
