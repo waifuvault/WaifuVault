@@ -235,7 +235,6 @@ export class AlbumService {
         if (!album) {
             throw new NotFound("Album not found");
         }
-        this.checkPublicToken(publicAlbumToken, album);
 
         const files = album.files ?? [];
 
