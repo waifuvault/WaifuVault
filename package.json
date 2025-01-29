@@ -4,7 +4,7 @@
   "description": "Temp file hosting for nerds",
   "type": "module",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint --no-fix --max-warnings 0 .",
     "lint:fix": "eslint --fix .",
     "tsc": "tsc --project tsconfig.json",
     "build": "npm run barrels && node ./buildScripts/cleanDist.mjs && swc src -d dist --config-file .swcrc --copy-files --strip-leading-paths",

@@ -14,7 +14,6 @@ export class DefaultHttpRenderEngine implements IHttpErrorRenderEngine<DefaultRe
         return Promise.resolve(this.mapError(obj.internalError));
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public supportsError(_: Exception): boolean {
         return false;
     }
