@@ -10,6 +10,7 @@
     "build": "npm run barrels && node ./buildScripts/cleanDist.mjs && swc src -d dist --config-file .swcrc --copy-files --strip-leading-paths",
     "barrels": "barrels",
     "start_js": "node dist/index.js",
+    "start_js:ci": "node dist/index.js -closeOnStart",
     "start": "node --loader ts-node/esm src/index.ts",
     "start:prod": "cross-env NODE_ENV=production nodemon dist/index.js",
     "update_deps": "npx npm-check-updates",

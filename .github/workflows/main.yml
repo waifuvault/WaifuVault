@@ -23,3 +23,5 @@ jobs:
         run: npm run prettier
       - name: compile
         run: npm run build
+      - name: start-test
+        run: npm run start_js:ci

@@ -6,6 +6,7 @@ import { DataSource, type Logger as TypeOrmLogger } from "typeorm";
 import { SQLITE_DATA_SOURCE } from "./model/di/tokens.js";
 import { dataSource } from "./db/DataSource.js";
 import { injectable, logger } from "@tsed/di";
+import process from "process";
 
 async function bootstrap(): Promise<void> {
     injectable(SQLITE_DATA_SOURCE)
@@ -63,6 +64,12 @@ async function bootstrap(): Promise<void> {
         process.on("SIGINT", () => {
             platform.stop();
         });
+
+        const argv = process.argv.slice(2);
+        if (argv.includes("-closeOnStart")) {
+            await platform.stop();
+            process.exit(0);
+        }
     } catch (error) {
         $log.error({ event: "SERVER_BOOTSTRAP_ERROR", message: error.message, stack: error.stack });
     }
