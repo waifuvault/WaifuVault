@@ -23,3 +23,9 @@ jobs:
         run: npm run prettier
       - name: compile
         run: npm run build
+      - name: migration
+        run: npm run runmigration
+      - name: Create files folder
+        run: mkdir -p files
+      - name: start-test
+        run: npm run start_js:ci

@@ -1,11 +1,13 @@
 import "reflect-metadata";
-import { $log } from "@tsed/common";
+import { $log, PlatformBuilder } from "@tsed/common";
 import { PlatformExpress } from "@tsed/platform-express";
 import { Server } from "./Server.js";
 import { DataSource, type Logger as TypeOrmLogger } from "typeorm";
 import { SQLITE_DATA_SOURCE } from "./model/di/tokens.js";
 import { dataSource } from "./db/DataSource.js";
 import { injectable, logger } from "@tsed/di";
+import process from "process";
+import { Application } from "express";
 
 async function bootstrap(): Promise<void> {
     injectable(SQLITE_DATA_SOURCE)
@@ -56,15 +58,35 @@ async function bootstrap(): Promise<void> {
             },
         });
 
+    let platform: PlatformBuilder<Application> | null = null;
     try {
-        const platform = await PlatformExpress.bootstrap(Server);
+        platform = await PlatformExpress.bootstrap(Server);
         await platform.listen();
 
         process.on("SIGINT", () => {
-            platform.stop();
+            if (platform) {
+                platform.stop();
+            }
         });
+        await stopOnTest(platform, false);
     } catch (error) {
         $log.error({ event: "SERVER_BOOTSTRAP_ERROR", message: error.message, stack: error.stack });
+        await stopOnTest(platform, true);
+    }
+}
+
+async function stopOnTest(platform: PlatformBuilder<Application> | null, error: boolean): Promise<void> {
+    const argv = process.argv.slice(2);
+    if (!argv.includes("-closeOnStart")) {
+        return;
+    }
+    if (platform) {
+        await platform.stop();
+    }
+    if (error) {
+        process.exit(1);
+    } else {
+        process.exit(0);
     }
 }
 
