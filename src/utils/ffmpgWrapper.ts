@@ -1,5 +1,6 @@
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
+import { $log } from "@tsed/common";
 
 ffmpeg.setFfmpegPath(ffmpegStatic as string);
 
@@ -13,7 +14,7 @@ function getFfmpegSupportedVideoFormats(): Promise<string[]> {
     return new Promise(resolve => {
         ffmpeg.getAvailableFormats((err, formats) => {
             if (err) {
-                console.error("Error fetching ffmpeg formats:", err);
+                $log.error(err);
                 resolve([]);
             } else {
                 resolve(Object.keys(formats));
