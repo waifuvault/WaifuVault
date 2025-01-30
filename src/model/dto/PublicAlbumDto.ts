@@ -101,6 +101,8 @@ export class PublicAlbumDto {
     }
 
     private static isValidForThumbnail(file: FileUploadModel): boolean {
-        return (FileUtils.isImage(file) || FileUtils.isVideo(file)) && file.fileProtectionLevel === "None";
+        return (
+            (FileUtils.isImage(file) || FileUtils.isVideoSupportedByFfmpeg(file)) && file.fileProtectionLevel === "None"
+        );
     }
 }
