@@ -6,6 +6,7 @@ import type { Request } from "express";
 import fs from "node:fs/promises";
 import type { PlatformMulterFile } from "@tsed/common";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
+import { isFormatSupportedByFfmpeg } from "./ffmpgWrapper.js";
 
 export class ObjectUtils {
     public static getNumber(source: string): number {
@@ -113,6 +114,20 @@ export class FileUtils {
 
     public static isImage(file: FileUploadModel): boolean {
         return file.mediaType?.startsWith("image/") ?? false;
+    }
+
+    public static isVideo(file: FileUploadModel): boolean {
+        return file.mediaType?.startsWith("video/") ?? false;
+    }
+
+    public static isVideoSupportedByFfmpeg(file: FileUploadModel): boolean {
+        if (!FileUtils.isVideo(file)) {
+            return false;
+        }
+        if (file.fileExtension) {
+            return isFormatSupportedByFfmpeg(file.fileExtension);
+        }
+        return false;
     }
 
     public static getExtension(file: string): string {
