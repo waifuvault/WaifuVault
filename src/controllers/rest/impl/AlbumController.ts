@@ -225,9 +225,13 @@ export class AlbumController extends BaseRestController {
         @QueryParams("imageId") imageId: number,
         @PathParams("albumToken") albumToken: string,
         @Res() res: PlatformResponse,
-    ): Promise<Buffer> {
-        const [thumbnail, mediaType] = await this.albumService.generateThumbnail(imageId, albumToken);
-        res.contentType(mediaType);
-        return thumbnail;
+    ): Promise<Buffer | PlatformResponse> {
+        try {
+            const [thumbnail, mediaType] = await this.albumService.generateThumbnail(imageId, albumToken);
+            res.contentType(mediaType);
+            return thumbnail;
+        } catch (e) {
+            return super.doError(res, e.message, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
     }
 }

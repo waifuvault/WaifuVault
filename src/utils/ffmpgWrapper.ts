@@ -1,15 +1,15 @@
 import ffmpeg from "fluent-ffmpeg";
-import ffmpegStatic from "ffmpeg-static";
+import { ffmpegPath, ffprobePath } from "ffmpeg-ffprobe-static";
 import { $log } from "@tsed/common";
 
-ffmpeg.setFfmpegPath(ffmpegStatic as string);
+ffmpeg.setFfmpegPath(ffmpegPath as string);
+ffmpeg.setFfprobePath(ffprobePath as string);
 
 const formats = await getFfmpegSupportedVideoFormats();
 
 export function isFormatSupportedByFfmpeg(format: string): boolean {
     return formats.includes(format);
 }
-
 function getFfmpegSupportedVideoFormats(): Promise<string[]> {
     return new Promise(resolve => {
         ffmpeg.getAvailableFormats((err, formats) => {
