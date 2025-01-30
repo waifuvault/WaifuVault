@@ -284,6 +284,7 @@ export class AlbumService {
                     .outputOptions("-f", "image2")
                     .outputOptions("-vcodec", "mjpeg")
                     .outputOptions("-q:v", "10")
+                    .outputOptions("-vf", "scale=-1:200")
                     .output(passThroughStream)
                     .on("error", err => reject(new Error(`Failed to generate video thumbnail: ${err.message}`)))
                     .on("end", () => passThroughStream.end())
