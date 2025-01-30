@@ -15,6 +15,8 @@ import fs, { ReadStream } from "node:fs";
 import archiver from "archiver";
 import sharp from "sharp";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
+import { PassThrough } from "node:stream";
+import ffmpeg from "../utils/ffmpgWrapper.js";
 
 @Service()
 export class AlbumService {
@@ -182,20 +184,53 @@ export class AlbumService {
         if (!entry) {
             throw new NotFound("File not found");
         }
-        if (!FileUtils.isImage(entry)) {
-            throw new BadRequest("File is not an image");
-        }
+
         if (entry.fileProtectionLevel !== "None") {
             throw new BadRequest("File is protected");
         }
 
         const thumbnailFromCache = await entry.thumbnailCache;
+        const mime = this.getThumbnailMime(entry);
         if (thumbnailFromCache) {
             const b = Buffer.from(thumbnailFromCache.data, "base64");
-            return Promise.all([b, entry.mediaType!]);
+            return Promise.all([b, mime]);
         }
 
-        const fileBuffer = await fs.promises.readFile(entry.fullLocationOnDisk);
+        const path = entry.fullLocationOnDisk;
+        let thumbnail: Buffer;
+        if (FileUtils.isImage(entry)) {
+            thumbnail = await this.generateImageThumbnail(path);
+        } else if (FileUtils.isVideoSupportedByFfmpeg(entry)) {
+            // we use ffmpeg to get thumbnail, so the video MUST be supported by the clients ffmpeg
+            thumbnail = await this.generateVideoThumbnail(path);
+        } else {
+            throw new BadRequest("File not supported for thumbnail generation");
+        }
+
+        if (thumbnail.length === 0) {
+            throw new InternalServerError("Unable to generate thumbnail");
+        }
+
+        const thumbnailCache = new ThumbnailCacheModel();
+        thumbnailCache.data = thumbnail.toString("base64");
+        thumbnailCache.fileId = entry.id;
+        await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
+
+        return [thumbnail, mime];
+    }
+
+    private getThumbnailMime(entry: FileUploadModel): string {
+        if (FileUtils.isImage(entry)) {
+            return entry.mediaType!;
+        } else if (FileUtils.isVideo(entry)) {
+            return "image/jpeg";
+        } else {
+            throw new BadRequest("File not supported for thumbnail generation");
+        }
+    }
+
+    private async generateImageThumbnail(path: string): Promise<Buffer> {
+        const fileBuffer = await fs.promises.readFile(path);
 
         const metadata = await sharp(fileBuffer).withMetadata().metadata();
         const SCALING_FACTOR = 0.3;
@@ -220,14 +255,41 @@ export class AlbumService {
             });
         }
 
-        const thumbnail = await thumbnailBuilder.toBuffer();
+        return thumbnailBuilder.toBuffer();
+    }
 
-        const thumbnailCache = new ThumbnailCacheModel();
-        thumbnailCache.data = thumbnail.toString("base64");
-        thumbnailCache.fileId = entry.id;
-        await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
+    private generateVideoThumbnail(videoPath: string): Promise<Buffer> {
+        return new Promise((resolve, reject) => {
+            ffmpeg.ffprobe(videoPath, (err, metadata) => {
+                if (err) {
+                    return reject(new Error(`Failed to retrieve video metadata: ${err.message}`));
+                }
 
-        return [thumbnail, entry.mediaType!];
+                const duration = metadata.format.duration;
+                if (!duration) {
+                    return reject(new Error("Could not determine video duration."));
+                }
+
+                const randomTimestamp = Math.random() * duration;
+                const passThroughStream = new PassThrough();
+                const imageBuffer: Buffer[] = [];
+
+                passThroughStream.on("data", chunk => imageBuffer.push(chunk));
+                passThroughStream.on("end", () => resolve(Buffer.concat(imageBuffer)));
+                passThroughStream.on("error", reject);
+
+                ffmpeg(videoPath)
+                    .setStartTime(randomTimestamp)
+                    .frames(1)
+                    .outputOptions("-f", "image2")
+                    .outputOptions("-vcodec", "mjpeg")
+                    .outputOptions("-q:v", "10")
+                    .output(passThroughStream)
+                    .on("error", err => reject(new Error(`Failed to generate video thumbnail: ${err.message}`)))
+                    .on("end", () => passThroughStream.end())
+                    .run();
+            });
+        });
     }
 
     public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[ReadStream, string, string]> {
