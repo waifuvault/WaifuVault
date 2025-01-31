@@ -1,4 +1,4 @@
-import { Default, Description, Name, Nullable, Property } from "@tsed/schema";
+import { Any, Default, Description, Name, Nullable, Property } from "@tsed/schema";
 import { FileUploadModel } from "../db/FileUpload.model.js";
 import { Builder, IBuilder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
@@ -52,6 +52,10 @@ export class WaifuFile {
     @Description("The options for this entry")
     public options: ResponseOptions;
 
+    @Property()
+    @Any(null)
+    public album: AlbumInfo | null = null;
+
     public static fromModel<T extends WaifuFile>(
         fileUploadModel: FileUploadModel,
         format: boolean,
@@ -98,7 +102,7 @@ export class WaifuFileWithAlbum extends WaifuFile {
     @Property()
     @Description("The album that this file belongs to")
     @Nullable(AlbumInfo)
-    public album: AlbumInfo | null = null;
+    public override album: AlbumInfo | null = null;
 
     public static async fromModelAlbum(fileUploadModel: FileUploadModel, format: boolean): Promise<WaifuFileWithAlbum> {
         const album = await fileUploadModel.album;
