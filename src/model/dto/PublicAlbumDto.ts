@@ -1,5 +1,5 @@
 import { CollectionOf, Description, Name, Nullable, Property, string } from "@tsed/schema";
-import { FileUploadResponseDto } from "./FileUploadResponseDto.js";
+import { WaifuFile } from "./WaifuFile.js";
 import { AlbumModel } from "../db/Album.model.js";
 import { Builder } from "builder-pattern";
 import { FileUtils } from "../../utils/Utils.js";
@@ -74,7 +74,7 @@ export class PublicAlbumDto {
     public static fromModel(model: AlbumModel): PublicAlbumDto {
         const fileDtos = model.files
             ? model.files.map(f => {
-                  const { url, options } = FileUploadResponseDto.fromModel(f, true, false);
+                  const { url, options } = WaifuFile.fromModel(f, true);
                   const metadata = Builder(WaifuPublicFileMetadata)
                       .thumbnail(PublicAlbumDto.getThumbnail(model, f))
                       .mediaType(f.mediaType)

@@ -1,6 +1,6 @@
 import { Default, Description, Name, Nullable, Property } from "@tsed/schema";
 import { FileUploadModel } from "../db/FileUpload.model.js";
-import { Builder } from "builder-pattern";
+import { Builder, IBuilder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
 import { EntrySettings } from "../../utils/typeings.js";
 import { AlbumInfo } from "../rest/AlbumInfo.js";
@@ -22,9 +22,9 @@ class ResponseOptions implements Required<Omit<EntrySettings, "password">> {
     public protected = false;
 }
 
-@Name("WaifuResponse")
+@Name("WaifuFile")
 @Description("This is a standard response for the service, containing info about the entry")
-export class FileUploadResponseDto {
+export class WaifuFile {
     @Property()
     @Description("Used for file info and deleting")
     public token: string;
@@ -43,11 +43,6 @@ export class FileUploadResponseDto {
     public bucket: string | null = null;
 
     @Property()
-    @Description("The album that this file belongs to")
-    @Nullable(AlbumInfo)
-    public album: AlbumInfo | null = null;
-
-    @Property()
     @Description("How long this file will exist for")
     @Nullable(Number, String)
     @Default(null)
@@ -57,17 +52,18 @@ export class FileUploadResponseDto {
     @Description("The options for this entry")
     public options: ResponseOptions;
 
-    public static fromModel<T extends boolean>(
+    public static fromModel<T extends WaifuFile>(
         fileUploadModel: FileUploadModel,
         format: boolean,
-        lazyLoadRelations: T,
-    ): T extends true ? Promise<FileUploadResponseDto> : FileUploadResponseDto;
-    public static fromModel(
-        fileUploadModel: FileUploadModel,
-        format: boolean,
-        lazyLoadRelations = false,
-    ): FileUploadResponseDto | Promise<FileUploadResponseDto> {
-        const builder = Builder(FileUploadResponseDto)
+        builderToUse?: IBuilder<T>,
+    ): WaifuFile {
+        let builder: IBuilder<T>;
+        if (builderToUse) {
+            builder = builderToUse;
+        } else {
+            builder = Builder<T>(WaifuFile as unknown as T);
+        }
+        builder
             .token(fileUploadModel.token)
             .bucket(fileUploadModel.bucketToken ?? null)
             .views(fileUploadModel.views)
@@ -79,15 +75,7 @@ export class FileUploadResponseDto {
             builder.retentionPeriod(fileUploadModel.expiresIn);
         }
 
-        builder.options(FileUploadResponseDto.makeOptions(fileUploadModel.settings));
-        if (lazyLoadRelations) {
-            return fileUploadModel.album.then(album => {
-                if (!album) {
-                    return builder.build();
-                }
-                return builder.album(AlbumInfo.fromModel(album)).build();
-            });
-        }
+        builder.options(WaifuFile.makeOptions(fileUploadModel.settings));
         return builder.build();
     }
 
@@ -101,5 +89,26 @@ export class FileUploadResponseDto {
         options.protected(!!settings.password);
 
         return options.build();
+    }
+}
+
+@Name("WaifuFileWithAlbum")
+@Description("This is a standard response for the service, containing info about the entry and the album it belongs to")
+export class WaifuFileWithAlbum extends WaifuFile {
+    @Property()
+    @Description("The album that this file belongs to")
+    @Nullable(AlbumInfo)
+    public album: AlbumInfo | null = null;
+
+    public static async fromModelAlbum(fileUploadModel: FileUploadModel, format: boolean): Promise<WaifuFileWithAlbum> {
+        const album = await fileUploadModel.album;
+
+        const builder = Builder(WaifuFileWithAlbum);
+        if (album) {
+            builder.album(AlbumInfo.fromModel(album));
+        } else {
+            builder.album(null);
+        }
+        return WaifuFile.fromModel(fileUploadModel, format, builder) as WaifuFileWithAlbum;
     }
 }
