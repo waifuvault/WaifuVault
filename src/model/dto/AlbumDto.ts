@@ -33,6 +33,10 @@ export class AlbumDto {
     @CollectionOf(FileUploadResponseDto)
     public files: FileUploadResponseDto[];
 
+    @Property()
+    @Description("When the album was created")
+    public dateCreated: number;
+
     public static fromModel(model: AlbumModel): AlbumDto {
         const fileDtos = model.files ? model.files.map(f => FileUploadResponseDto.fromModel(f, false, false)) : [];
         return Builder(AlbumDto)
@@ -40,6 +44,7 @@ export class AlbumDto {
             .bucketToken(model.bucketToken)
             .publicToken(model.publicToken)
             .name(model.name)
+            .dateCreated(model.createdAt.getTime())
             .files(fileDtos)
             .build();
     }

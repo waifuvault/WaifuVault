@@ -264,7 +264,6 @@ export class AlbumService {
                 if (err) {
                     return reject(new Error(`Failed to retrieve video metadata: ${err.message}`));
                 }
-
                 const duration = metadata.format.duration;
                 if (!duration) {
                     return reject(new Error("Could not determine video duration."));
