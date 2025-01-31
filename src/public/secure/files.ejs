@@ -304,6 +304,16 @@
 
         document.getElementById("filesNav").classList.add("active");
 
+        const uploadModalEl = document.getElementById("fileUploadModel");
+        const uploadModal = new bootstrap.Modal(uploadModalEl, { keyboard: false });
+        const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
+
+        uploadModalEl.addEventListener("hidden.bs.modal", () => {
+            if(dz){
+                dz.removeAllFiles();
+            }
+        });
+
         async function deleteAlbum(token, alsoFiles) {
             const resp = await fetch(`${baseUrl}/album/${token}?deleteFiles=${alsoFiles.toString()}`, {
                 method: "DELETE",
@@ -589,90 +599,81 @@
             if (dtMap.has(dtToLoad)) {
                 dtMap.get(dtToLoad).forEach(d => d.destroy(true));
                 dtMap.delete(dtToLoad);
+            }else{
+                document.querySelector(".btn-file-upload")?.addEventListener("click", async () => {
+                    const url = document.getElementById("url").value;
+                    const expires = document.getElementById("expires").value;
+                    const password = document.getElementById("password").value;
+                    const hideFileName = document.getElementById("hideFilename").checked;
+                    const oneTimeDownload = document.getElementById("oneTimeDownload").checked;
+                    const uploadButton = document.querySelector(".btn-file-upload");
+                    const fileUploadSuccess = document.getElementById("fileUploadedUrl");
+                    fileUploadSuccess.innerHTML = null;
+
+                    uploadButton.setAttribute("disabled", "true");
+                    uploadButton.classList.add("disabled");
+
+                    let params = `hide_filename=${hideFileName}&one_time_download=${oneTimeDownload}`;
+                    if (expires) {
+                        params += `&expires=${expires}`;
+                    }
+
+                    let fileUploadUrl = `${baseUrl}`;
+                    if (bucketId) {
+                        fileUploadUrl += `/${bucketId}?${params}`;
+                    } else {
+                        fileUploadUrl += `?${params}`;
+                    }
+
+                    const formData = new FormData();
+                    formData.append("url", url);
+
+                    if (password) {
+                        formData.append("password", password);
+                    }
+                    Site.loading(true);
+                    let resp;
+                    try {
+                        resp = await fetch(fileUploadUrl, {
+                            method: "PUT",
+                            body: formData,
+                        });
+                    } catch (e) {
+                        alert(e.message);
+                        return null;
+                    } finally {
+                        Site.loading(false);
+                    }
+                    const json = await resp.json();
+
+                    if (resp.ok) {
+                        const url = encodeURI(json.url);
+                        const btn = document.createElement("button");
+                        btn.className = "btn btn-sm btn-outline-primary mt-3 d-block";
+                        btn.addEventListener("click", () => navigator.clipboard.writeText(url));
+                        btn.textContent = "Copy to clipboard";
+
+                        const anchor = document.createElement("a");
+                        anchor.setAttribute("target", "_blank");
+                        anchor.setAttribute("href", url);
+                        anchor.textContent = url;
+                        fileUploadSuccess.append(anchor);
+                        anchor.after(btn);
+                        Site.showSuccess();
+                    } else {
+                        if(json.message) {
+                            Site.showError(json.message);
+                        }else{
+                            Site.showSuccess("Network Error.");
+                        }
+                    }
+
+                    reloadTable(["entries"]);
+                    uploadButton.removeAttribute("disabled");
+                    uploadButton.classList.remove("disabled");
+                });
             }
 
-            const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
-
-            const uploadModalEl = document.getElementById("fileUploadModel");
-            const uploadModal = new bootstrap.Modal(uploadModalEl, { keyboard: false });
-            uploadModalEl.addEventListener("hidden.bs.modal", () => {
-                if(dz){
-                    dz.removeAllFiles();
-                }
-            });
-
-            document.querySelector(".btn-file-upload")?.addEventListener("click", async () => {
-                const url = document.getElementById("url").value;
-                const expires = document.getElementById("expires").value;
-                const password = document.getElementById("password").value;
-                const hideFileName = document.getElementById("hideFilename").checked;
-                const oneTimeDownload = document.getElementById("oneTimeDownload").checked;
-                const uploadButton = document.querySelector(".btn-file-upload");
-                const fileUploadSuccess = document.getElementById("fileUploadedUrl");
-                fileUploadSuccess.innerHTML = null;
-
-                uploadButton.setAttribute("disabled", "true");
-                uploadButton.classList.add("disabled");
-
-                let params = `hide_filename=${hideFileName}&one_time_download=${oneTimeDownload}`;
-                if (expires) {
-                    params += `&expires=${expires}`;
-                }
-
-                let fileUploadUrl = `${baseUrl}`;
-                if (bucketId) {
-                    fileUploadUrl += `/${bucketId}?${params}`;
-                } else {
-                    fileUploadUrl += `?${params}`;
-                }
-
-                const formData = new FormData();
-                formData.append("url", url);
-
-                if (password) {
-                    formData.append("password", password);
-                }
-                Site.loading(true);
-                let resp;
-                try {
-                    resp = await fetch(fileUploadUrl, {
-                        method: "PUT",
-                        body: formData,
-                    });
-                } catch (e) {
-                    alert(e.message);
-                    return null;
-                } finally {
-                    Site.loading(false);
-                }
-                const json = await resp.json();
-
-                if (resp.ok) {
-                    const url = encodeURI(json.url);
-                    const btn = document.createElement("button");
-                    btn.className = "btn btn-sm btn-outline-primary mt-3 d-block";
-                    btn.addEventListener("click", () => navigator.clipboard.writeText(url));
-                    btn.textContent = "Copy to clipboard";
-
-                    const anchor = document.createElement("a");
-                    anchor.setAttribute("target", "_blank");
-                    anchor.setAttribute("href", url);
-                    anchor.textContent = url;
-                    fileUploadSuccess.append(anchor);
-                    anchor.after(btn);
-                    Site.showSuccess();
-                } else {
-                    if(json.message) {
-                        Site.showError(json.message);
-                    }else{
-                        Site.showSuccess("Network Error.");
-                    }
-                }
-
-                reloadTable(["entries"]);
-                uploadButton.removeAttribute("disabled");
-                uploadButton.classList.remove("disabled");
-            });
 
             function initDropzone() {
                 dz = new Dropzone("#uploadDropzone", {
