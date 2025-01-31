@@ -1,7 +1,7 @@
 import { Controller, Inject } from "@tsed/di";
 import { Delete, Description, Examples, Get, Name, Patch, Put, Returns, Summary } from "@tsed/schema";
 import { StatusCodes } from "http-status-codes";
-import { WaifuFile } from "../../../model/dto/WaifuFile.js";
+import { WaifuFileWithAlbum } from "../../../model/dto/WaifuFile.js";
 import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { BadRequest } from "@tsed/exceptions";
 import { MultipartFile, PathParams, type PlatformMulterFile, QueryParams, Req, Res } from "@tsed/common";
@@ -33,9 +33,9 @@ export class FileUploadController extends BaseRestController {
     @(Put("/:bucketToken")
         .Description("Upload a file or a URL to a specific bucket, the bucket must exist")
         .Summary("Upload a file or send URL to a specific bucket"))
-    @(Returns(StatusCodes.CREATED, WaifuFile).Description("If the file was stored successfully"))
+    @(Returns(StatusCodes.CREATED, WaifuFileWithAlbum).Description("If the file was stored successfully"))
     @(Returns(StatusCodes.BAD_REQUEST, DefaultRenderException).Description("If the request was malformed"))
-    @(Returns(StatusCodes.OK, WaifuFile).Description("If the file already exists"))
+    @(Returns(StatusCodes.OK, WaifuFileWithAlbum).Description("If the file already exists"))
     @(Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, DefaultRenderException).Description(
         "If the media type of the file specified was blocked",
     ))
@@ -116,7 +116,7 @@ export class FileUploadController extends BaseRestController {
     }
 
     @Get("/:token")
-    @Returns(StatusCodes.OK, WaifuFile)
+    @Returns(StatusCodes.OK, WaifuFileWithAlbum)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Get entry info such as when it will expire and the URL")
     @Summary("Get entry info via token")
@@ -136,7 +136,7 @@ export class FileUploadController extends BaseRestController {
     }
 
     @Patch("/:token")
-    @Returns(StatusCodes.OK, WaifuFile)
+    @Returns(StatusCodes.OK, WaifuFileWithAlbum)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description("Modify an entry such as password, expiry and other settings")
     @Summary("Modify components of an entry")

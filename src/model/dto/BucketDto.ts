@@ -1,7 +1,7 @@
 import { CollectionOf, Description, Name, Property } from "@tsed/schema";
 import { BucketModel } from "../db/Bucket.model.js";
 import { Builder } from "builder-pattern";
-import { WaifuFile, WaifuFileWithAlbum } from "./WaifuFile.js";
+import { WaifuFileWithAlbum } from "./WaifuFile.js";
 import { AlbumInfo } from "../rest/AlbumInfo.js";
 
 @Name("WaifuBucket")
@@ -15,7 +15,7 @@ export class BucketDto {
     @Property()
     @Description("The files belonging to this bucket")
     @Name("files")
-    @CollectionOf(WaifuFile)
+    @CollectionOf(WaifuFileWithAlbum)
     public files: WaifuFileWithAlbum[];
 
     @Property()
