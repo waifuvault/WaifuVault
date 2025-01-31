@@ -1,4 +1,4 @@
-import { Any, Default, Description, Name, Nullable, Property } from "@tsed/schema";
+import { Default, Description, Name, Nullable, Property } from "@tsed/schema";
 import { FileUploadModel } from "../db/FileUpload.model.js";
 import { Builder, IBuilder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
@@ -52,8 +52,6 @@ export class WaifuFile {
     @Description("The options for this entry")
     public options: ResponseOptions;
 
-    @Property()
-    @Any(null)
     public album: AlbumInfo | null = null;
 
     public static fromModel<T extends WaifuFile>(
