@@ -1,4 +1,4 @@
-import { CollectionOf, Description, Name, Nullable, Property, string } from "@tsed/schema";
+import { CollectionOf, Description, Name, Nullable, Property } from "@tsed/schema";
 import { WaifuFile } from "./WaifuFile.js";
 import { AlbumModel } from "../db/Album.model.js";
 import { Builder } from "builder-pattern";
@@ -13,13 +13,13 @@ class WaifuPublicFileMetadata {
     @Property()
     @Description("The URL to the thumbnail of the file, if it is an image")
     @Name("thumbnail")
-    @Nullable(string)
+    @Nullable(String)
     public thumbnail: string | null;
 
     @Property()
     @Description("The media type of the file")
     @Name("mediaType")
-    @Nullable(string)
+    @Nullable(String)
     public mediaType: string | null;
 }
 
