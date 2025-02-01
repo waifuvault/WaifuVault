@@ -264,7 +264,6 @@ export class AlbumService {
                 if (err) {
                     return reject(new Error(`Failed to retrieve video metadata: ${err.message}`));
                 }
-
                 const duration = metadata.format.duration;
                 if (!duration) {
                     return reject(new Error("Could not determine video duration."));
@@ -284,6 +283,7 @@ export class AlbumService {
                     .outputOptions("-f", "image2")
                     .outputOptions("-vcodec", "mjpeg")
                     .outputOptions("-q:v", "10")
+                    .outputOptions("-vf", "scale=-1:200")
                     .output(passThroughStream)
                     .on("error", err => reject(new Error(`Failed to generate video thumbnail: ${err.message}`)))
                     .on("end", () => passThroughStream.end())
