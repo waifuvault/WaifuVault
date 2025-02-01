@@ -161,8 +161,8 @@ export class AlbumService {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
         this.checkPrivateToken(albumToken, album);
-        if (album.publicToken) {
-            return album.publicToken;
+        if (album.publicUrl) {
+            return album.publicUrl;
         }
         album.publicToken = crypto.randomUUID();
         const updatedAlbum = await this.albumRepo.saveOrUpdateAlbum(album);
