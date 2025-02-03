@@ -17,6 +17,7 @@ import sharp from "sharp";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { PassThrough } from "node:stream";
 import ffmpeg from "../utils/ffmpgWrapper.js";
+import { MimeService } from "./MimeService.js";
 
 @Service()
 export class AlbumService {
@@ -26,6 +27,7 @@ export class AlbumService {
         @Inject() private fileRepo: FileRepo,
         @Inject() private fileService: FileService,
         @Inject() private thumbnailCacheReo: ThumbnailCacheReo,
+        @Inject() private mimeService: MimeService,
     ) {}
 
     @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
@@ -190,10 +192,10 @@ export class AlbumService {
         }
 
         const thumbnailFromCache = await entry.thumbnailCache;
-        const mime = this.getThumbnailMime(entry);
         if (thumbnailFromCache) {
             const b = Buffer.from(thumbnailFromCache.data, "base64");
-            return Promise.all([b, mime]);
+            const thumbnailMime = await this.getThumbnailMime(entry, b);
+            return Promise.all([b, thumbnailMime]);
         }
 
         const path = entry.fullLocationOnDisk;
@@ -215,11 +217,16 @@ export class AlbumService {
         thumbnailCache.data = thumbnail.toString("base64");
         thumbnailCache.fileId = entry.id;
         await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
+        const thumbnailMime = await this.getThumbnailMime(entry, thumbnail);
 
-        return [thumbnail, mime];
+        return [thumbnail, thumbnailMime];
     }
 
-    private getThumbnailMime(entry: FileUploadModel): string {
+    private async getThumbnailMime(entry: FileUploadModel, thumbNail: Buffer): Promise<string> {
+        const detectedMime = await this.mimeService.findMimeTypeFromBuffer(thumbNail);
+        if (detectedMime) {
+            return detectedMime;
+        }
         if (FileUtils.isImage(entry)) {
             return entry.mediaType!;
         } else if (FileUtils.isVideo(entry)) {
