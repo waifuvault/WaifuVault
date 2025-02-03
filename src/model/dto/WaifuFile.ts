@@ -34,6 +34,10 @@ export class WaifuFile {
     public url: string;
 
     @Property()
+    @Description("The public ID of this file")
+    public id: number;
+
+    @Property()
     @Description("How many times this file was downloaded")
     public views: number;
 
@@ -67,6 +71,7 @@ export class WaifuFile {
         }
         builder
             .token(fileUploadModel.token)
+            .id(fileUploadModel.id)
             .bucket(fileUploadModel.bucketToken ?? null)
             .views(fileUploadModel.views)
             .url(fileUploadModel.getPublicUrl());
