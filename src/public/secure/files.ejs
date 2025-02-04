@@ -229,6 +229,17 @@
                                 <label for="password" class="form-label">Password</label>
                                 <input type="password" class="form-control" id="password" placeholder="Optional">
                             </div>
+                            <div class="col-md-3">
+                                <label for="expires" class="form-label">Album</label>
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="uploadToAlbumButton">
+                                        Select album
+                                    </button>
+                                    <ul class="dropdown-menu" id="uploadToAlbumSelect">
+                                        <li><a class="dropdown-item" href="#">None</a></li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                         <div class="row py-2">
                             <div class="col-md-3">
@@ -403,6 +414,29 @@
         }
 
         async function buildAddTo() {
+            document.querySelectorAll("#addToAlbumPlaceholder > ul")?.forEach(b => b.remove());
+            function buildUploadToAlbumDropdown(){
+                const uploadToAlbumSelect = document.getElementById("uploadToAlbumSelect");
+                uploadToAlbumSelect.innerHTML = "";
+                const item = document.createElement("li");
+                item.addEventListener("click", () => {
+                    const b = document.getElementById("uploadToAlbumButton");
+                    b.innerHTML = "None";
+                    delete b.dataset.token;
+                });
+                item.innerHTML = `<a class="dropdown-item" href="#">None</a>`;
+                uploadToAlbumSelect.appendChild(item);
+                for (const a of bucketAlbums) {
+                    const item = document.createElement("li");
+                    item.innerHTML = `<a class="dropdown-item" href="#" data-token="${a.token}">${a.name}</a>`;
+                    item.addEventListener("click", (e) => {
+                        const b = document.getElementById("uploadToAlbumButton");
+                        b.dataset.token = a.token;
+                        b.innerHTML = a.name;
+                    });
+                    uploadToAlbumSelect.appendChild(item);
+                }
+            }
             await getBucketData()
             const addBtn = document.getElementById("addToAlbumPlaceholder");
             addBtn.classList.add("dropdown-toggle");
@@ -418,6 +452,7 @@
                 menu.appendChild(item);
             }
             addBtn.appendChild(menu);
+            buildUploadToAlbumDropdown();
         }
 
         async function buildAlbumTabs() {
@@ -608,6 +643,7 @@
                     const oneTimeDownload = document.getElementById("oneTimeDownload").checked;
                     const uploadButton = document.querySelector(".btn-file-upload");
                     const fileUploadSuccess = document.getElementById("fileUploadedUrl");
+                    const album = document.getElementById("uploadToAlbumButton").dataset.token;
                     fileUploadSuccess.innerHTML = null;
 
                     uploadButton.setAttribute("disabled", "true");
@@ -659,6 +695,14 @@
                         anchor.textContent = url;
                         fileUploadSuccess.append(anchor);
                         anchor.after(btn);
+
+                        if (album) {
+                            const dt = dtMap.get("entries")[0];
+                            await addFilesToAlbum(album, [json.token]);
+                            dt.ajax.reload();
+                            await refreshAlbumFiles();
+                        }
+
                         Site.showSuccess();
                     } else {
                         if(json.message) {
@@ -676,6 +720,7 @@
 
 
             function initDropzone() {
+                let album = null;
                 dz = new Dropzone("#uploadDropzone", {
                     url: "/rest",
                     method: "PUT",
@@ -685,6 +730,7 @@
                     maxFilesize: <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>,
                 });
                 dz.on("sending", (file, xhr, formData) => {
+                    album = document.getElementById("uploadToAlbumButton").dataset.token;
                     const password = document.getElementById("password").value;
                     if (password) {
                         formData.append("password", password);
@@ -707,6 +753,14 @@
                     }
 
                     this.options.url = fileUploadUrl;
+                });
+                dz.on("success", async function(_, response) {
+                    if (album) {
+                        const dt = dtMap.get("entries")[0];
+                        await addFilesToAlbum(album, [response.token]);
+                        dt.ajax.reload();
+                        await refreshAlbumFiles();
+                    }
                 });
                 dz.on("complete", file => {
                     const dzPreview = file.previewElement;
@@ -1240,10 +1294,7 @@
                 const albumObj = await resp.json();
                 await buildAlbumTabs();
                 loadDt("albumEntries");
-                const albumMenu = document.getElementById('albumMenu');
-                const newEntry = document.createElement('li');
-                newEntry.innerHTML = `<button class="dropdown-item sendToAlbum" type="button" data-token="${albumObj.token}">${albumObj.name}</button>`;
-                albumMenu.appendChild(newEntry);
+                await buildAddTo();
                 linkAlbumButtons();
             }
 

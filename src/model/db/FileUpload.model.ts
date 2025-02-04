@@ -172,14 +172,17 @@ export class FileUploadModel extends AbstractModel {
 
     public getPublicUrl(): string {
         const baseUrl = constant(GlobalEnv.BASE_URL) as string;
+        let url: string;
         if (this.settings?.hideFilename || !this.originalFileName) {
-            return `${baseUrl}/f/${this.fullFileNameOnSystem}`;
+            url = `${baseUrl}/f/${this.fullFileNameOnSystem}`;
+        } else {
+            let { originalFileName } = this;
+            if (originalFileName.startsWith("/")) {
+                originalFileName = originalFileName.substring(1);
+            }
+            url = `${baseUrl}/f/${this.fileName}/${originalFileName}`;
         }
-        let { originalFileName } = this;
-        if (originalFileName.startsWith("/")) {
-            originalFileName = originalFileName.substring(1);
-        }
-        return `${baseUrl}/f/${this.fileName}/${originalFileName}`;
+        return encodeURI(url);
     }
 
     public get parsedFileName(): string {
