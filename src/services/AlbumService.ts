@@ -249,6 +249,9 @@ export class AlbumService {
                 width: DEFAULT_WIDTH,
                 withoutEnlargement: true,
             })
+            .webp({
+                quality: 50,
+            })
             .toBuffer();
     }
 
