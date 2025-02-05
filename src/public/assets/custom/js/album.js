@@ -67,7 +67,7 @@ Site.loadPage(async site => {
 
     function linkCheckboxes(target) {
         const checkboxes = document.querySelectorAll(`#${target} .fileCheck`);
-        const originalText = downloadButton.textContent;
+        const originalText = albumTooBigToDownload ? "Album too large to download" : "Download Album as Zip";
         checkboxes.forEach(chk => {
             chk.addEventListener("change", () => {
                 const anySelected = Array.from(checkboxes).some(checkbox => checkbox.checked);
@@ -286,13 +286,17 @@ Site.loadPage(async site => {
     });
 
     downloadButton.addEventListener("click", async () => {
-        if (downloadButton.hasAttribute("disabled") || albumTooBigToDownload) {
+        if (downloadButton.hasAttribute("disabled")) {
             return;
         }
 
         const checkedIds = Array.from(document.querySelectorAll(".fileCheck:checked"))
             .map(checkbox => parseInt(checkbox.dataset.id, 10))
             .filter(id => !isNaN(id));
+
+        if (checkedIds.length === 0 && albumTooBigToDownload) {
+            return;
+        }
 
         downloadButton.setAttribute("disabled", "true");
         downloadButton.classList.add("disabled");
