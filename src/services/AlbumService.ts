@@ -239,30 +239,17 @@ export class AlbumService {
     private async generateImageThumbnail(path: string): Promise<Buffer> {
         const fileBuffer = await fs.promises.readFile(path);
 
-        const metadata = await sharp(fileBuffer).withMetadata().metadata();
-        const SCALING_FACTOR = 0.3;
-        const DEFAULT_GIF_WIDTH = 200;
+        const DEFAULT_WIDTH = 400;
 
-        const thumbnailBuilder = sharp(fileBuffer, {
+        return sharp(fileBuffer, {
             animated: true,
-        }).rotate();
-
-        if (metadata.width && metadata.height && metadata.height > 200) {
-            const resizedWidth = Math.floor(metadata.width * SCALING_FACTOR);
-            const resizedHeight = Math.floor(metadata.height * SCALING_FACTOR);
-            thumbnailBuilder.resize({
+        })
+            .rotate()
+            .resize({
+                width: DEFAULT_WIDTH,
                 withoutEnlargement: true,
-                width: resizedWidth,
-                height: resizedHeight,
-            });
-        } else {
-            thumbnailBuilder.resize({
-                width: DEFAULT_GIF_WIDTH,
-                withoutEnlargement: true,
-            });
-        }
-
-        return thumbnailBuilder.toBuffer();
+            })
+            .toBuffer();
     }
 
     private generateVideoThumbnail(videoPath: string): Promise<Buffer> {
