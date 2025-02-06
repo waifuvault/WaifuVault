@@ -249,61 +249,6 @@ export class AlbumService {
         }
     }
 
-    /*
-
-    private async generateImageThumbnail(path: string): Promise<Buffer> {
-        const fileBuffer = await fs.promises.readFile(path);
-
-        const DEFAULT_WIDTH = 400;
-
-        return sharp(fileBuffer, {
-            animated: true,
-        })
-            .rotate()
-            .resize({
-                width: DEFAULT_WIDTH,
-                withoutEnlargement: true,
-            })
-            .webp({
-                quality: 50,
-            })
-            .toBuffer();
-    }
-
-    private generateVideoThumbnail(videoPath: string): Promise<Buffer> {
-        return new Promise((resolve, reject) => {
-            ffmpeg.ffprobe(videoPath, (err, metadata) => {
-                if (err) {
-                    return reject(new Error(`Failed to retrieve video metadata: ${err.message}`));
-                }
-                const duration = metadata.format.duration;
-                if (!duration) {
-                    return reject(new Error("Could not determine video duration."));
-                }
-
-                const randomTimestamp = Math.random() * duration;
-                const passThroughStream = new PassThrough();
-                const imageBuffer: Buffer[] = [];
-
-                passThroughStream.on("data", chunk => imageBuffer.push(chunk));
-                passThroughStream.on("end", () => resolve(Buffer.concat(imageBuffer)));
-                passThroughStream.on("error", reject);
-
-                ffmpeg(videoPath)
-                    .setStartTime(randomTimestamp)
-                    .frames(1)
-                    .outputOptions("-f", "image2")
-                    .outputOptions("-vcodec", "mjpeg")
-                    .outputOptions("-q:v", "10")
-                    .outputOptions("-vf", "scale=-1:200")
-                    .output(passThroughStream)
-                    .on("error", err => reject(new Error(`Failed to generate video thumbnail: ${err.message}`)))
-                    .on("end", () => passThroughStream.end())
-                    .run();
-            });
-        });
-    }*/
-
     public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[ReadStream, string, string]> {
         const album = await this.albumRepo.getAlbum(publicAlbumToken);
         if (!album) {
