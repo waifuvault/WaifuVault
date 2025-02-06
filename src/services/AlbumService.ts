@@ -9,15 +9,13 @@ import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
 import { filesDir, FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
-import { ThumbnailCacheModel } from "../model/db/ThumbnailCache.model.js";
 import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
 import fs, { ReadStream } from "node:fs";
 import archiver from "archiver";
-import sharp from "sharp";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import { PassThrough } from "node:stream";
-import ffmpeg from "../utils/ffmpgWrapper.js";
 import { MimeService } from "./MimeService.js";
+import { Logger } from "@tsed/logger";
+import { Worker } from "node:worker_threads";
 
 @Service()
 export class AlbumService {
@@ -28,6 +26,7 @@ export class AlbumService {
         @Inject() private fileService: FileService,
         @Inject() private thumbnailCacheReo: ThumbnailCacheReo,
         @Inject() private mimeService: MimeService,
+        @Inject() private logger: Logger,
     ) {}
 
     @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
@@ -175,8 +174,70 @@ export class AlbumService {
         return this.albumRepo.albumExists(publicToken);
     }
 
-    public async generateThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string]> {
+    public async generateThumbnails(privateAlbumToken: string): Promise<void> {
+        const album = await this.albumRepo.getAlbum(privateAlbumToken);
+        if (!album) {
+            throw new NotFound("Album not found");
+        }
+        this.checkPrivateToken(privateAlbumToken, album);
+
+        const worker = new Worker(new URL("../workers/generateThumbnails.js", import.meta.url), {
+            workerData: {
+                privateAlbumToken: privateAlbumToken,
+            },
+        });
+
+        const workerPromise: Promise<void> = new Promise((resolve, reject): void => {
+            worker.on("message", (message: { success: boolean; error?: string }) => {
+                if (message.success) {
+                    resolve();
+                } else {
+                    reject(new Error(message.error));
+                }
+            });
+            worker.on("error", reject);
+            worker.on("exit", code => {
+                if (code !== 0) {
+                    reject(new Error(`Worker stopped with exit code ${code}`));
+                }
+            });
+        });
+        workerPromise
+            .then(() => this.logger.info(`Successfully generated thumbnails for album ${privateAlbumToken}`))
+            .catch(e => this.logger.error(e));
+    }
+
+    public async getThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string] | null> {
         const album = await this.albumRepo.getAlbum(publicAlbumToken);
+        if (!album) {
+            throw new NotFound("Album not found");
+        }
+        this.checkPublicToken(publicAlbumToken, album);
+        const entry = album.files?.find(f => f.id === imageId);
+        if (!entry) {
+            throw new NotFound("File not found");
+        }
+        if (entry.fileProtectionLevel !== "None") {
+            throw new BadRequest("File is protected");
+        }
+
+        const thumbnailFromCache = await entry.thumbnailCache;
+        if (thumbnailFromCache) {
+            const b = Buffer.from(thumbnailFromCache.data, "base64");
+            const thumbnailMime = await this.getThumbnailMime(entry, b);
+            return Promise.all([b, thumbnailMime]);
+        }
+
+        if (FileUtils.isValidForThumbnail(entry)) {
+            return null;
+        }
+
+        throw new BadRequest("File not supported for thumbnail generation");
+
+        /* const generateThumbnails = await spawn<GenerateThumbnails>(new Worker("../workers/generateThumbnails"));
+        generateThumbnails(album, imageId, this.thumbnailCacheReo);
+        return [Buffer.from(""), "image/jpeg"];*/
+        /*  const album = await this.albumRepo.getAlbum(publicAlbumToken);
         if (!album) {
             throw new NotFound("Album not found");
         }
@@ -219,7 +280,7 @@ export class AlbumService {
         await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
         const thumbnailMime = await this.getThumbnailMime(entry, thumbnail);
 
-        return [thumbnail, thumbnailMime];
+        return [thumbnail, thumbnailMime];*/
     }
 
     private async getThumbnailMime(entry: FileUploadModel, thumbNail: Buffer): Promise<string> {
@@ -235,6 +296,8 @@ export class AlbumService {
             throw new BadRequest("File not supported for thumbnail generation");
         }
     }
+
+    /*
 
     private async generateImageThumbnail(path: string): Promise<Buffer> {
         const fileBuffer = await fs.promises.readFile(path);
@@ -287,7 +350,7 @@ export class AlbumService {
                     .run();
             });
         });
-    }
+    }*/
 
     public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[ReadStream, string, string]> {
         const album = await this.albumRepo.getAlbum(publicAlbumToken);

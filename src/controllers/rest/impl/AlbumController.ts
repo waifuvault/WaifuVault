@@ -217,6 +217,9 @@ export class AlbumController extends BaseRestController {
     @Get("/operations/:albumToken/thumbnail")
     @Header("Cache-Control", "public, max-age=31557600") // cache content for a year
     @Returns(StatusCodes.OK)
+    @(Returns(StatusCodes.ACCEPTED, SuccessModel).Description(
+        "The requested resource is being generated and will be available later.",
+    ))
     @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
     @Description("Get a thumbnail for an image")
     @Summary("Get a thumbnail for an image")
@@ -227,11 +230,29 @@ export class AlbumController extends BaseRestController {
         @Res() res: PlatformResponse,
     ): Promise<Buffer | PlatformResponse> {
         try {
-            const [thumbnail, mediaType] = await this.albumService.generateThumbnail(imageId, albumToken);
-            res.contentType(mediaType);
-            return thumbnail;
+            const thumbnailTuple = await this.albumService.getThumbnail(imageId, albumToken);
+            if (thumbnailTuple) {
+                const [thumbnail, mediaType] = thumbnailTuple;
+                res.contentType(mediaType);
+                res.status(StatusCodes.OK);
+                return thumbnail;
+            }
+            return res
+                .status(StatusCodes.ACCEPTED)
+                .body(new SuccessModel(true, "The requested resource is being generated and will be available later."));
         } catch (e) {
             return super.doError(res, e.message, StatusCodes.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Hidden()
+    @Get("/operations/:albumToken/generateThumbnails")
+    @Returns(StatusCodes.OK)
+    public async generateThumbnails(
+        @Res() res: PlatformResponse,
+        @PathParams("albumToken") privateToken: string,
+    ): Promise<PlatformResponse> {
+        await this.albumService.generateThumbnails(privateToken); // ignore promise
+        return super.doSuccess(res, "The requested resource is being generated and will be available later.");
     }
 }
