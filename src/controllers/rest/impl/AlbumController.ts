@@ -229,20 +229,16 @@ export class AlbumController extends BaseRestController {
         @PathParams("albumToken") albumToken: string,
         @Res() res: PlatformResponse,
     ): Promise<Buffer | PlatformResponse> {
-        try {
-            const thumbnailTuple = await this.albumService.getThumbnail(imageId, albumToken);
-            if (thumbnailTuple) {
-                const [thumbnail, mediaType] = thumbnailTuple;
-                res.contentType(mediaType);
-                res.status(StatusCodes.OK);
-                return thumbnail;
-            }
-            return res
-                .status(StatusCodes.ACCEPTED)
-                .body(new SuccessModel(true, "The requested resource is being generated and will be available later."));
-        } catch (e) {
-            return super.doError(res, e.message, StatusCodes.INTERNAL_SERVER_ERROR);
+        const thumbnailTuple = await this.albumService.getThumbnail(imageId, albumToken);
+        if (thumbnailTuple) {
+            const [thumbnail, mediaType] = thumbnailTuple;
+            res.contentType(mediaType);
+            res.status(StatusCodes.OK);
+            return thumbnail;
         }
+        return res
+            .status(StatusCodes.ACCEPTED)
+            .body(new SuccessModel(true, "The requested resource is being generated and will be available later."));
     }
 
     @Hidden()

@@ -233,54 +233,6 @@ export class AlbumService {
         }
 
         throw new BadRequest("File not supported for thumbnail generation");
-
-        /* const generateThumbnails = await spawn<GenerateThumbnails>(new Worker("../workers/generateThumbnails"));
-        generateThumbnails(album, imageId, this.thumbnailCacheReo);
-        return [Buffer.from(""), "image/jpeg"];*/
-        /*  const album = await this.albumRepo.getAlbum(publicAlbumToken);
-        if (!album) {
-            throw new NotFound("Album not found");
-        }
-        this.checkPublicToken(publicAlbumToken, album);
-        const entry = album.files?.find(f => f.id === imageId);
-
-        if (!entry) {
-            throw new NotFound("File not found");
-        }
-
-        if (entry.fileProtectionLevel !== "None") {
-            throw new BadRequest("File is protected");
-        }
-
-        const thumbnailFromCache = await entry.thumbnailCache;
-        if (thumbnailFromCache) {
-            const b = Buffer.from(thumbnailFromCache.data, "base64");
-            const thumbnailMime = await this.getThumbnailMime(entry, b);
-            return Promise.all([b, thumbnailMime]);
-        }
-
-        const path = entry.fullLocationOnDisk;
-        let thumbnail: Buffer;
-        if (FileUtils.isImage(entry)) {
-            thumbnail = await this.generateImageThumbnail(path);
-        } else if (FileUtils.isVideoSupportedByFfmpeg(entry)) {
-            // we use ffmpeg to get thumbnail, so the video MUST be supported by the clients ffmpeg
-            thumbnail = await this.generateVideoThumbnail(path);
-        } else {
-            throw new BadRequest("File not supported for thumbnail generation");
-        }
-
-        if (thumbnail.length === 0) {
-            throw new InternalServerError("Unable to generate thumbnail");
-        }
-
-        const thumbnailCache = new ThumbnailCacheModel();
-        thumbnailCache.data = thumbnail.toString("base64");
-        thumbnailCache.fileId = entry.id;
-        await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
-        const thumbnailMime = await this.getThumbnailMime(entry, thumbnail);
-
-        return [thumbnail, thumbnailMime];*/
     }
 
     private async getThumbnailMime(entry: FileUploadModel, thumbNail: Buffer): Promise<string> {
