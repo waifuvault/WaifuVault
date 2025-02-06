@@ -119,7 +119,14 @@ export class AlbumService {
             this.validateForAssociation(file);
         }
 
-        return this.addFilesToAlbum(albumToken, filesToAssociate);
+        const model = await this.addFilesToAlbum(albumToken, filesToAssociate);
+
+        await this.generateThumbnails(
+            album.albumToken,
+            filesToAssociate.map(f => f.id),
+        );
+
+        return model;
     }
 
     private async addFilesToAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
@@ -167,6 +174,9 @@ export class AlbumService {
         }
         album.publicToken = crypto.randomUUID();
         const updatedAlbum = await this.albumRepo.saveOrUpdateAlbum(album);
+
+        await this.generateThumbnails(album.albumToken);
+
         return updatedAlbum.publicUrl!;
     }
 
@@ -174,7 +184,7 @@ export class AlbumService {
         return this.albumRepo.albumExists(publicToken);
     }
 
-    public async generateThumbnails(privateAlbumToken: string): Promise<void> {
+    public async generateThumbnails(privateAlbumToken: string, filesIds: number[] = []): Promise<void> {
         const album = await this.albumRepo.getAlbum(privateAlbumToken);
         if (!album) {
             throw new NotFound("Album not found");
@@ -184,6 +194,7 @@ export class AlbumService {
         const worker = new Worker(new URL("../workers/generateThumbnails.js", import.meta.url), {
             workerData: {
                 privateAlbumToken: privateAlbumToken,
+                filesIds,
             },
         });
 

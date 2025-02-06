@@ -240,15 +240,4 @@ export class AlbumController extends BaseRestController {
             .status(StatusCodes.ACCEPTED)
             .body(new SuccessModel(true, "The requested resource is being generated and will be available later."));
     }
-
-    @Hidden()
-    @Get("/operations/:albumToken/generateThumbnails")
-    @Returns(StatusCodes.OK)
-    public async generateThumbnails(
-        @Res() res: PlatformResponse,
-        @PathParams("albumToken") privateToken: string,
-    ): Promise<PlatformResponse> {
-        await this.albumService.generateThumbnails(privateToken); // ignore promise
-        return super.doSuccess(res, "The requested resource is being generated and will be available later.");
-    }
 }

@@ -20,8 +20,12 @@ async function generateThumbnails(
     album: AlbumModel,
     thumbnailCacheReo: ThumbnailCacheReo,
     logger: Logger,
+    filesIds: number[] = [],
 ): Promise<void> {
-    const entries = album.files?.filter(f => f.fileProtectionLevel === "None") ?? [];
+    const entries =
+        album.files?.filter(
+            f => f.fileProtectionLevel === "None" && (filesIds.length === 0 || filesIds.includes(f.id)),
+        ) ?? [];
 
     const cacheResults = await Promise.all(entries.map(file => thumbnailCacheReo.hasThumbnailCache(file.id)));
     const thumbnailBufferPromises = entries
@@ -119,7 +123,7 @@ try {
         throw new NotFound("Album not found");
     }
     const thumbnailCacheReo = inject(ThumbnailCacheReo);
-    await generateThumbnails(album, thumbnailCacheReo, $log);
+    await generateThumbnails(album, thumbnailCacheReo, $log, workerData.filesIds);
     parentPort?.postMessage({ success: true });
 } catch (err) {
     parentPort?.postMessage({ success: false, error: err.message });
