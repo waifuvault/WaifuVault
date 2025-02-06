@@ -29,7 +29,7 @@ async function generateThumbnails(
 
     const cacheResults = await thumbnailCacheReo.hasThumbnails(entries.map(e => e.id));
     const thumbnailBufferPromises = entries
-        .filter(entry => !cacheResults.includes(entry.id))
+        .filter(entry => !cacheResults.includes(entry.id) && FileUtils.isValidForThumbnail(entry))
         .map(entry => {
             const path = entry.fullLocationOnDisk;
             let buff: Promise<Buffer>;
@@ -130,7 +130,6 @@ try {
 } finally {
     parentPort?.close();
     if (ds) {
-        console.log("Destroying datasource");
         await ds.destroy();
     }
 }
