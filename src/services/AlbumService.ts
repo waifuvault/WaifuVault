@@ -240,7 +240,9 @@ export class AlbumService {
         }
 
         if (FileUtils.isValidForThumbnail(entry)) {
-            const image = await fs.promises.readFile(new URL("../assets/images/thumbnail-gen-top", import.meta.url));
+            const image = await fs.promises.readFile(
+                new URL("../assets/images/thumbnail-gen-top.png", import.meta.url),
+            );
             return [image, "image/png", false];
         }
 
