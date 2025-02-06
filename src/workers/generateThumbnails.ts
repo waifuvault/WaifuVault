@@ -13,6 +13,8 @@ import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { registerDatasource } from "../db/registerDatasource.js";
 import { Logger } from "@tsed/logger";
 import { $log } from "@tsed/common";
+import { DataSource } from "typeorm";
+import { SQLITE_DATA_SOURCE } from "../model/di/tokens.js";
 
 async function generateThumbnails(
     album: AlbumModel,
@@ -107,10 +109,11 @@ function generateVideoThumbnail(videoPath: string): Promise<Buffer> {
         });
     });
 }
-
+let ds: DataSource | undefined;
 try {
     registerDatasource();
     await injector().load();
+    ds = inject(SQLITE_DATA_SOURCE);
     const album = await inject(AlbumRepo).getAlbum(workerData.privateAlbumToken);
     if (!album || album.isPublicToken(workerData.privateAlbumToken)) {
         throw new NotFound("Album not found");
@@ -120,4 +123,10 @@ try {
     parentPort?.postMessage({ success: true });
 } catch (err) {
     parentPort?.postMessage({ success: false, error: err.message });
+} finally {
+    parentPort?.close();
+    if (ds) {
+        console.log("Destroying datasource");
+        await ds.destroy();
+    }
 }
