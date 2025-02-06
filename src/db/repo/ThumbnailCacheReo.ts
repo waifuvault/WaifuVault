@@ -21,4 +21,8 @@ export class ThumbnailCacheReo {
     public hasThumbnailCache(fileId: number): Promise<boolean> {
         return this.thumbnailCacheReo.hasThumbnailCache(fileId);
     }
+
+    public hasThumbnails(fileIds: number[]): Promise<number[]> {
+        return this.thumbnailCacheReo.hasThumbnails(fileIds);
+    }
 }

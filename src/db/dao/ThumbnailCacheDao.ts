@@ -29,6 +29,12 @@ export class ThumbnailCacheDao extends AbstractTypeOrmDao<ThumbnailCacheModel> {
         });
     }
 
+    public hasThumbnails(fileIds: number[], transaction?: EntityManager): Promise<number[]> {
+        return this.getRepository(transaction)
+            .find({ where: { fileId: In(fileIds) }, select: ["fileId"] })
+            .then(res => res.map(r => r.fileId));
+    }
+
     public saveThumbnailCaches(
         thumbnailCache: ThumbnailCacheModel[],
         transaction?: EntityManager,

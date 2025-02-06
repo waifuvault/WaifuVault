@@ -27,9 +27,9 @@ async function generateThumbnails(
             f => f.fileProtectionLevel === "None" && (filesIds.length === 0 || filesIds.includes(f.id)),
         ) ?? [];
 
-    const cacheResults = await Promise.all(entries.map(file => thumbnailCacheReo.hasThumbnailCache(file.id)));
+    const cacheResults = await thumbnailCacheReo.hasThumbnails(entries.map(e => e.id));
     const thumbnailBufferPromises = entries
-        .filter((_, index) => !cacheResults[index])
+        .filter(entry => !cacheResults.includes(entry.id))
         .map(entry => {
             const path = entry.fullLocationOnDisk;
             let buff: Promise<Buffer>;
