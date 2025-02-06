@@ -218,7 +218,7 @@ export class AlbumService {
             .catch(e => this.logger.error(e));
     }
 
-    public async getThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string] | null> {
+    public async getThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string, boolean]> {
         const album = await this.albumRepo.getAlbum(publicAlbumToken);
         if (!album) {
             throw new NotFound("Album not found");
@@ -236,11 +236,12 @@ export class AlbumService {
         if (thumbnailFromCache) {
             const b = Buffer.from(thumbnailFromCache.data, "base64");
             const thumbnailMime = await this.getThumbnailMime(entry, b);
-            return Promise.all([b, thumbnailMime]);
+            return [b, thumbnailMime, true];
         }
 
         if (FileUtils.isValidForThumbnail(entry)) {
-            return null;
+            // TODO: return image here
+            return [Buffer.from(""), "image/jpeg", false];
         }
 
         throw new BadRequest("File not supported for thumbnail generation");

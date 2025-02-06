@@ -6,7 +6,6 @@ import {
     Delete,
     Description,
     Get,
-    Header,
     Hidden,
     Name,
     Optional,
@@ -197,12 +196,10 @@ export class AlbumController extends BaseRestController {
         @Required()
         @PathParams("albumToken")
         albumToken: string,
-
         @Description("The files ids to download, if empty then all files will be downloaded")
         @BodyParams()
         @CollectionOf(Number)
         fileIds: number[],
-
         @Res() res: Response,
     ): Promise<ReadStream> {
         const [zipFile, albumName, zipLocation] = await this.albumService.downloadFiles(albumToken, fileIds);
@@ -215,11 +212,7 @@ export class AlbumController extends BaseRestController {
     }
 
     @Get("/operations/:albumToken/thumbnail")
-    @Header("Cache-Control", "public, max-age=31557600") // cache content for a year
     @Returns(StatusCodes.OK)
-    @(Returns(StatusCodes.ACCEPTED, SuccessModel).Description(
-        "The requested resource is being generated and will be available later.",
-    ))
     @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
     @Description("Get a thumbnail for an image")
     @Summary("Get a thumbnail for an image")
@@ -229,15 +222,14 @@ export class AlbumController extends BaseRestController {
         @PathParams("albumToken") albumToken: string,
         @Res() res: PlatformResponse,
     ): Promise<Buffer | PlatformResponse> {
-        const thumbnailTuple = await this.albumService.getThumbnail(imageId, albumToken);
-        if (thumbnailTuple) {
-            const [thumbnail, mediaType] = thumbnailTuple;
-            res.contentType(mediaType);
-            res.status(StatusCodes.OK);
-            return thumbnail;
+        const [thumbnail, mediaType, thumbnailReady] = await this.albumService.getThumbnail(imageId, albumToken);
+        if (thumbnailReady) {
+            res.setHeader("Cache-Control", "public, max-age=31557600");
+        } else {
+            res.setHeader("Cache-Control", "no-cache");
         }
-        return res
-            .status(StatusCodes.ACCEPTED)
-            .body(new SuccessModel(true, "The requested resource is being generated and will be available later."));
+        res.contentType(mediaType);
+        res.status(StatusCodes.OK);
+        return thumbnail;
     }
 }
