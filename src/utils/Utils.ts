@@ -7,6 +7,8 @@ import fs from "node:fs/promises";
 import type { PlatformMulterFile } from "@tsed/common";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { isFormatSupportedByFfmpeg } from "./ffmpgWrapper.js";
+import { WorkerResponse } from "./typeings.js";
+import { Worker } from "node:worker_threads";
 
 export class ObjectUtils {
     public static getNumber(source: string): number {
@@ -218,6 +220,26 @@ export class NetworkUtils {
             .join(":")
             .replace(/\[/, "")
             .replace(/]/, "");
+    }
+}
+
+export class WorkerUtils {
+    public static newWorkerPromise<T = void>(worker: Worker): Promise<T> {
+        return new Promise((resolve, reject): void => {
+            worker.on("message", (message: WorkerResponse<T>) => {
+                if (message.success) {
+                    resolve(message.data);
+                } else {
+                    reject(new Error(message.error));
+                }
+            });
+            worker.on("error", reject);
+            worker.on("exit", code => {
+                if (code !== 0) {
+                    reject(new Error(`Worker stopped with exit code ${code}`));
+                }
+            });
+        });
     }
 }
 

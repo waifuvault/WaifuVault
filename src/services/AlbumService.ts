@@ -1,17 +1,16 @@
 import { constant, Constant, Inject, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
-import { BadRequest, InternalServerError, NotFound } from "@tsed/exceptions";
+import { BadRequest, NotFound } from "@tsed/exceptions";
 import { AlbumModel } from "../model/db/Album.model.js";
 import { Builder } from "builder-pattern";
 import crypto from "node:crypto";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
-import { filesDir, FileUtils } from "../utils/Utils.js";
+import { FileUtils, WorkerUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
 import fs, { ReadStream } from "node:fs";
-import archiver from "archiver";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
@@ -198,21 +197,7 @@ export class AlbumService {
             },
         });
 
-        const workerPromise: Promise<void> = new Promise((resolve, reject): void => {
-            worker.on("message", (message: { success: boolean; error?: string }) => {
-                if (message.success) {
-                    resolve();
-                } else {
-                    reject(new Error(message.error));
-                }
-            });
-            worker.on("error", reject);
-            worker.on("exit", code => {
-                if (code !== 0) {
-                    reject(new Error(`Worker stopped with exit code ${code}`));
-                }
-            });
-        });
+        const workerPromise = WorkerUtils.newWorkerPromise(worker);
         workerPromise
             .then(() => this.logger.info(`Successfully generated thumbnails for album ${privateAlbumToken}`))
             .catch(e => this.logger.error(e));
@@ -286,8 +271,21 @@ export class AlbumService {
             throw new BadRequest("Zip file is too large");
         }
 
-        const zipLocation = filesDir + `/${album.name}_${crypto.randomUUID()}.zip`;
-        return Promise.all([this.createZip(filesToZip, zipLocation), album.name, zipLocation]);
+        const workerData = filesToZip.map(file => {
+            return {
+                fullLocationOnDisk: file.fullLocationOnDisk,
+                parsedFileName: file.parsedFileName,
+            };
+        });
+        const worker = new Worker(new URL("../workers/zipFiles.js", import.meta.url), {
+            workerData: {
+                filesToZip: workerData,
+            },
+        });
+
+        const zipLocation = await WorkerUtils.newWorkerPromise<string>(worker);
+
+        return [fs.createReadStream(zipLocation), album.name, zipLocation];
     }
 
     public isAlbumTooBigToDownload(album: AlbumModel): boolean {
@@ -297,23 +295,6 @@ export class AlbumService {
             return album.files.reduce((acc, file) => acc + file.fileSize, 0) > parsedValue * 1024 * 1024;
         }
         return false;
-    }
-
-    private async createZip(files: FileUploadModel[], zipLocation: string): Promise<ReadStream> {
-        const output = fs.createWriteStream(zipLocation);
-        const archive = archiver("zip");
-
-        archive.on("error", err => {
-            throw new InternalServerError(err.message);
-        });
-
-        archive.pipe(output);
-        for (const file of files) {
-            archive.file(file.fullLocationOnDisk, { name: file.parsedFileName });
-        }
-
-        await archive.finalize();
-        return fs.createReadStream(zipLocation);
     }
 
     private checkPrivateToken(token: string, album: AlbumModel): void {
