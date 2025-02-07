@@ -120,6 +120,12 @@ export class FileUtils {
         return file.mediaType?.startsWith("video/") ?? false;
     }
 
+    public static isValidForThumbnail(file: FileUploadModel): boolean {
+        return (
+            (FileUtils.isImage(file) || FileUtils.isVideoSupportedByFfmpeg(file)) && file.fileProtectionLevel === "None"
+        );
+    }
+
     public static isVideoSupportedByFfmpeg(file: FileUploadModel): boolean {
         if (!FileUtils.isVideo(file)) {
             return false;

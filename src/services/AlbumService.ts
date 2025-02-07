@@ -9,15 +9,13 @@ import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
 import { filesDir, FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
-import { ThumbnailCacheModel } from "../model/db/ThumbnailCache.model.js";
 import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
 import fs, { ReadStream } from "node:fs";
 import archiver from "archiver";
-import sharp from "sharp";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
-import { PassThrough } from "node:stream";
-import ffmpeg from "../utils/ffmpgWrapper.js";
 import { MimeService } from "./MimeService.js";
+import { Logger } from "@tsed/logger";
+import { Worker } from "node:worker_threads";
 
 @Service()
 export class AlbumService {
@@ -28,6 +26,7 @@ export class AlbumService {
         @Inject() private fileService: FileService,
         @Inject() private thumbnailCacheReo: ThumbnailCacheReo,
         @Inject() private mimeService: MimeService,
+        @Inject() private logger: Logger,
     ) {}
 
     @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
@@ -120,7 +119,14 @@ export class AlbumService {
             this.validateForAssociation(file);
         }
 
-        return this.addFilesToAlbum(albumToken, filesToAssociate);
+        const model = await this.addFilesToAlbum(albumToken, filesToAssociate);
+
+        await this.generateThumbnails(
+            album.albumToken,
+            filesToAssociate.map(f => f.id),
+        );
+
+        return model;
     }
 
     private async addFilesToAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
@@ -168,6 +174,9 @@ export class AlbumService {
         }
         album.publicToken = crypto.randomUUID();
         const updatedAlbum = await this.albumRepo.saveOrUpdateAlbum(album);
+
+        await this.generateThumbnails(album.albumToken);
+
         return updatedAlbum.publicUrl!;
     }
 
@@ -175,18 +184,50 @@ export class AlbumService {
         return this.albumRepo.albumExists(publicToken);
     }
 
-    public async generateThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string]> {
+    public async generateThumbnails(privateAlbumToken: string, filesIds: number[] = []): Promise<void> {
+        const album = await this.albumRepo.getAlbum(privateAlbumToken);
+        if (!album) {
+            throw new NotFound("Album not found");
+        }
+        this.checkPrivateToken(privateAlbumToken, album);
+
+        const worker = new Worker(new URL("../workers/generateThumbnails.js", import.meta.url), {
+            workerData: {
+                privateAlbumToken: privateAlbumToken,
+                filesIds,
+            },
+        });
+
+        const workerPromise: Promise<void> = new Promise((resolve, reject): void => {
+            worker.on("message", (message: { success: boolean; error?: string }) => {
+                if (message.success) {
+                    resolve();
+                } else {
+                    reject(new Error(message.error));
+                }
+            });
+            worker.on("error", reject);
+            worker.on("exit", code => {
+                if (code !== 0) {
+                    reject(new Error(`Worker stopped with exit code ${code}`));
+                }
+            });
+        });
+        workerPromise
+            .then(() => this.logger.info(`Successfully generated thumbnails for album ${privateAlbumToken}`))
+            .catch(e => this.logger.error(e));
+    }
+
+    public async getThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string, boolean]> {
         const album = await this.albumRepo.getAlbum(publicAlbumToken);
         if (!album) {
             throw new NotFound("Album not found");
         }
         this.checkPublicToken(publicAlbumToken, album);
         const entry = album.files?.find(f => f.id === imageId);
-
         if (!entry) {
             throw new NotFound("File not found");
         }
-
         if (entry.fileProtectionLevel !== "None") {
             throw new BadRequest("File is protected");
         }
@@ -195,31 +236,17 @@ export class AlbumService {
         if (thumbnailFromCache) {
             const b = Buffer.from(thumbnailFromCache.data, "base64");
             const thumbnailMime = await this.getThumbnailMime(entry, b);
-            return Promise.all([b, thumbnailMime]);
+            return [b, thumbnailMime, true];
         }
 
-        const path = entry.fullLocationOnDisk;
-        let thumbnail: Buffer;
-        if (FileUtils.isImage(entry)) {
-            thumbnail = await this.generateImageThumbnail(path);
-        } else if (FileUtils.isVideoSupportedByFfmpeg(entry)) {
-            // we use ffmpeg to get thumbnail, so the video MUST be supported by the clients ffmpeg
-            thumbnail = await this.generateVideoThumbnail(path);
-        } else {
-            throw new BadRequest("File not supported for thumbnail generation");
+        if (FileUtils.isValidForThumbnail(entry)) {
+            const image = await fs.promises.readFile(
+                new URL("../assets/images/thumbnail-gen-top.png", import.meta.url),
+            );
+            return [image, "image/png", false];
         }
 
-        if (thumbnail.length === 0) {
-            throw new InternalServerError("Unable to generate thumbnail");
-        }
-
-        const thumbnailCache = new ThumbnailCacheModel();
-        thumbnailCache.data = thumbnail.toString("base64");
-        thumbnailCache.fileId = entry.id;
-        await this.thumbnailCacheReo.saveThumbnailCache(thumbnailCache);
-        const thumbnailMime = await this.getThumbnailMime(entry, thumbnail);
-
-        return [thumbnail, thumbnailMime];
+        throw new BadRequest("File not supported for thumbnail generation");
     }
 
     private async getThumbnailMime(entry: FileUploadModel, thumbNail: Buffer): Promise<string> {
@@ -234,59 +261,6 @@ export class AlbumService {
         } else {
             throw new BadRequest("File not supported for thumbnail generation");
         }
-    }
-
-    private async generateImageThumbnail(path: string): Promise<Buffer> {
-        const fileBuffer = await fs.promises.readFile(path);
-
-        const DEFAULT_WIDTH = 400;
-
-        return sharp(fileBuffer, {
-            animated: true,
-        })
-            .rotate()
-            .resize({
-                width: DEFAULT_WIDTH,
-                withoutEnlargement: true,
-            })
-            .webp({
-                quality: 50,
-            })
-            .toBuffer();
-    }
-
-    private generateVideoThumbnail(videoPath: string): Promise<Buffer> {
-        return new Promise((resolve, reject) => {
-            ffmpeg.ffprobe(videoPath, (err, metadata) => {
-                if (err) {
-                    return reject(new Error(`Failed to retrieve video metadata: ${err.message}`));
-                }
-                const duration = metadata.format.duration;
-                if (!duration) {
-                    return reject(new Error("Could not determine video duration."));
-                }
-
-                const randomTimestamp = Math.random() * duration;
-                const passThroughStream = new PassThrough();
-                const imageBuffer: Buffer[] = [];
-
-                passThroughStream.on("data", chunk => imageBuffer.push(chunk));
-                passThroughStream.on("end", () => resolve(Buffer.concat(imageBuffer)));
-                passThroughStream.on("error", reject);
-
-                ffmpeg(videoPath)
-                    .setStartTime(randomTimestamp)
-                    .frames(1)
-                    .outputOptions("-f", "image2")
-                    .outputOptions("-vcodec", "mjpeg")
-                    .outputOptions("-q:v", "10")
-                    .outputOptions("-vf", "scale=-1:200")
-                    .output(passThroughStream)
-                    .on("error", err => reject(new Error(`Failed to generate video thumbnail: ${err.message}`)))
-                    .on("end", () => passThroughStream.end())
-                    .run();
-            });
-        });
     }
 
     public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[ReadStream, string, string]> {

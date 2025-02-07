@@ -93,16 +93,10 @@ export class PublicAlbumDto {
     }
 
     private static getThumbnail(album: AlbumModel, file: FileUploadModel): string | null {
-        if (!PublicAlbumDto.isValidForThumbnail(file)) {
+        if (!FileUtils.isValidForThumbnail(file)) {
             return null;
         }
         const baseUrl = constant(GlobalEnv.BASE_URL) as string;
         return `${baseUrl}/rest/album/operations/${album.publicToken}/thumbnail?imageId=${file.id}`;
-    }
-
-    private static isValidForThumbnail(file: FileUploadModel): boolean {
-        return (
-            (FileUtils.isImage(file) || FileUtils.isVideoSupportedByFfmpeg(file)) && file.fileProtectionLevel === "None"
-        );
     }
 }

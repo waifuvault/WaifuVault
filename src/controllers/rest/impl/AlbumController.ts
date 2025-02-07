@@ -6,7 +6,6 @@ import {
     Delete,
     Description,
     Get,
-    Header,
     Hidden,
     Name,
     Optional,
@@ -197,12 +196,10 @@ export class AlbumController extends BaseRestController {
         @Required()
         @PathParams("albumToken")
         albumToken: string,
-
         @Description("The files ids to download, if empty then all files will be downloaded")
         @BodyParams()
         @CollectionOf(Number)
         fileIds: number[],
-
         @Res() res: Response,
     ): Promise<ReadStream> {
         const [zipFile, albumName, zipLocation] = await this.albumService.downloadFiles(albumToken, fileIds);
@@ -215,7 +212,6 @@ export class AlbumController extends BaseRestController {
     }
 
     @Get("/operations/:albumToken/thumbnail")
-    @Header("Cache-Control", "public, max-age=31557600") // cache content for a year
     @Returns(StatusCodes.OK)
     @Returns(StatusCodes.NOT_FOUND, DefaultRenderException)
     @Description("Get a thumbnail for an image")
@@ -226,12 +222,14 @@ export class AlbumController extends BaseRestController {
         @PathParams("albumToken") albumToken: string,
         @Res() res: PlatformResponse,
     ): Promise<Buffer | PlatformResponse> {
-        try {
-            const [thumbnail, mediaType] = await this.albumService.generateThumbnail(imageId, albumToken);
-            res.contentType(mediaType);
-            return thumbnail;
-        } catch (e) {
-            return super.doError(res, e.message, StatusCodes.INTERNAL_SERVER_ERROR);
+        const [thumbnail, mediaType, thumbnailReady] = await this.albumService.getThumbnail(imageId, albumToken);
+        if (thumbnailReady) {
+            res.setHeader("Cache-Control", "public, max-age=31557600");
+        } else {
+            res.setHeader("Cache-Control", "no-cache");
         }
+        res.contentType(mediaType);
+        res.status(StatusCodes.OK);
+        return thumbnail;
     }
 }
