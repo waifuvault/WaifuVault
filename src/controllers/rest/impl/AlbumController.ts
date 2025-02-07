@@ -23,9 +23,8 @@ import { AlbumService } from "../../../services/AlbumService.js";
 import { SuccessModel } from "../../../model/rest/SuccessModel.js";
 import { AlbumModel } from "../../../model/db/Album.model.js";
 import { PublicAlbumDto } from "../../../model/dto/PublicAlbumDto.js";
-import { BadRequest } from "@tsed/exceptions";
+import { BadRequest, Exception } from "@tsed/exceptions";
 import { ReadStream } from "node:fs";
-import type { Response } from "express";
 import fs from "node:fs/promises";
 
 @Controller("/album")
@@ -200,15 +199,22 @@ export class AlbumController extends BaseRestController {
         @BodyParams()
         @CollectionOf(Number)
         fileIds: number[],
-        @Res() res: Response,
-    ): Promise<ReadStream> {
-        const [zipFile, albumName, zipLocation] = await this.albumService.downloadFiles(albumToken, fileIds);
-        res.attachment(`${albumName}.zip`);
-        res.contentType("application/zip");
-        res.on("finish", async () => {
-            await fs.rm(zipLocation, { recursive: true, force: true });
-        });
-        return zipFile;
+        @Res() res: PlatformResponse,
+    ): Promise<ReadStream | PlatformResponse> {
+        try {
+            const [zipFile, albumName, zipLocation] = await this.albumService.downloadFiles(albumToken, fileIds);
+            res.attachment(`${albumName}.zip`);
+            res.contentType("application/zip");
+            res.res.on("finish", async () => {
+                await fs.rm(zipLocation, { recursive: true, force: true });
+            });
+            return zipFile;
+        } catch (e) {
+            if (e instanceof Exception) {
+                throw e;
+            }
+            return super.doError(res, e.message, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Get("/operations/:albumToken/thumbnail")

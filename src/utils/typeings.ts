@@ -101,3 +101,9 @@ export type AdminDataTaleEntryModel = {
     recordsFiltered: number;
     data: IpBlockedAwareFileEntry[];
 };
+
+export type WorkerResponse<T> = {
+    success: boolean;
+    error?: string;
+    data: T;
+};
