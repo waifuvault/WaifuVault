@@ -22,14 +22,15 @@ async function createZip(
 }
 
 let output: fs.WriteStream | undefined;
+const { albumName, filesToZip } = workerData;
+const zipLocation = filesDir + `/${albumName}_${crypto.randomUUID()}.zip`;
 
 try {
-    const { albumName, filesToZip } = workerData;
-    const zipLocation = filesDir + `/${albumName}_${crypto.randomUUID()}.zip`;
     output = fs.createWriteStream(zipLocation);
     await createZip(filesToZip, output);
     parentPort?.postMessage({ success: true, data: zipLocation });
 } catch (err) {
+    await fs.promises.rm(zipLocation, { recursive: true, force: true });
     parentPort?.postMessage({ success: false, error: err.message });
 } finally {
     if (output) {

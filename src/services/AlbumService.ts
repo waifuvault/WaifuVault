@@ -280,6 +280,7 @@ export class AlbumService {
         const worker = new Worker(new URL("../workers/zipFiles.js", import.meta.url), {
             workerData: {
                 filesToZip: workerData,
+                albumName: album.name,
             },
         });
 
