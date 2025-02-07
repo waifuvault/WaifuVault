@@ -115,6 +115,7 @@ function generateVideoThumbnail(videoPath: string): Promise<Buffer> {
 }
 let ds: DataSource | undefined;
 try {
+    $log.level = "info";
     registerDatasource();
     await injector().load();
     ds = inject(SQLITE_DATA_SOURCE);
@@ -130,6 +131,7 @@ try {
 } finally {
     parentPort?.close();
     if (ds) {
+        $log.info("Closing datasource on worker thread");
         await ds.destroy();
     }
 }

@@ -1,14 +1,15 @@
-import { injectable, logger } from "@tsed/di";
+import { injectable } from "@tsed/di";
 import { SQLITE_DATA_SOURCE } from "../model/di/tokens.js";
 import { dataSource } from "./DataSource.js";
 import { DataSource } from "typeorm";
 import type { Logger as TypeOrmLogger } from "typeorm/logger/Logger.js";
+import { $log } from "@tsed/common";
 
 export function registerDatasource(): void {
     injectable(SQLITE_DATA_SOURCE)
         .asyncFactory(async () => {
             await dataSource.initialize();
-            const loggerInstance = logger();
+            const loggerInstance = $log;
             dataSource.setOptions({
                 logger: new (class LoggerProxy implements TypeOrmLogger {
                     public logQuery(query: string, parameters?: unknown[]): void {
