@@ -189,7 +189,7 @@ export class AlbumService {
         }
         this.checkPrivateToken(privateAlbumToken, album);
 
-        const [workerPromise] = WorkerUtils.newWorker<string>("generateThumbnails.js", {
+        const [workerPromise] = WorkerUtils.newWorker("generateThumbnails.js", {
             privateAlbumToken: privateAlbumToken,
             filesIds,
         });
