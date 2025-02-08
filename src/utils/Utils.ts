@@ -232,6 +232,8 @@ export class NetworkUtils {
 }
 
 export class WorkerUtils {
+    public static workerMap = new Map<string, number>();
+
     public static newWorker<T = void>(file: string | URL, data: Record<string, unknown>): [Promise<T>, Worker] {
         if (typeof file === "string") {
             // if string, the file ust be relative to the `workers` folder

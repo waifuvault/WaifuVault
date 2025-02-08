@@ -1,22 +1,26 @@
-import { constant, Constant, Inject, Service } from "@tsed/di";
+import { constant, Constant, Inject, InjectContext, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
-import { BadRequest, NotFound } from "@tsed/exceptions";
+import { BadRequest, InternalServerError, NotFound } from "@tsed/exceptions";
 import { AlbumModel } from "../model/db/Album.model.js";
 import { Builder } from "builder-pattern";
 import crypto from "node:crypto";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
-import { FileUtils, WorkerUtils } from "../utils/Utils.js";
+import { FileUtils, NetworkUtils, WorkerUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
 import fs, { ReadStream } from "node:fs";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
+import type { PlatformContext } from "@tsed/common";
 
 @Service()
 export class AlbumService {
+    @InjectContext()
+    protected $ctx?: PlatformContext;
+
     public constructor(
         @Inject() private albumRepo: AlbumRepo,
         @Inject() private bucketRepo: BucketRepo,
@@ -250,6 +254,12 @@ export class AlbumService {
             throw new NotFound("Album not found");
         }
 
+        if (!this.$ctx) {
+            this.logger.error("Unable to create bucket because the current platform context is undefined");
+            throw new InternalServerError("Unable to download zip");
+        }
+        const ip = NetworkUtils.getIp(this.$ctx.request.request);
+
         const files = album.files ?? [];
 
         const albumFileIds = files.map(f => f.id);
@@ -267,12 +277,20 @@ export class AlbumService {
             throw new BadRequest("Zip file is too large");
         }
 
+        let zipProcessCount = WorkerUtils.workerMap.get(ip) ?? 0;
+        if (zipProcessCount > 2) {
+            throw new BadRequest("Too many Zip processes");
+        }
+
         const workerData = filesToZip.map(file => {
             return {
                 fullLocationOnDisk: file.fullLocationOnDisk,
                 parsedFileName: file.parsedFileName,
             };
         });
+
+        zipProcessCount++;
+        WorkerUtils.workerMap.set(ip, zipProcessCount);
 
         const [zipLocation] = await Promise.all(
             WorkerUtils.newWorker<string>("zipFiles.js", {
@@ -281,6 +299,14 @@ export class AlbumService {
                 uuid: crypto.randomUUID(),
             }),
         );
+
+        zipProcessCount = WorkerUtils.workerMap.get(ip) ?? 0; // have to get it again, could have been modified by other worker
+        if (zipProcessCount === 1) {
+            WorkerUtils.workerMap.delete(ip);
+        } else {
+            zipProcessCount--;
+            WorkerUtils.workerMap.set(ip, zipProcessCount);
+        }
 
         return [fs.createReadStream(zipLocation), album.name, zipLocation];
     }
