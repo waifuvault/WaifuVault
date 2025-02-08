@@ -224,8 +224,16 @@ export class NetworkUtils {
 }
 
 export class WorkerUtils {
-    public static newWorkerPromise<T = void>(worker: Worker): Promise<T> {
-        return new Promise((resolve, reject): void => {
+    public static newWorker<T = void>(file: string | URL, data: Record<string, unknown>): [Promise<T>, Worker] {
+        if (typeof file === "string") {
+            // if string, the file ust be relative to the `workers` folder
+            file = new URL(`../workers/${file}`, import.meta.url);
+        }
+        const worker = new Worker(file, {
+            workerData: data,
+        });
+
+        const p: Promise<T> = new Promise((resolve, reject): void => {
             worker.on("message", (message: WorkerResponse<T>) => {
                 if (message.success) {
                     resolve(message.data);
@@ -240,6 +248,8 @@ export class WorkerUtils {
                 }
             });
         });
+
+        return [p, worker];
     }
 }
 

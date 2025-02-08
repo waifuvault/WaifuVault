@@ -14,7 +14,6 @@ import fs, { ReadStream } from "node:fs";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
-import { Worker } from "node:worker_threads";
 
 @Service()
 export class AlbumService {
@@ -190,14 +189,11 @@ export class AlbumService {
         }
         this.checkPrivateToken(privateAlbumToken, album);
 
-        const worker = new Worker(new URL("../workers/generateThumbnails.js", import.meta.url), {
-            workerData: {
-                privateAlbumToken: privateAlbumToken,
-                filesIds,
-            },
+        const [workerPromise] = WorkerUtils.newWorker("generateThumbnails.js", {
+            privateAlbumToken: privateAlbumToken,
+            filesIds,
         });
 
-        const workerPromise = WorkerUtils.newWorkerPromise(worker);
         workerPromise
             .then(() => this.logger.info(`Successfully generated thumbnails for album ${privateAlbumToken}`))
             .catch(e => this.logger.error(e));
@@ -277,14 +273,13 @@ export class AlbumService {
                 parsedFileName: file.parsedFileName,
             };
         });
-        const worker = new Worker(new URL("../workers/zipFiles.js", import.meta.url), {
-            workerData: {
+
+        const [zipLocation] = await Promise.all(
+            WorkerUtils.newWorker<string>("zipFiles.js", {
                 filesToZip: workerData,
                 albumName: album.name,
-            },
-        });
-
-        const zipLocation = await WorkerUtils.newWorkerPromise<string>(worker);
+            }),
+        );
 
         return [fs.createReadStream(zipLocation), album.name, zipLocation];
     }
