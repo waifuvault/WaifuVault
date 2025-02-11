@@ -20,18 +20,28 @@
                     <p>
                         <strong>Albums</strong> are a powerful way to organise and share collections of files hosted in your buckets.
                         This feature allows you to group multiple files into a single album and share it using a public URL.
-                        Anyone with the link gets a <strong>read-only view</strong>, ensuring that your content remains secure and unalterable.
+                        Anyone with the link gets a
+                        <strong>read-only view</strong>, ensuring that your content remains secure and unalterable.
                     </p>
                     <p>
                         Whether you're showcasing media collections, collaborating on a project, or simply sharing files with friends,
                         Albums make it easy to:
                     </p>
                     <ul>
-                        <li><strong>Organise Files:</strong> Group files logically within your buckets for easy access and management.</li>
-                        <li><strong>Share Seamlessly:</strong> Generate a single public URL for the entire album and share it with anyone.</li>
-                        <li><strong>Privacy Focus:</strong> Maintain control with read-only access for viewers, preventing unauthorised edits.</li>
-                        <li><strong>Custom Views:</strong> Display albums beautifully for a great sharing experience.</li>
-                        <li><strong>Multiple albums per bucket:</strong> Each bucket can contain multiple albums, share and revoke the share at will.</li>
+                        <li>
+                            <strong>Organise Files:</strong> Group files logically within your buckets for easy access and management.
+                        </li>
+                        <li>
+                            <strong>Share Seamlessly:</strong> Generate a single public URL for the entire album and share it with anyone.
+                        </li>
+                        <li>
+                            <strong>Privacy Focus:</strong> Maintain control with read-only access for viewers, preventing unauthorised edits.
+                        </li>
+                        <li><strong>Custom Views:</strong> Display albums beautifully for a great sharing experience.
+                        </li>
+                        <li>
+                            <strong>Multiple albums per bucket:</strong> Each bucket can contain multiple albums, share and revoke the share at will.
+                        </li>
                     </ul>
                     <p>
                         Create a bucket now and start using Albums to and enjoy effortless file sharing with enhanced organisation and privacy!
@@ -54,8 +64,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Your files can be secured using industry-leading AES-256 encryption, for your security and privacy.  The password is not stored, and the file can only be decrypted by people you provide the password to.  Even we cannot decrypt the file should you lose the password.</p>
-                    <p>When you upload a file, you can set a password on it.  Only users you provide with the password can access the file.</p>
+                    <p>Your files can be secured using industry-leading AES-256 encryption, for your security and privacy. The password is not stored, and the file can only be decrypted by people you provide the password to. Even we cannot decrypt the file should you lose the password.</p>
+                    <p>When you upload a file, you can set a password on it. Only users you provide with the password can access the file.</p>
                     <p>Perfect for sensitive data, privacy concerns and secure file sharing.</p>
                 </div>
                 <div class="modal-footer">
@@ -94,7 +104,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>You can choose how long your files are stored for.  From as little as one minute, all the way up to one year.  You are in control of your data's lifespan.</p>
+                    <p>You can choose how long your files are stored for. From as little as one minute, all the way up to one year. You are in control of your data's lifespan.</p>
                     <p>You also have the ability to set a file to be removed once it has been downloaded - as a one-time download.</p>
                     <p>This feature allows you to confidently share files, knowing they will only exist long enough to be transferred if you want or long enough to be useful if that's what you need.</p>
                 </div>
@@ -114,7 +124,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Upload can be organized using our anonymous buckets feature.  These are collections of files that you have access to with a random unique key.  No identifying information is used.</p>
+                    <p>Upload can be organized using our anonymous buckets feature. These are collections of files that you have access to with a random unique key. No identifying information is used.</p>
                     <p>With the key, you can access an administration interface that allows you to:</p>
                     <ul>
                         <li>Track Statistics - types of uploads, sizes of uploads and upload velocity</li>
@@ -317,7 +327,7 @@
             <div class="col-md-6">
                 <div class="h-100 p-5 text-bg-dark rounded-3 border border-danger-subtle bg-body-tertiary">
                     <h2>Restrictions</h2>
-                    <p>The following cannot be uploaded, and any uploads in violation of this will be IP banned</p>
+                    <p>The following cannot be uploaded, and any uploads in violation of this will be banned</p>
                     <ul class="list-group mb-4 mt-4">
                         <li class="list-group-item">Piracy</li>
                         <li class="list-group-item">Extremist material</li>
@@ -341,11 +351,6 @@
             <div class="col-md-6">
                 <div class="h-100 p-5  border border-info-subtle rounded-3">
                     <h2>Privacy Policy</h2>
-                    <p>The following information about you is obtained for each upload</p>
-                    <ul class="list-group mb-4 mt-4">
-                        <li class="list-group-item">IP address</li>
-                        <li class="list-group-item">User agent</li>
-                    </ul>
                     <p>No data is shared with third parties, and data will be deleted permanently when the file expires or is deleted by the user</p>
                     <p>If we believe the release of this information is necessary to respond to a legal process, to investigate or
                         remedy potential violations of our policies, or to protect the rights, property, and safety of others,
@@ -356,6 +361,12 @@
                     <p>While we have taken reasonable steps to secure any information you provide to us, please be aware that despite our efforts,
                         no security measures are perfect or impenetrable. No method of data transmission can be guaranteed against any interception
                         or other type of misuse. Any information disclosed online is potentially vulnerable to interception and misuse by unauthorised parties.</p>
+                    <div class="alert alert-info mt-3">
+                        <p>We securely hash your IP address using SHA-256.</p>
+                        <p>This hash is only used for bucket validation and is never stored in plain text or logged.</p>
+                        <p>Even we cannot access or determine what your original IP address is.</p>
+                        <p>We also do not request, log or retain any personal information from you.</p>
+                    </div>
                     <a class="btn btn-secondary btn-sm mt-3" href="mailto:victoria@waifuvault.moe">Contact me if you have any issues</a>
                 </div>
             </div>
@@ -692,7 +703,7 @@ async fn main() -> anyhow::Result<()> {
                             <p>For PHP, there is an outdated SDK that provides access to managing files only.</p>
                             <a class="btn btn-primary btn-sm mb-3" href="https://packagist.org/packages/ernestmarcinko/waifuvault-php-api" target="_blank">WaifuVault PHP API</a>
                             <div class="alert alert-danger">Note well - this SDK is not actively maintained</div>
-<pre><code class="language-php">
+                            <pre><code class="language-php">
 // Upload file
 use ErnestMarcinko\WaifuVault\WaifuApi;
 
@@ -780,7 +791,7 @@ public class Example {
     Site.loadPage(async () => {
 
         const socket = io(`${mainRul}/recordInfo`, {
-            path: '/socket.io/recordInfo'
+            path: "/socket.io/recordInfo"
         });
 
         const fileCountSpan = document.getElementById("fileCount");
@@ -843,7 +854,7 @@ public class Example {
         }
 
         loadSocket();
-    })
+    });
 </script>
 </body>
 </html>
