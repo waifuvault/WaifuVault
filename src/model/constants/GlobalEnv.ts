@@ -25,7 +25,6 @@ enum GlobalEnv {
     RATE_LIMIT_MS = `${prefix}RATE_LIMIT_MS`,
     REDIS_URI = `${prefix}REDIS_URI`,
     ZIP_MAX_SIZE_MB = `${prefix}ZIP_MAX_SIZE_MB`,
-    IP_SALT = `${prefix}IP_SALT`,
 }
 
 export default GlobalEnv;

@@ -50,7 +50,6 @@ Optional Settings
 | HTTPS              | True if using HTTPS, False otherwise                                                                                                                 |
 | HTTPS_PORT         | Port to listen on if using HTTPS                                                                                                                     |
 | ZIP_MAX_SIZE_MB    | The max size an album can be before it is allowed to be downloaded as a zip. set to '0' to disable. defaults to 100mb                                |
-| IP_SALT            | The salt to add to the IP hash                                                                                                                       |
 
 The available `CAPTCHA_SERVICE` values are:
 
