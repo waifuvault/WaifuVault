@@ -7,7 +7,7 @@ import { Builder } from "builder-pattern";
 import crypto from "node:crypto";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
-import { FileUtils, NetworkUtils, WorkerUtils } from "../utils/Utils.js";
+import { FileUtils, WorkerUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
 import fs, { ReadStream } from "node:fs";
@@ -258,7 +258,6 @@ export class AlbumService {
             this.logger.error("Unable to create bucket because the current platform context is undefined");
             throw new InternalServerError("Unable to download zip");
         }
-        const ip = NetworkUtils.getIp(this.$ctx.request.request);
 
         const files = album.files ?? [];
 
@@ -277,20 +276,12 @@ export class AlbumService {
             throw new BadRequest("Zip file is too large");
         }
 
-        let zipProcessCount = WorkerUtils.workerMap.get(ip) ?? 0;
-        if (zipProcessCount > 2) {
-            throw new BadRequest("Too many Zip processes");
-        }
-
         const workerData = filesToZip.map(file => {
             return {
                 fullLocationOnDisk: file.fullLocationOnDisk,
                 parsedFileName: file.parsedFileName,
             };
         });
-
-        zipProcessCount++;
-        WorkerUtils.workerMap.set(ip, zipProcessCount);
 
         const [zipLocation] = await Promise.all(
             WorkerUtils.newWorker<string>("zipFiles.js", {
@@ -299,14 +290,6 @@ export class AlbumService {
                 uuid: crypto.randomUUID(),
             }),
         );
-
-        zipProcessCount = WorkerUtils.workerMap.get(ip) ?? 0; // have to get it again, could have been modified by other worker
-        if (zipProcessCount === 1) {
-            WorkerUtils.workerMap.delete(ip);
-        } else {
-            zipProcessCount--;
-            WorkerUtils.workerMap.set(ip, zipProcessCount);
-        }
 
         return [fs.createReadStream(zipLocation), album.name, zipLocation];
     }
