@@ -840,6 +840,22 @@
                 };
             }
 
+            function shortenHash() {
+                return function(data, type, row) {
+                    if (type === 'display') {
+                        return ellipsis(data);
+                    }
+                    return data;
+                }
+            }
+
+            function ellipsis(str) {
+                if (str.length <= 8) {
+                    return str;
+                }
+                return `${str.slice(0, 4)}...${str.slice(-4)}`;
+            }
+
             function fileEmbedRender() {
                 return function(data, type, row) {
                     const url = row.url;
@@ -872,7 +888,7 @@
                     case "ips":
                         return [
                             { data: "id" },
-                            { data: "ip" },
+                            { data: "ip", render: shortenHash() },
                             { data: "createdAt", render: customDate() }
                         ];
                     case "albumEntries":

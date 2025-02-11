@@ -9,6 +9,7 @@ import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { isFormatSupportedByFfmpeg } from "./ffmpgWrapper.js";
 import { WorkerResponse } from "./typeings.js";
 import { Worker } from "node:worker_threads";
+import * as crypto from "node:crypto";
 
 export class ObjectUtils {
     public static getNumber(source: string): number {
@@ -204,7 +205,8 @@ export class NetworkUtils {
         } else {
             ip = req.ip as string;
         }
-        return this.extractIp(ip);
+        const extractedIp = this.extractIp(ip);
+        return crypto.createHash("sha256").update(extractedIp).digest("hex");
     }
 
     private static extractIp(ipString: string): string {
