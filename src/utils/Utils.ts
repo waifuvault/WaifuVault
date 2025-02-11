@@ -239,16 +239,23 @@ export class WorkerUtils {
 
     public static workerMap = new Map<string, number>();
 
+    public static limitMap = new Map<string, number>([["zipFiles.js", 2]]);
+
     public static newWorker<T = void>(file: string | URL, data: Record<string, unknown>): [Promise<T>, Worker] {
         if (typeof file === "string") {
             // if string, the file ust be relative to the `workers` folder
             file = new URL(`../workers/${file}`, import.meta.url);
         }
 
+        const limitKey = file.pathname.substring(file.pathname.lastIndexOf("/") + 1);
+
         const ip = NetworkUtils.getIp(this.$ctx?.request.request);
         let processCount = this.workerMap.get(ip) ?? 0;
-        if (processCount > 2) {
-            throw new BadRequest("Too many processes");
+        const limit = this.limitMap.get(limitKey);
+        if (limit) {
+            if (processCount > limit) {
+                throw new BadRequest("Too many processes");
+            }
         }
 
         const worker = new Worker(file, {
@@ -271,12 +278,14 @@ export class WorkerUtils {
                 if (code !== 0) {
                     reject(new Error(`Worker stopped with exit code ${code}`));
                 }
-                processCount = this.workerMap.get(ip) ?? 0;
-                processCount--;
-                if (processCount <= 0) {
-                    this.workerMap.delete(ip);
-                } else {
-                    this.workerMap.set(ip, processCount);
+                if (limit) {
+                    processCount = this.workerMap.get(ip) ?? 0;
+                    processCount--;
+                    if (processCount <= 0) {
+                        this.workerMap.delete(ip);
+                    } else {
+                        this.workerMap.set(ip, processCount);
+                    }
                 }
             });
         });
