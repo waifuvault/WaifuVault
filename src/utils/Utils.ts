@@ -10,6 +10,8 @@ import { isFormatSupportedByFfmpeg } from "./ffmpgWrapper.js";
 import { WorkerResponse } from "./typeings.js";
 import { Worker } from "node:worker_threads";
 import * as crypto from "node:crypto";
+import { constant } from "@tsed/di";
+import GlobalEnv from "../model/constants/GlobalEnv.js";
 
 export class ObjectUtils {
     public static getNumber(source: string): number {
@@ -206,7 +208,11 @@ export class NetworkUtils {
             ip = req.ip as string;
         }
         const extractedIp = this.extractIp(ip);
-        return crypto.createHash("sha256").update(extractedIp).digest("hex");
+        const salt = constant(GlobalEnv.IP_SALT, "");
+        return crypto
+            .createHash("sha256")
+            .update(extractedIp + salt)
+            .digest("hex");
     }
 
     private static extractIp(ipString: string): string {
