@@ -1035,12 +1035,15 @@
                             text: "Ban IP",
                             attr: { id: "banIpButton" },
                             action: async (e, dt) => {
+                                const selectedRow = dt.row({ selected: true }).data();
+                                if(!selectedRow.ip){
+                                    return;
+                                }
                                 const accepted = confirm("Are you sure you want to ban this IP?");
                                 if (!accepted) {
                                     return;
                                 }
                                 const deleteRelatedData = confirm("Do you want to also delete all related data?\nPress 'Cancel' for no and 'Ok' for Yes");
-                                const selectedRow = dt.row({ selected: true }).data();
                                 const ip = selectedRow.ip;
                                 await banIp(ip, deleteRelatedData);
                                 reloadTable(["entries", "ips"]);
@@ -1063,7 +1066,7 @@
                                     ["File Protection Level", selectedRow.fileProtectionLevel],
                                     ["Created At", customDate()(selectedRow.createdAt, "display", selectedRow)],
                                     ["Expires", selectedRow.expires ?? "N/A"],
-                                    ["IP", selectedRow.ip],
+                                    ["IP", selectedRow.ip ?? "N/A"],
                                     ["URL", selectedRow.url],
                                     ["Bucket", selectedRow.bucket ?? "N/A"]
                                 ];

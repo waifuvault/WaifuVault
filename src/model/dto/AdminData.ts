@@ -32,7 +32,8 @@ export class AdminFileData {
     public url: string;
 
     @Property()
-    public ip: string;
+    @Nullable(String)
+    public ip: string | null = null;
 
     @Property()
     public ipBanned: boolean;

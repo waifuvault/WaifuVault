@@ -36,11 +36,11 @@ export class FileUploadModel extends AbstractModel {
     public checksum: string;
 
     @Column({
-        nullable: false,
+        nullable: true,
         type: "text",
         unique: false,
     })
-    public ip: string;
+    public ip: string | null;
 
     @Column({
         nullable: false,

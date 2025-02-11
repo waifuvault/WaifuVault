@@ -16,11 +16,11 @@ export class BucketModel extends AbstractModel {
     public bucketToken: string;
 
     @Column({
-        nullable: false,
+        nullable: true,
         type: "text",
         unique: true,
     })
-    public ip: string;
+    public ip: string | null;
 
     @Column({
         nullable: false,

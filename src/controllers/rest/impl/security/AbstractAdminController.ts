@@ -21,7 +21,9 @@ export abstract class AbstractAdminController extends BaseRestController {
     }
 
     protected async mapIpToFileEntries(entries: FileUploadModel[]): Promise<IpBlockedAwareFileEntry[]> {
-        const ipBlockedPArr = entries.map(entry => Promise.all([entry, this.ipBlackListRepo.isIpBlocked(entry.ip)]));
+        const ipBlockedPArr = entries.map(entry =>
+            Promise.all([entry, entry.ip ? this.ipBlackListRepo.isIpBlocked(entry.ip) : false]),
+        );
         const ipBlockedArr = await Promise.all(ipBlockedPArr);
         return ipBlockedArr.map(([entry, ipBlocked]) => {
             return {
