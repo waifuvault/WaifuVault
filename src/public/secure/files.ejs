@@ -850,7 +850,9 @@
             }
 
             function ellipsis(str) {
-                if (str.length <= 8) return str;
+                if (str.length <= 8) {
+                    return str;
+                }
                 return `${str.slice(0, 4)}...${str.slice(-4)}`;
             }
 
