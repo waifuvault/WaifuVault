@@ -256,7 +256,7 @@ export class WorkerUtils {
 
         const limitKey = file.pathname.substring(file.pathname.lastIndexOf("/") + 1);
 
-        const ip = NetworkUtils.getIp(this.$ctx?.request.request);
+        const ip = NetworkUtils.getIp(this.$ctx?.request.request) + ":" + limitKey;
         let processCount = this.workerMap.get(ip) ?? 0;
         const limit = this.limitMap.get(limitKey);
         if (limit) {
