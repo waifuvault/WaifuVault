@@ -238,8 +238,15 @@ export class WorkerUtils {
     protected static $ctx?: PlatformContext;
 
     public static workerMap = new Map<string, number>();
+    public static limitMap = new Map<string, number>();
 
-    public static limitMap = new Map<string, number>([["zipFiles.js", 2]]);
+    static {
+        const processLimits = process.env.PROCESS_LIMITS ?? "";
+        processLimits.split(",").forEach(x => {
+            const splitLimit = x.split(":");
+            this.limitMap.set(splitLimit[0], parseInt(splitLimit[1], 10));
+        });
+    }
 
     public static newWorker<T = void>(file: string | URL, data: Record<string, unknown>): [Promise<T>, Worker] {
         if (typeof file === "string") {
@@ -253,7 +260,7 @@ export class WorkerUtils {
         let processCount = this.workerMap.get(ip) ?? 0;
         const limit = this.limitMap.get(limitKey);
         if (limit) {
-            if (processCount > limit) {
+            if (processCount >= limit) {
                 throw new BadRequest("Too many processes");
             }
         }
