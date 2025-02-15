@@ -21,6 +21,7 @@ export class FileUploadQueryParameters {
     @Description("If this is true, then the file will be deleted as soon as it is accessed")
     @Optional()
     @Property()
+    @Name("one_time_download")
     @Default(false)
     public oneTimeDownload?: boolean;
 }
