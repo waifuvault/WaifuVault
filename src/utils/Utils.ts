@@ -240,14 +240,6 @@ export class WorkerUtils {
     public static workerMap = new Map<string, number>();
     public static limitMap = new Map<string, number>();
 
-    static {
-        const processLimits = process.env.PROCESS_LIMITS ?? "";
-        processLimits.split(",").forEach(x => {
-            const splitLimit = x.split(":");
-            this.limitMap.set(splitLimit[0], parseInt(splitLimit[1], 10));
-        });
-    }
-
     public static newWorker<T = void>(file: string | URL, data: Record<string, unknown>): [Promise<T>, Worker] {
         if (typeof file === "string") {
             // if string, the file ust be relative to the `workers` folder
