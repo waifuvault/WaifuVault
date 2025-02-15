@@ -1,6 +1,5 @@
 import { parentPort, workerData } from "node:worker_threads";
 import { filesDir } from "../utils/Utils.js";
-import crypto from "node:crypto";
 import fs from "node:fs";
 import archiver from "archiver";
 
@@ -22,8 +21,8 @@ async function createZip(
 }
 
 let output: fs.WriteStream | undefined;
-const { albumName, filesToZip } = workerData;
-const zipLocation = filesDir + `/${albumName}_${crypto.randomUUID()}.zip`;
+const { albumName, filesToZip, uuid } = workerData;
+const zipLocation = filesDir + `/${albumName}_${uuid}.zip`;
 
 try {
     output = fs.createWriteStream(zipLocation);

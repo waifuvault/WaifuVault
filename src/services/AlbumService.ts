@@ -278,6 +278,7 @@ export class AlbumService {
             WorkerUtils.newWorker<string>("zipFiles.js", {
                 filesToZip: workerData,
                 albumName: album.name,
+                uuid: crypto.randomUUID(),
             }),
         );
 
