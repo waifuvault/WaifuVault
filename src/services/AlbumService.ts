@@ -14,9 +14,10 @@ import fs, { ReadStream } from "node:fs";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
+import { AfterInit } from "@tsed/common";
 
 @Service()
-export class AlbumService {
+export class AlbumService implements AfterInit {
     public constructor(
         @Inject() private albumRepo: AlbumRepo,
         @Inject() private bucketRepo: BucketRepo,
@@ -29,6 +30,14 @@ export class AlbumService {
 
     @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
     private readonly zipMaxFileSize: string;
+
+    private defaultThumbnail: Buffer;
+
+    public async $afterInit(): Promise<void> {
+        this.defaultThumbnail = await fs.promises.readFile(
+            new URL("../assets/images/thumbnail-gen-top.png", import.meta.url),
+        );
+    }
 
     public async createAlbum(name: string, bucketToken: string): Promise<AlbumModel> {
         const bucket = await this.bucketRepo.getBucket(bucketToken);
@@ -119,10 +128,12 @@ export class AlbumService {
 
         const model = await this.addFilesToAlbum(albumToken, filesToAssociate);
 
-        await this.generateThumbnails(
-            album.albumToken,
-            filesToAssociate.map(f => f.id),
-        );
+        if (album.isShared) {
+            await this.generateThumbnails(
+                album.albumToken,
+                filesToAssociate.map(f => f.id),
+            );
+        }
 
         return model;
     }
@@ -221,10 +232,7 @@ export class AlbumService {
         }
 
         if (FileUtils.isValidForThumbnail(entry)) {
-            const image = await fs.promises.readFile(
-                new URL("../assets/images/thumbnail-gen-top.png", import.meta.url),
-            );
-            return [image, "image/png", false];
+            return [this.defaultThumbnail, "image/png", false];
         }
 
         throw new BadRequest("File not supported for thumbnail generation");
