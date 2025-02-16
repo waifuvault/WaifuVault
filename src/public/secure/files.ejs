@@ -89,6 +89,7 @@
                     <% } %>
                 </div>
                 <div class="card-body">
+                    <input type="checkbox" id="selectAll" value="all"> Select All
                     <table class="table submissionsTable datatables display nowrap" data-type="entries">
                         <thead>
                         <tr>
@@ -1357,6 +1358,15 @@
         } else {
             loadDt();
         }
+
+        document.getElementById("selectAll").addEventListener("click", function () {
+            const dt = dtMap.get("entries")[0];
+            if (this.checked) {
+                dt.rows().select();
+            } else {
+                dt.rows().deselect();
+            }
+        });
     });
 </script>
 </body>
