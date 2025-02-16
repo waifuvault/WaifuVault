@@ -4,7 +4,8 @@
     <%- include('../snippets/head.ejs'); %>
     <title>Files - WaifuVault</title>
     <link href="/assets/custom/css/index.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.4/b-3.1.1/b-colvis-3.1.1/fh-4.0.1/r-3.0.2/sc-2.4.3/sl-2.0.5/sr-1.4.1/datatables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.4/b-3.1.1/b-colvis-3.1.1/fh-4.0.1/r-3.0.2/sc-2.4.3/sl-2.0.5/sr-1.4.1/datatables.min.css"
+          rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
     <style>
         table.dataTable td.dt-type-numeric, table.dataTable th.dt-type-numeric {
@@ -82,7 +83,8 @@
                     </div>
                     <% if(loginType === "bucket" && bucket.type === "PREMIUM") { %>
                         <div class="alert alert-info mt-3">
-                            <i class="bi bi-question-circle"></i> This is a <%- bucket.type; -%> bucket, this means that you get unlimited expiry.
+                            <i class="bi bi-question-circle"></i> This is a <%- bucket.type; -%> bucket, this means that
+                            you get unlimited expiry.
                         </div>
                     <% } %>
                 </div>
@@ -190,7 +192,15 @@
                     <div class="container-fluid">
                         <div class="row py-2" id="dropzoneRow">
                             <div class="col-md-12 mb-3">
-                                <div id="uploadDropzone" class="dropzone rounded mb-4 bg-dark border border-success text-white">
+                                <div class="alert alert-info" role="alert">
+                                    You can upload files to your bucket by dragging and dropping them here, or by
+                                    browsing for files to upload.
+                                    <hr />
+                                    if you select an album to upload to, it will be processed <strong>AFTER</strong> all files are uploaded. <br/> <br/>
+                                    So please do not dismiss this model until all files are uploaded.
+                                </div>
+                                <div id="uploadDropzone"
+                                     class="dropzone rounded mb-4 bg-dark border border-success text-white">
                                     <i class="bi bi-cloud-arrow-up centerIcon"></i>
                                     <div class="fallback">
                                         <input name="file" type="file" />
@@ -204,11 +214,13 @@
                             </div>
                         </div>
                         <div class="row py-2" id="urlRow">
-                            <div class="col-md-12 mb-3">
-                                <div class="input-group mb-3">
+                            <div class="col-md-12">
+                                <div class="input-group">
                                     <span class="input-group-text" id="urlLabel">Or upload via url</span>
                                     <input type="text" class="form-control" id="url" aria-label="urlLabel">
-                                    <button class="btn btn-primary btn-file-upload" type="button" id="button-addon2">Upload</button>
+                                    <button class="btn btn-primary btn-file-upload" type="button" id="button-addon2">
+                                        Upload
+                                    </button>
                                 </div>
                                 <div class="hidden" id="error">
                                     <div class="alert alert-danger" id="errorContent"></div>
@@ -221,6 +233,14 @@
                             </div>
                         </div>
                         <div class="row py-2">
+                            <div class="col-md-12">
+                                <hr />
+                            </div>
+                        </div>
+                        <div class="row py-2">
+                            <div class="alert alert-info">
+                                Any options set here will apply for both upload file and the drag zone
+                            </div>
                             <div class="col-md-3">
                                 <label for="expires" class="form-label">Expires</label>
                                 <input type="text" class="form-control" id="expires" placeholder="Eg 3d, 5h or 10m">
@@ -232,7 +252,8 @@
                             <div class="col-md-3">
                                 <label for="expires" class="form-label">Album</label>
                                 <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="uploadToAlbumButton">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false" id="uploadToAlbumButton">
                                         Select album
                                     </button>
                                     <ul class="dropdown-menu" id="uploadToAlbumSelect">
@@ -320,7 +341,7 @@
         const detailsModal = new bootstrap.Modal(document.getElementById("fileDetailsModel"), { keyboard: false });
 
         uploadModalEl.addEventListener("hidden.bs.modal", () => {
-            if(dz){
+            if (dz) {
                 dz.removeAllFiles();
             }
         });
@@ -415,7 +436,8 @@
 
         async function buildAddTo() {
             document.querySelectorAll("#addToAlbumPlaceholder > ul")?.forEach(b => b.remove());
-            function buildUploadToAlbumDropdown(){
+
+            function buildUploadToAlbumDropdown() {
                 const uploadToAlbumSelect = document.getElementById("uploadToAlbumSelect");
                 uploadToAlbumSelect.innerHTML = "";
                 const item = document.createElement("li");
@@ -437,6 +459,7 @@
                     uploadToAlbumSelect.appendChild(item);
                 }
             }
+
             await getBucketData()
             const addBtn = document.getElementById("addToAlbumPlaceholder");
             addBtn.classList.add("dropdown-toggle");
@@ -634,7 +657,7 @@
             if (dtMap.has(dtToLoad)) {
                 dtMap.get(dtToLoad).forEach(d => d.destroy(true));
                 dtMap.delete(dtToLoad);
-            }else{
+            } else {
                 document.querySelector(".btn-file-upload")?.addEventListener("click", async () => {
                     const url = document.getElementById("url").value;
                     const expires = document.getElementById("expires").value;
@@ -705,9 +728,9 @@
 
                         Site.showSuccess();
                     } else {
-                        if(json.message) {
+                        if (json.message) {
                             Site.showError(json.message);
-                        }else{
+                        } else {
                             Site.showSuccess("Network Error.");
                         }
                     }
@@ -754,14 +777,6 @@
 
                     this.options.url = fileUploadUrl;
                 });
-                dz.on("success", async function(_, response) {
-                    if (album) {
-                        const dt = dtMap.get("entries")[0];
-                        await addFilesToAlbum(album, [response.token]);
-                        dt.ajax.reload();
-                        await refreshAlbumFiles();
-                    }
-                });
                 dz.on("complete", file => {
                     const dzPreview = file.previewElement;
                     const response = JSON.parse(file.xhr.response);
@@ -780,6 +795,16 @@
                         dzPreview.appendChild(btn);
                     } else {
                         file.previewElement.querySelector('.dz-error-message>span').textContent = response.message;
+                    }
+                });
+                dz.on("queuecomplete", async function() {
+                    if (album) {
+                        const files = this.files;
+                        const tokens = files.map(f => JSON.parse(f.xhr.responseText).token);
+                        const dt = dtMap.get("entries")[0];
+                        await addFilesToAlbum(album, tokens);
+                        dt.ajax.reload();
+                        await refreshAlbumFiles();
                     }
                     reloadTable(["entries"]);
                 });
@@ -1036,7 +1061,7 @@
                             attr: { id: "banIpButton" },
                             action: async (e, dt) => {
                                 const selectedRow = dt.row({ selected: true }).data();
-                                if(!selectedRow.ip){
+                                if (!selectedRow.ip) {
                                     return;
                                 }
                                 const accepted = confirm("Are you sure you want to ban this IP?");
@@ -1255,7 +1280,7 @@
                 $(".datatables").each(async function() {
                     await loadDt($(this)[0]);
                 });
-                if(!dz){
+                if (!dz) {
                     initDropzone();
                 }
             }
