@@ -45,6 +45,18 @@ export class FileRepo {
         return ret;
     }
 
+    public async getEntriesByBucket(privateAlbumToken: string): Promise<FileUploadModel[]> {
+        const fromCache = this.obtainManyFromCacheBasedOnProp("albumToken", privateAlbumToken);
+        if (fromCache.length > 0) {
+            return Promise.resolve(fromCache);
+        }
+        const res = await this.fileDao.getEntriesByBucket(privateAlbumToken);
+        for (const entry of res) {
+            this.entryCache.set(entry.token, entry);
+        }
+        return res;
+    }
+
     public async getEntryByFileName(fileName: string): Promise<FileUploadModel | null> {
         const fromCache = this.obtainOneFromCacheBasedOnProp("fileName", fileName);
         if (fromCache) {
@@ -55,6 +67,7 @@ export class FileRepo {
             return null;
         }
         this.entryCache.set(res.token, res);
+
         return res;
     }
 
@@ -146,6 +159,10 @@ export class FileRepo {
             }
         }
         return null;
+    }
+
+    private obtainManyFromCacheBasedOnProp(prop: keyof FileUploadModel, value: string): FileUploadModel[] {
+        return Array.from(this.entryCache.values()).filter(entry => entry[prop] === value);
     }
 
     public invalidateCache(tokens?: string[]): void {

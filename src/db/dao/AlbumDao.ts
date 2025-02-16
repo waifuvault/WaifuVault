@@ -3,6 +3,7 @@ import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 import { DataSource, EntityManager } from "typeorm";
 import { AlbumModel } from "../../model/db/Album.model.js";
 import { AbstractTypeOrmDao } from "./AbstractTypeOrmDao.js";
+import crypto from "node:crypto";
 
 @Injectable()
 export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
@@ -21,9 +22,9 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
         return deleteResult.affected === 1;
     }
 
-    public getAlbum(token: string, transaction?: EntityManager): Promise<AlbumModel | null> {
+    public getAlbum(token: string, includeFiles = true, transaction?: EntityManager): Promise<AlbumModel | null> {
         return this.getRepository(transaction).findOne({
-            relations: ["files"],
+            relations: includeFiles ? ["files"] : undefined,
             where: [
                 {
                     albumToken: token,
@@ -53,5 +54,25 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
         return this.getRepository(transaction).existsBy({
             publicToken,
         });
+    }
+
+    public async setShareStatus(
+        albumToken: string,
+        status: boolean,
+        transaction?: EntityManager,
+    ): Promise<string | null> {
+        let ret = null;
+        if (status) {
+            ret = crypto.randomUUID();
+        }
+        await this.getRepository(transaction).update(
+            {
+                albumToken,
+            },
+            {
+                publicToken: ret,
+            },
+        );
+        return ret;
     }
 }

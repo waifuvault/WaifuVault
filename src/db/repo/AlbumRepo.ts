@@ -19,6 +19,10 @@ export class AlbumRepo {
         return r;
     }
 
+    public setShareStatus(albumToken: string, status: boolean): Promise<string | null> {
+        return this.albumDao.setShareStatus(albumToken, status);
+    }
+
     public async deleteAlbum(albumToken: string, deleteFiles = false): Promise<boolean> {
         if (deleteFiles) {
             // if we want to delete files, then the cascade can delete them
@@ -28,7 +32,7 @@ export class AlbumRepo {
             return true;
         }
         const [res, files] = await this.albumDao.dataSource.transaction(async entityManager => {
-            const album = await this.albumDao.getAlbum(albumToken, entityManager);
+            const album = await this.albumDao.getAlbum(albumToken, true, entityManager);
             const filesRemoved: FileUploadModel[] = [];
             if (album && album.files && album.files.length > 0) {
                 filesRemoved.push(...album.files);
@@ -43,8 +47,8 @@ export class AlbumRepo {
         return res;
     }
 
-    public getAlbum(token: string): Promise<AlbumModel | null> {
-        return this.albumDao.getAlbum(token);
+    public getAlbum(token: string, includeFiles = true): Promise<AlbumModel | null> {
+        return this.albumDao.getAlbum(token, includeFiles);
     }
 
     public albumNameExists(name: string, bucketToken: string): Promise<boolean> {
@@ -53,5 +57,10 @@ export class AlbumRepo {
 
     public albumExists(publicToken: string): Promise<boolean> {
         return this.albumDao.albumExists(publicToken);
+    }
+
+    public async getEntry(privateBucketToken: string, imageId: number): Promise<FileUploadModel | null> {
+        const entries = await this.fileRepo.getEntriesByBucket(privateBucketToken);
+        return entries.find(e => e.id === imageId) ?? null;
     }
 }

@@ -106,7 +106,7 @@ export class AlbumService implements AfterInit {
     }
 
     public async assignFilesToAlbum(albumToken: string, files: string[]): Promise<AlbumModel> {
-        const album = await this.albumRepo.getAlbum(albumToken);
+        const album = await this.albumRepo.getAlbum(albumToken, false);
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
@@ -163,17 +163,16 @@ export class AlbumService implements AfterInit {
     }
 
     public async revokeShare(albumToken: string): Promise<void> {
-        const album = await this.albumRepo.getAlbum(albumToken);
+        const album = await this.albumRepo.getAlbum(albumToken, false);
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
         this.checkPrivateToken(albumToken, album);
-        album.publicToken = null;
-        await this.albumRepo.saveOrUpdateAlbum(album);
+        await this.albumRepo.setShareStatus(albumToken, false);
     }
 
     public async shareAlbum(albumToken: string): Promise<string> {
-        const album = await this.albumRepo.getAlbum(albumToken);
+        const album = await this.albumRepo.getAlbum(albumToken, false);
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
@@ -181,12 +180,10 @@ export class AlbumService implements AfterInit {
         if (album.publicUrl) {
             return album.publicUrl;
         }
-        album.publicToken = crypto.randomUUID();
-        const updatedAlbum = await this.albumRepo.saveOrUpdateAlbum(album);
-
+        album.publicToken = (await this.albumRepo.setShareStatus(albumToken, true))!;
         await this.generateThumbnails(album.albumToken);
 
-        return updatedAlbum.publicUrl!;
+        return album.publicUrl!;
     }
 
     public albumExists(publicToken: string): Promise<boolean> {
@@ -194,7 +191,7 @@ export class AlbumService implements AfterInit {
     }
 
     public async generateThumbnails(privateAlbumToken: string, filesIds: number[] = []): Promise<void> {
-        const album = await this.albumRepo.getAlbum(privateAlbumToken);
+        const album = await this.albumRepo.getAlbum(privateAlbumToken, false);
         if (!album) {
             throw new NotFound("Album not found");
         }
@@ -211,12 +208,12 @@ export class AlbumService implements AfterInit {
     }
 
     public async getThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string, boolean]> {
-        const album = await this.albumRepo.getAlbum(publicAlbumToken);
+        const album = await this.albumRepo.getAlbum(publicAlbumToken, false);
         if (!album) {
             throw new NotFound("Album not found");
         }
         this.checkPublicToken(publicAlbumToken, album);
-        const entry = album.files?.find(f => f.id === imageId);
+        const entry = await this.albumRepo.getEntry(album.albumToken, imageId);
         if (!entry) {
             throw new NotFound("File not found");
         }

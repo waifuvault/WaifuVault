@@ -41,6 +41,10 @@ export class BucketService {
         return this.getBucket(currentBucketToken);
     }
 
+    public getLoggedInBucketToken(): string | null {
+        return this.bucketSessionService.getSessionToken();
+    }
+
     public async deleteBucket(token: string): Promise<boolean> {
         const bucket = await this.getBucket(token);
         if (!bucket) {
