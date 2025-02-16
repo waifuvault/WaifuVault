@@ -69,7 +69,6 @@ export class FileUploadService {
 
             const token = crypto.randomUUID();
             const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
-            [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
 
             await this.filterFile(resourcePath);
 
@@ -80,8 +79,7 @@ export class FileUploadService {
             uploadEntry.fileSize(fileSize);
 
             if (bucketToken) {
-                const bucket = await this.bucketService.getBucket(bucketToken);
-                if (!bucket) {
+                if (!(await this.bucketService.bucketExists(bucketToken))) {
                     throw new BadRequest(`Bucket with token ${bucketToken} does not exist`);
                 }
                 uploadEntry.bucketToken(bucketToken);

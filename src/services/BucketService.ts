@@ -33,6 +33,10 @@ export class BucketService {
         return bucket;
     }
 
+    public bucketExists(token: string): Promise<boolean> {
+        return this.bucketRepo.bucketExists(token);
+    }
+
     private getLoggedInUserBucket(): Promise<BucketModel | null> {
         const currentBucketToken = this.bucketSessionService.getSessionToken();
         if (!currentBucketToken) {

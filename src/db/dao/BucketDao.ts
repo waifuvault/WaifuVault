@@ -46,4 +46,10 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
             },
         });
     }
+
+    public bucketExists(token: string, transaction?: EntityManager): Promise<boolean> {
+        return this.getRepository(transaction).existsBy({
+            bucketToken: token,
+        });
+    }
 }

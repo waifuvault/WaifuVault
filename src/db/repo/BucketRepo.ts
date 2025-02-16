@@ -51,4 +51,8 @@ export class BucketRepo {
     public getBucket(id: string | number): Promise<BucketModel | null> {
         return this.bucketDao.getBucket(id);
     }
+
+    public bucketExists(token: string): Promise<boolean> {
+        return this.bucketDao.bucketExists(token);
+    }
 }
