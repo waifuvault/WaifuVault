@@ -45,8 +45,7 @@ export class BucketAdminController extends AbstractAdminController implements IA
             sortOrder = order[0]?.dir.toUpperCase();
             sortColumn = columns[order[0]?.column ?? 0]?.data;
         }
-        const bucket = await this.bucketService.getBucket();
-        const bucketToken = bucket!.bucketToken;
+        const bucketToken = this.bucketService.getLoggedInBucketToken()!;
         const files = await this.bucketAdminService.getPagedEntries(
             start,
             length,

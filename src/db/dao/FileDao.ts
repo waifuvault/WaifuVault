@@ -104,7 +104,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
                 order: orderOptions,
                 skip: start,
                 take: records,
-                ...this.relation,
+                relations: ["album"],
             });
         }
 
@@ -114,7 +114,6 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
                 order: orderOptions,
                 skip: start,
                 take: records,
-                ...this.relation,
             });
         }
         if (bucket) {
@@ -126,7 +125,6 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
                 order: orderOptions,
                 skip: start,
                 take: records,
-                ...this.relation,
             });
         }
         return this.getRepository(transaction).find({
@@ -216,6 +214,12 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> {
             where: {
                 expires: LessThan(Date.now()),
             },
+        });
+    }
+
+    public getEntriesByBucket(albumToken: string): Promise<FileUploadModel[]> {
+        return this.getRepository().findBy({
+            albumToken,
         });
     }
 }
