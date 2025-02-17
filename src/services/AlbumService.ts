@@ -31,6 +31,9 @@ export class AlbumService implements AfterInit {
     @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
     private readonly zipMaxFileSize: string;
 
+    @Constant(GlobalEnv.REDIS_URI)
+    private readonly redisUri: string;
+
     public defaultThumbnail: Buffer;
 
     public async $afterInit(): Promise<void> {
@@ -200,6 +203,7 @@ export class AlbumService implements AfterInit {
         const [workerPromise] = WorkerUtils.newWorker("generateThumbnails.js", {
             privateAlbumToken: privateAlbumToken,
             filesIds,
+            redisUri: this.redisUri,
         });
 
         workerPromise

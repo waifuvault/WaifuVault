@@ -17,8 +17,6 @@ import { DataSource } from "typeorm";
 import { SQLITE_DATA_SOURCE } from "../model/di/tokens.js";
 import "../redis/Connection.js";
 import { initRedisProvider } from "../redis/Connection.js";
-import process from "process";
-import dotenv from "dotenv";
 
 async function generateThumbnails(
     album: AlbumModel,
@@ -119,14 +117,10 @@ function generateVideoThumbnail(videoPath: string): Promise<Buffer> {
 }
 let ds: DataSource | undefined;
 try {
-    dotenv.config();
-    if (!process.env.REDIS_URI) {
-        throw new Error("REDIS_URI not set");
-    }
     $log.level = "info";
     registerDatasource();
     initRedisProvider();
-    const url = new URL(process.env.REDIS_URI);
+    const url = new URL(workerData.redisUri);
     const i = injector();
     const settings: Partial<TsED.Configuration> = {};
     settings["ioredis"] = [
