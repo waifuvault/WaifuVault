@@ -130,6 +130,7 @@ Site.loadPage(async site => {
             case "card":
                 renderCard(album);
                 window.location.hash = "card";
+                refreshFsLightbox();
         }
 
 
@@ -194,9 +195,16 @@ Site.loadPage(async site => {
 
                 let cardimage;
                 if (e.metadata.thumbnail) {
+                    const cardImageAnchor = document.createElement("a");
+                    cardImageAnchor.setAttribute("data-fslightbox", "");
+                    cardImageAnchor.setAttribute("href", e.url);
                     cardimage = document.createElement("img");
                     cardimage.src = e.metadata.thumbnail;
+                    cardimage.setAttribute("loading", "lazy");
+                    cardimage.setAttribute("alt", e.name);
                     cardimage.setAttribute("class", "card-img-top");
+                    cardImageAnchor.appendChild(cardimage);
+                    cardimage = cardImageAnchor
                 } else {
                     const icon = e.protected ? 'bi-lock' : mimeIcon(e.metadata.mediaType);
                     cardimage = document.createElement("i");

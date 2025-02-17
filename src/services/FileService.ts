@@ -63,10 +63,11 @@ export class FileService {
             this.resourceNotFound(resource);
         }
 
-        if (entry.hasExpired) {
+        if (entry.hasExpired || !(await FileUtils.fileExists(entry.fullLocationOnDisk))) {
             await this.processDelete([entry.token]);
             this.resourceNotFound(resource);
         }
+
         if (entry.settings?.password) {
             if (!password) {
                 throw new Forbidden(`${entry?.encrypted ? "Encrypted" : "Protected"} file requires a password`);

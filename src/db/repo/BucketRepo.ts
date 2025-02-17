@@ -8,6 +8,7 @@ import { Logger } from "@tsed/logger";
 import crypto from "node:crypto";
 import { BucketDao } from "../dao/BucketDao.js";
 import { FileRepo } from "./FileRepo.js";
+import { ThumbnailCacheRepo } from "./ThumbnailCacheRepo.js";
 
 @Injectable()
 export class BucketRepo {
@@ -18,6 +19,7 @@ export class BucketRepo {
         @Inject() private bucketDao: BucketDao,
         @Inject() private logger: Logger,
         @Inject() private fileRepo: FileRepo,
+        @Inject() private thumbnailCacheRepo: ThumbnailCacheRepo,
     ) {}
 
     public async createBucket(): Promise<BucketModel> {
@@ -44,7 +46,12 @@ export class BucketRepo {
             return false;
         }
         const res = await this.bucketDao.deleteBucket(bucketToken);
-        this.fileRepo.invalidateCache(bucket.files?.map(f => f.token) ?? []);
+        if (bucket.files) {
+            const files = bucket.files;
+            this.fileRepo.invalidateCache(files.map(f => f.token));
+            await this.thumbnailCacheRepo.deleteThumbsIfExist(files);
+        }
+
         return res;
     }
 

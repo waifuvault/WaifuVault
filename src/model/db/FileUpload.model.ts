@@ -127,6 +127,9 @@ export class FileUploadModel extends AbstractModel {
     })
     public album: Promise<AlbumModel | null>;
 
+    /**
+     * Be careful when doing this, as this will bypass redis and go directly to the DB, it is best to use the ThumbnailCacheRepo
+     */
     @OneToOne("ThumbnailCacheModel", "file")
     public thumbnailCache: Promise<ThumbnailCacheModel | null>;
 

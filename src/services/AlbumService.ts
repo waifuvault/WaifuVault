@@ -9,7 +9,7 @@ import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
 import { FileUtils, WorkerUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
-import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
+import { ThumbnailCacheRepo } from "../db/repo/ThumbnailCacheRepo.js";
 import fs, { ReadStream } from "node:fs";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { MimeService } from "./MimeService.js";
@@ -23,7 +23,7 @@ export class AlbumService implements AfterInit {
         @Inject() private bucketRepo: BucketRepo,
         @Inject() private fileRepo: FileRepo,
         @Inject() private fileService: FileService,
-        @Inject() private thumbnailCacheReo: ThumbnailCacheReo,
+        @Inject() private thumbnailCacheRepo: ThumbnailCacheRepo,
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
     ) {}
@@ -31,7 +31,7 @@ export class AlbumService implements AfterInit {
     @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
     private readonly zipMaxFileSize: string;
 
-    private defaultThumbnail: Buffer;
+    public defaultThumbnail: Buffer;
 
     public async $afterInit(): Promise<void> {
         this.defaultThumbnail = await fs.promises.readFile(
@@ -82,7 +82,7 @@ export class AlbumService implements AfterInit {
         } else {
             if (album.files) {
                 const fileIds = album.files.map(f => f.id);
-                await this.thumbnailCacheReo.deleteThumbnailCaches(fileIds);
+                await this.thumbnailCacheRepo.deleteThumbnailCaches(fileIds);
             }
         }
         return true;
@@ -101,7 +101,7 @@ export class AlbumService implements AfterInit {
         }
 
         album = await this.removeFilesFromAlbum(albumToken, filesToRemove);
-        await this.thumbnailCacheReo.deleteThumbnailCaches(filesToRemove.map(f => f.id));
+        await this.thumbnailCacheRepo.deleteThumbnailCaches(filesToRemove.map(f => f.id));
         return album;
     }
 
@@ -221,11 +221,10 @@ export class AlbumService implements AfterInit {
             throw new BadRequest("File is protected");
         }
 
-        const thumbnailFromCache = await entry.thumbnailCache;
+        const thumbnailFromCache = await this.thumbnailCacheRepo.getThumbnailBuffer(imageId);
         if (thumbnailFromCache) {
-            const b = Buffer.from(thumbnailFromCache.data, "base64");
-            const thumbnailMime = await this.getThumbnailMime(entry, b);
-            return [b, thumbnailMime, true];
+            const thumbnailMime = await this.getThumbnailMime(entry, thumbnailFromCache);
+            return [thumbnailFromCache, thumbnailMime, true];
         }
 
         if (FileUtils.isValidForThumbnail(entry)) {
@@ -235,18 +234,19 @@ export class AlbumService implements AfterInit {
         throw new BadRequest("File not supported for thumbnail generation");
     }
 
-    private async getThumbnailMime(entry: FileUploadModel, thumbNail: Buffer): Promise<string> {
+    public async getThumbnailMime(entry: FileUploadModel | null, thumbNail: Buffer): Promise<string> {
         const detectedMime = await this.mimeService.findMimeTypeFromBuffer(thumbNail);
         if (detectedMime) {
             return detectedMime;
         }
-        if (FileUtils.isImage(entry)) {
-            return entry.mediaType!;
-        } else if (FileUtils.isVideo(entry)) {
-            return "image/jpeg";
-        } else {
-            throw new BadRequest("File not supported for thumbnail generation");
+        if (entry) {
+            if (FileUtils.isImage(entry)) {
+                return entry.mediaType!;
+            } else if (FileUtils.isVideo(entry)) {
+                return "image/jpeg";
+            }
         }
+        throw new BadRequest("File not supported for thumbnail generation");
     }
 
     public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[ReadStream, string, string]> {

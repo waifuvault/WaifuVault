@@ -3,12 +3,14 @@ import { AlbumDao } from "../dao/AlbumDao.js";
 import { AlbumModel } from "../../model/db/Album.model.js";
 import { FileRepo } from "./FileRepo.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
+import { ThumbnailCacheRepo } from "./ThumbnailCacheRepo.js";
 
 @Injectable()
 export class AlbumRepo {
     public constructor(
         @Inject() private albumDao: AlbumDao,
         @Inject() private fileRepo: FileRepo,
+        @Inject() private thumbnailCacheRepo: ThumbnailCacheRepo,
     ) {}
 
     public async saveOrUpdateAlbum(album: AlbumModel): Promise<AlbumModel> {
@@ -28,7 +30,12 @@ export class AlbumRepo {
             // if we want to delete files, then the cascade can delete them
             const album = await this.albumDao.getAlbum(albumToken);
             await this.albumDao.deleteAlbum(albumToken);
-            this.fileRepo.invalidateCache(album?.files?.map(f => f.token) ?? []);
+
+            if (album?.files) {
+                const files = album.files;
+                this.fileRepo.invalidateCache(files.map(f => f.token));
+                await this.thumbnailCacheRepo.deleteThumbsIfExist(files);
+            }
             return true;
         }
         const [res, files] = await this.albumDao.dataSource.transaction(async entityManager => {
