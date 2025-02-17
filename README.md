@@ -13,6 +13,8 @@ of hosting.
 
 `.env` file must be created for this application to work. Rename `.envExample` to `.env`
 
+This service also has a dependency on Redis, this can be started using the docker-compose file
+
 ### Env file settings
 
 Required Settings
@@ -80,6 +82,8 @@ The available `CAPTCHA_SERVICE` values are:
     
 # build database
     npm run runmigration
+# start redis
+    docker compose up -d
 
 # serve
     npm run start

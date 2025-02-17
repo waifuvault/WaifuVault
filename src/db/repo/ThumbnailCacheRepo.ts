@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@tsed/di";
 import { ThumbnailCacheDao } from "../dao/ThumbnailCacheDao.js";
 import { ThumbnailCacheModel } from "../../model/db/ThumbnailCache.model.js";
 import { REDIS_CONNECTION } from "../../model/di/tokens.js";
-import { RedisConnection } from "../../redis/Connection.js";
+import type { RedisConnection } from "../../redis/Connection.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { FileUtils } from "../../utils/Utils.js";
 

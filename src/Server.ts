@@ -253,6 +253,10 @@ export class Server implements BeforeRoutesInit {
 }
 
 async function initRedis(options: Partial<TsED.Configuration>): Promise<void> {
+    const argv = process.argv.slice(2);
+    if (argv.includes("-closeOnStart")) {
+        return;
+    }
     if (!process.env.REDIS_URI) {
         throw new Error("REDIS_URI is not set");
     }

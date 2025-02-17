@@ -27,7 +27,7 @@ import { BadRequest, Exception } from "@tsed/exceptions";
 import { ReadStream } from "node:fs";
 import fs from "node:fs/promises";
 import { REDIS_CONNECTION } from "../../../model/di/tokens.js";
-import { RedisConnection } from "../../../redis/Connection.js";
+import type { RedisConnection } from "../../../redis/Connection.js";
 import { ThumbnailCacheRepo } from "../../../db/repo/ThumbnailCacheRepo.js";
 
 @Controller("/album")
