@@ -9,6 +9,13 @@
     const baseUrlSecureRest = `${baseUrl}/<%-baseSecurePath-%>`;
 
     function createBasicModal(id, title, body, yesText, yesCallback, yesClassAdd, noText, noCallback, noClassAdd) {
+        function handleEnter(e) {
+            if(yesCallback && (e.keyCode === 13 || e.which === 13)) {
+                yesCallback();
+            }
+        }
+        document.addEventListener('keypress', handleEnter);
+
         const modal = document.createElement('div');
         modal.setAttribute('class', 'modal fade');
         modal.setAttribute('id', id);
@@ -103,6 +110,7 @@
         modal.addEventListener('hidden.bs.modal', () => {
             modal.remove();
             modalReturn.dispose();
+            document.removeEventListener('keypress', handleEnter);
         })
 
         return modalReturn;
