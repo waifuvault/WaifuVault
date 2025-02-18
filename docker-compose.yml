@@ -1,16 +1,14 @@
-version: '3.8'
+version: "3.9"
+
 services:
-  server:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    image: tsed/server:latest
+  redis:
+    image: redis:latest
+    container_name: redis
     restart: always
+    command: ["redis-server", "--maxmemory", "1gb", "--maxmemory-policy", "allkeys-lru"]
+    networks:
+      default:
+        aliases:
+          - redis
     ports:
-      - "8081:8081"
-    stdin_open: true  # -i
-    tty: true         # -t
+      - "6379:6379"

@@ -8,6 +8,8 @@ import "@tsed/socketio";
 import "@tsed/platform-log-request";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
+import "@tsed/platform-cache";
+import "@tsed/ioredis";
 // custom index imports
 import "./protocols/index.js";
 import "./filters/index.js";
@@ -19,6 +21,7 @@ import * as adminViews from "./controllers/secure/index.js";
 import * as globalMiddleware from "./middleware/global/index.js";
 import "./platformOverrides/index.js";
 import { FileServerController } from "./controllers/serve/FileServerController.js";
+import "./redis/Connection.js";
 // import * as secureViews from "./controllers/secureViews";
 // custom index imports end
 import { config } from "./config/index.js";
@@ -48,6 +51,7 @@ import { ExpressRateLimitStoreModel } from "./model/db/ExpressRateLimitStore.mod
 import { Exception, TooManyRequests } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
 import { DefaultRenderException } from "./model/rest/DefaultRenderException.js";
+import { initRedisProvider } from "./redis/Connection.js";
 
 const opts: Partial<TsED.Configuration> = {
     ...config,
@@ -157,7 +161,7 @@ const opts: Partial<TsED.Configuration> = {
     exclude: ["**/*.spec.ts"],
 };
 
-await initRedis();
+await initRedis(opts);
 
 @Configuration(opts)
 export class Server implements BeforeRoutesInit {
@@ -248,11 +252,30 @@ export class Server implements BeforeRoutesInit {
     }
 }
 
-async function initRedis(): Promise<void> {
-    if (process.env.REDIS_URI) {
-        const pubClient = createClient({ url: process.env.SOCKET_IO_REDIS });
-        const subClient = pubClient.duplicate();
-        await Promise.all([pubClient.connect(), subClient.connect()]);
-        opts.socketIO!.adapter = createAdapter(pubClient, subClient);
+async function initRedis(options: Partial<TsED.Configuration>): Promise<void> {
+    const argv = process.argv.slice(2);
+    if (argv.includes("-closeOnStart")) {
+        return;
     }
+    if (!process.env.REDIS_URI) {
+        throw new Error("REDIS_URI is not set");
+    }
+    initRedisProvider();
+    const url = new URL(process.env.REDIS_URI);
+    const pubClient = createClient({ url: process.env.REDIS_URI });
+    const subClient = pubClient.duplicate();
+    await Promise.all([pubClient.connect(), subClient.connect()]);
+    opts.socketIO!.adapter = createAdapter(pubClient, subClient);
+
+    options["ioredis"] = [
+        {
+            name: "default",
+            cache: true,
+            host: url.hostname,
+            port: Number.parseInt(url.port),
+        },
+    ];
+    options["cache"] = {
+        ttl: 300,
+    };
 }

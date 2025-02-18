@@ -3,12 +3,16 @@ import { FileDao } from "../dao/FileDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import Path from "node:path";
 import { ObjectUtils } from "../../utils/Utils.js";
+import { ThumbnailCacheRepo } from "./ThumbnailCacheRepo.js";
 
 @Service()
 export class FileRepo {
     private readonly entryCache: Map<string, FileUploadModel> = new Map();
 
-    public constructor(@Inject() private fileDao: FileDao) {}
+    public constructor(
+        @Inject() private fileDao: FileDao,
+        @Inject() private thumbnailCacheRepo: ThumbnailCacheRepo,
+    ) {}
 
     public async saveEntry(entry: FileUploadModel): Promise<FileUploadModel> {
         const res = await this.fileDao.saveEntry(entry);
@@ -137,7 +141,9 @@ export class FileRepo {
         return this.fileDao.getAllEntriesOrdered(start, records, sortColumn, sortDir, search, bucket);
     }
 
-    public deleteEntries(tokens: string[]): Promise<boolean> {
+    public async deleteEntries(tokens: string[]): Promise<boolean> {
+        const entries = await this.getEntry(tokens);
+        await this.thumbnailCacheRepo.deleteThumbsIfExist(entries);
         for (const token of tokens) {
             this.entryCache.delete(token);
         }

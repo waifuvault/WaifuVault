@@ -13,6 +13,8 @@ of hosting.
 
 `.env` file must be created for this application to work. Rename `.envExample` to `.env`
 
+This service also has a dependency on Redis, this can be started using the docker-compose file
+
 ### Env file settings
 
 Required Settings
@@ -23,6 +25,7 @@ Required Settings
 | SESSION_KEY               | Replace 'YourSessionKey' with a random string to use as the session key |
 | PORT                      | The port the service will listen on                                     |
 | BASE_URL                  | The base URL of the site                                                |
+| REDIS_URI                 | The URI for redis, this can be kept at "redis://localhost:6379"         |
 
 > **Note Well** the file size sets the time to live for a file, so files close to the upload limit will only be hosted
 > for 30 days. It is a cubic curve so files up to 50% of the size will get close to a year of hosting time.
@@ -41,7 +44,6 @@ Optional Settings
 | UPLOAD_SECRET      | A secret passcode you can set, when used as on the upload as a query paramater `secret_token`, the file will have no expiry and will persist forever |
 | RATE_LIMIT         | If set, this will enable rate limiting, this defines how many requests can be made within the `RATE_LIMIT_MS` period                                 |
 | RATE_LIMIT_MS      | If `RATE_LIMIT` is set, then this is required and defines how long to wait for each rate limit reset                                                 |
-| REDIS_URI          | Set this if you are using redis. currently this is only used for socket IO when the application is running using node clusters                       |
 | CAPTCHA_SERVICE    | Select the captcha service you want to use on login (see list of available values below)                                                             |
 | CAPTCHA_SITE_KEY   | The site key from the selected captcha service                                                                                                       |
 | CAPTCHA_SECRET_KEY | The secret key from the selected captcha service                                                                                                     |
@@ -80,6 +82,8 @@ The available `CAPTCHA_SERVICE` values are:
     
 # build database
     npm run runmigration
+# start redis
+    docker compose up -d
 
 # serve
     npm run start

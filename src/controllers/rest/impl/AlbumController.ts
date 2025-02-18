@@ -1,5 +1,5 @@
 import { BaseRestController } from "../BaseRestController.js";
-import { Controller, Inject } from "@tsed/di";
+import { Controller, Inject, InjectContext } from "@tsed/di";
 import {
     CollectionOf,
     Default,
@@ -18,7 +18,7 @@ import { StatusCodes } from "http-status-codes";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 import { AlbumDto } from "../../../model/dto/AlbumDto.js";
 import { BodyParams } from "@tsed/platform-params";
-import { PathParams, PlatformResponse, QueryParams, Res } from "@tsed/common";
+import { PathParams, type PlatformContext, PlatformResponse, QueryParams, Res } from "@tsed/common";
 import { AlbumService } from "../../../services/AlbumService.js";
 import { SuccessModel } from "../../../model/rest/SuccessModel.js";
 import { AlbumModel } from "../../../model/db/Album.model.js";
@@ -26,15 +26,24 @@ import { PublicAlbumDto } from "../../../model/dto/PublicAlbumDto.js";
 import { BadRequest, Exception } from "@tsed/exceptions";
 import { ReadStream } from "node:fs";
 import fs from "node:fs/promises";
+import { REDIS_CONNECTION } from "../../../model/di/tokens.js";
+import type { RedisConnection } from "../../../redis/Connection.js";
+import { ThumbnailCacheRepo } from "../../../db/repo/ThumbnailCacheRepo.js";
 
 @Controller("/album")
 @Description("API for CRUD operations of albums and associating files with them.")
 @Name("Album management")
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class AlbumController extends BaseRestController {
-    public constructor(@Inject() private albumService: AlbumService) {
+    public constructor(
+        @Inject() private albumService: AlbumService,
+        @Inject(REDIS_CONNECTION) private redis: RedisConnection,
+    ) {
         super();
     }
+
+    @InjectContext()
+    private $ctx: PlatformContext;
 
     @Post("/:bucketToken")
     @Returns(StatusCodes.OK, AlbumDto)
@@ -230,7 +239,7 @@ export class AlbumController extends BaseRestController {
     ): Promise<Buffer | PlatformResponse> {
         const [thumbnail, mediaType, thumbnailReady] = await this.albumService.getThumbnail(imageId, albumToken);
         if (thumbnailReady) {
-            res.setHeader("Cache-Control", "public, max-age=31557600");
+            res.setHeader("Cache-Control", `public, max-age=${ThumbnailCacheRepo.redisCacheTTL}`);
         } else {
             res.setHeader("Cache-Control", "no-cache");
         }

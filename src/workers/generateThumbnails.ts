@@ -5,7 +5,7 @@ import fs from "node:fs";
 import sharp from "sharp";
 import ffmpeg from "../utils/ffmpgWrapper.js";
 import { PassThrough } from "node:stream";
-import { ThumbnailCacheReo } from "../db/repo/ThumbnailCacheReo.js";
+import { ThumbnailCacheRepo } from "../db/repo/ThumbnailCacheRepo.js";
 import { AlbumModel } from "../model/db/Album.model.js";
 import { NotFound } from "@tsed/exceptions";
 import { inject, injector } from "@tsed/di";
@@ -15,10 +15,12 @@ import { Logger } from "@tsed/logger";
 import { $log } from "@tsed/common";
 import { DataSource } from "typeorm";
 import { SQLITE_DATA_SOURCE } from "../model/di/tokens.js";
+import "../redis/Connection.js";
+import { initRedisProvider } from "../redis/Connection.js";
 
 async function generateThumbnails(
     album: AlbumModel,
-    thumbnailCacheReo: ThumbnailCacheReo,
+    thumbnailCacheReo: ThumbnailCacheRepo,
     logger: Logger,
     filesIds: number[] = [],
 ): Promise<void> {
@@ -117,13 +119,27 @@ let ds: DataSource | undefined;
 try {
     $log.level = "info";
     registerDatasource();
-    await injector().load();
+    initRedisProvider();
+    const url = new URL(workerData.redisUri);
+    const i = injector();
+    const settings: Partial<TsED.Configuration> = {};
+    settings["ioredis"] = [
+        {
+            name: "default",
+            cache: true,
+            host: url.hostname,
+            port: Number.parseInt(url.port),
+        },
+    ];
+    i.settings.set(settings);
+    await i.load();
+
     ds = inject(SQLITE_DATA_SOURCE);
     const album = await inject(AlbumRepo).getAlbum(workerData.privateAlbumToken);
     if (!album || album.isPublicToken(workerData.privateAlbumToken)) {
         throw new NotFound("Album not found");
     }
-    const thumbnailCacheReo = inject(ThumbnailCacheReo);
+    const thumbnailCacheReo = inject(ThumbnailCacheRepo);
     await generateThumbnails(album, thumbnailCacheReo, $log, workerData.filesIds);
     parentPort?.postMessage({ success: true });
 } catch (err) {
