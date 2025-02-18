@@ -13,12 +13,8 @@ export class AlbumRepo {
         @Inject() private thumbnailCacheRepo: ThumbnailCacheRepo,
     ) {}
 
-    public async saveOrUpdateAlbum(album: AlbumModel): Promise<AlbumModel> {
-        const r = await this.albumDao.saveOrUpdateAlbum(album);
-        if (r.files) {
-            this.fileRepo.invalidateCache(r.files.map(f => f.token));
-        }
-        return r;
+    public saveOrUpdateAlbum(album: AlbumModel): Promise<AlbumModel> {
+        return this.albumDao.saveOrUpdateAlbum(album);
     }
 
     public setShareStatus(albumToken: string, status: boolean): Promise<string | null> {
@@ -27,16 +23,16 @@ export class AlbumRepo {
 
     public async deleteAlbum(albumToken: string, deleteFiles = false): Promise<boolean> {
         if (deleteFiles) {
-            // if we want to delete files, then the cascade can delete them
-            const album = await this.albumDao.getAlbum(albumToken);
-            await this.albumDao.deleteAlbum(albumToken);
-
-            if (album?.files) {
-                const files = album.files;
-                this.fileRepo.invalidateCache(files.map(f => f.token));
-                await this.thumbnailCacheRepo.deleteThumbsIfExist(files);
-            }
-            return true;
+            return this.albumDao.dataSource.transaction(async entityManager => {
+                const album = await this.albumDao.getAlbum(albumToken, true, entityManager);
+                if (album?.files) {
+                    const files = album.files;
+                    await this.fileRepo.clearCache(files.map(f => f.token));
+                    await this.thumbnailCacheRepo.deleteThumbsIfExist(files);
+                }
+                await this.albumDao.deleteAlbum(albumToken, entityManager);
+                return true;
+            });
         }
         const [res, files] = await this.albumDao.dataSource.transaction(async entityManager => {
             const album = await this.albumDao.getAlbum(albumToken, true, entityManager);
@@ -49,7 +45,7 @@ export class AlbumRepo {
             return Promise.all([this.albumDao.deleteAlbum(albumToken, entityManager), filesRemoved]);
         });
         if (res) {
-            this.fileRepo.invalidateCache(files.map(f => f.token));
+            await this.fileRepo.clearCache(files.map(f => f.token));
         }
         return res;
     }

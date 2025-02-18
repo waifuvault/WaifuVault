@@ -8,7 +8,7 @@ ffmpeg.setFfprobePath(ffprobePath as string);
 const formats = await getFfmpegSupportedVideoFormats();
 
 export function isFormatSupportedByFfmpeg(format: string): boolean {
-    return formats.includes(format);
+    return formats.includes(format) || (format === "mkv" && formats.includes("matroska"));
 }
 function getFfmpegSupportedVideoFormats(): Promise<string[]> {
     return new Promise(resolve => {

@@ -14,9 +14,9 @@ import { registerDatasource } from "../db/registerDatasource.js";
 import { Logger } from "@tsed/logger";
 import { $log } from "@tsed/common";
 import { DataSource } from "typeorm";
-import { SQLITE_DATA_SOURCE } from "../model/di/tokens.js";
+import { REDIS_CONNECTION, SQLITE_DATA_SOURCE } from "../model/di/tokens.js";
 import "../redis/Connection.js";
-import { initRedisProvider } from "../redis/Connection.js";
+import { initRedisProvider, RedisConnection } from "../redis/Connection.js";
 
 async function generateThumbnails(
     album: AlbumModel,
@@ -150,4 +150,7 @@ try {
         $log.info("Closing datasource on worker thread");
         await ds.destroy();
     }
+    const redisConn: RedisConnection = inject(REDIS_CONNECTION);
+    redisConn.quit();
+    $log.info("Closing redis connection on worker thread");
 }

@@ -226,9 +226,14 @@ export class AlbumService implements AfterInit {
         }
 
         const thumbnailFromCache = await this.thumbnailCacheRepo.getThumbnailBuffer(imageId);
-        if (thumbnailFromCache) {
+        if (thumbnailFromCache && thumbnailFromCache.length > 0) {
             const thumbnailMime = await this.getThumbnailMime(entry, thumbnailFromCache);
             return [thumbnailFromCache, thumbnailMime, true];
+        }
+
+        // something went wrong, the entry is in the DB, but data is an empty string, re-generate thumbnail
+        if (thumbnailFromCache && thumbnailFromCache.length === 0 && FileUtils.isValidForThumbnail(entry)) {
+            this.generateThumbnails(album.albumToken, [imageId]);
         }
 
         if (FileUtils.isValidForThumbnail(entry)) {
