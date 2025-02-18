@@ -214,7 +214,8 @@ Site.loadPage(async site => {
                     cardimage.setAttribute("class", "card-img-top");
 
                     if(e.metadata.isVideo){
-                        cardImageAnchor.setAttribute("data-video", `{"source": [{"src":"${e.url}", "type":"${e.metadata.mediaType}"}], "attributes": {"preload": false, "controls": true, "playsinline": true}}`);
+                        cardImageAnchor.setAttribute("data-src", "`${e.url}`");
+                        //cardImageAnchor.setAttribute("data-video", `{"source": [{"src":"${e.url}", "type":"${e.metadata.mediaType}"}], "attributes": {"preload": false, "controls": true, "playsinline": true}}`);
                         cardImageAnchor.setAttribute("data-poster", e.metadata.thumbnail);
                         cardImageAnchor.setAttribute("data-sub-html", "<h4>test</h4>");
                     }
