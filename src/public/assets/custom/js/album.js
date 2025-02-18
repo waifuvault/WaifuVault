@@ -104,6 +104,11 @@ Site.loadPage(async site => {
         return iconMap.get(key) ?? iconMap.get(mime) ?? defaultIcon;
     }
 
+    function reloadLightbox(){
+        refreshFsLightbox();
+        fsLightbox.props.loadOnlyCurrentSource = true;
+    }
+
     function renderAlbum(album, viewMode) {
         albumNameElt.innerText = album.name;
         if (album.files.length === 0) {
@@ -130,7 +135,7 @@ Site.loadPage(async site => {
             case "card":
                 renderCard(album);
                 window.location.hash = "card";
-                refreshFsLightbox();
+                reloadLightbox();
         }
 
 
