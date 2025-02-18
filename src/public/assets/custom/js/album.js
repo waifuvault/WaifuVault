@@ -65,6 +65,14 @@ Site.loadPage(async site => {
         });
     }
 
+    function initLightGal(){
+        lightGallery(document.getElementById('albumCards'), {
+            speed: 500,
+            plugins: [lgVideo],
+            selector: '.item',
+        });
+    }
+
     function linkCheckboxes(target) {
         const checkboxes = document.querySelectorAll(`#${target} .fileCheck`);
         const originalText = albumTooBigToDownload ? "Album too large to download" : "Download Album as Zip";
@@ -104,11 +112,6 @@ Site.loadPage(async site => {
         return iconMap.get(key) ?? iconMap.get(mime) ?? defaultIcon;
     }
 
-    function reloadLightbox(){
-        refreshFsLightbox();
-        fsLightbox.props.loadOnlyCurrentSource = true;
-    }
-
     function renderAlbum(album, viewMode) {
         albumNameElt.innerText = album.name;
         if (album.files.length === 0) {
@@ -135,7 +138,6 @@ Site.loadPage(async site => {
             case "card":
                 renderCard(album);
                 window.location.hash = "card";
-                reloadLightbox();
         }
 
 
@@ -201,13 +203,22 @@ Site.loadPage(async site => {
                 let cardimage;
                 if (e.metadata.thumbnail) {
                     const cardImageAnchor = document.createElement("a");
-                    cardImageAnchor.setAttribute("data-fslightbox", "");
+                    cardmain.setAttribute("data-src", e.url)
+                    cardImageAnchor.classList.add("item")
+                    cardImageAnchor.setAttribute("data-src", e.url);
                     cardImageAnchor.setAttribute("href", e.url);
                     cardimage = document.createElement("img");
                     cardimage.src = e.metadata.thumbnail;
                     cardimage.setAttribute("loading", "lazy");
                     cardimage.setAttribute("alt", e.name);
                     cardimage.setAttribute("class", "card-img-top");
+
+                    if(e.metadata.isVideo){
+                        cardImageAnchor.setAttribute("data-video", `{"source": [{"src":"${e.url}", "type":"${e.metadata.mediaType}"}], "attributes": {"preload": false, "controls": true, "playsinline": true}}`);
+                        cardImageAnchor.setAttribute("data-poster", e.metadata.thumbnail);
+                        cardImageAnchor.setAttribute("data-sub-html", "<h4>test</h4>");
+                    }
+
                     cardImageAnchor.appendChild(cardimage);
                     cardimage = cardImageAnchor
                 } else {
@@ -363,4 +374,5 @@ Site.loadPage(async site => {
 
     const hash = window.location.hash.substring(1);
     renderAlbum(album, hash ? hash : "card");
+    initLightGal();
 });
