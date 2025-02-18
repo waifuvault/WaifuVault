@@ -203,10 +203,14 @@ Site.loadPage(async site => {
                 let cardimage;
                 if (e.metadata.thumbnail) {
                     const cardImageAnchor = document.createElement("a");
-                    cardmain.setAttribute("data-src", e.url)
-                    cardImageAnchor.classList.add("item")
-                    cardImageAnchor.setAttribute("data-src", e.url);
-                    cardImageAnchor.setAttribute("href", e.url);
+                    if (!e.metadata.isVideo) {
+                        cardmain.setAttribute("data-src", e.url);
+                    }
+                    cardImageAnchor.classList.add("item");
+                    if (!e.metadata.isVideo) {
+                        cardImageAnchor.setAttribute("data-src", e.url);
+                    }
+                    //cardImageAnchor.setAttribute("href", e.url); -- CANNOT have href for lightGallery
                     cardimage = document.createElement("img");
                     cardimage.src = e.metadata.thumbnail;
                     cardimage.setAttribute("loading", "lazy");
@@ -214,8 +218,7 @@ Site.loadPage(async site => {
                     cardimage.setAttribute("class", "card-img-top");
 
                     if(e.metadata.isVideo){
-                        cardImageAnchor.setAttribute("data-src", "`${e.url}`");
-                        //cardImageAnchor.setAttribute("data-video", `{"source": [{"src":"${e.url}", "type":"${e.metadata.mediaType}"}], "attributes": {"preload": false, "controls": true, "playsinline": true}}`);
+                        cardImageAnchor.dataset.video = `{"source": [{"src":"${e.url}", "type":"${e.metadata.mediaType}"}], "attributes": {"preload": false, "playinline":true, "controls": true}}`;
                         cardImageAnchor.setAttribute("data-poster", e.metadata.thumbnail);
                         cardImageAnchor.setAttribute("data-sub-html", "<h4>test</h4>");
                     }
