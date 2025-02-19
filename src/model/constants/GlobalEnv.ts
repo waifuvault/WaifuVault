@@ -26,6 +26,7 @@ enum GlobalEnv {
     REDIS_URI = `${prefix}REDIS_URI`,
     ZIP_MAX_SIZE_MB = `${prefix}ZIP_MAX_SIZE_MB`,
     IP_SALT = `${prefix}IP_SALT`,
+    HOME_PAGE_FILE_COUNTER = `${prefix}HOME_PAGE_FILE_COUNTER`,
 }
 
 export default GlobalEnv;

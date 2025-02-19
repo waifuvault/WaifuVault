@@ -27,9 +27,10 @@ export class ResourceController extends BaseRestController {
 
     @Get("/stats/files")
     @Returns(StatusCodes.OK, RecordInfoPayload)
+    @(Returns(StatusCodes.BAD_REQUEST, DefaultRenderException).Description("If stats is disabled"))
     @Description("Get info of all the files hosted and how much storage is used")
     @Summary("Get stats on all files and storage used")
-    public storage(): Promise<RecordInfoPayload> {
+    public storage(): Promise<RecordInfoPayload | null> {
         return this.restrictionService.getfileStats();
     }
 }

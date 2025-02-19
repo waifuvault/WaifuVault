@@ -1,4 +1,4 @@
-import { Inject, Service } from "@tsed/di";
+import { Constant, Inject, Service } from "@tsed/di";
 import { SettingsService } from "./SettingsService.js";
 import { Restriction } from "../model/rest/Restriction.js";
 import RestrictionType from "../model/constants/RestrictionType.js";
@@ -8,9 +8,13 @@ import GlobalEnv from "../model/constants/GlobalEnv.js";
 import type { RestrictionValueType } from "../utils/typeings.js";
 import { RecordInfoPayload } from "../model/rest/RecordInfoPayload.js";
 import { FileRepo } from "../db/repo/FileRepo.js";
+import { BadRequest } from "@tsed/exceptions";
 
 @Service()
 export class ResourceService {
+    @Constant(GlobalEnv.HOME_PAGE_FILE_COUNTER, "dynamic")
+    private socketStatus: string;
+
     public constructor(
         @Inject() private settingsService: SettingsService,
         @Inject() private repo: FileRepo,
@@ -50,6 +54,9 @@ export class ResourceService {
     }
 
     public getfileStats(): Promise<RecordInfoPayload> {
+        if (this.socketStatus === "disabled") {
+            throw new BadRequest("stats is disabled");
+        }
         return RecordInfoPayload.fromRepo(this.repo);
     }
 

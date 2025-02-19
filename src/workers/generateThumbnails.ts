@@ -34,9 +34,12 @@ async function generateThumbnails(
         .filter(entry => !cacheResults.includes(entry.id) && FileUtils.isValidForThumbnail(entry))
         .map(entry => {
             const path = entry.fullLocationOnDisk;
-            let buff: Promise<Buffer>;
+            let buff: Promise<Buffer | null>;
             if (FileUtils.isImage(entry)) {
-                buff = generateImageThumbnail(path);
+                buff = generateImageThumbnail(path).catch(err => {
+                    logger.error(`Failed to generate thumbnail for ${entry.id}: ${err.message}`);
+                    return null;
+                });
             } else if (FileUtils.isVideoSupportedByFfmpeg(entry)) {
                 // we use ffmpeg to get thumbnail, so the video MUST be supported by the clients ffmpeg
                 buff = generateVideoThumbnail(path);
@@ -54,9 +57,10 @@ async function generateThumbnails(
     const thumbnailBuffers = await Promise.all(thumbnailBufferPromises);
     const thumbnailCache = thumbnailBuffers
         .filter(tuple => !!tuple)
+        .filter(([thumbnail]) => !!thumbnail)
         .map(([thumbnail, entry]) => {
             const thumbnailCache = new ThumbnailCacheModel();
-            thumbnailCache.data = thumbnail.toString("base64");
+            thumbnailCache.data = thumbnail!.toString("base64");
             thumbnailCache.fileId = entry.id;
             return thumbnailCache;
         });
