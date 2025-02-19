@@ -1,6 +1,6 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
-import {MimeService} from "../services/MimeService.js";
-import {filesDir} from "../utils/Utils.js";
+import {MimeService} from "../../services/MimeService.js";
+import {filesDir} from "../../utils/Utils.js";
 
 type fileNameResults = {
     id: number;

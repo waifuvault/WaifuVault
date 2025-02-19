@@ -1,5 +1,5 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
-import {FileUtils} from "../utils/Utils.js";
+import {FileUtils} from "../../utils/Utils.js";
 
 type fileNameResults = {
     id: number;

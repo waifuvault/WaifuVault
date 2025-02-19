@@ -85,6 +85,7 @@
     "passport-custom": "^1.1.1",
     "passport-http": "^0.3.0",
     "passport-local": "^1.0.0",
+    "pg": "^8.13.3",
     "punycode": "^2.3.1",
     "redis": "^4.7.0",
     "sharp": "^0.33.5",

@@ -12,3 +12,21 @@ services:
           - redis
     ports:
       - "6379:6379"
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    env_file:
+      - postgres.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      default:
+        aliases:
+          - postgres
+    ports:
+      - "5004:5432"
+
+volumes:
+  postgres_data:

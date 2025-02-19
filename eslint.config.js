@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
     {
-        ignores: ["src/migrations/**/*", "**/*.mjs"],
+        ignores: ["src/migrations/sqlite/**/*", "src/migrations/postgres/**/*", "**/*.mjs"],
     },
     {
         plugins: {

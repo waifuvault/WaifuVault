@@ -59,14 +59,14 @@ export class FileUploadModel extends AbstractModel {
 
     @Column({
         nullable: false,
-        type: "integer",
+        type: "numeric",
         unique: false,
     })
     public fileSize: number;
 
     @Column({
         nullable: true,
-        type: "integer",
+        type: "numeric",
         unique: false,
     })
     public expires: number | null;
