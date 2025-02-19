@@ -97,7 +97,7 @@ export class AlbumService implements AfterInit {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
         this.checkPrivateToken(albumToken, album);
-        const filesToRemove = await this.fileRepo.getEntry(files);
+        const filesToRemove = await this.fileRepo.getEntries(files);
 
         if (album.files && !files.every(file => album!.files!.find(f => f.token === file))) {
             throw new BadRequest(`Every file must be in the same album`);
@@ -114,7 +114,7 @@ export class AlbumService implements AfterInit {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
         this.checkPrivateToken(albumToken, album);
-        const filesToAssociate = await this.fileRepo.getEntry(files);
+        const filesToAssociate = await this.fileRepo.getEntries(files, false);
         if (filesToAssociate.length !== files.length) {
             throw new BadRequest(`some files were not found`);
         }
@@ -212,12 +212,11 @@ export class AlbumService implements AfterInit {
     }
 
     public async getThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string, boolean]> {
-        const album = await this.albumRepo.getAlbum(publicAlbumToken, false);
-        if (!album) {
+        const albumToken = await this.albumRepo.getPrivateAlbumToken(publicAlbumToken);
+        if (!albumToken) {
             throw new NotFound("Album not found");
         }
-        this.checkPublicToken(publicAlbumToken, album);
-        const entry = await this.albumRepo.getEntry(album.albumToken, imageId);
+        const entry = await this.albumRepo.getEntry(albumToken, imageId);
         if (!entry) {
             throw new NotFound("File not found");
         }
@@ -233,7 +232,7 @@ export class AlbumService implements AfterInit {
 
         // something went wrong, the entry is in the DB, but data is an empty string, re-generate thumbnail
         if (thumbnailFromCache && thumbnailFromCache.length === 0 && FileUtils.isValidForThumbnail(entry)) {
-            this.generateThumbnails(album.albumToken, [imageId]);
+            this.generateThumbnails(albumToken, [imageId]);
         }
 
         if (FileUtils.isValidForThumbnail(entry)) {

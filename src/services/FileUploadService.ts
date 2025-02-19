@@ -198,7 +198,7 @@ export class FileUploadService {
     }
 
     public async modifyEntry(token: string, dto: EntryModificationDto): Promise<FileUploadModel> {
-        const [entryToModify] = await this.repo.getEntry([token]);
+        const [entryToModify] = await this.repo.getEntries([token]);
         if (!entryToModify) {
             throw new BadRequest(`Unknown token ${token}`);
         }

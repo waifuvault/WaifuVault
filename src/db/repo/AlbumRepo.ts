@@ -62,6 +62,10 @@ export class AlbumRepo {
         return this.albumDao.albumExists(publicToken);
     }
 
+    public getPrivateAlbumToken(publicToken: string): Promise<string | null> {
+        return this.albumDao.getPrivateAlbumToken(publicToken);
+    }
+
     public async getEntry(privateBucketToken: string, imageId: number): Promise<FileUploadModel | null> {
         const entries = await this.fileRepo.getEntriesByBucket(privateBucketToken);
         return entries.find(e => e.id === imageId) ?? null;

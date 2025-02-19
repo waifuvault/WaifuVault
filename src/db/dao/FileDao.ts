@@ -17,6 +17,7 @@ import {
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
 import { AfterInit } from "@tsed/common";
 import xxhash from "xxhash-wasm";
+import { TimedSet } from "../../utils/timedSet/TimedSet.js";
 
 @Injectable()
 export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements AfterInit {
@@ -24,10 +25,10 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         super(ds, FileUploadModel);
     }
 
-    private h64ToString: (input: string, seed?: bigint) => string;
-    private readonly cachedToken: Set<string | number> = new Set();
-
     private readonly cacheTime = 60000;
+
+    private h64ToString: (input: string, seed?: bigint) => string;
+    private readonly cachedToken: TimedSet<string | number> = new TimedSet(this.cacheTime);
 
     private readonly relation: { relations: FindOptionsRelations<FileUploadModel> } = {
         relations: {
@@ -57,17 +58,35 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         return r;
     }
 
-    public async getEntry(tokens: string[], transaction?: EntityManager): Promise<FileUploadModel[]> {
-        const r = await this.getRepository(transaction).find({
-            where: {
-                token: In(tokens),
-            },
-            cache: {
-                milliseconds: this.cacheTime,
-                id: this.generateKey(tokens),
-            },
-            ...this.relation,
-        });
+    public async getEntries(
+        tokens: string[],
+        loadRelations = true,
+        transaction?: EntityManager,
+    ): Promise<FileUploadModel[]> {
+        let r: FileUploadModel[] = [];
+        if (loadRelations) {
+            r = await this.getRepository(transaction).find({
+                where: {
+                    token: In(tokens),
+                },
+                cache: {
+                    milliseconds: this.cacheTime,
+                    id: this.generateKey(tokens),
+                },
+                ...this.relation,
+            });
+        } else {
+            r = await this.getRepository(transaction).find({
+                where: {
+                    token: In(tokens),
+                },
+                cache: {
+                    milliseconds: this.cacheTime,
+                    id: this.generateKey(tokens),
+                },
+            });
+        }
+
         for (const token of tokens) {
             this.cachedToken.add(token);
         }

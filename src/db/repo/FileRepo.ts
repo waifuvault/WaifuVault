@@ -19,8 +19,8 @@ export class FileRepo {
         return this.fileDao.saveEntries(entries);
     }
 
-    public getEntry(tokens: string[]): Promise<FileUploadModel[]> {
-        return this.fileDao.getEntry(tokens);
+    public getEntries(tokens: string[], loadRelations = true): Promise<FileUploadModel[]> {
+        return this.fileDao.getEntries(tokens, loadRelations);
     }
 
     public getEntriesByBucket(privateAlbumToken: string): Promise<FileUploadModel[]> {
@@ -54,7 +54,7 @@ export class FileRepo {
 
     public async incrementViews(token: string): Promise<number> {
         await this.fileDao.incrementViews(token);
-        return this.getEntry([token]).then(entries => entries[0].views);
+        return this.getEntries([token]).then(entries => entries[0].views);
     }
 
     public getAllEntriesOrdered(
@@ -70,7 +70,7 @@ export class FileRepo {
     }
 
     public async deleteEntries(tokens: string[]): Promise<boolean> {
-        const entries = await this.getEntry(tokens);
+        const entries = await this.getEntries(tokens);
         await this.thumbnailCacheRepo.deleteThumbsIfExist(entries);
         return this.fileDao.deleteEntries(tokens);
     }
