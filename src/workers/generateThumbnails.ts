@@ -1,7 +1,6 @@
 import { parentPort, workerData } from "node:worker_threads";
 import { FileUtils } from "../utils/Utils.js";
 import { ThumbnailCacheModel } from "../model/db/ThumbnailCache.model.js";
-import fs from "node:fs";
 import sharp from "sharp";
 import ffmpeg from "../utils/ffmpgWrapper.js";
 import { PassThrough } from "node:stream";
@@ -67,12 +66,10 @@ async function generateThumbnails(
     await thumbnailCacheReo.saveThumbnailCaches(thumbnailCache);
 }
 
-async function generateImageThumbnail(path: string): Promise<Buffer> {
-    const fileBuffer = await fs.promises.readFile(path);
-
+function generateImageThumbnail(path: string): Promise<Buffer> {
     const DEFAULT_WIDTH = 400;
 
-    return sharp(fileBuffer, {
+    return sharp(path, {
         animated: true,
     })
         .rotate()
