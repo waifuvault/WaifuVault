@@ -19,14 +19,14 @@ of hosting.
 
 You mut create a file called `postgres.env` and fill in the following info
 
-| Setting           | Description                      |
-|-------------------|----------------------------------|
-| POSTGRES_USER     | The user to authenticate with pg |
-| POSTGRES_PASSWORD | The user to authenticate with pg |
-| POSTGRES_DB       | The DB to use                    |
-| POSTGRES_PORT     | The port PG will use             |
+| Setting           | Description                                                      |
+|-------------------|------------------------------------------------------------------|
+| POSTGRES_USER     | The user to authenticate with pg                                 |
+| POSTGRES_PASSWORD | The user to authenticate with pg                                 |
+| POSTGRES_DB       | The DB to use                                                    |
+| POSTGRES_PORT     | The port PG will use (defaults to `5004` if using docker-compose | 
 
-If you are using PG in the supplied docker-compose file, the setting above must reflect those in the docker file
+If you are using PG in the supplied docker-compose file, the port above must reflect those in the docker file
 
 ___
 
