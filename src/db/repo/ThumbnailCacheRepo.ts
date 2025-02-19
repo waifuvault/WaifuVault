@@ -74,7 +74,7 @@ export class ThumbnailCacheRepo {
 
     public async getThumbnailBuffer(fileId: number): Promise<Buffer | null> {
         const thumbnailFromRedis = await this.redis.getBuffer(`${ThumbnailCacheRepo.redisCachePrefix}${fileId}`);
-        if (!thumbnailFromRedis) {
+        if (!thumbnailFromRedis || thumbnailFromRedis.length === 0) {
             const fromDb = await this.thumbnailCacheDao.getThumbnailCache(fileId);
             if (fromDb) {
                 await this.cacheRedis(fromDb);

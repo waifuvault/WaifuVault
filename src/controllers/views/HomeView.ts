@@ -16,6 +16,9 @@ export class HomeView {
     @Constant(GlobalEnv.BASE_URL)
     private baseUrl: string | undefined;
 
+    @Constant(GlobalEnv.HOME_PAGE_FILE_COUNTER, "dynamic")
+    private socketStatus: string;
+
     public constructor(
         @Inject() private captchaManager: CaptchaManager,
         @Inject() private bucketSessionService: BucketSessionService,
@@ -25,7 +28,9 @@ export class HomeView {
     @Get()
     @View("index.ejs")
     public showRoot(): unknown {
-        return null;
+        return {
+            socketStatus: this.socketStatus,
+        };
     }
 
     @Get("/bucketAccess")

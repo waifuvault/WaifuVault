@@ -6,8 +6,6 @@ import "@tsed/ajv";
 import "@tsed/swagger";
 import "@tsed/socketio";
 import "@tsed/platform-log-request";
-import { createAdapter } from "@socket.io/redis-adapter";
-import { createClient } from "redis";
 import "@tsed/platform-cache";
 import "@tsed/ioredis";
 // custom index imports
@@ -30,7 +28,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import methodOverride from "method-override";
-import { isProduction } from "./config/envs/index.js";
+import { isGhAction, isProduction } from "./config/envs/index.js";
 import helmet from "helmet";
 import process from "process";
 import cors from "cors";
@@ -52,6 +50,10 @@ import { Exception, TooManyRequests } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
 import { DefaultRenderException } from "./model/rest/DefaultRenderException.js";
 import { initRedisProvider } from "./redis/Connection.js";
+import { createShardedAdapter } from "@socket.io/redis-adapter";
+import { createClient } from "redis";
+
+const socketIoStatus = process.env.HOME_PAGE_FILE_COUNTER ? process.env.HOME_PAGE_FILE_COUNTER : "dynamic";
 
 const opts: Partial<TsED.Configuration> = {
     ...config,
@@ -107,11 +109,14 @@ const opts: Partial<TsED.Configuration> = {
             },
         ],
     },
-    socketIO: {
-        cors: {
-            origin: process.env.BASE_URL,
-        },
-    },
+    socketIO:
+        socketIoStatus === "dynamic"
+            ? {
+                  cors: {
+                      origin: process.env.BASE_URL,
+                  },
+              }
+            : undefined,
     middlewares: [
         helmet({
             contentSecurityPolicy: false,
@@ -253,8 +258,7 @@ export class Server implements BeforeRoutesInit {
 }
 
 async function initRedis(options: Partial<TsED.Configuration>): Promise<void> {
-    const argv = process.argv.slice(2);
-    if (argv.includes("-closeOnStart")) {
+    if (isGhAction) {
         return;
     }
     if (!process.env.REDIS_URI) {
@@ -262,10 +266,16 @@ async function initRedis(options: Partial<TsED.Configuration>): Promise<void> {
     }
     initRedisProvider();
     const url = new URL(process.env.REDIS_URI);
-    const pubClient = createClient({ url: process.env.REDIS_URI });
-    const subClient = pubClient.duplicate();
-    await Promise.all([pubClient.connect(), subClient.connect()]);
-    opts.socketIO!.adapter = createAdapter(pubClient, subClient);
+
+    if (socketIoStatus === "dynamic") {
+        const pubClient = createClient({
+            url: process.env.REDIS_URI as string,
+        });
+        const subClient = pubClient.duplicate();
+
+        await Promise.all([pubClient.connect(), subClient.connect()]);
+        opts.socketIO!.adapter = createShardedAdapter(pubClient, subClient);
+    }
 
     options["ioredis"] = [
         {

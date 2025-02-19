@@ -22,7 +22,7 @@ export class FileService {
 
     public async processDelete(tokens: string[]): Promise<boolean> {
         let deleted = false;
-        const entries = await this.repo.getEntry(tokens);
+        const entries = await this.repo.getEntries(tokens);
         if (entries.length === 0) {
             return false;
         }
@@ -97,7 +97,7 @@ export class FileService {
     }
 
     public async getFileInfo(token: string): Promise<FileUploadModel> {
-        const foundEntries = await this.repo.getEntry([token]);
+        const foundEntries = await this.repo.getEntries([token]);
         if (foundEntries.length !== 1) {
             this.unknownToken(token);
         }

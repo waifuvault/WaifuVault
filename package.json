@@ -10,7 +10,8 @@
     "build": "npm run barrels && node ./buildScripts/cleanDist.mjs && swc src -d dist --config-file .swcrc --copy-files --strip-leading-paths",
     "barrels": "barrels",
     "start_js": "node dist/index.js",
-    "start_js:ci": "node dist/index.js -closeOnStart",
+    "start_js:ci": "node dist/index.js -ghAction",
+    "runmigration:ci": "node dist/db/runMigration.js -ghAction",
     "start": "node --loader ts-node/esm src/index.ts",
     "start:prod": "cross-env NODE_ENV=production nodemon dist/index.js",
     "update_deps": "npx npm-check-updates",
@@ -91,7 +92,8 @@
     "toad-scheduler": "^3.0.1",
     "typeorm": "^0.3.20",
     "typeorm-rate-limit-store": "^1.1.1",
-    "xss": "^1.0.15"
+    "xss": "^1.0.15",
+    "xxhash-wasm": "^1.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

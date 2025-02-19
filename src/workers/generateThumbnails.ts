@@ -1,7 +1,6 @@
 import { parentPort, workerData } from "node:worker_threads";
 import { FileUtils } from "../utils/Utils.js";
 import { ThumbnailCacheModel } from "../model/db/ThumbnailCache.model.js";
-import fs from "node:fs";
 import sharp from "sharp";
 import ffmpeg from "../utils/ffmpgWrapper.js";
 import { PassThrough } from "node:stream";
@@ -14,9 +13,9 @@ import { registerDatasource } from "../db/registerDatasource.js";
 import { Logger } from "@tsed/logger";
 import { $log } from "@tsed/common";
 import { DataSource } from "typeorm";
-import { SQLITE_DATA_SOURCE } from "../model/di/tokens.js";
+import { REDIS_CONNECTION, SQLITE_DATA_SOURCE } from "../model/di/tokens.js";
 import "../redis/Connection.js";
-import { initRedisProvider } from "../redis/Connection.js";
+import { initRedisProvider, RedisConnection } from "../redis/Connection.js";
 
 async function generateThumbnails(
     album: AlbumModel,
@@ -34,9 +33,12 @@ async function generateThumbnails(
         .filter(entry => !cacheResults.includes(entry.id) && FileUtils.isValidForThumbnail(entry))
         .map(entry => {
             const path = entry.fullLocationOnDisk;
-            let buff: Promise<Buffer>;
+            let buff: Promise<Buffer | null>;
             if (FileUtils.isImage(entry)) {
-                buff = generateImageThumbnail(path);
+                buff = generateImageThumbnail(path).catch(err => {
+                    logger.error(`Failed to generate thumbnail for ${entry.id}: ${err.message}`);
+                    return null;
+                });
             } else if (FileUtils.isVideoSupportedByFfmpeg(entry)) {
                 // we use ffmpeg to get thumbnail, so the video MUST be supported by the clients ffmpeg
                 buff = generateVideoThumbnail(path);
@@ -54,21 +56,20 @@ async function generateThumbnails(
     const thumbnailBuffers = await Promise.all(thumbnailBufferPromises);
     const thumbnailCache = thumbnailBuffers
         .filter(tuple => !!tuple)
+        .filter(([thumbnail]) => !!thumbnail)
         .map(([thumbnail, entry]) => {
             const thumbnailCache = new ThumbnailCacheModel();
-            thumbnailCache.data = thumbnail.toString("base64");
+            thumbnailCache.data = thumbnail!.toString("base64");
             thumbnailCache.fileId = entry.id;
             return thumbnailCache;
         });
     await thumbnailCacheReo.saveThumbnailCaches(thumbnailCache);
 }
 
-async function generateImageThumbnail(path: string): Promise<Buffer> {
-    const fileBuffer = await fs.promises.readFile(path);
-
+function generateImageThumbnail(path: string): Promise<Buffer> {
     const DEFAULT_WIDTH = 400;
 
-    return sharp(fileBuffer, {
+    return sharp(path, {
         animated: true,
     })
         .rotate()
@@ -150,4 +151,7 @@ try {
         $log.info("Closing datasource on worker thread");
         await ds.destroy();
     }
+    const redisConn: RedisConnection = inject(REDIS_CONNECTION);
+    redisConn.quit();
+    $log.info("Closing redis connection on worker thread");
 }

@@ -75,4 +75,14 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
         );
         return ret;
     }
+
+    public async getPrivateAlbumToken(publicToken: string, transaction?: EntityManager): Promise<string | null> {
+        const r = await this.getRepository(transaction).findOne({
+            select: ["albumToken"],
+            where: {
+                publicToken,
+            },
+        });
+        return r?.albumToken ?? null;
+    }
 }
