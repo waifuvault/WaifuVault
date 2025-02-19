@@ -21,6 +21,11 @@ class WaifuPublicFileMetadata {
     @Name("mediaType")
     @Nullable(String)
     public mediaType: string | null;
+
+    @Property()
+    @Description("is the file a video")
+    @Name("isVideo")
+    public isVideo: boolean;
 }
 
 @Name("WaifuPublicFile")
@@ -78,6 +83,7 @@ export class PublicAlbumDto {
                   const metadata = Builder(WaifuPublicFileMetadata)
                       .thumbnail(PublicAlbumDto.getThumbnail(model, f))
                       .mediaType(f.mediaType)
+                      .isVideo(FileUtils.isVideo(f))
                       .build();
                   return Builder(WaifuPublicFile)
                       .url(url)

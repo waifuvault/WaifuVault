@@ -65,6 +65,14 @@ Site.loadPage(async site => {
         });
     }
 
+    function initLightGal(){
+        lightGallery(document.getElementById('albumCards'), {
+            speed: 500,
+            plugins: [lgVideo],
+            selector: '.item',
+        });
+    }
+
     function linkCheckboxes(target) {
         const checkboxes = document.querySelectorAll(`#${target} .fileCheck`);
         const originalText = albumTooBigToDownload ? "Album too large to download" : "Download Album as Zip";
@@ -195,13 +203,26 @@ Site.loadPage(async site => {
                 let cardimage;
                 if (e.metadata.thumbnail) {
                     const cardImageAnchor = document.createElement("a");
-                    cardImageAnchor.setAttribute("data-fslightbox", "");
-                    cardImageAnchor.setAttribute("href", e.url);
+                    if (!e.metadata.isVideo) {
+                        cardmain.setAttribute("data-src", e.url);
+                    }
+                    cardImageAnchor.classList.add("item");
+                    if (!e.metadata.isVideo) {
+                        cardImageAnchor.setAttribute("data-src", e.url);
+                    }
+                    //cardImageAnchor.setAttribute("href", e.url); -- CANNOT have href for lightGallery
                     cardimage = document.createElement("img");
                     cardimage.src = e.metadata.thumbnail;
                     cardimage.setAttribute("loading", "lazy");
                     cardimage.setAttribute("alt", e.name);
                     cardimage.setAttribute("class", "card-img-top");
+
+                    if(e.metadata.isVideo){
+                        cardImageAnchor.dataset.video = `{"source": [{"src":"${e.url}", "type":"${e.metadata.mediaType}"}], "attributes": {"preload": false, "playinline":true, "controls": true}}`;
+                        cardImageAnchor.setAttribute("data-poster", e.metadata.thumbnail);
+                        cardImageAnchor.setAttribute("data-sub-html", "<h4>test</h4>");
+                    }
+
                     cardImageAnchor.appendChild(cardimage);
                     cardimage = cardImageAnchor
                 } else {
@@ -357,4 +378,5 @@ Site.loadPage(async site => {
 
     const hash = window.location.hash.substring(1);
     renderAlbum(album, hash ? hash : "card");
+    initLightGal();
 });
