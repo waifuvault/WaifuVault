@@ -7,8 +7,6 @@ import { isGhAction } from "../config/envs/index.js";
 
 dotenv.config();
 
-console.log(isGhAction);
-
 let redisUrl: URL | undefined;
 if (!isGhAction) {
     redisUrl = new URL(process.env.REDIS_URI as string);
