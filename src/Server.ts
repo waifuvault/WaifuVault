@@ -203,7 +203,9 @@ export class Server implements BeforeRoutesInit {
                     secret: this.sessionKey,
                     resave: false,
                     store: new TypeormStore({
+                        saveUninitialized: false,
                         cleanupLimit: 2,
+                        resave: false,
                     }).connect(this.ds.getRepository(SessionModel)),
                     saveUninitialized: false,
                     cookie: {

@@ -47,8 +47,8 @@ export class AuthenticationController extends BaseRestController {
 
     @Get("/close_bucket")
     @Returns(StatusCodes.MOVED_TEMPORARILY)
-    public closeBucket(@Res() res: Response): void {
-        if (this.bucketSessionService.hasActiveSession()) {
+    public async closeBucket(@Res() res: Response): Promise<void> {
+        if (await this.bucketSessionService.hasActiveSession()) {
             this.bucketSessionService.destroySession();
         }
         res.redirect("/bucketAccess");

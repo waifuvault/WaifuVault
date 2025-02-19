@@ -35,8 +35,8 @@ export class HomeView {
 
     @Get("/bucketAccess")
     @View("bucketAccess.ejs")
-    public showBucketLoginPage(@Res() res: Response): unknown {
-        if (this.bucketSessionService.hasActiveSession()) {
+    public async showBucketLoginPage(@Res() res: Response): Promise<unknown> {
+        if (await this.bucketSessionService.hasActiveSession()) {
             res.redirect("/admin/bucket");
         }
         const captchaType = this.activeCaptchaService;

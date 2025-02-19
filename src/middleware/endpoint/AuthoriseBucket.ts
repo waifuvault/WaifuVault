@@ -8,8 +8,8 @@ import { BucketSessionService } from "../../services/BucketSessionService.js";
 export class AuthoriseBucket implements MiddlewareMethods {
     public constructor(@Inject() private bucketSessionService: BucketSessionService) {}
 
-    public use(@Next() next: Next): void {
-        if (!this.bucketSessionService.hasActiveSession()) {
+    public async use(@Next() next: Next): Promise<void> {
+        if (!(await this.bucketSessionService.hasActiveSession())) {
             throw new BucketAuthenticationException({
                 name: "BucketAuthenticationException",
                 message: "Token is required",
