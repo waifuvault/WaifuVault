@@ -7,26 +7,26 @@ Site.loadPage(async site => {
     const downloadButton = document.getElementById("downloadFiles");
 
     const iconMap = new Map([
-        ["audio", "bi-file-earmark-music"],
-        ["video", "bi-file-earmark-play"],
-        ["text", "bi-file-earmark-text"],
-        ["image", "bi-file-earmark-image"],
-        ["octet", "bi-file-earmark-binary"],
-        ["application/pdf", "bi-file-earmark-pdf"],
-        ["application/x-pdf", "bi-file-earmark-pdf"],
-        ["application/zip", "bi-file-earmark-zip"],
-        ["application/x-zip-compressed", "bi-file-earmark-zip"],
-        ["application/x-7z-compressed", "bi-file-earmark-zip"],
-        ["application/vnd.rar", "bi-file-earmark-zip"],
-        ["application/x-rar-compressed", "bi-file-earmark-zip"],
-        ["application/tar", "bi-file-earmark-zip"],
-        ["application/x-tar", "bi-file-earmark-zip"],
-        ["application/x-gtar", "bi-file-earmark-zip"],
-        ["application/gzip", "bi-file-earmark-zip"],
-        ["application/x-gzip", "bi-file-earmark-zip"],
-        ["application/x-tgz", "bi-file-earmark-zip"],
-        ["application/x-compress", "bi-file-earmark-zip"],
-        ["application/x-compressed", "bi-file-earmark-zip"]
+        ['audio', 'bi-file-earmark-music'],
+        ['video', 'bi-file-earmark-play'],
+        ['text', 'bi-file-earmark-text'],
+        ['image', 'bi-file-earmark-image'],
+        ['octet', 'bi-file-earmark-binary'],
+        ['application/pdf', 'bi-file-earmark-pdf'],
+        ['application/x-pdf', 'bi-file-earmark-pdf'],
+        ['application/zip', 'bi-file-earmark-zip'],
+        ['application/x-zip-compressed', 'bi-file-earmark-zip'],
+        ['application/x-7z-compressed', 'bi-file-earmark-zip'],
+        ['application/vnd.rar', 'bi-file-earmark-zip'],
+        ['application/x-rar-compressed', 'bi-file-earmark-zip'],
+        ['application/tar', 'bi-file-earmark-zip'],
+        ['application/x-tar', 'bi-file-earmark-zip'],
+        ['application/x-gtar', 'bi-file-earmark-zip'],
+        ['application/gzip', 'bi-file-earmark-zip'],
+        ['application/x-gzip', 'bi-file-earmark-zip'],
+        ['application/x-tgz', 'bi-file-earmark-zip'],
+        ['application/x-compress', 'bi-file-earmark-zip'],
+        ['application/x-compressed', 'bi-file-earmark-zip']
     ]);
 
     function sizeAsHuman(data) {
@@ -65,10 +65,11 @@ Site.loadPage(async site => {
         });
     }
 
-    function initLightGal() {
-        lightGallery(document.getElementById("albumCards"), {
+    function initLightGal(){
+        lightGallery(document.getElementById('albumCards'), {
             speed: 500,
-            selector: ".item"
+            plugins: [lgVideo],
+            selector: '.item',
         });
     }
 
@@ -79,11 +80,11 @@ Site.loadPage(async site => {
             chk.addEventListener("change", () => {
                 const anySelected = Array.from(checkboxes).some(checkbox => checkbox.checked);
                 downloadButton.textContent = anySelected ? "Download Selected as Zip" : originalText;
-                if (albumTooBigToDownload) {
-                    if (anySelected) {
+                if(albumTooBigToDownload){
+                    if(anySelected){
                         downloadButton.removeAttribute("disabled");
                         downloadButton.classList.remove("disabled");
-                    } else {
+                    }else{
                         downloadButton.setAttribute("disabled", "true");
                         downloadButton.classList.add("disabled");
                     }
@@ -107,7 +108,7 @@ Site.loadPage(async site => {
         if (!mime) {
             return defaultIcon;
         }
-        const key = mime.split("/")[0];
+        const key = mime.split('/')[0];
         return iconMap.get(key) ?? iconMap.get(mime) ?? defaultIcon;
     }
 
@@ -202,24 +203,30 @@ Site.loadPage(async site => {
                 let cardimage;
                 if (e.metadata.thumbnail) {
                     const cardImageAnchor = document.createElement("a");
-                    cardmain.setAttribute("data-src", e.url);
-                    cardImageAnchor.setAttribute("data-src", e.url);
-                    cardImageAnchor.setAttribute("href", e.url);
-                    cardImageAnchor.target = "_blank";
+                    if (!e.metadata.isVideo) {
+                        cardmain.setAttribute("data-src", e.url);
+                    }
+                    cardImageAnchor.classList.add("item");
+                    if (!e.metadata.isVideo) {
+                        cardImageAnchor.setAttribute("data-src", e.url);
+                    }
+                    //cardImageAnchor.setAttribute("href", e.url); -- CANNOT have href for lightGallery
                     cardimage = document.createElement("img");
                     cardimage.src = e.metadata.thumbnail;
                     cardimage.setAttribute("loading", "lazy");
                     cardimage.setAttribute("alt", e.name);
                     cardimage.setAttribute("class", "card-img-top");
 
-                    if (!e.metadata.isVideo) {
-                        cardImageAnchor.classList.add("item");
+                    if(e.metadata.isVideo){
+                        cardImageAnchor.dataset.video = `{"source": [{"src":"${e.url}", "type":"${e.metadata.mediaType}"}], "attributes": {"preload": false, "playinline":true, "controls": true}}`;
+                        cardImageAnchor.setAttribute("data-poster", e.metadata.thumbnail);
+                        cardImageAnchor.setAttribute("data-sub-html", "<h4>test</h4>");
                     }
 
                     cardImageAnchor.appendChild(cardimage);
-                    cardimage = cardImageAnchor;
+                    cardimage = cardImageAnchor
                 } else {
-                    const icon = e.protected ? "bi-lock" : mimeIcon(e.metadata.mediaType);
+                    const icon = e.protected ? 'bi-lock' : mimeIcon(e.metadata.mediaType);
                     cardimage = document.createElement("i");
                     cardimage.setAttribute("class", `bi ${icon} card-svg-top card-img-top`);
                 }
@@ -329,12 +336,12 @@ Site.loadPage(async site => {
             const response = await fetch(`${baseUrl}/album/download/${publicToken}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(checkedIds)
+                body: JSON.stringify(checkedIds),
             });
 
             if (!response.ok) {
                 const json = await response.json();
-                const errModal = createBasicModal("zipDownloadError", "Error", `<div class="alert alert-danger">${json.message}</div>`);
+                const errModal = createBasicModal('zipDownloadError', 'Error', `<div class="alert alert-danger">${json.message}</div>`);
                 errModal.show();
                 return;
             }
