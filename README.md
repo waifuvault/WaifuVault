@@ -13,6 +13,23 @@ of hosting.
 
 `.env` file must be created for this application to work. Rename `.envExample` to `.env`
 
+#### Postgres
+
+> **Important!** If you are using postgres, read the following
+
+You mut create a file called `postgres.env` and fill in the following info
+
+| Setting           | Description                      |
+|-------------------|----------------------------------|
+| POSTGRES_USER     | The user to authenticate with pg |
+| POSTGRES_PASSWORD | The user to authenticate with pg |
+| POSTGRES_DB       | The DB to use                    |
+| POSTGRES_PORT     | The port PG will use             |
+
+If you are using PG in the supplied docker-compose file, the setting above must reflect those in the docker file
+
+___
+
 This service also has a dependency on Redis, this can be started using the docker-compose file
 
 ### Env file settings
