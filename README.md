@@ -54,6 +54,8 @@ Optional Settings
 | ZIP_MAX_SIZE_MB        | The max size an album can be before it is allowed to be downloaded as a zip. set to '0' to disable. defaults to 100mb                                                                                                                                                                                 |
 | IP_SALT                | The salt to add to the IP hash                                                                                                                                                                                                                                                                        |
 | HOME_PAGE_FILE_COUNTER | This controls the file counter on the home page, the values can be `static`, `dynamic`, `off`. `static` means that the websocket is disabled and the file count will be static, `dynamic` means the file count will increase without reloading, and `off` means this is hidden. defaults to `dynamic` |
+|
+| DATABASE_TYPE          | This controls what database you want, select from `postgres` and `sqlite`, if you are using sqlite, you do not need to start `postgres` from the docker-compose and can be removed before starting it                                                                                                 |
 
 The available `CAPTCHA_SERVICE` values are:
 
@@ -83,7 +85,7 @@ The available `CAPTCHA_SERVICE` values are:
     
 # build database
     npm run runmigration
-# start redis
+# start redis & postgres (remove postgres if you intend on using sqlite)
     docker compose up -d
 
 # serve
