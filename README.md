@@ -100,10 +100,11 @@ The available `CAPTCHA_SERVICE` values are:
 # install dependencies
     npm install
     
-# build database
-    npm run runmigration
 # start redis & postgres (remove postgres if you intend on using sqlite)
     docker compose up -d
+    
+# build database
+    npm run runmigration
 
 # serve
     npm run start
