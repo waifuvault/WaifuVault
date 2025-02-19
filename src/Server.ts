@@ -28,7 +28,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import methodOverride from "method-override";
-import { isProduction } from "./config/envs/index.js";
+import { isGhAction, isProduction } from "./config/envs/index.js";
 import helmet from "helmet";
 import process from "process";
 import cors from "cors";
@@ -258,8 +258,7 @@ export class Server implements BeforeRoutesInit {
 }
 
 async function initRedis(options: Partial<TsED.Configuration>): Promise<void> {
-    const argv = process.argv.slice(2);
-    if (argv.includes("-closeOnStart")) {
+    if (isGhAction) {
         return;
     }
     if (!process.env.REDIS_URI) {

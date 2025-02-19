@@ -5,6 +5,7 @@ import { Server } from "./Server.js";
 import process from "process";
 import { Application } from "express";
 import { registerDatasource } from "./db/registerDatasource.js";
+import { isGhAction } from "./config/envs/index.js";
 
 async function bootstrap(): Promise<void> {
     registerDatasource();
@@ -26,8 +27,7 @@ async function bootstrap(): Promise<void> {
 }
 
 async function stopOnTest(platform: PlatformBuilder<Application> | null, error: boolean): Promise<void> {
-    const argv = process.argv.slice(2);
-    if (!argv.includes("-closeOnStart")) {
+    if (!isGhAction) {
         return;
     }
     if (platform) {

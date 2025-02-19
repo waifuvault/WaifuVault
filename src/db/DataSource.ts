@@ -3,13 +3,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import process from "process";
 import dotenv from "dotenv";
+import { isGhAction } from "../config/envs/index.js";
 
 dotenv.config();
 
-const argv = process.argv.slice(2);
+console.log(isGhAction);
 
 let redisUrl: URL | undefined;
-if (!argv.includes("-closeOnStart")) {
+if (!isGhAction) {
     redisUrl = new URL(process.env.REDIS_URI as string);
 }
 
@@ -19,7 +20,7 @@ const options: DataSourceOptions = {
     synchronize: false,
     migrations: [`${path.dirname(fileURLToPath(import.meta.url))}/../migrations/*`],
     database: "main.sqlite",
-    cache: argv.includes("-closeOnStart")
+    cache: isGhAction
         ? false
         : {
               type: "ioredis",

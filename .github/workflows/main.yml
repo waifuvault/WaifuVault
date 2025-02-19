@@ -24,7 +24,7 @@ jobs:
       - name: compile
         run: npm run build
       - name: migration
-        run: npm run runmigration
+        run: npm run runmigration:ci
       - name: Create files folder
         run: mkdir -p files
       - name: start-test
