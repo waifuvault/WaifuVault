@@ -47,7 +47,7 @@ import { ExpressRateLimitStoreModel } from "./model/db/ExpressRateLimitStore.mod
 import { Exception, TooManyRequests } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
 import { DefaultRenderException } from "./model/rest/DefaultRenderException.js";
-import { initRedisProvider, RedisConnection } from "./redis/Connection.js";
+import { initRedisProvider, type RedisConnection } from "./redis/Connection.js";
 import { createShardedAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
 import crypto from "node:crypto";
