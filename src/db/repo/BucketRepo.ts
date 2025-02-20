@@ -5,10 +5,10 @@ import { Builder } from "builder-pattern";
 import { NetworkUtils } from "../../utils/Utils.js";
 import { InternalServerError } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
-import crypto from "node:crypto";
 import { BucketDao } from "../dao/BucketDao.js";
 import { FileRepo } from "./FileRepo.js";
 import { ThumbnailCacheRepo } from "./ThumbnailCacheRepo.js";
+import { uuid } from "../../utils/uuidUtils.js";
 
 @Injectable()
 export class BucketRepo {
@@ -34,7 +34,7 @@ export class BucketRepo {
             return existingBucket;
         }
         bucketBuilder.ip(ip);
-        const token = crypto.randomUUID();
+        const token = uuid();
         bucketBuilder.bucketToken(token);
         const bucket = bucketBuilder.build();
         return this.bucketDao.createBucket(bucket);

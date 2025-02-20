@@ -50,8 +50,8 @@ import { DefaultRenderException } from "./model/rest/DefaultRenderException.js";
 import { initRedisProvider, type RedisConnection } from "./redis/Connection.js";
 import { createShardedAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
-import crypto from "node:crypto";
 import { RedisStore } from "connect-redis";
+import { uuid } from "./utils/uuidUtils.js";
 
 const socketIoStatus = process.env.HOME_PAGE_FILE_COUNTER ? process.env.HOME_PAGE_FILE_COUNTER : "dynamic";
 
@@ -76,7 +76,7 @@ const opts: Partial<TsED.Configuration> = {
             },
             filename: (_, file, cb) => {
                 const ext = FileUtils.getExtension(file.originalname);
-                const token = crypto.randomUUID();
+                const token = uuid();
                 const fileName = ext ? `${token}.${ext}` : token;
                 return cb(null, fileName);
             },

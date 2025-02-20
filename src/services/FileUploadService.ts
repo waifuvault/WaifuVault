@@ -24,6 +24,7 @@ import { BucketService } from "./BucketService.js";
 import BucketType from "../model/constants/BucketType.js";
 import { FileFilterManager } from "../manager/FileFilterManager.js";
 import { MimeService } from "./MimeService.js";
+import { uuid } from "../utils/uuidUtils.js";
 
 @Service()
 export class FileUploadService {
@@ -67,7 +68,7 @@ export class FileUploadService {
                 }
             }
 
-            const token = crypto.randomUUID();
+            const token = uuid();
             const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
 
             await this.filterFile(resourcePath);
