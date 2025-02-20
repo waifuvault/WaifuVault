@@ -9,11 +9,14 @@ export class ColumnNumericTransformer<T extends AbstractModel> implements ValueT
         this.columnName = columnName as string;
     }
 
-    public to(data: number): number {
+    public to(data: number | null): number | null {
         return data;
     }
 
-    public from(data: string | number): number {
+    public from(data: string | number | null): number | null {
+        if (data === null) {
+            return null;
+        }
         if (typeof data === "number") {
             return data;
         }
