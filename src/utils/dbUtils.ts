@@ -1,11 +1,27 @@
 import { ValueTransformer } from "typeorm/decorator/options/ValueTransformer.js";
+import { $log } from "@tsed/common";
+import { AbstractModel } from "../model/db/AbstractModel.js";
 
-export class ColumnNumericTransformer implements ValueTransformer {
+export class ColumnNumericTransformer<T extends AbstractModel> implements ValueTransformer {
+    private readonly columnName: string;
+
+    public constructor(columnName: keyof T) {
+        this.columnName = columnName as string;
+    }
+
     public to(data: number): number {
         return data;
     }
 
-    public from(data: string): number {
-        return parseInt(data, 10);
+    public from(data: string | number): number {
+        if (typeof data === "number") {
+            return data;
+        }
+        const number = Number.parseInt(data, 10);
+        if (Number.isNaN(number)) {
+            $log.error(`Invalid number in column ${this.columnName}: ${data}`);
+            return 0;
+        }
+        return number;
     }
 }

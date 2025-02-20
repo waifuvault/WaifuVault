@@ -62,7 +62,7 @@ export class FileUploadModel extends AbstractModel {
         nullable: false,
         type: "numeric",
         unique: false,
-        transformer: new ColumnNumericTransformer(),
+        transformer: new ColumnNumericTransformer<FileUploadModel>("fileSize"),
     })
     public fileSize: number;
 
@@ -70,7 +70,7 @@ export class FileUploadModel extends AbstractModel {
         nullable: true,
         type: "numeric",
         unique: false,
-        transformer: new ColumnNumericTransformer(),
+        transformer: new ColumnNumericTransformer<FileUploadModel>("expires"),
     })
     public expires: number | null;
 
