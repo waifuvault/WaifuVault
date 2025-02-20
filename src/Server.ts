@@ -202,7 +202,7 @@ export class Server implements BeforeRoutesInit {
                 session({
                     secret: this.sessionKey,
                     resave: false,
-                    saveUninitialized: false,
+                    saveUninitialized: true,
                     store: new RedisStore({
                         client: this.redis,
                         prefix: "waifu_session:",

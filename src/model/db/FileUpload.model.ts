@@ -9,6 +9,16 @@ import { constant } from "@tsed/di";
 import GlobalEnv from "../constants/GlobalEnv.js";
 import type { ThumbnailCacheModel } from "./ThumbnailCache.model.js";
 
+export class ColumnNumericTransformer {
+    public to(data: number): number {
+        return data;
+    }
+
+    public from(data: string): number {
+        return parseInt(data, 10);
+    }
+}
+
 @Entity()
 @Index(["token"], {
     unique: true,
@@ -61,6 +71,7 @@ export class FileUploadModel extends AbstractModel {
         nullable: false,
         type: "numeric",
         unique: false,
+        transformer: new ColumnNumericTransformer(),
     })
     public fileSize: number;
 
