@@ -37,15 +37,15 @@ export class BucketService {
         return this.bucketRepo.bucketExists(token);
     }
 
-    private async getLoggedInUserBucket(): Promise<BucketModel | null> {
-        const currentBucketToken = await this.bucketSessionService.getSessionToken();
+    private getLoggedInUserBucket(): Promise<BucketModel | null> {
+        const currentBucketToken = this.bucketSessionService.getSessionToken();
         if (!currentBucketToken) {
             return Promise.resolve(null);
         }
         return this.getBucket(currentBucketToken);
     }
 
-    public getLoggedInBucketToken(): Promise<string | null> {
+    public getLoggedInBucketToken(): string | null {
         return this.bucketSessionService.getSessionToken();
     }
 

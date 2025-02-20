@@ -8,16 +8,7 @@ import { AlbumModel } from "./Album.model.js";
 import { constant } from "@tsed/di";
 import GlobalEnv from "../constants/GlobalEnv.js";
 import type { ThumbnailCacheModel } from "./ThumbnailCache.model.js";
-
-export class ColumnNumericTransformer {
-    public to(data: number): number {
-        return data;
-    }
-
-    public from(data: string): number {
-        return parseInt(data, 10);
-    }
-}
+import { ColumnNumericTransformer } from "../../utils/dbUtils.js";
 
 @Entity()
 @Index(["token"], {
@@ -79,6 +70,7 @@ export class FileUploadModel extends AbstractModel {
         nullable: true,
         type: "numeric",
         unique: false,
+        transformer: new ColumnNumericTransformer(),
     })
     public expires: number | null;
 
