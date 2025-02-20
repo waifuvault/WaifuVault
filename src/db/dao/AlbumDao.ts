@@ -3,7 +3,7 @@ import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 import { DataSource, EntityManager } from "typeorm";
 import { AlbumModel } from "../../model/db/Album.model.js";
 import { AbstractTypeOrmDao } from "./AbstractTypeOrmDao.js";
-import crypto from "node:crypto";
+import { uuid } from "../../utils/uuidUtils.js";
 
 @Injectable()
 export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
@@ -63,7 +63,7 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
     ): Promise<string | null> {
         let ret = null;
         if (status) {
-            ret = crypto.randomUUID();
+            ret = uuid();
         }
         await this.getRepository(transaction).update(
             {

@@ -50,9 +50,9 @@
     const isUser = <% if(loginType === "user") { %> true <% } else { %> false <% } %>;
 
     function sizeReadable(data) {
-        const sizeKB = Math.floor(data / 1024);
-        const sizeMB = Math.floor(sizeKB / 1024);
-        const sizeGB = Math.floor(sizeMB / 1024);
+        const sizeKB = Math.round(data / 1024);
+        const sizeMB = Math.round(sizeKB / 1024);
+        const sizeGB = Math.round(sizeMB / 1024);
         if (data < 1024) {
             return `${data} B`;
         }

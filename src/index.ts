@@ -6,6 +6,7 @@ import process from "process";
 import { Application } from "express";
 import { registerDatasource } from "./db/registerDatasource.js";
 import { isGhAction } from "./config/envs/index.js";
+import "./utils/uuidUtils.js";
 
 async function bootstrap(): Promise<void> {
     registerDatasource();

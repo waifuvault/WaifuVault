@@ -4,7 +4,6 @@ import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BadRequest, NotFound } from "@tsed/exceptions";
 import { AlbumModel } from "../model/db/Album.model.js";
 import { Builder } from "builder-pattern";
-import crypto from "node:crypto";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
 import { FileUtils, WorkerUtils } from "../utils/Utils.js";
@@ -15,6 +14,7 @@ import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
 import { AfterInit } from "@tsed/common";
+import { uuid } from "../utils/uuidUtils.js";
 
 @Service()
 export class AlbumService implements AfterInit {
@@ -52,11 +52,7 @@ export class AlbumService implements AfterInit {
             throw new BadRequest(`Album with name ${name} already exists`);
         }
 
-        const albumModel = Builder(AlbumModel)
-            .bucketToken(bucketToken)
-            .name(name)
-            .albumToken(crypto.randomUUID())
-            .build();
+        const albumModel = Builder(AlbumModel).bucketToken(bucketToken).name(name).albumToken(uuid()).build();
         return this.albumRepo.saveOrUpdateAlbum(albumModel);
     }
 
@@ -291,7 +287,7 @@ export class AlbumService implements AfterInit {
             WorkerUtils.newWorker<string>("zipFiles.js", {
                 filesToZip: workerData,
                 albumName: album.name,
-                uuid: crypto.randomUUID(),
+                uuid: uuid(),
             }),
         );
 

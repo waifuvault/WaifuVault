@@ -13,6 +13,23 @@ of hosting.
 
 `.env` file must be created for this application to work. Rename `.envExample` to `.env`
 
+#### Postgres
+
+> **Important!** If you are using postgres, read the following
+
+You mut create a file called `postgres.env` and fill in the following info
+
+| Setting           | Description                                                      |
+|-------------------|------------------------------------------------------------------|
+| POSTGRES_USER     | The user to authenticate with pg                                 |
+| POSTGRES_PASSWORD | The user to authenticate with pg                                 |
+| POSTGRES_DB       | The DB to use                                                    |
+| POSTGRES_PORT     | The port PG will use (defaults to `5004` if using docker-compose | 
+
+If you are using PG in the supplied docker-compose file, the port above must reflect those in the docker file
+
+___
+
 This service also has a dependency on Redis, this can be started using the docker-compose file
 
 ### Env file settings
@@ -54,6 +71,8 @@ Optional Settings
 | ZIP_MAX_SIZE_MB        | The max size an album can be before it is allowed to be downloaded as a zip. set to '0' to disable. defaults to 100mb                                                                                                                                                                                 |
 | IP_SALT                | The salt to add to the IP hash                                                                                                                                                                                                                                                                        |
 | HOME_PAGE_FILE_COUNTER | This controls the file counter on the home page, the values can be `static`, `dynamic`, `off`. `static` means that the websocket is disabled and the file count will be static, `dynamic` means the file count will increase without reloading, and `off` means this is hidden. defaults to `dynamic` |
+|
+| DATABASE_TYPE          | This controls what database you want, select from `postgres` and `sqlite`, if you are using sqlite, you do not need to start `postgres` from the docker-compose and can be removed before starting it                                                                                                 |
 
 The available `CAPTCHA_SERVICE` values are:
 
@@ -81,10 +100,11 @@ The available `CAPTCHA_SERVICE` values are:
 # install dependencies
     npm install
     
+# start redis & postgres (remove postgres if you intend on using sqlite)
+    docker compose up -d
+    
 # build database
     npm run runmigration
-# start redis
-    docker compose up -d
 
 # serve
     npm run start
