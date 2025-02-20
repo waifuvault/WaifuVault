@@ -28,7 +28,10 @@ export function uuid(): UUID {
     if (cluster.isPrimary) {
         return crypto.randomUUID();
     }
-    const hash = crypto.createHash("sha256").update(uuidSeed).digest();
+    const hash = crypto
+        .createHash("sha256")
+        .update(uuidSeed + crypto.randomUUID())
+        .digest();
     const bytes = [...hash.subarray(0, 16)];
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;

@@ -56,7 +56,6 @@
     "better-sqlite3": "^9.6.0",
     "body-parser": "^1.20.3",
     "builder-pattern": "^2.2.0",
-    "cache-manager-ioredis": "^2.1.0",
     "compression": "^1.8.0",
     "connect-redis": "^8.0.1",
     "cookie-parser": "^1.4.7",
