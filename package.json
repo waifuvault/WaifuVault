@@ -58,6 +58,7 @@
     "builder-pattern": "^2.2.0",
     "cache-manager-ioredis": "^2.1.0",
     "compression": "^1.7.5",
+    "connect-redis": "^8.0.1",
     "connect-typeorm": "^2.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

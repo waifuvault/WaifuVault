@@ -32,10 +32,8 @@ import { isGhAction, isProduction } from "./config/envs/index.js";
 import helmet from "helmet";
 import process from "process";
 import cors from "cors";
-import { TypeormStore } from "connect-typeorm";
-import { SQLITE_DATA_SOURCE } from "./model/di/tokens.js";
+import { REDIS_CONNECTION, SQLITE_DATA_SOURCE } from "./model/di/tokens.js";
 import { DataSource } from "typeorm";
-import { SessionModel } from "./model/db/Session.model.js";
 import compression from "compression";
 import GlobalEnv from "./model/constants/GlobalEnv.js";
 import multer from "multer";
@@ -49,10 +47,11 @@ import { ExpressRateLimitStoreModel } from "./model/db/ExpressRateLimitStore.mod
 import { Exception, TooManyRequests } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
 import { DefaultRenderException } from "./model/rest/DefaultRenderException.js";
-import { initRedisProvider } from "./redis/Connection.js";
+import { initRedisProvider, RedisConnection } from "./redis/Connection.js";
 import { createShardedAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
 import crypto from "node:crypto";
+import { RedisStore } from "connect-redis";
 
 const socketIoStatus = process.env.HOME_PAGE_FILE_COUNTER ? process.env.HOME_PAGE_FILE_COUNTER : "dynamic";
 
@@ -176,6 +175,7 @@ export class Server implements BeforeRoutesInit {
         @Inject() private app: PlatformApplication,
         @Inject(SQLITE_DATA_SOURCE) private ds: DataSource,
         @Inject() private logger: Logger,
+        @Inject(REDIS_CONNECTION) private redis: RedisConnection,
     ) {}
 
     @Constant(GlobalEnv.SESSION_KEY)
@@ -202,12 +202,11 @@ export class Server implements BeforeRoutesInit {
                 session({
                     secret: this.sessionKey,
                     resave: false,
-                    store: new TypeormStore({
-                        saveUninitialized: false,
-                        cleanupLimit: 2,
-                        resave: false,
-                    }).connect(this.ds.getRepository(SessionModel)),
                     saveUninitialized: false,
+                    store: new RedisStore({
+                        client: this.redis,
+                        prefix: "waifu_session:",
+                    }),
                     cookie: {
                         path: "/",
                         httpOnly: true,
