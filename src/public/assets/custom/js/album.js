@@ -314,6 +314,11 @@ Site.loadPage(async site => {
     });
 
     downloadButton.addEventListener("click", async () => {
+        function progress({loaded, total}) {
+            const downloadDone = Math.round(loaded / total * 100) + "%";
+            downloadButton.textContent = `Downloading Files - ${downloadDone}`;
+        }
+
         if (downloadButton.hasAttribute("disabled")) {
             return;
         }
@@ -330,7 +335,7 @@ Site.loadPage(async site => {
         downloadButton.classList.add("disabled");
 
         const originalText = downloadButton.textContent;
-        downloadButton.textContent = "Compressing and Downloading, please wait...";
+        downloadButton.textContent = "Compressing Files, please wait...";
 
         try {
             const response = await fetch(`${baseUrl}/album/download/${publicToken}`, {
@@ -351,7 +356,39 @@ Site.loadPage(async site => {
             const match = contentDisposition.match(filenameRegex);
             const filename = match ? match[1] : "files.zip";
 
-            const blob = await response.blob();
+            const contentLength = response.headers.get("x-content-length");
+            const total = Number.parseInt(contentLength);
+
+            let loaded = 0;
+            const res = new Response(
+                new ReadableStream({
+                        async start(controller) {
+                            const reader = response.body.getReader();
+                            for (; ;) {
+                                try {
+                                    const {done, value} = await reader.read();
+                                    if (done) {
+                                        break;
+                                    }
+                                    loaded += value.byteLength;
+                                    progress({loaded, total});
+                                    controller.enqueue(value);
+                                } catch (e) {
+                                    controller.error(e);
+                                    return;
+                                }
+                            }
+                            controller.close();
+                        }
+                    }
+                ), {
+                    headers: response.headers,
+                    status: response.status,
+                    statusText: response
+                }
+            );
+
+            const blob = await res.blob();
 
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
