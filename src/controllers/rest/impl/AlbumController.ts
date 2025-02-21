@@ -211,12 +211,38 @@ export class AlbumController extends BaseRestController {
         @Res() res: PlatformResponse,
     ): Promise<ReadStream | PlatformResponse> {
         try {
+            const r = res.res;
+            let connectionClosed = false;
+            r.on("close", () => {
+                connectionClosed = true;
+            }).on("error", () => {
+                connectionClosed = true;
+            });
+
             const [zipFile, albumName, zipLocation] = await this.albumService.downloadFiles(albumToken, fileIds);
+
+            const cleanup: () => Promise<void> = async (): Promise<void> => {
+                await fs.rm(zipLocation, { recursive: true, force: true });
+            };
+
+            if (connectionClosed) {
+                await cleanup();
+                return super.doError(res, "aborted", StatusCodes.CONTINUE);
+            }
+
+            r.on("close", () => {
+                if (!r.writableFinished) {
+                    cleanup();
+                }
+            });
+
             res.attachment(`${albumName}.zip`);
             res.contentType("application/zip");
-            res.res.on("finish", async () => {
-                await fs.rm(zipLocation, { recursive: true, force: true });
+
+            r.on("finish", async () => {
+                await cleanup();
             });
+
             return zipFile;
         } catch (e) {
             if (e instanceof Exception) {
