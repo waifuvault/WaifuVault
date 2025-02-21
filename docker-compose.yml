@@ -9,7 +9,7 @@ services:
         aliases:
           - redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
 
   postgres:
     image: postgres:latest
@@ -24,7 +24,7 @@ services:
         aliases:
           - postgres
     ports:
-      - "5004:5432"
+      - "127.0.0.1:5004:5432"
 
   zipFiles:
     build:
@@ -36,7 +36,7 @@ services:
       - redis
       - postgres
     ports:
-      - "5005:8080"
+      - "127.0.0.1:5005:8080"
     volumes:
       - ./files:/app/files
     env_file:
