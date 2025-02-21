@@ -107,3 +107,8 @@ export type WorkerResponse<T> = {
     error?: string;
     data: T;
 };
+
+export type MicroServiceResponse = {
+    success: boolean;
+    message: string;
+};
