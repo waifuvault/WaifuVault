@@ -23,18 +23,25 @@ services:
       - http_proxy
       - https_proxy
       - no_proxy
-      - db_connstring=redis://redis:6379
-      - db_user=dbuser
-      - db_password=dbpasswd
-      - configfile=/waifuvault/config.ts
-      - filefolder=/waifuvault/data/
+#      - db_connstring=redis://redis:6379
+#      - db_user=dbuser
+#      - db_password=dbpasswd
+#      - configfile=/waifuvault/config.ts
+#      - filefolder=/waifuvault/data/
       - PORT=localhost:8081
+#      - DATABASE_TYPE=postgres|sqlite
       - HTTPS=false
       - HTTPS_PORT=4000
       - SESSION_KEY=YourSessionKey
       - NODE_ENV=development
       - BASE_URL=http://localhost:8081
       - FILE_SIZE_UPLOAD_LIMIT_MB=512
+#      - POSTGRES_USER=
+#      - POSTGRES_PASSWORD=
+#      - POSTGRES_DB=
+#      - POSTGRES_PORT=
+#      - REDIS_URI=
+
 
     restart: always
     ports:
