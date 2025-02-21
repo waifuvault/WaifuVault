@@ -5,6 +5,7 @@ Site.loadPage(async site => {
     const albumCardsElt = document.getElementById("albumCards");
     let cardsRendered = false;
     const downloadButton = document.getElementById("downloadFiles");
+    let isDownloading = false;
 
     const iconMap = new Map([
         ['audio', 'bi-file-earmark-music'],
@@ -79,7 +80,9 @@ Site.loadPage(async site => {
         checkboxes.forEach(chk => {
             chk.addEventListener("change", () => {
                 const anySelected = Array.from(checkboxes).some(checkbox => checkbox.checked);
-                downloadButton.textContent = anySelected ? "Download Selected as Zip" : originalText;
+                if(!isDownloading) {
+                    downloadButton.textContent = anySelected ? "Download Selected as Zip" : originalText;
+                }
                 if(albumTooBigToDownload){
                     if(anySelected){
                         downloadButton.removeAttribute("disabled");
@@ -336,6 +339,7 @@ Site.loadPage(async site => {
 
         const originalText = downloadButton.textContent;
         downloadButton.textContent = "Compressing Files, please wait...";
+        isDownloading = true;
 
         try {
             const response = await fetch(`${baseUrl}/album/download/${publicToken}`, {
@@ -406,6 +410,7 @@ Site.loadPage(async site => {
             downloadButton.textContent = originalText;
             downloadButton.removeAttribute("disabled");
             downloadButton.classList.remove("disabled");
+            isDownloading = false;
         }
     });
 
