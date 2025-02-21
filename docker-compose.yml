@@ -29,7 +29,8 @@ services:
 #      - configfile=/waifuvault/config.ts
 #      - filefolder=/waifuvault/data/
       - PORT=localhost:8081
-#      - DATABASE_TYPE=postgres|sqlite
+      - DATABASE_TYPE=sqlite
+      #- DATABASE_TYPE=postgres
       - HTTPS=false
       - HTTPS_PORT=4000
       - SESSION_KEY=YourSessionKey
@@ -40,7 +41,7 @@ services:
 #      - POSTGRES_PASSWORD=
 #      - POSTGRES_DB=
 #      - POSTGRES_PORT=
-#      - REDIS_URI=
+      - REDIS_URI=redis://redis:6379
 
 
     restart: always
