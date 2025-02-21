@@ -33,7 +33,15 @@ func LoadEnvs() {
 		log.Info().Msg("loaded envs for docker")
 		return
 	}
-	err := godotenv.Load("../../.env", "../../postgres.env")
+	env, err := filepath.Abs(".env")
+	if err != nil {
+		return
+	}
+	postgresEnv, err := filepath.Abs("postgres.env")
+	if err != nil {
+		return
+	}
+	err = godotenv.Load(env, postgresEnv)
 	if err != nil {
 		panic(err)
 	}
