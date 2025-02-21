@@ -15,6 +15,7 @@ import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
 import { AfterInit } from "@tsed/common";
 import { uuid } from "../utils/uuidUtils.js";
+import { ZipFilesService } from "./microServices/zipFiles/ZipFilesService.js";
 
 @Service()
 export class AlbumService implements AfterInit {
@@ -26,6 +27,7 @@ export class AlbumService implements AfterInit {
         @Inject() private thumbnailCacheRepo: ThumbnailCacheRepo,
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
+        @Inject() private zipFilesService: ZipFilesService,
     ) {}
 
     @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
@@ -276,20 +278,7 @@ export class AlbumService implements AfterInit {
             throw new BadRequest("Zip file is too large");
         }
 
-        const workerData = filesToZip.map(file => {
-            return {
-                fullLocationOnDisk: file.fullLocationOnDisk,
-                parsedFileName: file.parsedFileName,
-            };
-        });
-
-        const [zipLocation] = await Promise.all(
-            WorkerUtils.newWorker<string>("zipFiles.js", {
-                filesToZip: workerData,
-                albumName: album.name,
-                uuid: uuid(),
-            }),
-        );
+        const zipLocation = await this.zipFilesService.zipFiles(filesToZip, album.name);
 
         return [fs.createReadStream(zipLocation), album.name, zipLocation];
     }

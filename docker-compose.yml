@@ -26,5 +26,22 @@ services:
     ports:
       - "5004:5432"
 
+  zipFiles:
+    build:
+      context: ./go/zipFiles
+      dockerfile: Dockerfile
+    container_name: zipfiles
+    image: waifuvault-zipfiles
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - "5005:8080"
+    volumes:
+      - ./files:/app/files
+    env_file:
+      - ./.env
+      - ./postgres.env
+
 volumes:
   postgres_data:
