@@ -56,6 +56,9 @@ export class FileServerController {
         }
 
         res.on("finish", () => this.postProcess(entryWrapper.entry));
+        if (entryWrapper.entry.encrypted) {
+            return entryWrapper.getBuffer(password);
+        }
         return entryWrapper.getStream(password);
     }
 
