@@ -222,7 +222,6 @@ export class AlbumController extends BaseRestController {
             });
 
             const [zipFile, albumName, zipLocation] = await this.albumService.downloadFiles(albumToken, fileIds);
-            const sizeEstimate = await FileUtils.getFileSize(path.basename(zipLocation));
 
             const cleanup: () => Promise<void> = async (): Promise<void> => {
                 await fs.rm(zipLocation, { recursive: true, force: true });
@@ -241,6 +240,7 @@ export class AlbumController extends BaseRestController {
 
             res.attachment(`${albumName}.zip`);
             res.contentType("application/zip");
+            const sizeEstimate = await FileUtils.getFileSize(path.basename(zipLocation));
             res.setHeader("x-content-length", sizeEstimate);
 
             r.on("finish", async () => {
