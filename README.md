@@ -9,13 +9,14 @@ of hosting.
 
 ## Getting started
 
-> **Important!** This requires Node >= 20 and TypeScript >= 5.5
+> **Important!** This requires Docker, Node >= 20 and TypeScript >= 5.5
 
 `.env` file must be created for this application to work. Rename `.envExample` to `.env`
 
 #### Postgres
 
-> **Important!** If you are using postgres, read the following
+> **Important!** If you are using postgres, read the following, these settings will be used by docker-compose to create
+> the image
 
 You mut create a file called `postgres.env` and fill in the following info
 
@@ -71,7 +72,6 @@ Optional Settings
 | ZIP_MAX_SIZE_MB        | The max size an album can be before it is allowed to be downloaded as a zip. set to '0' to disable. defaults to 100mb                                                                                                                                                                                 |
 | IP_SALT                | The salt to add to the IP hash                                                                                                                                                                                                                                                                        |
 | HOME_PAGE_FILE_COUNTER | This controls the file counter on the home page, the values can be `static`, `dynamic`, `off`. `static` means that the websocket is disabled and the file count will be static, `dynamic` means the file count will increase without reloading, and `off` means this is hidden. defaults to `dynamic` |
-|
 | DATABASE_TYPE          | This controls what database you want, select from `postgres` and `sqlite`, if you are using sqlite, you do not need to start `postgres` from the docker-compose and can be removed before starting it                                                                                                 |
 
 The available `CAPTCHA_SERVICE` values are:
@@ -100,7 +100,7 @@ The available `CAPTCHA_SERVICE` values are:
 # install dependencies
     npm install
     
-# start redis & postgres (remove postgres if you intend on using sqlite)
+# start redis, postgres and zipfiles (remove postgres if you intend on using sqlite)
     docker compose up -d
     
 # build database
