@@ -15,7 +15,7 @@ export class EntryEncryptionWrapper {
     public async getStream(password?: string, opts?: { start?: number; end?: number }): Promise<ReadStream> {
         if (this.entry.encrypted) {
             this.checkPassword(password);
-            const b = await this.encryptionService!.decrypt(this.entry, password!);
+            const b = await this.getBuffer(password);
             return ReadStream.from(b) as ReadStream;
         }
         return createReadStream(FileUtils.getFilePath(this.entry), opts);
