@@ -44,5 +44,23 @@ services:
       - ./.env
       - ./postgres.env
 
+  thumbnails:
+    build:
+      context: ./go/thumbnails
+      dockerfile: Dockerfile
+    container_name: thumbnails
+    restart: no
+    image: waifuvault-thumbnails
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - "127.0.0.1:5006:8080"
+    volumes:
+      - ./files:/app/files
+    env_file:
+      - ./.env
+      - ./postgres.env
+
 volumes:
   postgres_data:
