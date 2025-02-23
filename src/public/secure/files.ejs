@@ -317,7 +317,7 @@
                 });
                 if (!resp.ok) {
                     const err = await resp.json();
-                    const errModal = createBasicModal('getBucketDataErrModal', 'Error', `<span class="alert alert-danger">error ${err.status} - ${err.message}</span>`);
+                    const errModal = createErrorModal('getBucketDataErrModal', `error ${err.status} - ${err.message}`);
                     errModal.show();
                     return;
                 }
@@ -354,7 +354,7 @@
             });
             if (!resp.ok) {
                 const err = await resp.json();
-                const errModal = createBasicModal('deleteAlbumErrModal', 'Error', `<span class="alert alert-danger">error ${err.status} - ${err.message}</span>`);
+                const errModal = createErrorModal('deleteAlbumErrModal',`error ${err.status} - ${err.message}`);
                 errModal.show();
                 return;
             }
@@ -375,7 +375,7 @@
             });
             if (!resp.ok) {
                 const err = await resp.json();
-                const errModal = createBasicModal('shareAlbumErrModal', 'Error', `<span class="alert alert-danger">error ${err.status} - ${err.message}</span>`);
+                const errModal = createErrorModal('shareAlbumErrModal', `error ${err.status} - ${err.message}`);
                 errModal.show();
                 return;
             }
@@ -390,7 +390,7 @@
             });
             if (!resp.ok) {
                 const err = await resp.json();
-                const errModal = createBasicModal('unshareAlbumErrModal', 'Error', `<span class="alert alert-danger">error ${err.status} - ${err.message}</span>`);
+                const errModal = createErrorModal('unshareAlbumErrModal', `error ${err.status} - ${err.message}`);
                 errModal.show();
                 return;
             }
@@ -406,7 +406,7 @@
             });
             if (!resp.ok) {
                 const err = await resp.json();
-                const errModal = createBasicModal('addAlbumFilesErrModal', 'Error', `<span class="alert alert-danger">error ${err.status} - ${err.message}</span>`);
+                const errModal = createErrorModal('addAlbumFilesErrModal', `error ${err.status} - ${err.message}`);
                 errModal.show();
                 return;
             }
@@ -421,7 +421,7 @@
             });
             if (!resp.ok) {
                 const err = await resp.json();
-                const errModal = createBasicModal('removeAlbumFilesErrModal', 'Error', `<span class="alert alert-danger">error ${err.status} - ${err.message}</span>`);
+                const errModal = createErrorModal('removeAlbumFilesErrModal', `error ${err.status} - ${err.message}</span>`);
                 errModal.show();
                 return;
             }
@@ -959,7 +959,7 @@
                         body: JSON.stringify(ips)
                     });
                 } catch (e) {
-                    const errModal = createBasicModal('unbanIpsErrModal', 'Error', `<span class="alert alert-danger">${e.message}</span>`);
+                    const errModal = createErrorModal('unbanIpsErrModal', e.message);
                     errModal.show();
                     return false;
                 } finally {
@@ -968,7 +968,7 @@
                 const responseStatus = response.status;
                 const responseJson = await response.json();
                 if (responseStatus !== 200) {
-                    const errModal = createBasicModal('unbanIpsJsonErrModal', 'Error', `<span class="alert alert-danger">${responseJson.message}</span>`);
+                    const errModal = createErrorModal('unbanIpsJsonErrModal', responseJson.message);
                     errModal.show();
                     throw new Error(responseJson.message);
                 }
@@ -984,7 +984,7 @@
                         body: new URLSearchParams({ ip })
                     });
                 } catch (e) {
-                    const errModal = createBasicModal('banIpsErrModal', 'Error', `<span class="alert alert-danger">${e.message}</span>`);
+                    const errModal = createErrorModal('banIpsErrModal', e.message);
                     errModal.show();
                     return false;
                 } finally {
@@ -993,7 +993,7 @@
                 const responseStatus = response.status;
                 const responseJson = await response.json();
                 if (responseStatus !== 200) {
-                    const errModal = createBasicModal('unbanIpsErrModal', 'Error', `<span class="alert alert-danger">${responseJson.message}</span>`);
+                    const errModal = createErrorModal('unbanIpsErrModal', responseJson.message);
                     errModal.show();
                     throw new Error(responseJson.message);
                 }
@@ -1012,7 +1012,7 @@
                         body: JSON.stringify(ids)
                     });
                 } catch (e) {
-                    const errModal = createBasicModal('deleteEntryErrModal', 'Error', `<span class="alert alert-danger">${e.message}</span>`);
+                    const errModal = createErrorModal('deleteEntryErrModal', e.message);
                     errModal.show();
                     return false;
                 } finally {
@@ -1021,7 +1021,7 @@
                 const responseStatus = response.status;
                 const responseJson = await response.json();
                 if (responseStatus !== 200) {
-                    const errModal = createBasicModal('deleteEntryErrModal', 'Error', `<span class="alert alert-danger">${responseJson.message}</span>`);
+                    const errModal = createErrorModal('deleteEntryErrModal', responseJson.message);
                     errModal.show();
                     throw new Error(responseJson.message);
                 }
@@ -1298,7 +1298,7 @@
                     });
                     if (!resp.ok) {
                         const err = await resp.json();
-                        const errModal = createBasicModal('deleteBucketErrModal', 'Error', `<span class="alert alert-danger">error ${err.status} - ${err.message}</span>`);
+                        const errModal = createErrorModal('deleteBucketErrModal', `error ${err.status} - ${err.message}`);
                         errModal.show();
                         return;
                     }
@@ -1329,7 +1329,7 @@
                     });
                     if (!resp.ok) {
                         const err = await resp.json();
-                        const errModal = createBasicModal('createAlbumErrModal', 'Error', `<span class="alert alert-danger">error ${err.status} - ${err.message}</span>`);
+                        const errModal = createErrorModal('createAlbumErrModal', `error ${err.status} - ${err.message}`);
                         errModal.show();
                         return;
                     }
