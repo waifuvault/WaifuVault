@@ -219,11 +219,12 @@ Site.loadPage(async site => {
                     cardimage.setAttribute("loading", "lazy");
                     cardimage.setAttribute("alt", e.name);
                     cardimage.setAttribute("class", "card-img-top");
+                    cardImageAnchor.setAttribute("data-sub-html", `<h4>${e.name}</h4>`);
 
                     if(e.metadata.isVideo){
                         cardImageAnchor.dataset.video = `{"source": [{"src":"${e.url}", "type":"${e.metadata.mediaType}"}], "attributes": {"preload": false, "playinline":true, "controls": true}}`;
                         cardImageAnchor.setAttribute("data-poster", e.metadata.thumbnail);
-                        cardImageAnchor.setAttribute("data-sub-html", "<h4>test</h4>");
+
                     }
 
                     cardImageAnchor.appendChild(cardimage);
