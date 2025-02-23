@@ -134,6 +134,7 @@ export class FileUploadModel extends AbstractModel {
      * Be careful when doing this, as this will bypass redis and go directly to the DB, it is best to use the ThumbnailCacheRepo
      */
     @OneToOne("ThumbnailCacheModel", "file")
+    @JoinColumn()
     public thumbnailCache: Promise<ThumbnailCacheModel | null>;
 
     public get expiresIn(): number | null {

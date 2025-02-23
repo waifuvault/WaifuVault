@@ -41,7 +41,13 @@ export class FileService {
         const fileDeletePArr = entries.map(entry => {
             return FileUtils.deleteFile(entry.fullFileNameOnSystem, true);
         });
-        await Promise.all(fileDeletePArr);
+        await Promise.all(fileDeletePArr).catch(e => {
+            if (e.message.startsWith("EPERM: operation not permitted")) {
+                // this means there is a lock/handle on the file.
+                // it will be cleaned up when the file cleaner runs, just leave it
+                this.logger.warn(e);
+            }
+        });
     }
 
     public async getEntry(

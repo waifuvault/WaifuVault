@@ -8,6 +8,14 @@
     const fileSizeLimit = <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB * 1048576; -%>;
     const baseUrlSecureRest = `${baseUrl}/<%-baseSecurePath-%>`;
 
+
+    function createErrorModal(id, errorText){
+        const alert = document.createElement('div');
+        alert.classList.add('alert', 'alert-danger');
+        alert.innerText = errorText;
+        return createBasicModal(id, 'Error', alert);
+    }
+
     function createBasicModal(id, title, body, yesText, yesCallback, yesClassAdd, noText, noCallback, noClassAdd) {
         function handleEnter(e) {
             if(yesCallback && (e.keyCode === 13 || e.which === 13)) {
