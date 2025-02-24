@@ -49,7 +49,7 @@ services:
       context: ./go/thumbnails
       dockerfile: Dockerfile
     container_name: thumbnails
-    restart: no
+    restart: always
     image: waifuvault-thumbnails
     depends_on:
       - redis
