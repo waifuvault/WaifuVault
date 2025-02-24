@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
-	"github.com/waifuvault/WaifuVault/pkg/mod"
+	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
 	"os"
 	"path/filepath"
 )
@@ -33,11 +33,11 @@ func LoadEnvs() {
 		log.Info().Msg("loaded envs for docker")
 		return
 	}
-	env, err := filepath.Abs(".env")
+	env, err := filepath.Abs("../../.env")
 	if err != nil {
 		return
 	}
-	postgresEnv, err := filepath.Abs("postgres.env")
+	postgresEnv, err := filepath.Abs("../../postgres.env")
 	if err != nil {
 		return
 	}

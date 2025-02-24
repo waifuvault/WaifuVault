@@ -5,9 +5,9 @@ import (
 	"github.com/create-go-app/fiber-go-template/pkg/middleware"
 	"github.com/create-go-app/fiber-go-template/pkg/routes"
 	"github.com/gofiber/fiber/v2"
-	"github.com/waifuvault/WaifuVault/pkg/controllers"
-	waifuRoutes "github.com/waifuvault/WaifuVault/pkg/routes"
-	"github.com/waifuvault/WaifuVault/pkg/utils"
+	"github.com/waifuvault/WaifuVault/zipfiles/pkg/controllers"
+	waifuRoutes "github.com/waifuvault/WaifuVault/zipfiles/pkg/routes"
+	"github.com/waifuvault/WaifuVault/zipfiles/pkg/utils"
 	"os"
 )
 

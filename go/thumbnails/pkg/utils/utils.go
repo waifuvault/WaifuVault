@@ -6,6 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -43,6 +44,14 @@ func LoadEnvs() {
 		panic(err)
 	}
 	log.Info().Msg("loaded envs for dev")
+}
+
+func IsImage(mediaType string) bool {
+	return strings.HasPrefix(mediaType, "image/")
+}
+
+func IsVideo(mediaType string) bool {
+	return strings.HasPrefix(mediaType, "video/")
 }
 
 var BaseUrl = getFileBaseDir()
