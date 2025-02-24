@@ -26,6 +26,10 @@ func main() {
 	err = image1.AutoRotate()
 	checkError(err)
 
+	// remoeve metadata
+	err = image1.RemoveMetadata("delay", "dispose", "loop", "loop_count")
+	checkError(err)
+
 	// Use the new JPEG export parameters function.
 	image1bytes, _, err := image1.ExportNative()
 	checkError(err)
