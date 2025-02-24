@@ -33,9 +33,6 @@ services:
     container_name: zipfiles
     restart: always
     image: waifuvault-zipfiles
-    depends_on:
-      - redis
-      - postgres
     ports:
       - "127.0.0.1:5005:8080"
     volumes:
