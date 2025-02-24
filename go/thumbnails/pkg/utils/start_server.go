@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"github.com/davidbyttow/govips/v2/vips"
 	"log"
 	"os"
 	"os/signal"
@@ -20,7 +21,7 @@ func StartServerWithGracefulShutdown(a *fiber.App) {
 			// Error from closing listeners, or context timeout:
 			log.Printf("Oops... Server is not shutting down! Reason: %v", err)
 		}
-
+		vips.Shutdown()
 		close(idleConnsClosed)
 	}()
 

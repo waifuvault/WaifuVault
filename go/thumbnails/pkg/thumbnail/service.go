@@ -19,6 +19,7 @@ type service struct {
 }
 
 func NewService(daoService dao.Dao) Service {
+	vips.Startup(nil)
 	return &service{
 		daoService,
 	}
@@ -44,9 +45,8 @@ func (s *service) GenerateThumbnails(files []mod.FileEntry) error {
 		}
 
 		thumbnailStructs = append(thumbnailStructs, mod.Thumbnail{
-			Id:     file.Id,
 			Data:   base64.StdEncoding.EncodeToString(thumbnailBytes),
-			FileId: 0,
+			FileId: file.Id,
 		})
 	}
 	_, err := s.dao.SaveThumbnails(thumbnailStructs)
@@ -61,9 +61,6 @@ func generateVideoThumbnail(system string) ([]byte, error) {
 }
 
 func generateImageThumbnail(fileName string) ([]byte, error) {
-	vips.Startup(nil)
-	defer vips.Shutdown()
-
 	data, err := os.ReadFile(utils.BaseUrl + "/" + fileName)
 	if err != nil {
 		return nil, err

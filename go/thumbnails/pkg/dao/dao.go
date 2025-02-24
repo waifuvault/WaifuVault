@@ -9,6 +9,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"os"
 )
 
@@ -37,7 +38,9 @@ func getConnection() (*gorm.DB, error) {
 	}
 
 	if dbType == "sqlite" {
-		open, err := gorm.Open(sqlite.Open("../../main.sqlite"), &gorm.Config{})
+		open, err := gorm.Open(sqlite.Open("../../main.sqlite"), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Error),
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -57,7 +60,9 @@ func getConnection() (*gorm.DB, error) {
 		port,
 	)
 
-	open, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	open, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Error),
+	})
 	if err != nil {
 		return nil, err
 	}

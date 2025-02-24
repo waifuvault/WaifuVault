@@ -3,7 +3,7 @@ package mod
 import "time"
 
 type Thumbnail struct {
-	Id        int       `json:"id" gorm:"column:id"`
+	Id        *int      `json:"id" gorm:"column:id"`
 	Data      string    `json:"thumbnail" gorm:"column:data"`
 	FileId    int       `json:"fileId" gorm:"column:fileId"`
 	UpdatedAt time.Time `json:"updatedAt" gorm:"column:updatedAt"`

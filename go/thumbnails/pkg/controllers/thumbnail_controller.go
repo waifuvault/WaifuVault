@@ -1,6 +1,11 @@
 package controllers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog/log"
+	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
+	"github.com/waifuvault/WaifuVault/thumbnails/pkg/wapimod"
+)
 
 func (s *Service) getAllThumbnailRoutes() []FSetupRoute {
 	return []FSetupRoute{
@@ -13,5 +18,15 @@ func (s *Service) setupGenerateThumbnailsRoute(routeGroup fiber.Router) {
 }
 
 func (s *Service) generateThumbnails(ctx *fiber.Ctx) error {
-	return nil
+	var thumbnailEntries []mod.FileEntry
+	if err := ctx.BodyParser(&thumbnailEntries); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("invalid payload", err))
+	}
+	go func() {
+		err := s.ThumbnailService.GenerateThumbnails(thumbnailEntries)
+		if err != nil {
+			log.Error().Err(err).Msg("error generating thumbnails")
+		}
+	}()
+	return ctx.Status(fiber.StatusOK).JSON(wapimod.NewApiResult("", true))
 }
