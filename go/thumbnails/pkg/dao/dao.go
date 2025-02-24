@@ -3,6 +3,9 @@ package dao
 import (
 	"errors"
 	"fmt"
+	"github.com/rs/zerolog/log"
+	"github.com/samber/lo"
+	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -34,17 +37,32 @@ func getConnection() (*gorm.DB, error) {
 	}
 
 	if dbType == "sqlite" {
-		return gorm.Open(sqlite.Open("main.db"), &gorm.Config{})
+		open, err := gorm.Open(sqlite.Open("../../main.sqlite"), &gorm.Config{})
+		if err != nil {
+			return nil, err
+		}
+		log.Info().Msg("connected to sqlite")
+		return open, nil
 	}
 
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
-	port := os.Getenv("POSTGRES_PORT")
+	port := lo.Ternary(utils.DevMode, os.Getenv("POSTGRES_PORT"), "5432")
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=gorm port=%s sslmode=disable TimeZone=Etc/UTC", "localhost", user, password, port)
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=waifu_vault port=%s sslmode=disable TimeZone=Etc/UTC",
+		lo.Ternary(utils.DevMode, "localhost", "postgres"),
+		user,
+		password,
+		port,
+	)
 
-	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
+	open, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+	log.Info().Msg("connected to postgres")
+	return open, nil
 }
 
 func (d dao) getDb(tx ...*gorm.DB) *gorm.DB {

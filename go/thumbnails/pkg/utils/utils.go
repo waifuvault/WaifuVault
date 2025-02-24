@@ -14,15 +14,19 @@ const (
 	devFilesDir   = "../../files"
 )
 
+var DevMode = false
+
 func getFileBaseDir() string {
 	if _, err := os.Stat(dockerFileDir); err != nil {
 		if os.IsNotExist(err) {
 			log.Info().Msgf("dev mode detected, using %s as base dir", devFilesDir)
+			DevMode = true
 			return devFilesDir
 		}
 		panic(errors.New("error getting file base dir"))
 	}
 	log.Info().Msgf("docker mode detected, using %s as base dir", dockerFileDir)
+	DevMode = false
 	return dockerFileDir
 }
 
@@ -31,11 +35,11 @@ func LoadEnvs() {
 		log.Info().Msg("loaded envs for docker")
 		return
 	}
-	env, err := filepath.Abs(".env")
+	env, err := filepath.Abs("../../.env")
 	if err != nil {
 		return
 	}
-	postgresEnv, err := filepath.Abs("postgres.env")
+	postgresEnv, err := filepath.Abs("../../postgres.env")
 	if err != nil {
 		return
 	}
