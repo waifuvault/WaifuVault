@@ -6,9 +6,11 @@ import { NetworkUtils } from "../../utils/Utils.js";
 import { InternalServerError } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
 import { BucketDao } from "../dao/BucketDao.js";
-import { FileRepo } from "./FileRepo.js";
 import { ThumbnailCacheRepo } from "./ThumbnailCacheRepo.js";
 import { uuid } from "../../utils/uuidUtils.js";
+import { FileDao } from "../dao/FileDao.js";
+import { FileUploadModel } from "../../model/db/FileUpload.model.js";
+import { dataSource } from "../DataSource.js";
 
 @Injectable()
 export class BucketRepo {
@@ -18,7 +20,7 @@ export class BucketRepo {
     public constructor(
         @Inject() private bucketDao: BucketDao,
         @Inject() private logger: Logger,
-        @Inject() private fileRepo: FileRepo,
+        @Inject() private fileDao: FileDao,
         @Inject() private thumbnailCacheRepo: ThumbnailCacheRepo,
     ) {}
 
@@ -41,17 +43,20 @@ export class BucketRepo {
     }
 
     public async deleteBucket(bucketToken: string): Promise<boolean> {
-        const bucket = await this.getBucket(bucketToken);
-        if (!bucket) {
-            return false;
-        }
-        if (bucket.files) {
-            const files = bucket.files;
-            await this.fileRepo.clearCache(files.map(f => f.token));
-            await this.thumbnailCacheRepo.deleteThumbsIfExist(files);
-        }
-        const res = await this.bucketDao.deleteBucket(bucketToken);
-
+        let files: FileUploadModel[] = [];
+        const res = await dataSource.transaction(async tx => {
+            const bucket = await this.bucketDao.getBucket(bucketToken, tx);
+            if (!bucket) {
+                return false;
+            }
+            if (bucket.files) {
+                files = bucket.files;
+                await this.thumbnailCacheRepo.deleteThumbsIfExist(files, tx);
+            }
+            return this.bucketDao.deleteBucket(bucketToken, tx);
+        });
+        // clear file redis cache only if transaction was commited
+        await this.fileDao.clearCache(files.map(f => f.token));
         return res;
     }
 
