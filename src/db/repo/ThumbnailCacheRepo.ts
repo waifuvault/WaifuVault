@@ -5,6 +5,7 @@ import { REDIS_CONNECTION } from "../../model/di/tokens.js";
 import type { RedisConnection } from "../../redis/Connection.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { FileUtils } from "../../utils/Utils.js";
+import { EntityManager } from "typeorm";
 
 @Injectable()
 export class ThumbnailCacheRepo {
@@ -43,11 +44,11 @@ export class ThumbnailCacheRepo {
         return r;
     }
 
-    public async deleteThumbnailCaches(fileIds: number[]): Promise<void> {
+    public async deleteThumbnailCaches(fileIds: number[], transaction?: EntityManager): Promise<void> {
         if (fileIds.length === 0) {
             return;
         }
-        await this.thumbnailCacheDao.deleteThumbnailCaches(fileIds);
+        await this.thumbnailCacheDao.deleteThumbnailCaches(fileIds, transaction);
         this.redis.del(...fileIds.map(id => `${ThumbnailCacheRepo.redisCachePrefix}${id}`));
     }
 
@@ -55,13 +56,13 @@ export class ThumbnailCacheRepo {
         return this.thumbnailCacheDao.hasThumbnails(fileIds);
     }
 
-    public async deleteThumbsIfExist(entries: FileUploadModel[]): Promise<void> {
+    public async deleteThumbsIfExist(entries: FileUploadModel[], transaction?: EntityManager): Promise<void> {
         const hasThumbs = await this.hasThumbnails(entries.map(e => e.id));
         const thumbnailsToDelete = entries
             .filter(entry => hasThumbs.includes(entry.id) && FileUtils.isValidForThumbnail(entry))
             .map(entry => entry.id);
 
-        await this.deleteThumbnailCaches(thumbnailsToDelete);
+        await this.deleteThumbnailCaches(thumbnailsToDelete, transaction);
     }
 
     private async cacheRedis(thumbnailCache: ThumbnailCacheModel): Promise<void> {
