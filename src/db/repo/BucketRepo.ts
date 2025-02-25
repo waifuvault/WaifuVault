@@ -45,12 +45,12 @@ export class BucketRepo {
         if (!bucket) {
             return false;
         }
-        const res = await this.bucketDao.deleteBucket(bucketToken);
         if (bucket.files) {
             const files = bucket.files;
             await this.fileRepo.clearCache(files.map(f => f.token));
             await this.thumbnailCacheRepo.deleteThumbsIfExist(files);
         }
+        const res = await this.bucketDao.deleteBucket(bucketToken);
 
         return res;
     }

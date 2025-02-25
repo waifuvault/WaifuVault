@@ -5,9 +5,6 @@ import { Logger } from "@tsed/logger";
 import type { PlatformContext } from "@tsed/common";
 import { FileService } from "./FileService.js";
 import { BucketSessionService } from "./BucketSessionService.js";
-import { REDIS_CONNECTION } from "../model/di/tokens.js";
-import type { RedisConnection } from "../redis/Connection.js";
-import { ThumbnailCacheRepo } from "../db/repo/ThumbnailCacheRepo.js";
 
 @Service()
 export class BucketService {
@@ -16,7 +13,6 @@ export class BucketService {
         @Inject() private logger: Logger,
         @Inject() private fileService: FileService,
         @Inject() private bucketSessionService: BucketSessionService,
-        @Inject(REDIS_CONNECTION) private redis: RedisConnection,
     ) {}
 
     @InjectContext()
@@ -66,7 +62,6 @@ export class BucketService {
         const filesToDelete = bucket.files ?? [];
         try {
             await this.fileService.deleteFilesFromDisk(filesToDelete);
-            this.redis.del(...filesToDelete.map(f => `${ThumbnailCacheRepo.redisCachePrefix}${f.id}`));
         } catch (e) {
             this.logger.error(e);
             return false;
