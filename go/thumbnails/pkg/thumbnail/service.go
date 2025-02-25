@@ -7,7 +7,6 @@ import (
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
-	"os"
 )
 
 type Service interface {
@@ -19,7 +18,9 @@ type service struct {
 }
 
 func NewService(daoService dao.Dao) Service {
-	vips.Startup(nil)
+	vips.Startup(&vips.Config{
+		ConcurrencyLevel: 2,
+	})
 	return &service{
 		daoService,
 	}
@@ -49,9 +50,12 @@ func (s *service) GenerateThumbnails(files []mod.FileEntry) error {
 			FileId: file.Id,
 		})
 	}
-	_, err := s.dao.SaveThumbnails(thumbnailStructs)
-	if err != nil {
-		return err
+
+	if len(thumbnailStructs) > 0 {
+		_, err := s.dao.SaveThumbnails(thumbnailStructs)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -61,22 +65,19 @@ func generateVideoThumbnail(system string) ([]byte, error) {
 }
 
 func generateImageThumbnail(fileName string) ([]byte, error) {
-	data, err := os.ReadFile(utils.BaseUrl + "/" + fileName)
-	if err != nil {
-		return nil, err
-	}
+	file := utils.BaseUrl + "/" + fileName
 
 	intSet := vips.IntParameter{}
 	intSet.Set(-1)
 	params := vips.NewImportParams()
 	params.NumPages = intSet
 
-	image, err := vips.LoadImageFromBuffer(data, params)
+	image, err := vips.LoadImageFromFile(file, params)
 	if err != nil {
 		return nil, err
 	}
 
-	err = applyScale(400.00, image)
+	err = image.Thumbnail(400, 0, vips.InterestingNone)
 	if err != nil {
 		return nil, err
 	}
@@ -91,11 +92,6 @@ func generateImageThumbnail(fileName string) ([]byte, error) {
 		return nil, err
 	}
 	return bytes, nil
-}
-
-func applyScale(width float64, img *vips.ImageRef) error {
-	scale := width / float64(img.Width())
-	return img.Resize(scale, vips.KernelAuto)
 }
 
 /*package thumbnail
