@@ -77,7 +77,7 @@ func generateImageThumbnail(fileName string) ([]byte, error) {
 		return nil, err
 	}
 
-	err = image.Thumbnail(400, 0, vips.InterestingNone)
+	err = image.ThumbnailWithSize(400, 0, vips.InterestingNone, vips.SizeDown)
 	if err != nil {
 		return nil, err
 	}
@@ -116,6 +116,9 @@ type service struct {
 }
 
 func NewService(daoService dao.Dao) Service {
+	vips.Startup(&vips.Config{
+		ConcurrencyLevel: 2,
+	})
 	return &service{
 		daoService,
 	}
@@ -189,25 +192,19 @@ func generateVideoThumbnail(system string) ([]byte, error) {
 }
 
 func generateImageThumbnail(fileName string) ([]byte, error) {
-	vips.Startup(nil)
-	defer vips.Shutdown()
-
-	data, err := os.ReadFile(utils.BaseUrl + "/" + fileName)
-	if err != nil {
-		return nil, err
-	}
+file := utils.BaseUrl + "/" + fileName
 
 	intSet := vips.IntParameter{}
 	intSet.Set(-1)
 	params := vips.NewImportParams()
 	params.NumPages = intSet
 
-	image, err := vips.LoadImageFromBuffer(data, params)
+	image, err := vips.LoadImageFromFile(file, params)
 	if err != nil {
 		return nil, err
 	}
 
-	err = applyScale(400.00, image)
+	err = image.Thumbnail(400, 0, vips.InterestingNone)
 	if err != nil {
 		return nil, err
 	}
