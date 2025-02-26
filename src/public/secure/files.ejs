@@ -580,6 +580,9 @@
                     async function afterDelete() {
                         await buildAlbumTabs();
                         loadDt("albumEntries");
+                        dtMap.get("entries").forEach(t => {
+                            t.ajax.reload();
+                        });
                     }
 
                     async function yes() {
@@ -750,7 +753,6 @@
                     method: "PUT",
                     uploadMultiple: false,
                     addRemoveLinks: false,
-                    parallelUploads: 1,
                     maxThumbnailFilesize: 50,
                     maxFilesize: <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>,
                 });
