@@ -28,9 +28,9 @@ jobs:
       matrix:
          include:
          - image: ${{ secrets.DOCKER_USERNAME }}/zipfiles
-            dockerfile: go/zipFiles/Dockerfile
+           dockerfile: go/zipFiles/Dockerfile
          - image: ${{ secrets.DOCKER_USERNAME }}/waifuvault
-            dockerfile: ./Dockerfile
+           dockerfile: ./Dockerfile
 
     #tags: |
       # set latest tag for master branch
