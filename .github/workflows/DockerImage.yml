@@ -30,9 +30,9 @@ jobs:
     strategy:
       matrix:
          include:
-         - image: ${{ secrets.DOCKER_USERNAME }}/zipfiles
+         - image: simonmcnair/zipfiles
            dockerfile: go/zipFiles/Dockerfile
-         - image: ${{ secrets.DOCKER_USERNAME }}/waifuvault
+         - image: simonmcnair/waifuvault
            dockerfile: ./Dockerfile
 
     #tags: |
