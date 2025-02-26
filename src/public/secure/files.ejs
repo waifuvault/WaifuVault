@@ -580,6 +580,9 @@
                     async function afterDelete() {
                         await buildAlbumTabs();
                         loadDt("albumEntries");
+                        dtMap.get("entries").forEach(t => {
+                            t.ajax.reload();
+                        });
                     }
 
                     async function yes() {
