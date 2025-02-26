@@ -3,7 +3,7 @@ name: Docker Image CI
 #you need to create and populate:
 #DOCKER_USERNAME
 #DOCKER_TOKEN
-#DOCKER_REPO_NAME (it isn't a secret but it's just easier to do it this way atm (POC))
+#DOCKER_REPO_NAME (it isn't a secret but it's just easier to do it in secrets while you're there)
 #in Repositoy secrets at https://github.com/waifuvault/WaifuVault/settings/secrets/actions
 
 
@@ -15,7 +15,6 @@ on:
     push:
         branches: 
           - main
-          - dockerhub
     # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
     pull_request:
@@ -30,16 +29,15 @@ jobs:
     strategy:
       matrix:
          include:
+         # This needs changing to your dockerhub reponame.  Can't use variables at jobs level apparently
          - image: simonmcnair/zipfiles
            dockerfile: go/zipFiles/Dockerfile
            context: go/zipFiles/
+        # This needs changing to your dockerhub reponame.  Can't use variables at jobs level apparently
          - image: simonmcnair/waifuvault
            dockerfile: ./Dockerfile
            context: .
 
-    #tags: |
-      # set latest tag for master branch
-    #  type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
     steps:
      -
         name: Checkout
