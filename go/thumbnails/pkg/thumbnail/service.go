@@ -3,6 +3,7 @@ package thumbnail
 import (
 	"encoding/base64"
 	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
@@ -14,15 +15,17 @@ type Service interface {
 }
 
 type service struct {
-	dao dao.Dao
+	dao         dao.Dao
+	redisClient *redis.Client
 }
 
-func NewService(daoService dao.Dao) Service {
+func NewService(daoService dao.Dao, rdb *redis.Client) Service {
 	vips.Startup(&vips.Config{
 		ConcurrencyLevel: 2,
 	})
 	return &service{
 		daoService,
+		rdb,
 	}
 }
 
