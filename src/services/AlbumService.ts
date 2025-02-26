@@ -6,7 +6,7 @@ import { AlbumModel } from "../model/db/Album.model.js";
 import { Builder } from "builder-pattern";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
-import { FileUtils, WorkerUtils } from "../utils/Utils.js";
+import { FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { ThumbnailCacheRepo } from "../db/repo/ThumbnailCacheRepo.js";
 import fs, { ReadStream } from "node:fs";
@@ -16,6 +16,7 @@ import { Logger } from "@tsed/logger";
 import { AfterInit } from "@tsed/common";
 import { uuid } from "../utils/uuidUtils.js";
 import { ZipFilesService } from "./microServices/zipFiles/ZipFilesService.js";
+import { ThumbnailService } from "./microServices/thumbnails/thumbnailService.js";
 
 @Service()
 export class AlbumService implements AfterInit {
@@ -28,6 +29,7 @@ export class AlbumService implements AfterInit {
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
         @Inject() private zipFilesService: ZipFilesService,
+        @Inject() private thumbnailService: ThumbnailService,
     ) {}
 
     @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
@@ -192,13 +194,18 @@ export class AlbumService implements AfterInit {
     }
 
     public async generateThumbnails(privateAlbumToken: string, filesIds: number[] = []): Promise<void> {
-        const album = await this.albumRepo.getAlbum(privateAlbumToken, false);
+        const album = await this.albumRepo.getAlbum(privateAlbumToken, true);
         if (!album) {
             throw new NotFound("Album not found");
         }
         this.checkPrivateToken(privateAlbumToken, album);
 
-        const [workerPromise] = WorkerUtils.newWorker("generateThumbnails.js", {
+        const promise = this.thumbnailService.generateThumbnail(album, filesIds);
+
+        promise
+            .then(() => this.logger.info(`Successfully generated thumbnails for album ${privateAlbumToken}`))
+            .catch(e => this.logger.error(e));
+        /* const [workerPromise] = WorkerUtils.newWorker("generateThumbnails.js", {
             privateAlbumToken: privateAlbumToken,
             filesIds,
             redisUri: this.redisUri,
@@ -206,7 +213,7 @@ export class AlbumService implements AfterInit {
 
         workerPromise
             .then(() => this.logger.info(`Successfully generated thumbnails for album ${privateAlbumToken}`))
-            .catch(e => this.logger.error(e));
+            .catch(e => this.logger.error(e));*/
     }
 
     public async getThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string, boolean]> {
