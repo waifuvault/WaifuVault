@@ -18,6 +18,7 @@ on:
           - dockerhub
     # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
+    pull_request:
 
 jobs:
 
