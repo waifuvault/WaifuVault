@@ -8,7 +8,8 @@ import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 
 @Service()
 export class ThumbnailService implements AfterInit {
-    private readonly url = "http://127.0.0.1:8080/api/v1";
+    // private readonly url = "http://127.0.0.1:5006/api/v1";
+    private readonly url = "http://127.0.0.1:5006/api/v1";
     private readonly supportedImageExtensions: string[] = ["jpg"];
 
     public constructor(

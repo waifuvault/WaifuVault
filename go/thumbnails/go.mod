@@ -5,6 +5,8 @@ go 1.24.0
 require (
 	github.com/create-go-app/fiber-go-template v1.14.0
 	github.com/davidbyttow/govips/v2 v2.16.0
+	github.com/go-ffstatic/darwin-amd64 v0.0.0-20220419131334-e9c56ca62063
+	github.com/go-ffstatic/linux-amd64 v0.0.0-20220419131335-2c4ec98944bd
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.7.1

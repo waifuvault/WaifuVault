@@ -17,6 +17,10 @@ github.com/davidbyttow/govips/v2 v2.16.0 h1:1nH/Rbx8qZP1hd+oYL9fYQjAnm1+KorX9s07
 github.com/davidbyttow/govips/v2 v2.16.0/go.mod h1:clH5/IDVmG5eVyc23qYpyi7kmOT0B/1QNTKtci4RkyM=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
+github.com/go-ffstatic/darwin-amd64 v0.0.0-20220419131334-e9c56ca62063 h1:Lhy4MZtc7zhvPSuOfDfOYuwHGQ3++vXEKVkwowXsVds=
+github.com/go-ffstatic/darwin-amd64 v0.0.0-20220419131334-e9c56ca62063/go.mod h1:8dBlJ3xj3C3oGoLAE2u7c3Dl5Spk9cbiQs9IJWaHb54=
+github.com/go-ffstatic/linux-amd64 v0.0.0-20220419131335-2c4ec98944bd h1:oYMqtbbjyQoiRSlg/3iZxs+9G2b2SaGPz73bJ9yqDug=
+github.com/go-ffstatic/linux-amd64 v0.0.0-20220419131335-2c4ec98944bd/go.mod h1:IBog11RNX7YKzt2nE5Qc0zuscWQYj5TfqY/QxTUOOpQ=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/gofiber/fiber/v2 v2.17.0/go.mod h1:iftruuHGkRYGEXVISmdD7HTYWyfS2Bh+Dkfq4n/1Owg=
 github.com/gofiber/fiber/v2 v2.52.6 h1:Rfp+ILPiYSvvVuIPvxrBns+HJp8qGLDnLJawAu27XVI=
