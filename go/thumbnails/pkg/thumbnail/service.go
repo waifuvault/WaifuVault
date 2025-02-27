@@ -62,7 +62,7 @@ func NewService(daoService dao.Dao) Service {
 func (s *service) GetAllSupportedExtensions() []string {
 	var formats []string
 
-	formats = append(formats, "jpg")
+	formats = append(formats, "jpg", "mkv")
 	for _, f := range s.FfmpegFormats {
 		formats = append(formats, f)
 	}
