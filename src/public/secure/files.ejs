@@ -435,32 +435,31 @@
             }
         }
 
+        function buildUploadToAlbumDropdown() {
+            const uploadToAlbumSelect = document.getElementById("uploadToAlbumSelect");
+            uploadToAlbumSelect.innerHTML = "";
+            const item = document.createElement("li");
+            item.addEventListener("click", () => {
+                const b = document.getElementById("uploadToAlbumButton");
+                b.innerHTML = "None";
+                delete b.dataset.token;
+            });
+            item.innerHTML = `<a class="dropdown-item" href="#" id="set-album-none">None</a>`;
+            uploadToAlbumSelect.appendChild(item);
+            for (const a of bucketAlbums) {
+                const item = document.createElement("li");
+                item.innerHTML = `<a class="dropdown-item" href="#" data-token="${a.token}">${a.name}</a>`;
+                item.addEventListener("click", (e) => {
+                    const b = document.getElementById("uploadToAlbumButton");
+                    b.dataset.token = a.token;
+                    b.innerHTML = a.name;
+                });
+                uploadToAlbumSelect.appendChild(item);
+            }
+        }
+
         async function buildAddTo() {
             document.querySelectorAll("#addToAlbumPlaceholder > ul")?.forEach(b => b.remove());
-
-            function buildUploadToAlbumDropdown() {
-                const uploadToAlbumSelect = document.getElementById("uploadToAlbumSelect");
-                uploadToAlbumSelect.innerHTML = "";
-                const item = document.createElement("li");
-                item.addEventListener("click", () => {
-                    const b = document.getElementById("uploadToAlbumButton");
-                    b.innerHTML = "None";
-                    delete b.dataset.token;
-                });
-                item.innerHTML = `<a class="dropdown-item" href="#">None</a>`;
-                uploadToAlbumSelect.appendChild(item);
-                for (const a of bucketAlbums) {
-                    const item = document.createElement("li");
-                    item.innerHTML = `<a class="dropdown-item" href="#" data-token="${a.token}">${a.name}</a>`;
-                    item.addEventListener("click", (e) => {
-                        const b = document.getElementById("uploadToAlbumButton");
-                        b.dataset.token = a.token;
-                        b.innerHTML = a.name;
-                    });
-                    uploadToAlbumSelect.appendChild(item);
-                }
-            }
-
             await getBucketData()
             const addBtn = document.getElementById("addToAlbumPlaceholder");
             addBtn.classList.add("dropdown-toggle");
@@ -583,6 +582,8 @@
                         dtMap.get("entries").forEach(t => {
                             t.ajax.reload();
                         });
+                        buildUploadToAlbumDropdown();
+                        document.getElementById('set-album-none').click();
                     }
 
                     async function yes() {
