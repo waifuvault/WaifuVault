@@ -5,6 +5,7 @@ import { Logger } from "@tsed/logger";
 import { FileUtils } from "../../../utils/Utils.js";
 import { AfterInit } from "@tsed/common";
 import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
+import { isGhAction } from "../../../config/envs/index.js";
 
 @Service()
 export class ThumbnailService implements AfterInit {
@@ -18,6 +19,9 @@ export class ThumbnailService implements AfterInit {
     ) {}
 
     public async $afterInit(): Promise<void> {
+        if (isGhAction) {
+            return;
+        }
         const response = await fetch(`${this.url}/generateThumbnails/supported`);
         if (!response.ok) {
             throw new Error("Unable to get supported extensions from microservice");
