@@ -3,6 +3,7 @@ package dao
 import (
 	"errors"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
@@ -17,17 +18,19 @@ type Dao interface {
 	ThumbnailDao
 }
 type dao struct {
-	db *gorm.DB
+	db          *gorm.DB
+	redisClient *redis.Client
 }
 
-func NewDao() (Dao, error) {
+func NewDao(rdb *redis.Client) (Dao, error) {
 	connection, err := getConnection()
 	if err != nil {
 		return nil, err
 	}
 
 	return &dao{
-		db: connection,
+		db:          connection,
+		redisClient: rdb,
 	}, nil
 }
 

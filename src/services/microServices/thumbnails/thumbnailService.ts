@@ -8,9 +8,9 @@ import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 
 @Service()
 export class ThumbnailService implements AfterInit {
-    // private readonly url = "http://127.0.0.1:5006/api/v1";
+    // private readonly url = "http://127.0.0.1:8080/api/v1";
     private readonly url = "http://127.0.0.1:5006/api/v1";
-    private readonly supportedImageExtensions: string[] = ["jpg"];
+    private supportedImageExtensions: string[] = ["jpg"];
 
     public constructor(
         @Inject() private thumbnailCacheReo: ThumbnailCacheRepo,
@@ -18,15 +18,12 @@ export class ThumbnailService implements AfterInit {
     ) {}
 
     public async $afterInit(): Promise<void> {
-        const result = await fetch(`${this.url}/generateThumbnails/image/supported`);
-        if (!result.ok) {
-            throw new Error("Unable to get supported image extensions from microservice");
+        const response = await fetch(`${this.url}/generateThumbnails/supported`);
+        if (!response.ok) {
+            throw new Error("Unable to get supported extensions from microservice");
         }
-        const json: Record<string, string> = await result.json();
-        for (const imageKey in json) {
-            const extension = json[imageKey];
-            this.supportedImageExtensions.push(extension.toLowerCase());
-        }
+        const json: string[] = await response.json();
+        this.supportedImageExtensions = this.supportedImageExtensions.concat(json);
         this.logger.info(`loaded Supported image extensions`);
     }
 
@@ -52,6 +49,9 @@ export class ThumbnailService implements AfterInit {
                     extension: entry.fileExtension,
                 };
             });
+        if (toSend.length === 0) {
+            return;
+        }
         await fetch(`${this.url}/generateThumbnails`, {
             body: JSON.stringify(toSend),
             method: "POST",
@@ -62,15 +62,10 @@ export class ThumbnailService implements AfterInit {
     }
 
     public isExtensionValidForThumbnail(file: FileUploadModel): boolean {
-        if (FileUtils.isImage(file)) {
-            const extension = file.fileExtension;
-            if (!extension) {
-                return false;
-            }
-            return this.supportedImageExtensions.includes(extension.toLowerCase());
-        } else if (FileUtils.isVideo(file)) {
+        const extension = file.fileExtension;
+        if (!extension) {
             return false;
         }
-        return false;
+        return this.supportedImageExtensions.includes(extension.toLowerCase());
     }
 }

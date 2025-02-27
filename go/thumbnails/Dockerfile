@@ -20,8 +20,8 @@ RUN go build -o thumbnails .
 FROM alpine:latest
 WORKDIR /app
 
-# Install libvips runtime library.
-RUN apk add --no-cache vips
+# Install libvips runtime library and ffmpeg (which provides ffprobe).
+RUN apk add --no-cache vips ffmpeg
 
 # Copy the binary from the build stage.
 COPY --from=builder /app/thumbnails .

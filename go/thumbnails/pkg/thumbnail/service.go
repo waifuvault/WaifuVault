@@ -6,10 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/davidbyttow/govips/v2/vips"
-	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/ffmpeg"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
 	"math/rand"
@@ -34,7 +32,7 @@ func globalFloat64() float64 {
 
 type Service interface {
 	GenerateThumbnails(files []mod.FileEntry) error
-	GetAllSupportedImageExtensions() map[vips.ImageType]string
+	GetAllSupportedExtensions() []string
 }
 
 type probeData struct {
@@ -45,11 +43,10 @@ type probeData struct {
 
 type service struct {
 	dao           dao.Dao
-	redisClient   *redis.Client
 	FfmpegFormats []string
 }
 
-func NewService(daoService dao.Dao, rdb *redis.Client) Service {
+func NewService(daoService dao.Dao) Service {
 	vips.Startup(&vips.Config{})
 	vips.LoggingSettings(nil, vips.LogLevelError)
 	formats, err := utils.GetFfmpegSupportedVideoFormats()
@@ -58,18 +55,24 @@ func NewService(daoService dao.Dao, rdb *redis.Client) Service {
 	}
 	return &service{
 		daoService,
-		rdb,
 		formats,
 	}
 }
 
-func (s *service) GetAllSupportedImageExtensions() map[vips.ImageType]string {
-	return vips.ImageTypes
+func (s *service) GetAllSupportedExtensions() []string {
+	var formats []string
+
+	formats = append(formats, "jpg")
+	for _, f := range s.FfmpegFormats {
+		formats = append(formats, f)
+	}
+	formats = append(formats, s.FfmpegFormats...)
+	return formats
 }
 
 func (s *service) fileSupported(file mod.FileEntry) bool {
 	if utils.IsImage(file.MediaType) {
-		for _, ext := range s.GetAllSupportedImageExtensions() {
+		for _, ext := range s.GetAllSupportedExtensions() {
 			lower := strings.ToLower(file.Extension)
 			if lower == "jpg" || strings.ToLower(ext) == lower {
 				return true
@@ -157,8 +160,8 @@ func (s *service) IsFormatSupportedByFfmpeg(extension string) bool {
 }
 
 func generateVideoThumbnail(videoPath string) ([]byte, error) {
-	// Run ffprobe to retrieve metadata in JSON format.
-	probeCmd := exec.Command(ffmpeg.FfprobePath, "-v", "error", "-show_format", "-print_format", "json", videoPath)
+	videoPath = utils.BaseUrl + "/" + videoPath
+	probeCmd := exec.Command("ffprobe", "-v", "error", "-show_format", "-print_format", "json", videoPath)
 	probeOut, err := probeCmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve video metadata: %w", err)
@@ -193,7 +196,7 @@ func generateVideoThumbnail(videoPath string) ([]byte, error) {
 		"pipe:1",
 	}
 
-	ffmpegCmd := exec.Command(ffmpeg.FfmpegPath, ffmpegArgs...)
+	ffmpegCmd := exec.Command("ffmpeg", ffmpegArgs...)
 	var buf bytes.Buffer
 	ffmpegCmd.Stdout = &buf
 
@@ -227,9 +230,9 @@ func generateImageThumbnail(fileName string) ([]byte, error) {
 		return nil, err
 	}
 
-	bytes, _, err := image.ExportWebp(nil)
+	webp, _, err := image.ExportWebp(nil)
 	if err != nil {
 		return nil, err
 	}
-	return bytes, nil
+	return webp, nil
 }

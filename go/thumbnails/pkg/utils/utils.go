@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/ffmpeg"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -64,7 +63,7 @@ func IsVideo(mediaType string) bool {
 }
 
 func GetFfmpegSupportedVideoFormats() ([]string, error) {
-	cmd := exec.Command(ffmpeg.FfmpegPath, "-hide_banner", "-formats")
+	cmd := exec.Command("ffmpeg", "-hide_banner", "-formats")
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to run ffmpeg: %w", err)
@@ -72,7 +71,6 @@ func GetFfmpegSupportedVideoFormats() ([]string, error) {
 
 	scanner := bufio.NewScanner(bytes.NewReader(out))
 	var formats []string
-	formatMap := make(map[string]struct{})
 	foundSeparator := false
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -95,16 +93,14 @@ func GetFfmpegSupportedVideoFormats() ([]string, error) {
 		for _, alias := range aliases {
 			alias = strings.TrimSpace(alias)
 			if alias != "" {
-				formatMap[alias] = struct{}{}
+				formats = append(formats, alias)
 			}
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("error scanning ffmpeg output: %w", err)
 	}
-	for alias := range formatMap {
-		formats = append(formats, alias)
-	}
+	log.Info().Msgf("loaded %d formats from ffmpeg", len(formats))
 	return formats, nil
 }
 

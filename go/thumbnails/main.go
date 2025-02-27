@@ -27,13 +27,13 @@ func main() {
 	app := fiber.New(config)
 
 	// dao
-	mainDao, err := dao.NewDao()
+	mainDao, err := dao.NewDao(rdb)
 	if err != nil {
 		panic(err)
 	}
 
 	// services
-	service := controllers.NewService(mainDao, rdb)
+	service := controllers.NewService(mainDao)
 
 	// Middlewares.
 	middleware.FiberMiddleware(app) // Register Fiber's middleware for app.

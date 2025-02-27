@@ -205,15 +205,6 @@ export class AlbumService implements AfterInit {
         promise
             .then(() => this.logger.info(`Successfully generated thumbnails for album ${privateAlbumToken}`))
             .catch(e => this.logger.error(e));
-        /* const [workerPromise] = WorkerUtils.newWorker("generateThumbnails.js", {
-            privateAlbumToken: privateAlbumToken,
-            filesIds,
-            redisUri: this.redisUri,
-        });
-
-        workerPromise
-            .then(() => this.logger.info(`Successfully generated thumbnails for album ${privateAlbumToken}`))
-            .catch(e => this.logger.error(e));*/
     }
 
     public async getThumbnail(imageId: number, publicAlbumToken: string): Promise<[Buffer, string, boolean]> {
