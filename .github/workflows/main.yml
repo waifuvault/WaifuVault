@@ -4,28 +4,70 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+
 jobs:
-  build:
+  go-microservice-build:
+    name: Build Go microservices
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Install required packages for building the thumbnails module
+      - name: Install libvips dependencies for thumbnails
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvips-dev build-essential
+
+      # Setup Go
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      # Build the thumbnails module with CGO enabled
+      - name: Build thumbnails
+        run: |
+          cd go/thumbnails
+          CGO_ENABLED=1 go build .
+
+      # Build the zipFiles module
+      - name: Build zipFiles
+        run: |
+          cd go/zipFiles
+          go build .
+
+  waifuvault-build:
+    name: Build Waifuvault
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setup Node.js
       - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           check-latest: true
-      - name: install
+
+      - name: Install dependencies
         run: npm install
-      - name: TSC
+
+      - name: Compile TypeScript
         run: npm run tsc
-      - name: ESLint
+
+      - name: Run ESLint
         run: npm run lint
-      - name: prettier
+
+      - name: Format with Prettier
         run: npm run prettier
-      - name: compile
+
+      - name: Build application
         run: npm run build
-      - name: migration
+
+      - name: Run migrations
         run: npm run runmigration:ci
+
       - name: Create files folder
         run: mkdir -p files
-      - name: start-test
+
+      - name: Start tests
         run: npm run start_js:ci

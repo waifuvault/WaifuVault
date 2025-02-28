@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/waifuvault/WaifuVault/pkg/zip"
+	"github.com/waifuvault/WaifuVault/zipfiles/pkg/zip"
 )
 
 type Service struct {
