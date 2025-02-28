@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/davidbyttow/govips/v2/vips"
-	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
@@ -241,19 +240,23 @@ func generateImageThumbnail(fileEntry mod.FileEntry) ([]byte, error) {
 		return nil, err
 	}
 
+	var importParams *vips.ImportParams
+
+	if isAnimatedImage(fileEntry.Extension) {
+		importParams = &vips.ImportParams{
+			NumPages: intSet,
+		}
+	} else {
+		importParams = vips.NewImportParams()
+	}
+
 	vipsImage, err := vips.LoadThumbnailFromFile(
 		file,
 		width,
 		height,
 		vips.InterestingNone,
 		vips.SizeDown,
-		lo.Ternary(
-			isAnimatedImage(fileEntry.Extension),
-			&vips.ImportParams{
-				NumPages: intSet,
-			},
-			vips.NewImportParams(),
-		),
+		importParams,
 	)
 	if err != nil {
 		return nil, err
