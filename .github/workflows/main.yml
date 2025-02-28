@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  go-microservice-build:
+    name: Build Go Modules
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,7 +18,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libvips-dev build-essential
 
-      # Setup Go for building Go modules
+      # Setup Go
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -35,24 +36,38 @@ jobs:
           cd go/zipFiles
           go build .
 
-      # Node.js steps
+  waifuvault-build:
+    name: Build Node Modules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setup Node.js
       - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           check-latest: true
-      - name: install
+
+      - name: Install dependencies
         run: npm install
-      - name: TSC
+
+      - name: Compile TypeScript
         run: npm run tsc
-      - name: ESLint
+
+      - name: Run ESLint
         run: npm run lint
-      - name: prettier
+
+      - name: Format with Prettier
         run: npm run prettier
-      - name: compile
+
+      - name: Build application
         run: npm run build
-      - name: migration
+
+      - name: Run migrations
         run: npm run runmigration:ci
+
       - name: Create files folder
         run: mkdir -p files
-      - name: start-test
+
+      - name: Start tests
         run: npm run start_js:ci
