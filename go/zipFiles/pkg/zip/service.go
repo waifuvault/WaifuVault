@@ -6,7 +6,10 @@ import (
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/utils"
 	"io"
 	"path/filepath"
+	"sync"
 )
+
+var ActiveZipping sync.Map
 
 type Service interface {
 	ZipFiles(albumName string, filesToZip []mod.ZipFileEntry) (string, error)

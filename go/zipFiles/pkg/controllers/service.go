@@ -2,10 +2,7 @@ package controllers
 
 import (
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/zip"
-	"sync"
 )
-
-var activeZipping sync.Map
 
 type Service struct {
 	ZipService zip.Service
