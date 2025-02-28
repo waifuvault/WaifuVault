@@ -29,7 +29,14 @@ func (s *Service) zipFiles(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("album name not specified", errors.New("album name not specified")))
 	}
 
-	result, err := s.ZipService.ZipFiles(albumName, filesToZip)
+	clientIP := ctx.Query("ip")
+	key := clientIP + ":" + albumName
+
+	if s.ZipService.IsZipping(key) {
+		return ctx.Status(fiber.StatusConflict).JSON(wapimod.NewApiError("another process is already zipping this album from this IP", errors.New("another process is already zipping this album from this IP")))
+	}
+
+	result, err := s.ZipService.ZipFiles(albumName, filesToZip, key)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(wapimod.NewApiError("error zipping files", err))
 	}
