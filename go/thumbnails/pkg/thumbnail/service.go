@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/rs/zerolog/log"
-	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
