@@ -32,18 +32,22 @@ export class FileServerController {
     ): Promise<unknown> {
         await this.hasPassword(resource, password);
         const entryWrapper = await this.fileService.getEntry(resource, requestedFileName, password);
-        const mime = entryWrapper.entry.mediaType ?? "application/octet-stream"; // unknown, send an octet-stream and let the client figure it out
+        const mime = entryWrapper.entry.mediaType ?? "application/octet-stream";
 
         if (download) {
             res.attachment(entryWrapper.entry.parsedFileName);
         }
         res.contentType(mime);
+
         if (download) {
+            res.setHeader("Content-Length", entryWrapper.entry.fileSize);
+            res.setHeader("accept-ranges", "bytes");
             res.on("finish", () => this.postProcess(entryWrapper.entry));
             return entryWrapper.getStream(password);
         }
 
-        // no chunking if your video is encrypted or one time download
+        // Chunking is applied only if the mime type is allowed, the file is not encrypted,
+        // it's not a one-time download, and a valid Range header is present.
         if (
             this.allowedChunkMimeTypes.some(substr => mime.startsWith(substr)) &&
             !entryWrapper.entry.encrypted &&
@@ -51,14 +55,17 @@ export class FileServerController {
             // if there is no range, we should not chunk data, just send the stream to prevent people from downloading the video
             req.headers.range
         ) {
+            res.setHeader("Content-Encoding", "identity");
             await this.chunkData(res, req, mime, entryWrapper);
             return;
         }
 
+        res.setHeader("Content-Length", entryWrapper.entry.fileSize);
         res.on("finish", () => this.postProcess(entryWrapper.entry));
         if (entryWrapper.entry.encrypted) {
             return entryWrapper.getBuffer(password);
         }
+        res.setHeader("accept-ranges", "bytes");
         return entryWrapper.getStream(password);
     }
 
@@ -70,8 +77,32 @@ export class FileServerController {
     ): Promise<void> {
         const range = req.headers.range!;
         const videoSize = entryWrapper.entry.fileSize;
-        const start = Number(range.replace(/\D/g, ""));
-        const end = Math.min(start + this.chunkSize, videoSize - 1);
+
+        const rangeMatch = range.match(/bytes=(\d*)-(\d*)/);
+        if (!rangeMatch) {
+            // Malformed range header; fall back to full content delivery.
+            res.setHeader("Content-Length", videoSize);
+            res.writeHead(StatusCodes.OK, { "Content-Type": contentType });
+            const videoStream = await entryWrapper.getStream();
+            videoStream.pipe(res);
+            return;
+        }
+        let start = parseInt(rangeMatch[1], 10);
+        // If the end is not provided, use a default chunk size or until the end of the file.
+        let end = rangeMatch[2] ? parseInt(rangeMatch[2], 10) : Math.min(start + this.chunkSize, videoSize - 1);
+
+        // Validate start and end bounds
+        if (Number.isNaN(start) || start < 0) {
+            start = 0;
+        }
+        if (Number.isNaN(end) || end >= videoSize) {
+            end = videoSize - 1;
+        }
+        if (start > end) {
+            res.status(StatusCodes.REQUESTED_RANGE_NOT_SATISFIABLE).send("Invalid range");
+            return;
+        }
+
         const contentLength = end - start + 1;
         const headers = {
             "Content-Range": `bytes ${start}-${end}/${videoSize}`,
