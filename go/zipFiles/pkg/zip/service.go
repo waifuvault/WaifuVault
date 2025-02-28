@@ -6,10 +6,14 @@ import (
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/utils"
 	"io"
 	"path/filepath"
+	"sync"
 )
 
+var activeZipping sync.Map
+
 type Service interface {
-	ZipFiles(albumName string, filesToZip []mod.ZipFileEntry) (string, error)
+	ZipFiles(albumName string, filesToZip []mod.ZipFileEntry, concurrentKey string) (string, error)
+	IsZipping(concurrentKey string) bool
 }
 
 type service struct {
@@ -19,7 +23,19 @@ func NewService() Service {
 	return &service{}
 }
 
-func (s *service) ZipFiles(albumName string, filesToZip []mod.ZipFileEntry) (string, error) {
+func (s *service) IsZipping(concurrentKey string) bool {
+	_, loaded := activeZipping.Load(concurrentKey)
+	return loaded
+}
+
+func (s *service) ZipFiles(
+	albumName string,
+	filesToZip []mod.ZipFileEntry,
+	concurrentKey string,
+) (string, error) {
+	activeZipping.LoadOrStore(concurrentKey, true)
+	defer activeZipping.Delete(concurrentKey)
+
 	outFile, zipName, err := utils.CreateZipFile(albumName)
 	if err != nil {
 		return "", err
