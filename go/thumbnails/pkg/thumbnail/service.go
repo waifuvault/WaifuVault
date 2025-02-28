@@ -256,14 +256,7 @@ func generateImageThumbnail(fileEntry mod.FileEntry) ([]byte, error) {
 		),
 	)
 	if err != nil {
-		if strings.Contains(err.Error(), "no prop") {
-			vipsImage, err = vips.LoadThumbnailFromFile(file, width, height, vips.InterestingNone, vips.SizeDown, vips.NewImportParams())
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	err = vipsImage.AutoRotate()
