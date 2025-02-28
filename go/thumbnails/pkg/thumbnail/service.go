@@ -169,7 +169,7 @@ func generateVideoThumbnail(videoPath string) ([]byte, error) {
 
 	// Decode the JSON output to extract the duration.
 	var probe probeData
-	if err := json.Unmarshal(probeOut, &probe); err != nil {
+	if err = json.Unmarshal(probeOut, &probe); err != nil {
 		return nil, fmt.Errorf("failed to parse video metadata: %w", err)
 	}
 	if probe.Format.Duration == "" {

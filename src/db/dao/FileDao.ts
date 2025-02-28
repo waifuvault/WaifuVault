@@ -189,7 +189,6 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
             order: orderOptions,
             skip: start,
             take: records,
-            ...this.relation,
         });
     }
 
