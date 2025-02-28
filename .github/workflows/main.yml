@@ -4,11 +4,31 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Setup Go for building Go modules
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      # Build the Go modules to ensure they compile correctly
+      - name: Build thumbnails module
+        run: |
+          cd go/thumbnails
+          go build .
+
+      - name: Build zipFiles module
+        run: |
+          cd go/zipFiles
+          go build .
+
+      # Node.js steps
       - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
