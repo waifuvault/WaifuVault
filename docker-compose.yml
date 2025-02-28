@@ -33,11 +33,26 @@ services:
     container_name: zipfiles
     restart: always
     image: waifuvault-zipfiles
+    ports:
+      - "127.0.0.1:5005:8080"
+    volumes:
+      - ./files:/app/files
+    env_file:
+      - ./.env
+      - ./postgres.env
+
+  thumbnails:
+    build:
+      context: ./go/thumbnails
+      dockerfile: Dockerfile
+    container_name: thumbnails
+    restart: always
+    image: waifuvault-thumbnails
     depends_on:
       - redis
       - postgres
     ports:
-      - "127.0.0.1:5005:8080"
+      - "127.0.0.1:5006:8080"
     volumes:
       - ./files:/app/files
     env_file:

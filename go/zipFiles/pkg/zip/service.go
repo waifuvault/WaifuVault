@@ -2,8 +2,8 @@ package zip
 
 import (
 	"github.com/klauspost/compress/zip"
-	"github.com/waifuvault/WaifuVault/pkg/mod"
-	"github.com/waifuvault/WaifuVault/pkg/utils"
+	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
+	"github.com/waifuvault/WaifuVault/zipfiles/pkg/utils"
 	"io"
 	"path/filepath"
 )

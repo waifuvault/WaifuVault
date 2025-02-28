@@ -1,4 +1,4 @@
-module github.com/waifuvault/WaifuVault
+module github.com/waifuvault/WaifuVault/zipfiles
 
 go 1.24.0
 

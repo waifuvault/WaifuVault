@@ -69,7 +69,6 @@ export class MimeService {
         } catch {
             return null;
         }
-
         // then check it via the file extension
         const extType = mime.getType(filepath);
         if (extType) {

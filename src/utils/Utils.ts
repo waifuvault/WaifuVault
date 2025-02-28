@@ -10,8 +10,9 @@ import { isFormatSupportedByFfmpeg } from "./ffmpgWrapper.js";
 import { WorkerResponse } from "./typeings.js";
 import { Worker } from "node:worker_threads";
 import * as crypto from "node:crypto";
-import { constant } from "@tsed/di";
+import { constant, inject } from "@tsed/di";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
+import { ThumbnailService } from "../services/microServices/thumbnails/thumbnailService.js";
 
 export class ObjectUtils {
     public static getNumber(source: string): number {
@@ -126,9 +127,9 @@ export class FileUtils {
     }
 
     public static isValidForThumbnail(file: FileUploadModel): boolean {
-        return (
-            (FileUtils.isImage(file) || FileUtils.isVideoSupportedByFfmpeg(file)) && file.fileProtectionLevel === "None"
-        );
+        const thumbService = inject(ThumbnailService);
+        const validForThumb = thumbService.isExtensionValidForThumbnail(file);
+        return validForThumb && file.fileProtectionLevel === "None";
     }
 
     public static isVideoSupportedByFfmpeg(file: FileUploadModel): boolean {

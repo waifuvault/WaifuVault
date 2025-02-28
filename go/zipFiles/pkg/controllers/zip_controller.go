@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/waifuvault/WaifuVault/pkg/mod"
-	"github.com/waifuvault/WaifuVault/pkg/wapimod"
+	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
+	"github.com/waifuvault/WaifuVault/zipfiles/pkg/wapimod"
 )
 
 func (s *Service) getAllZipRoutes() []FSetupRoute {
