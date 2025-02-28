@@ -1,4 +1,4 @@
-import { Get, Hidden } from "@tsed/schema";
+import { Get, Header, Hidden } from "@tsed/schema";
 import { Controller, Inject } from "@tsed/di";
 import { HeaderParams, PathParams, QueryParams, Req, Res } from "@tsed/common";
 import * as Path from "node:path";
@@ -9,6 +9,7 @@ import { FileService } from "../../services/FileService.js";
 import { FileUploadService } from "../../services/FileUploadService.js";
 import { EntryEncryptionWrapper } from "../../model/rest/EntryEncryptionWrapper.js";
 import { StatusCodes } from "http-status-codes";
+import { FileUtils } from "../../utils/Utils.js";
 
 @Hidden()
 @Controller("/")
@@ -22,6 +23,9 @@ export class FileServerController {
     private readonly chunkSize = 10 ** 6; // 1MB
 
     @Get("/:t/:file(*)?")
+    @Header({
+        "Content-Encoding": "identity", // disable gzip
+    })
     public async getFile(
         @Res() res: Response,
         @Req() req: Request,
@@ -41,9 +45,12 @@ export class FileServerController {
 
         if (download) {
             res.setHeader("Content-Length", entryWrapper.entry.fileSize);
-            res.setHeader("accept-ranges", "bytes");
             res.on("finish", () => this.postProcess(entryWrapper.entry));
             return entryWrapper.getStream(password);
+        }
+
+        if (FileUtils.isVideo(entryWrapper.entry) || FileUtils.isAudio(entryWrapper.entry)) {
+            res.setHeader("accept-ranges", "bytes");
         }
 
         // Chunking is applied only if the mime type is allowed, the file is not encrypted,
@@ -55,7 +62,6 @@ export class FileServerController {
             // if there is no range, we should not chunk data, just send the stream to prevent people from downloading the video
             req.headers.range
         ) {
-            res.setHeader("Content-Encoding", "identity");
             await this.chunkData(res, req, mime, entryWrapper);
             return;
         }
@@ -65,7 +71,6 @@ export class FileServerController {
         if (entryWrapper.entry.encrypted) {
             return entryWrapper.getBuffer(password);
         }
-        res.setHeader("accept-ranges", "bytes");
         return entryWrapper.getStream(password);
     }
 
