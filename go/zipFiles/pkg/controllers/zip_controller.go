@@ -6,7 +6,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/wapimod"
-	"github.com/waifuvault/WaifuVault/zipfiles/pkg/zip"
 )
 
 func (s *Service) getAllZipRoutes() []FSetupRoute {
@@ -33,12 +32,11 @@ func (s *Service) zipFiles(ctx *fiber.Ctx) error {
 	clientIP := ctx.Query("ip")
 	key := clientIP + ":" + albumName
 
-	if _, exists := zip.ActiveZipping.LoadOrStore(key, true); exists {
+	if s.ZipService.IsZipping(key) {
 		return ctx.Status(fiber.StatusConflict).JSON(wapimod.NewApiError("another process is already zipping this album from this IP", errors.New("another process is already zipping this album from this IP")))
 	}
-	defer zip.ActiveZipping.Delete(key)
 
-	result, err := s.ZipService.ZipFiles(albumName, filesToZip)
+	result, err := s.ZipService.ZipFiles(albumName, filesToZip, key)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(wapimod.NewApiError("error zipping files", err))
 	}
