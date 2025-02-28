@@ -6,6 +6,7 @@ import { FileUtils } from "../../../utils/Utils.js";
 import { AfterInit } from "@tsed/common";
 import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { isGhAction } from "../../../config/envs/index.js";
+import { HTTPException } from "@tsed/exceptions";
 
 @Service()
 export class ThumbnailService implements AfterInit {
@@ -56,13 +57,17 @@ export class ThumbnailService implements AfterInit {
         if (toSend.length === 0) {
             return;
         }
-        await fetch(`${this.url}/generateThumbnails`, {
+        const r = await fetch(`${this.url}/generateThumbnails?albumId=${album.id}`, {
             body: JSON.stringify(toSend),
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
         });
+        const json = await r.json();
+        if (!r.ok) {
+            throw new HTTPException(r.status, json.message);
+        }
     }
 
     public isExtensionValidForThumbnail(file: FileUploadModel): boolean {

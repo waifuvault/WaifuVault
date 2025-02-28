@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
@@ -33,8 +35,19 @@ func (s *Service) generateThumbnails(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&thumbnailEntries); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("invalid payload", err))
 	}
+
+	var albumId int
+	if albumId = ctx.QueryInt("albumId"); albumId == 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("albumId name not specified", errors.New("albumId name not specified")))
+	}
+
+	if s.ThumbnailService.IsAlbumLoading(albumId) {
+		errMsg := fmt.Sprintf("albumId %d is currently loading", albumId)
+		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError(errMsg, errors.New(errMsg)))
+	}
+
 	go func() {
-		err := s.ThumbnailService.GenerateThumbnails(thumbnailEntries)
+		err := s.ThumbnailService.GenerateThumbnails(thumbnailEntries, albumId)
 		if err != nil {
 			log.Error().Err(err).Msg("error generating thumbnails")
 		}

@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/davidbyttow/govips/v2/vips"
-	"github.com/rs/zerolog/log"
+	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
+	"image"
 	"math/rand"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -19,8 +21,9 @@ import (
 )
 
 var (
-	globalRand   = rand.New(rand.NewSource(time.Now().UnixNano()))
-	globalRandMu sync.Mutex
+	globalRand      = rand.New(rand.NewSource(time.Now().UnixNano()))
+	globalRandMu    sync.Mutex
+	albumProcessing sync.Map
 )
 
 // globalFloat64 returns a random float64 in a thread-safe manner.
@@ -31,8 +34,9 @@ func globalFloat64() float64 {
 }
 
 type Service interface {
-	GenerateThumbnails(files []mod.FileEntry) error
+	GenerateThumbnails(files []mod.FileEntry, album int) error
 	GetAllSupportedExtensions() []string
+	IsAlbumLoading(album int) bool
 }
 
 type probeData struct {
@@ -66,6 +70,11 @@ func (s *service) GetAllSupportedExtensions() []string {
 	for _, f := range s.FfmpegFormats {
 		formats = append(formats, f)
 	}
+
+	for _, f := range vips.ImageTypes {
+		formats = append(formats, f)
+	}
+
 	formats = append(formats, s.FfmpegFormats...)
 	return formats
 }
@@ -84,7 +93,18 @@ func (s *service) fileSupported(file mod.FileEntry) bool {
 	return false
 }
 
-func (s *service) GenerateThumbnails(files []mod.FileEntry) error {
+func (s *service) IsAlbumLoading(albumId int) bool {
+	_, loaded := albumProcessing.Load(albumId)
+	return loaded
+}
+
+func (s *service) GenerateThumbnails(files []mod.FileEntry, albumId int) error {
+	if _, loaded := albumProcessing.LoadOrStore(albumId, true); loaded {
+		return fmt.Errorf("albumId %d is already being processed", albumId)
+	}
+	// Ensure the processing flag is removed when done.
+	defer albumProcessing.Delete(albumId)
+
 	numWorkers := 4
 	filesChan := make(chan mod.FileEntry)
 	resultsChan := make(chan mod.Thumbnail)
@@ -102,15 +122,15 @@ func (s *service) GenerateThumbnails(files []mod.FileEntry) error {
 				var thumbnailBytes []byte
 				var err error
 				if utils.IsImage(file.MediaType) {
-					thumbnailBytes, err = generateImageThumbnail(file.FullFileNameOnSystem)
+					thumbnailBytes, err = generateImageThumbnail(file)
 					if err != nil {
-						log.Err(err).Msg("Error generating image thumbnail")
+						// consider using logging here if needed
 						continue
 					}
 				} else if utils.IsVideo(file.MediaType) {
 					thumbnailBytes, err = generateVideoThumbnail(file.FullFileNameOnSystem)
 					if err != nil {
-						log.Err(err).Msg("Error generating video thumbnail")
+						// consider logging the error here if needed
 						continue
 					}
 				} else {
@@ -141,6 +161,9 @@ func (s *service) GenerateThumbnails(files []mod.FileEntry) error {
 		thumbnailStructs = append(thumbnailStructs, thumbnail)
 	}
 
+	if len(thumbnailStructs) == 0 {
+		return nil
+	}
 	_, err := s.dao.SaveThumbnails(thumbnailStructs)
 	if err != nil {
 		return err
@@ -207,32 +230,90 @@ func generateVideoThumbnail(videoPath string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func generateImageThumbnail(fileName string) ([]byte, error) {
-	file := utils.BaseUrl + "/" + fileName
+func generateImageThumbnail(fileEntry mod.FileEntry) ([]byte, error) {
+	file := utils.BaseUrl + "/" + fileEntry.FullFileNameOnSystem
 
 	intSet := vips.IntParameter{}
 	intSet.Set(-1)
-	params := vips.NewImportParams()
-	params.NumPages = intSet
 
-	image, err := vips.LoadImageFromFile(file, params)
+	width, height, err := getResizedDimensions(file)
 	if err != nil {
 		return nil, err
 	}
 
-	err = image.ThumbnailWithSize(400, 0, vips.InterestingNone, vips.SizeDown)
+	vipsImage, err := vips.LoadThumbnailFromFile(
+		file,
+		width,
+		height,
+		vips.InterestingNone,
+		vips.SizeDown,
+		lo.Ternary(
+			isAnimatedImage(fileEntry.Extension),
+			&vips.ImportParams{
+				NumPages: intSet,
+			},
+			vips.NewImportParams(),
+		),
+	)
+	if err != nil {
+		if strings.Contains(err.Error(), "no prop") {
+			vipsImage, err = vips.LoadThumbnailFromFile(file, width, height, vips.InterestingNone, vips.SizeDown, vips.NewImportParams())
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
+	}
+
+	err = vipsImage.AutoRotate()
 	if err != nil {
 		return nil, err
 	}
 
-	err = image.RemoveMetadata("delay", "dispose", "loop", "loop_count")
+	err = vipsImage.RemoveMetadata("delay", "dispose", "loop", "loop_count")
 	if err != nil {
 		return nil, err
 	}
 
-	webp, _, err := image.ExportWebp(nil)
+	webp, _, err := vipsImage.ExportWebp(nil)
 	if err != nil {
 		return nil, err
 	}
 	return webp, nil
+}
+
+func getResizedDimensions(filePath string) (newWidth, newHeight int, err error) {
+	// Open the image file.
+	file, err := os.Open(filePath)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer file.Close()
+
+	// Decode only the image configuration (metadata) without reading the entire image.
+	config, _, err := image.DecodeConfig(file)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	origWidth := config.Width
+	origHeight := config.Height
+
+	if origWidth == 0 {
+		return 0, 0, nil
+	}
+
+	// Fix the new width to 400 and calculate the scaling factor.
+	newWidth = 400
+	scaleFactor := float64(newWidth) / float64(origWidth)
+	newHeight = int(float64(origHeight) * scaleFactor)
+
+	return
+}
+
+func isAnimatedImage(extension string) bool {
+	return extension == "gif" ||
+		extension == "webp" ||
+		extension == "heif"
 }
