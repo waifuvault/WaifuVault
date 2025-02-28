@@ -17,6 +17,7 @@ import { AfterInit } from "@tsed/common";
 import { uuid } from "../utils/uuidUtils.js";
 import { ZipFilesService } from "./microServices/zipFiles/ZipFilesService.js";
 import { ThumbnailService } from "./microServices/thumbnails/thumbnailService.js";
+import BucketType from "../model/constants/BucketType.js";
 
 @Service()
 export class AlbumService implements AfterInit {
@@ -34,6 +35,9 @@ export class AlbumService implements AfterInit {
 
     @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
     private readonly zipMaxFileSize: string;
+
+    @Constant(GlobalEnv.ALBUM_FILE_LIMIT, "256")
+    private readonly fileLimit: string;
 
     @Constant(GlobalEnv.REDIS_URI)
     private readonly redisUri: string;
@@ -109,7 +113,8 @@ export class AlbumService implements AfterInit {
     }
 
     public async assignFilesToAlbum(albumToken: string, files: string[]): Promise<AlbumModel> {
-        const album = await this.albumRepo.getAlbum(albumToken, false);
+        const fileLimit = Number.parseInt(this.fileLimit, 10);
+        const album = await this.albumRepo.getAlbum(albumToken, true);
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
@@ -127,6 +132,16 @@ export class AlbumService implements AfterInit {
 
         for (const file of filesToAssociate) {
             this.validateForAssociation(file);
+        }
+
+        const fileIdsInAlbum = album.files?.map(f => f.id) ?? [];
+        const fileIdsToAdd = filesToAssociate.map(f => f.id).filter(f => !fileIdsInAlbum.includes(f));
+        const bucket = await album.bucket;
+        if (
+            fileIdsInAlbum.length + fileIdsToAdd.length > fileLimit &&
+            (bucket?.type ?? BucketType.NORMAL) == BucketType.NORMAL
+        ) {
+            throw new BadRequest(`Album cannot have more than ${fileLimit} files`);
         }
 
         const model = await this.addFilesToAlbum(albumToken, filesToAssociate);

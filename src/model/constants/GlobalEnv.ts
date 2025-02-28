@@ -27,6 +27,7 @@ enum GlobalEnv {
     ZIP_MAX_SIZE_MB = `${prefix}ZIP_MAX_SIZE_MB`,
     IP_SALT = `${prefix}IP_SALT`,
     HOME_PAGE_FILE_COUNTER = `${prefix}HOME_PAGE_FILE_COUNTER`,
+    ALBUM_FILE_LIMIT = `${prefix}ALBUM_FILE_LIMIT`,
 }
 
 export default GlobalEnv;
