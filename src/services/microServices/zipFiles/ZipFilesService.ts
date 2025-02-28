@@ -1,11 +1,15 @@
-import { Service } from "@tsed/di";
+import { InjectContext, Service } from "@tsed/di";
 import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { MicroServiceResponse } from "../../../utils/typeings.js";
 import { HTTPException } from "@tsed/exceptions";
-import { filesDir } from "../../../utils/Utils.js";
+import { filesDir, NetworkUtils } from "../../../utils/Utils.js";
+import type { PlatformContext } from "@tsed/common";
 
 @Service()
 export class ZipFilesService {
+    @InjectContext()
+    protected $ctx?: PlatformContext;
+
     private readonly url = "http://127.0.0.1:5005/api/v1";
 
     public async zipFiles(files: FileUploadModel[], albumName: string): Promise<string> {
@@ -16,7 +20,14 @@ export class ZipFilesService {
             };
         });
 
-        const res = await fetch(`${this.url}/zipFiles?albumName=${albumName}`, {
+        const req = this.$ctx?.request.request;
+        if (!req) {
+            throw new HTTPException(500, "Unable to find IP");
+        }
+
+        const ip = NetworkUtils.getIp(req);
+
+        const res = await fetch(`${this.url}/zipFiles?albumName=${albumName}&ip=${ip}`, {
             method: "POST",
             body: JSON.stringify(servicePayload),
             headers: {
