@@ -41,7 +41,9 @@ func (s *Service) generateThumbnails(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("albumId name not specified", errors.New("albumId name not specified")))
 	}
 
-	if s.ThumbnailService.IsAlbumLoading(albumId) {
+	addingAdditionalFiles := ctx.QueryBool("addingAdditionalFiles", false)
+
+	if !addingAdditionalFiles && s.ThumbnailService.IsAlbumLoading(albumId) {
 		errMsg := fmt.Sprintf("albumId %d is currently loading", albumId)
 		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError(errMsg, errors.New(errMsg)))
 	}

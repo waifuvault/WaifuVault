@@ -33,6 +33,8 @@ export class ThumbnailService implements AfterInit {
     }
 
     public async generateThumbnail(album: AlbumModel, filesIds: number[] = []): Promise<void> {
+        const addingFiles = filesIds.length > 0;
+
         const entries =
             album.files?.filter(
                 f => f.fileProtectionLevel === "None" && (filesIds.length === 0 || filesIds.includes(f.id)),
@@ -57,13 +59,16 @@ export class ThumbnailService implements AfterInit {
         if (toSend.length === 0) {
             return;
         }
-        const r = await fetch(`${this.url}/generateThumbnails?albumId=${album.id}`, {
-            body: JSON.stringify(toSend),
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
+        const r = await fetch(
+            `${this.url}/generateThumbnails?albumId=${album.id}&addingAdditionalFiles=${addingFiles}`,
+            {
+                body: JSON.stringify(toSend),
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
             },
-        });
+        );
         const json = await r.json();
         if (!r.ok) {
             throw new HTTPException(r.status, json.message);
