@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
@@ -124,13 +125,13 @@ func (s *service) GenerateThumbnails(files []mod.FileEntry, albumId int) error {
 				if utils.IsImage(file.MediaType) {
 					thumbnailBytes, err = generateImageThumbnail(file)
 					if err != nil {
-						// consider using logging here if needed
+						log.Err(err).Msgf("failed to generate thumbnail for file %s", file.FullFileNameOnSystem)
 						continue
 					}
 				} else if utils.IsVideo(file.MediaType) {
 					thumbnailBytes, err = generateVideoThumbnail(file.FullFileNameOnSystem)
 					if err != nil {
-						// consider logging the error here if needed
+						log.Err(err).Msgf("failed to generate thumbnail for file %s", file.FullFileNameOnSystem)
 						continue
 					}
 				} else {
