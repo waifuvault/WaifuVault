@@ -34,6 +34,10 @@ jobs:
            dockerfile: go/zipFiles/Dockerfile
            context: go/zipFiles/
         # This needs changing to your dockerhub reponame.  Can't use variables at jobs level apparently
+         - image: simonmcnair/thumbnails
+           dockerfile: go/thumbnails/Dockerfile
+           context: go/thumbnails/
+        # This needs changing to your dockerhub reponame.  Can't use variables at jobs level apparently
          - image: simonmcnair/waifuvault
            dockerfile: ./Dockerfile
            context: .
