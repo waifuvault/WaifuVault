@@ -11,19 +11,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Install required packages for building the thumbnails module
+      - name: Install libvips dependencies for thumbnails
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvips-dev build-essential
+
       # Setup Go for building Go modules
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: 'stable'
 
-      # Build the Go modules to ensure they compile correctly
-      - name: Build thumbnails module
+      # Build the thumbnails module with CGO enabled
+      - name: Build thumbnails
         run: |
           cd go/thumbnails
-          go build .
+          CGO_ENABLED=1 go build .
 
-      - name: Build zipFiles module
+      # Build the zipFiles module
+      - name: Build zipFiles
         run: |
           cd go/zipFiles
           go build .
