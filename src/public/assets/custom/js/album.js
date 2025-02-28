@@ -186,6 +186,7 @@ Site.loadPage(async site => {
         }
 
         function renderCard(album) {
+            const html5VideoMime = ["video/mp4", "video/webm", "video/ogg"];
             site.display(true, albumFilesElt, true);
             site.display(false, albumCardsElt, true);
             document.getElementById("tableView").classList.replace("btn-primary", "btn-outline-primary");
@@ -221,10 +222,13 @@ Site.loadPage(async site => {
                     cardimage.setAttribute("class", "card-img-top");
                     cardImageAnchor.setAttribute("data-sub-html", `<h4>${e.name}</h4>`);
 
-                    if(e.metadata.isVideo){
-                        cardImageAnchor.dataset.video = `{"source": [{"src":"${e.url}", "type":"${e.metadata.mediaType}"}], "attributes": {"preload": false, "playinline":true, "controls": true}}`;
-                        cardImageAnchor.setAttribute("data-poster", e.metadata.thumbnail);
-
+                    if(e.metadata.isVideo) {
+                        if(html5VideoMime.includes(e.metadata.mediaType)) {
+                            cardImageAnchor.dataset.video = `{"source": [{"src":"${e.url}", "type":"${e.metadata.mediaType}"}], "attributes": {"preload": false, "playinline":true, "controls": true}}`;
+                            cardImageAnchor.setAttribute("data-poster", e.metadata.thumbnail);
+                        } else {
+                            cardImageAnchor.setAttribute("data-src", e.metadata.thumbnail);
+                        }
                     }
 
                     cardImageAnchor.appendChild(cardimage);
