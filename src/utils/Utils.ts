@@ -126,6 +126,10 @@ export class FileUtils {
         return file.mediaType?.startsWith("video/") ?? false;
     }
 
+    public static isAudio(file: FileUploadModel): boolean {
+        return file.mediaType?.startsWith("audio/") ?? false;
+    }
+
     public static isValidForThumbnail(file: FileUploadModel): boolean {
         const thumbService = inject(ThumbnailService);
         const validForThumb = thumbService.isExtensionValidForThumbnail(file);
