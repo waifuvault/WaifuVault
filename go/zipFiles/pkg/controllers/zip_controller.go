@@ -6,10 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/wapimod"
-	"sync"
 )
-
-var activeZipping sync.Map
 
 func (s *Service) getAllZipRoutes() []FSetupRoute {
 	return []FSetupRoute{
@@ -32,7 +29,7 @@ func (s *Service) zipFiles(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("album name not specified", errors.New("album name not specified")))
 	}
 
-	clientIP := ctx.IP()
+	clientIP := ctx.Query("ip")
 	key := clientIP + ":" + albumName
 
 	if _, exists := activeZipping.LoadOrStore(key, true); exists {
