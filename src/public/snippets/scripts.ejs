@@ -1,12 +1,14 @@
 <%
     let usingBuket = typeof bucket !== "undefined";
-    const baseSecurePath = usingBuket ? "admin/bucket" : "admin"
+    const baseSecurePath = usingBuket ? "admin/bucket" : "admin";
+    const premiumBucket = usingBuket ? bucket.type === "PREMIUM" : false;
 %>
 <script>
     const baseUrl = "<%- process.env.BASE_URL; -%>/rest";
     const mainRul = "<%- process.env.BASE_URL; -%>";
     const fileSizeLimit = <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB * 1048576; -%>;
     const albumFileLimit = <%- process.env.ALBUM_FILE_LIMIT; %>;
+    const isPremiumBucket = <%-premiumBucket-%>;
     const baseUrlSecureRest = `${baseUrl}/<%-baseSecurePath-%>`;
 
 

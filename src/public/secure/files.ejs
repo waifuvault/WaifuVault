@@ -333,7 +333,7 @@
 
         const dtMap = new Map();
 
-        const bucketEntries = await getBucketData();
+        let bucketEntries = await getBucketData();
 
         document.getElementById("filesNav").classList.add("active");
 
@@ -399,6 +399,19 @@
         }
 
         async function addFilesToAlbum(token, files) {
+            document.getElementById("selectAll").checked = false;
+            bucketEntries = await getBucketData();
+            const existingTokens = bucketEntries.files.filter(e => e.albumToken === token).map(e => e.token);
+            const newTokens = files.filter(f => !existingTokens.includes(f));
+            if (existingTokens.length + newTokens.length > albumFileLimit && !isPremiumBucket) {
+                const errModal = createErrorModal('addAlbumFilesErrModal', `Album is limited to ${albumFileLimit} files.`);
+                errModal.show();
+                if (existingTokens.length < albumFileLimit) {
+                    files = files.slice(0, albumFileLimit - existingTokens.length);
+                } else {
+                    return;
+                }
+            }
             const resp = await fetch(`${baseUrl}/album/${token}/associate`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -1003,6 +1016,7 @@
             }
 
             async function deleteEntry(ids) {
+                document.getElementById("selectAll").checked = false;
                 Site.loading(true);
                 let response;
                 try {
