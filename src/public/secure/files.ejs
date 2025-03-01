@@ -1112,11 +1112,13 @@
                                 uploadModal?.show();
                             }
                         },
+                            <% if(loginType !== "user") { %>
                         {
                             extend: "selected",
                             text: "Add to Album",
                             attr: { id: "addToAlbumPlaceholder" }
                         }
+                        <% } %>
                     );
                 } else if (type === "ips") {
                     buttons.push({
