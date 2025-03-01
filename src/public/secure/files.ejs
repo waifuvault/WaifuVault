@@ -197,7 +197,7 @@
                                     You can upload files to your bucket by dragging and dropping them here, or by
                                     browsing for files to upload.
                                     <hr />
-                                    if you select an album to upload to, it will be processed <strong>AFTER</strong> all files are uploaded. <br/> <br/>
+                                    If you are upload to an album, it will be processed <strong>AFTER</strong> all files are uploaded. <br/> <br/>
                                     So please do not dismiss this model until all files are uploaded.
                                 </div>
                                 <div id="uploadDropzone"
@@ -250,18 +250,6 @@
                                 <label for="password" class="form-label">Password</label>
                                 <input type="password" class="form-control" id="password" placeholder="Optional">
                             </div>
-                            <div class="col-md-3">
-                                <label for="expires" class="form-label">Album</label>
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button"
-                                            data-bs-toggle="dropdown" aria-expanded="false" id="uploadToAlbumButton">
-                                        Select album
-                                    </button>
-                                    <ul class="dropdown-menu" id="uploadToAlbumSelect">
-                                        <li><a class="dropdown-item" href="#">None</a></li>
-                                    </ul>
-                                </div>
-                            </div>
                         </div>
                         <div class="row py-2">
                             <div class="col-md-3">
@@ -303,6 +291,7 @@
     Site.loadPage(async site => {
         let bucketAlbums = null;
         let dz = null;
+        let albumTarget = null;
 
         async function getBucketData() {
             if (!bucketId) {
@@ -345,6 +334,7 @@
             if (dz) {
                 dz.removeAllFiles();
             }
+            albumTarget = null;
         });
 
         async function deleteAlbum(token, alsoFiles) {
@@ -365,6 +355,7 @@
                     b.remove();
                 }
             }
+            albumTarget = null;
             return delObj.success;
         }
 
@@ -448,29 +439,6 @@
             }
         }
 
-        function buildUploadToAlbumDropdown() {
-            const uploadToAlbumSelect = document.getElementById("uploadToAlbumSelect");
-            uploadToAlbumSelect.innerHTML = "";
-            const item = document.createElement("li");
-            item.addEventListener("click", () => {
-                const b = document.getElementById("uploadToAlbumButton");
-                b.innerHTML = "None";
-                delete b.dataset.token;
-            });
-            item.innerHTML = `<a class="dropdown-item" href="#" id="set-album-none">None</a>`;
-            uploadToAlbumSelect.appendChild(item);
-            for (const a of bucketAlbums) {
-                const item = document.createElement("li");
-                item.innerHTML = `<a class="dropdown-item" href="#" data-token="${a.token}">${a.name}</a>`;
-                item.addEventListener("click", (e) => {
-                    const b = document.getElementById("uploadToAlbumButton");
-                    b.dataset.token = a.token;
-                    b.innerHTML = a.name;
-                });
-                uploadToAlbumSelect.appendChild(item);
-            }
-        }
-
         async function buildAddTo() {
             document.querySelectorAll("#addToAlbumPlaceholder > ul")?.forEach(b => b.remove());
             await getBucketData()
@@ -488,7 +456,6 @@
                 menu.appendChild(item);
             }
             addBtn.appendChild(menu);
-            buildUploadToAlbumDropdown();
         }
 
         async function buildAlbumTabs() {
@@ -516,6 +483,7 @@
                 pane.setAttribute("role", "tabpanel");
                 pane.setAttribute("aria-labelledby", a.token + "-tab");
                 pane.setAttribute("tabindex", "0");
+                pane.setAttribute("data-album-token", a.token);
                 const contents = buildAlbumCard(a.token, a.publicToken);
                 pane.appendChild(contents);
                 albumContents.appendChild(pane);
@@ -595,8 +563,6 @@
                         dtMap.get("entries").forEach(t => {
                             t.ajax.reload();
                         });
-                        buildUploadToAlbumDropdown();
-                        document.getElementById('set-album-none').click();
                     }
 
                     async function yes() {
@@ -760,8 +726,7 @@
             }
 
 
-            function initDropzone() {
-                let album = null;
+            function initDropzone(maxfiles = null) {
                 dz = new Dropzone("#uploadDropzone", {
                     url: "/rest",
                     method: "PUT",
@@ -769,9 +734,9 @@
                     addRemoveLinks: false,
                     maxThumbnailFilesize: 50,
                     maxFilesize: <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>,
+                    maxFiles: maxfiles,
                 });
                 dz.on("sending", (file, xhr, formData) => {
-                    album = document.getElementById("uploadToAlbumButton").dataset.token;
                     const password = document.getElementById("password").value;
                     if (password) {
                         formData.append("password", password);
@@ -816,15 +781,19 @@
                     }
                 });
                 dz.on("queuecomplete", async function() {
-                    if (album) {
+                    if (albumTarget) {
                         const files = this.files;
-                        const tokens = files.map(f => JSON.parse(f.xhr.responseText).token);
+                        const tokens = files.filter(f => f.status === 'success').map(f => JSON.parse(f.xhr.responseText).token);
                         const dt = dtMap.get("entries")[0];
-                        await addFilesToAlbum(album, tokens);
+                        await addFilesToAlbum(albumTarget, tokens);
                         dt.ajax.reload();
                         await refreshAlbumFiles();
                     }
                     reloadTable(["entries"]);
+                });
+                dz.on("maxfilesreached", file => {
+                    const modalElt = createBasicModal("maxFilesModal", "Maximum Album Files Reached", `You have reached the album file limit of ${albumFileLimit} files`);
+                    modalElt.show();
                 });
             }
 
@@ -1137,6 +1106,9 @@
                             text: "Upload file",
                             attr: { id: "uploadFileButton" },
                             action: async (e, dt) => {
+                                albumTarget = null;
+                                dz.destroy();
+                                initDropzone();
                                 uploadModal?.show();
                             }
                         },
@@ -1182,8 +1154,25 @@
                             await removeFilesFromAlbum(albumArr[0], idArr);
                             dt.rows({ selected: true }).remove().draw(false);
                             reloadTable(["entries"]);
-                        }
-                    });
+                        }},
+                        {
+                        text: "Upload file",
+                            attr: { id: "uploadAlbumFileButton" },
+                        action: async (e, dt) => {
+                            const tabPane = e.target.closest(".tab-pane");
+                            if (tabPane) {
+                                albumTarget = tabPane.getAttribute("data-album-token");
+                                if (!isPremiumBucket && albumTarget) {
+                                    bucketEntries = await getBucketData();
+                                    const currentFiles = bucketEntries.files.filter(e => e.albumToken === albumTarget).length;
+                                    const filesLeft = albumFileLimit - currentFiles;
+                                    dz.destroy();
+                                    initDropzone(filesLeft > 0 ? filesLeft : 0);
+                                }
+                            }
+                            uploadModal?.show();
+                        }}
+                    );
                 }
                 return buttons;
             }
