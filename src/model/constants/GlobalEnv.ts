@@ -1,5 +1,6 @@
 import process from "process";
 import "../../config/envs/index.js";
+import { isGhAction } from "../../config/envs/index.js";
 
 export const prefix = "envs.";
 
@@ -81,6 +82,9 @@ const mandatoryValues: MandatoryValues[] = [
 ];
 
 function validateMandatoryValues(): void {
+    if (isGhAction) {
+        return;
+    }
     const missing: string[] = [];
 
     for (const key of mandatoryValues) {
