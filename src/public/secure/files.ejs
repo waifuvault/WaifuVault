@@ -337,6 +337,16 @@
             albumTarget = null;
         });
 
+        function getFileCounterColor(fileCount) {
+            if (fileCount === albumFileLimit) {
+                return "red";
+            }
+            if (fileCount > albumFileLimit/2) {
+                return "yellow";
+            }
+            return "green";
+        }
+
         async function deleteAlbum(token, alsoFiles) {
             const resp = await fetch(`${baseUrl}/album/${token}?deleteFiles=${alsoFiles.toString()}`, {
                 method: "DELETE",
@@ -506,7 +516,7 @@
                                     <th scope="col">Views</th>
                                  </tr></thead>
                                  </table>`;
-            card.innerHTML = `<div class="card-header"><div>Current Entries for Album: ${token}</div></div>
+            card.innerHTML = `<div class="card-header d-flex justify-content-between"><div>Current Entries for Album: ${token}</div><div>File Count: <span id="${token}-count"></span></div></div>
                               <div class="card-body">${fileEntries}</div>
                               <div id="footer-${token}" class="card-footer d-flex justify-content-between">${shareButton}${albumUrl}<button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
             return card;
@@ -634,6 +644,10 @@
                 tab.clear();
                 tab.rows.add(bucketFiles.filter(e => e.albumToken === curToken));
                 tab.draw(false);
+                const curCount = bucketFiles.filter(e => e.albumToken === curToken).length;
+                const counter = document.getElementById(`${curToken}-count`);
+                counter.textContent = `${curCount}/${albumFileLimit}`;
+                counter.style.color = getFileCounterColor(curCount);
             }
         }
 
@@ -1156,6 +1170,7 @@
                             await removeFilesFromAlbum(albumArr[0], idArr);
                             dt.rows({ selected: true }).remove().draw(false);
                             reloadTable(["entries"]);
+                            await refreshAlbumFiles();
                         }},
                         {
                         text: "Upload file",
@@ -1267,6 +1282,10 @@
                     };
                 } else if (type === "albumEntries") {
                     dtOpts.data = bucketEntries.files.filter(e => e.albumToken === el.dataset.album);
+                    const curCount = dtOpts.data.length;
+                    const counter = document.getElementById(`${el.dataset.album}-count`);
+                    counter.textContent = `${curCount}/${albumFileLimit}`;
+                    counter.style.color = getFileCounterColor(curCount);
                 } else if (type === "ips") {
                     dtOpts.ajax = {
                         url,
