@@ -1,5 +1,5 @@
 import { Get, Hidden, Required, View } from "@tsed/schema";
-import { Constant, Controller, Inject } from "@tsed/di";
+import { Configuration, Constant, Controller, Inject } from "@tsed/di";
 import { PathParams, Req, Res } from "@tsed/common";
 import CaptchaServices from "../../model/constants/CaptchaServices.js";
 import { CaptchaManager } from "../../manager/CaptchaManager.js";
@@ -23,6 +23,7 @@ export class HomeView {
         @Inject() private captchaManager: CaptchaManager,
         @Inject() private bucketSessionService: BucketSessionService,
         @Inject() private albumService: AlbumService,
+        @Configuration() private configuration: Configuration,
     ) {}
 
     @Get()
@@ -40,6 +41,7 @@ export class HomeView {
             res.redirect("/admin/bucket");
         }
         const captchaType = this.activeCaptchaService;
+        console.log(this.configuration);
         return {
             captchaType,
         };

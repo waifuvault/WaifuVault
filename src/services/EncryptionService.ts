@@ -1,4 +1,4 @@
-import { Constant, OnInit, Service } from "@tsed/di";
+import { Inject, OnInit, Service } from "@tsed/di";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import * as fs from "node:fs/promises";
 import * as crypto from "node:crypto";
@@ -8,6 +8,7 @@ import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { promisify } from "node:util";
 import { FileUtils } from "../utils/Utils.js";
 import { Forbidden } from "@tsed/exceptions";
+import { SettingsService } from "./SettingsService.js";
 
 @Service()
 export class EncryptionService implements OnInit {
@@ -15,8 +16,11 @@ export class EncryptionService implements OnInit {
 
     private readonly randomBytes = promisify(crypto.randomBytes);
 
-    @Constant(GlobalEnv.SALT)
-    private readonly salt: string | undefined;
+    private readonly salt: string | null;
+
+    public constructor(@Inject() settingsService: SettingsService) {
+        this.salt = settingsService.getSetting(GlobalEnv.SALT);
+    }
 
     private getKey(password: string): Promise<Buffer> {
         return argon2.hash(password, {

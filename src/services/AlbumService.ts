@@ -1,4 +1,4 @@
-import { constant, Constant, Inject, Service } from "@tsed/di";
+import { constant, Inject, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BadRequest, NotFound } from "@tsed/exceptions";
@@ -10,7 +10,6 @@ import { FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { ThumbnailCacheRepo } from "../db/repo/ThumbnailCacheRepo.js";
 import fs, { ReadStream } from "node:fs";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
 import { AfterInit } from "@tsed/common";
@@ -18,9 +17,19 @@ import { uuid } from "../utils/uuidUtils.js";
 import { ZipFilesService } from "./microServices/zipFiles/ZipFilesService.js";
 import { ThumbnailService } from "./microServices/thumbnails/thumbnailService.js";
 import BucketType from "../model/constants/BucketType.js";
+import { SettingsService } from "./SettingsService.js";
+import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class AlbumService implements AfterInit {
+    private readonly zipMaxFileSize: string;
+
+    private readonly fileLimit: string;
+
+    private readonly redisUri: string;
+
+    public defaultThumbnail: Buffer;
+
     public constructor(
         @Inject() private albumRepo: AlbumRepo,
         @Inject() private bucketRepo: BucketRepo,
@@ -31,18 +40,12 @@ export class AlbumService implements AfterInit {
         @Inject() private logger: Logger,
         @Inject() private zipFilesService: ZipFilesService,
         @Inject() private thumbnailService: ThumbnailService,
-    ) {}
-
-    @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
-    private readonly zipMaxFileSize: string;
-
-    @Constant(GlobalEnv.ALBUM_FILE_LIMIT, "256")
-    private readonly fileLimit: string;
-
-    @Constant(GlobalEnv.REDIS_URI)
-    private readonly redisUri: string;
-
-    public defaultThumbnail: Buffer;
+        settingsService: SettingsService,
+    ) {
+        this.zipMaxFileSize = settingsService.getSetting(GlobalEnv.ZIP_MAX_SIZE_MB);
+        this.fileLimit = settingsService.getSetting(GlobalEnv.ALBUM_FILE_LIMIT);
+        this.redisUri = settingsService.getSetting(GlobalEnv.REDIS_URI);
+    }
 
     public async $afterInit(): Promise<void> {
         this.defaultThumbnail = await fs.promises.readFile(
