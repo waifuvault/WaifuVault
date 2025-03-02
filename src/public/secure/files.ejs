@@ -338,7 +338,7 @@
         });
 
         function getFileCounterColor(fileCount) {
-            if (fileCount === albumFileLimit) {
+            if (fileCount >= albumFileLimit*0.99) {
                 return "red";
             }
             if (fileCount > albumFileLimit/2) {
