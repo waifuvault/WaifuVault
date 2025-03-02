@@ -1,4 +1,4 @@
-import { Configuration, Constant, Inject } from "@tsed/di";
+import { Configuration, Inject } from "@tsed/di";
 import type { BeforeRoutesInit } from "@tsed/common";
 import { PlatformApplication } from "@tsed/common";
 import "@tsed/platform-express";
@@ -35,7 +35,6 @@ import cors from "cors";
 import { REDIS_CONNECTION, SQLITE_DATA_SOURCE } from "./model/di/tokens.js";
 import { DataSource } from "typeorm";
 import compression from "compression";
-import GlobalEnv from "./model/constants/GlobalEnv.js";
 import multer from "multer";
 import path from "node:path";
 import rateLimit from "express-rate-limit";
@@ -52,6 +51,8 @@ import { createShardedAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
 import { RedisStore } from "connect-redis";
 import { uuid } from "./utils/uuidUtils.js";
+import { GlobalEnv } from "./model/constants/GlobalEnv.js";
+import { SettingsService } from "./services/SettingsService.js";
 
 const socketIoStatus = process.env.HOME_PAGE_FILE_COUNTER ? process.env.HOME_PAGE_FILE_COUNTER : "dynamic";
 
@@ -171,27 +172,29 @@ await initRedis(opts);
 
 @Configuration(opts)
 export class Server implements BeforeRoutesInit {
+    private readonly sessionKey: string;
+
+    private readonly https: string | null;
+
+    private readonly rateLimitMs: string | null;
+
+    private readonly rateLimit: string | null;
+
+    private readonly redisUrl: string | null;
+
     public constructor(
         @Inject() private app: PlatformApplication,
         @Inject(SQLITE_DATA_SOURCE) private ds: DataSource,
         @Inject() private logger: Logger,
         @Inject(REDIS_CONNECTION) private redis: RedisConnection,
-    ) {}
-
-    @Constant(GlobalEnv.SESSION_KEY)
-    private readonly sessionKey: string;
-
-    @Constant(GlobalEnv.HTTPS)
-    private readonly https: string;
-
-    @Constant(GlobalEnv.RATE_LIMIT_MS)
-    private readonly rateLimitMs: string;
-
-    @Constant(GlobalEnv.RATE_LIMIT)
-    private readonly rateLimit: string;
-
-    @Constant(GlobalEnv.REDIS_URI)
-    private readonly redisUrl: string;
+        @Inject() settingsService: SettingsService,
+    ) {
+        this.sessionKey = settingsService.getSetting(GlobalEnv.SESSION_KEY);
+        this.https = settingsService.getSetting(GlobalEnv.HTTPS);
+        this.rateLimitMs = settingsService.getSetting(GlobalEnv.RATE_LIMIT_MS);
+        this.rateLimit = settingsService.getSetting(GlobalEnv.RATE_LIMIT);
+        this.redisUrl = settingsService.getSetting(GlobalEnv.REDIS_URI);
+    }
 
     public $beforeRoutesInit(): void {
         if (isProduction) {
@@ -221,6 +224,9 @@ export class Server implements BeforeRoutesInit {
             const howManyRequests = Number.parseInt(this.rateLimit);
             if (Number.isNaN(howManyRequests)) {
                 throw new Error("RATE_LIMIT is not a number");
+            }
+            if (!this.rateLimitMs) {
+                throw new Error("RATE_LIMIT_MS is not set");
             }
             const rateLimitTimePeriod = Number.parseInt(this.rateLimitMs);
             if (Number.isNaN(rateLimitTimePeriod)) {

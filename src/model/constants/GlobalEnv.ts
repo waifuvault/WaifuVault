@@ -1,4 +1,7 @@
-const prefix = "envs.";
+import process from "process";
+import "../../config/envs/index.js";
+
+export const prefix = "envs.";
 
 /**
  * Env to be used in `@Constant` decorators
@@ -81,8 +84,8 @@ function validateMandatoryValues(): void {
     const missing: string[] = [];
 
     for (const key of mandatoryValues) {
-        const value = defaultValues[key];
-        if (value === null || value === "") {
+        const value = process.env[key.split("envs.").pop() as string];
+        if (!value) {
             missing.push(key);
         }
     }

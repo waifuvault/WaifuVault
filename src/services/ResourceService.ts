@@ -1,24 +1,25 @@
-import { Constant, Inject, Service } from "@tsed/di";
+import { Inject, Service } from "@tsed/di";
 import { SettingsService } from "./SettingsService.js";
 import { Restriction } from "../model/rest/Restriction.js";
 import RestrictionType from "../model/constants/RestrictionType.js";
 import { ObjectUtils } from "../utils/Utils.js";
 import { Builder } from "builder-pattern";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import type { RestrictionValueType } from "../utils/typeings.js";
 import { RecordInfoPayload } from "../model/rest/RecordInfoPayload.js";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { BadRequest } from "@tsed/exceptions";
+import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class ResourceService {
-    @Constant(GlobalEnv.HOME_PAGE_FILE_COUNTER, "dynamic")
-    private socketStatus: string;
+    private readonly socketStatus: string;
 
     public constructor(
         @Inject() private settingsService: SettingsService,
         @Inject() private repo: FileRepo,
-    ) {}
+    ) {
+        this.socketStatus = settingsService.getSetting(GlobalEnv.HOME_PAGE_FILE_COUNTER);
+    }
 
     public getAllRestrictions(): Restriction[] {
         const retArr: Restriction[] = [];

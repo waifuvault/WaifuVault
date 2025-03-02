@@ -1,19 +1,24 @@
 import { Nsp, SocketService } from "@tsed/socketio";
 import * as SocketIO from "socket.io";
-import { Constant, Inject } from "@tsed/di";
+import { Inject } from "@tsed/di";
 import { FileRepo } from "../../db/repo/FileRepo.js";
 import { RecordInfoPayload } from "../../model/rest/RecordInfoPayload.js";
-import GlobalEnv from "../../model/constants/GlobalEnv.js";
+import { SettingsService } from "../SettingsService.js";
+import { GlobalEnv } from "../../model/constants/GlobalEnv.js";
 
 @SocketService("/recordInfo")
 export class RecordInfoSocket {
     @Nsp
     private nsp: SocketIO.Namespace;
 
-    @Constant(GlobalEnv.HOME_PAGE_FILE_COUNTER, "dynamic")
-    private socketStatus: string;
+    private readonly socketStatus: string;
 
-    public constructor(@Inject() private repo: FileRepo) {}
+    public constructor(
+        @Inject() private repo: FileRepo,
+        @Inject() settingsService: SettingsService,
+    ) {
+        this.socketStatus = settingsService.getSetting(GlobalEnv.HOME_PAGE_FILE_COUNTER);
+    }
 
     public async emit(): Promise<boolean> {
         if (this.socketStatus !== "dynamic") {

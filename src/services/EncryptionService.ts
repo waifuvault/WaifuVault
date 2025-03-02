@@ -4,11 +4,11 @@ import * as fs from "node:fs/promises";
 import * as crypto from "node:crypto";
 import argon2 from "argon2";
 import Path from "node:path";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { promisify } from "node:util";
 import { FileUtils } from "../utils/Utils.js";
 import { Forbidden } from "@tsed/exceptions";
 import { SettingsService } from "./SettingsService.js";
+import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class EncryptionService implements OnInit {

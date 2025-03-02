@@ -9,4 +9,8 @@ export class SettingsService {
     public getSetting<K extends GlobalEnv>(setting: K): K extends GuaranteedString ? string : string | null {
         return this.settingsRepo.getSetting(setting);
     }
+
+    public getAllSettings(): Record<GlobalEnv, string | null> {
+        return this.settingsRepo.getAllSettings();
+    }
 }

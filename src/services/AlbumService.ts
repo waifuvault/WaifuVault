@@ -1,4 +1,4 @@
-import { constant, Inject, Service } from "@tsed/di";
+import { Inject, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BadRequest, NotFound } from "@tsed/exceptions";
@@ -26,7 +26,7 @@ export class AlbumService implements AfterInit {
 
     private readonly fileLimit: string;
 
-    private readonly redisUri: string;
+    private readonly albumMaxFiles: string;
 
     public defaultThumbnail: Buffer;
 
@@ -44,7 +44,7 @@ export class AlbumService implements AfterInit {
     ) {
         this.zipMaxFileSize = settingsService.getSetting(GlobalEnv.ZIP_MAX_SIZE_MB);
         this.fileLimit = settingsService.getSetting(GlobalEnv.ALBUM_FILE_LIMIT);
-        this.redisUri = settingsService.getSetting(GlobalEnv.REDIS_URI);
+        this.albumMaxFiles = settingsService.getSetting(GlobalEnv.ALBUM_FILE_LIMIT);
     }
 
     public async $afterInit(): Promise<void> {
@@ -300,8 +300,7 @@ export class AlbumService implements AfterInit {
     }
 
     public isAlbumTooBigToDownload(album: AlbumModel): boolean {
-        const maxFileSizeMb = constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512");
-        const parsedValue = Number.parseInt(maxFileSizeMb);
+        const parsedValue = Number.parseInt(this.albumMaxFiles);
         if (album.files && parsedValue > 0) {
             return album.files.reduce((acc, file) => acc + file.fileSize, 0) > parsedValue * 1024 * 1024;
         }

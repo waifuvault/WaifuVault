@@ -196,7 +196,7 @@
         <div class="p-5 mb-4 bg-body-tertiary rounded-3 border border-primary-subtle position-relative" id="jumbo">
             <div class="container-fluid py-5 ">
                 <h1 class="display-5 fw-bold">No nonsense temporary file hosting</h1>
-                <% if (socketStatus !== "disabled"){ %>
+                <% if (HOME_PAGE_FILE_COUNTER !== "disabled"){ %>
                     <h2 class="fw-bold">Serving <span id="fileCount">0</span> public files totalling
                         <span id="totalFileSize">0kb</span>
                     </h2>
@@ -377,7 +377,7 @@
                         <li class="list-group-item">Malware</li>
                         <li class="list-group-item">Crypto shit</li>
                         <li class="list-group-item">Anything illegal under British Law</li>
-                        <li class="list-group-item">File Limit: <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</li>
+                        <li class="list-group-item">File Limit: <%- FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</li>
                     </ul>
                     <p>The amount of time a given file is hosted for is determined by its size. Files are hosted for a
                         maximum of 365 days, with the time being shortened on a cubic curve.</p>
@@ -388,7 +388,7 @@
                         <input class="form-control" type="file" id="caculateFileTime">
                         <div class="alert alert-success mt-2 hidden" role="alert" id="okFileSize"></div>
                         <div class="alert alert-danger mt-2 hidden" role="alert" id="badFileSize">File exceeds max size
-                            of <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB
+                            of <%- FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB
                         </div>
 
                     </div>
@@ -581,10 +581,10 @@
                              aria-labelledby="curl-tab" tabindex="0">
 <pre><code class="language-curl">
 // upload file via URL
-curl --request PUT --url <%- process.env.BASE_URL; -%>/rest --data url=https://victorique.moe/img/slider/Quotes.jpg
+curl --request PUT --url <%- BASE_URL; -%>/rest --data url=https://victorique.moe/img/slider/Quotes.jpg
 
 // upload file via File
-curl --request PUT --url <%- process.env.BASE_URL; -%>/rest --header 'Content-Type: multipart/form-data' --form file=@someFile.png
+curl --request PUT --url <%- BASE_URL; -%>/rest --header 'Content-Type: multipart/form-data' --form file=@someFile.png
 </code>
 </pre>
                         </div>
@@ -867,7 +867,7 @@ public class Example {
       final var data = MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
           .addBinaryBody("file", file.toFile())
           .build();
-      final var request = RequestBuilder.put("<%- process.env.BASE_URL; -%>/rest").setEntity(data).build();
+      final var request = RequestBuilder.put("<%- BASE_URL; -%>/rest").setEntity(data).build();
       final ResponseHandler<String> responseHandler = response -> response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : null;
       final var responseBody = httpclient.execute(request, responseHandler);
       System.out.println(responseBody);
@@ -879,7 +879,7 @@ public class Example {
       final var data = MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
           .addTextBody("url", url)
           .build();
-      final var request = RequestBuilder.put("<%- process.env.BASE_URL; -%>/rest").setEntity(data).build();
+      final var request = RequestBuilder.put("<%- BASE_URL; -%>/rest").setEntity(data).build();
       final ResponseHandler<String> responseHandler = response -> response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : null;
       final var responseBody = httpclient.execute(request, responseHandler);
       System.out.println(responseBody);
@@ -898,13 +898,13 @@ public class Example {
     </div>
 </main>
 <%- include('snippets/scripts.ejs'); %>
-<% if(socketStatus === "dynamic"){ %>
-    <script src="<%- process.env.BASE_URL; -%>/socket.io/socket.io.min.js"></script>
+<% if(HOME_PAGE_FILE_COUNTER === "dynamic"){ %>
+    <script src="<%- BASE_URL; -%>/socket.io/socket.io.min.js"></script>
 <% } %>
 <script>
     Site.loadPage(async () => {
 
-        <% if(socketStatus === "dynamic"){ %>
+        <% if(HOME_PAGE_FILE_COUNTER === "dynamic"){ %>
         const socket = io(`${mainRul}/recordInfo`, {
             path: "/socket.io/recordInfo"
         });
@@ -962,7 +962,7 @@ public class Example {
             return returnText.trim();
         }
 
-        <% if(socketStatus === "dynamic"){ %>
+        <% if(HOME_PAGE_FILE_COUNTER === "dynamic"){ %>
         function loadSocket() {
             socket.on("record", ({ recordCount, recordSize }) => {
                 fileCountSpan.innerText = recordCount.toLocaleString();
@@ -971,7 +971,7 @@ public class Example {
         }
 
         loadSocket();
-        <% }else if(socketStatus === "static"){ %>
+        <% }else if(HOME_PAGE_FILE_COUNTER === "static"){ %>
         async function loadStats() {
             const resp = await fetch(`${baseUrl}/resources/stats/files`);
             const { recordCount, recordSize } = await resp.json();

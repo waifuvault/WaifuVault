@@ -124,7 +124,6 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
                 where: {
                     id: In(ids),
                 },
-                ...this.relation,
             });
         }
         return this.getRepository(transaction).find();

@@ -291,7 +291,14 @@
     Site.loadPage(async site => {
         let bucketAlbums = null;
         let dz = null;
-        let albumTarget = null;
+        let albumTarget = null
+
+        function getFilesRemainingTooltipText(curCount, albumFileLimit){
+            if(isPremiumBucket){
+                return "You can add unlimited files to your album";
+            }
+            return `Album capacity: ${curCount} out of ${albumFileLimit} files remaining`;
+        }
 
         async function getBucketData() {
             if (!bucketId) {
@@ -647,7 +654,7 @@
                 const curCount = bucketFiles.filter(e => e.albumToken === curToken).length;
                 const counter = document.getElementById(`${curToken}-count`);
                 counter.textContent = `${curCount}/${albumFileLimit}`;
-                counter.setAttribute("data-bs-title", `You have used ${curCount} out of ${albumFileLimit} files`);
+                counter.setAttribute("data-bs-title", getFilesRemainingTooltipText(curCount, albumFileLimit));
                 counter.style.color = getFileCounterColor(curCount);
             }
         }
@@ -748,7 +755,7 @@
                     uploadMultiple: false,
                     addRemoveLinks: false,
                     maxThumbnailFilesize: 50,
-                    maxFilesize: <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>,
+                    maxFilesize: <%- FILE_SIZE_UPLOAD_LIMIT_MB; -%>,
                     maxFiles: maxfiles,
                 });
                 dz.on("sending", (file, xhr, formData) => {
@@ -1286,7 +1293,7 @@
                     const curCount = dtOpts.data.length;
                     const counter = document.getElementById(`${el.dataset.album}-count`);
                     counter.textContent = `${curCount}/${albumFileLimit}`;
-                    counter.setAttribute("data-bs-title", `You have used ${curCount} out of ${albumFileLimit} files`);
+                    counter.setAttribute("data-bs-title",  getFilesRemainingTooltipText(curCount, albumFileLimit));
                     counter.style.color = getFileCounterColor(curCount);
                 } else if (type === "ips") {
                     dtOpts.ajax = {

@@ -11,8 +11,8 @@ import { WorkerResponse } from "./typeings.js";
 import { Worker } from "node:worker_threads";
 import * as crypto from "node:crypto";
 import { constant, inject } from "@tsed/di";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { ThumbnailService } from "../services/microServices/thumbnails/thumbnailService.js";
+import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 export class ObjectUtils {
     public static getNumber(source: string): number {

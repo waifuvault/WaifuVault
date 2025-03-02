@@ -11,6 +11,7 @@ export abstract class AbstractCaptchaEngine<T extends CaptchaResponse> implement
     protected constructor(
         public readonly type: CaptchaServices,
         private readonly logger: Logger,
+        private readonly secretKey: string | null,
     ) {}
 
     public get enabled(): boolean {
@@ -18,6 +19,9 @@ export abstract class AbstractCaptchaEngine<T extends CaptchaResponse> implement
     }
 
     public async verify(request: Request): Promise<boolean> {
+        if (!this.secretKey) {
+            return false;
+        }
         const clientResponse: string | undefined = request.body[this.bodyKey];
         if (!clientResponse) {
             throw new BadRequest("captcha client response missing.");
@@ -40,8 +44,6 @@ export abstract class AbstractCaptchaEngine<T extends CaptchaResponse> implement
     }
 
     protected abstract get baseUrl(): string;
-
-    protected abstract get secretKey(): string;
 
     protected abstract get bodyKey(): string;
 }

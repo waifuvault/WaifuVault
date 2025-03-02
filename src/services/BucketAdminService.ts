@@ -4,9 +4,9 @@ import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
 import { IpBlackListRepo } from "../db/repo/IpBlackListRepo.js";
 import { SettingsDao } from "../db/dao/SettingsDao.js";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { BucketService } from "./BucketService.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
+import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 /**
  * This is an admin service that will work when a bucket is open
@@ -19,7 +19,7 @@ export class BucketAdminService extends AbstractAdminService {
         @Inject() settingsDao: SettingsDao,
         @Inject() private bucketService: BucketService,
     ) {
-        super(ipBlackListRepo, repo, fileService, settingsDao.getSetting(GlobalEnv.BASE_URL)!);
+        super(ipBlackListRepo, repo, fileService, settingsDao.getSetting(GlobalEnv.BASE_URL));
     }
 
     public override getFileSearchRecordCount(search: string, bucket?: string): Promise<number> {

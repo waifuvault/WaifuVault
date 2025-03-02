@@ -1,5 +1,5 @@
 import { Get, Hidden, Required, View } from "@tsed/schema";
-import { Configuration, Constant, Controller, Inject } from "@tsed/di";
+import { Controller, Inject } from "@tsed/di";
 import { PathParams, Req, Res } from "@tsed/common";
 import CaptchaServices from "../../model/constants/CaptchaServices.js";
 import { CaptchaManager } from "../../manager/CaptchaManager.js";
@@ -8,30 +8,26 @@ import { BucketSessionService } from "../../services/BucketSessionService.js";
 import { AlbumService } from "../../services/AlbumService.js";
 import { PublicAlbumDto } from "../../model/dto/PublicAlbumDto.js";
 import { NotFound } from "@tsed/exceptions";
-import GlobalEnv from "../../model/constants/GlobalEnv.js";
+import { SettingsService } from "../../services/SettingsService.js";
+import { BaseViewController } from "./BaseViewController.js";
+import { GlobalEnv } from "../../model/constants/GlobalEnv.js";
 
 @Controller("/")
 @Hidden()
-export class HomeView {
-    @Constant(GlobalEnv.BASE_URL)
-    private baseUrl: string | undefined;
-
-    @Constant(GlobalEnv.HOME_PAGE_FILE_COUNTER, "dynamic")
-    private socketStatus: string;
-
+export class HomeView extends BaseViewController {
     public constructor(
         @Inject() private captchaManager: CaptchaManager,
         @Inject() private bucketSessionService: BucketSessionService,
         @Inject() private albumService: AlbumService,
-        @Configuration() private configuration: Configuration,
-    ) {}
+        @Inject() settingsService: SettingsService,
+    ) {
+        super(settingsService);
+    }
 
     @Get()
     @View("index.ejs")
     public showRoot(): unknown {
-        return {
-            socketStatus: this.socketStatus,
-        };
+        return super.mergeWithEnvs();
     }
 
     @Get("/bucketAccess")
@@ -41,10 +37,9 @@ export class HomeView {
             res.redirect("/admin/bucket");
         }
         const captchaType = this.activeCaptchaService;
-        console.log(this.configuration);
-        return {
+        return super.mergeWithEnvs({
             captchaType,
-        };
+        });
     }
 
     @Get("/login")
@@ -54,9 +49,9 @@ export class HomeView {
             res.redirect("/admin/stats");
         }
         const captchaType = this.activeCaptchaService;
-        return {
+        return super.mergeWithEnvs({
             captchaType,
-        };
+        });
     }
 
     @Get("/album/:publicToken")
@@ -71,15 +66,17 @@ export class HomeView {
         const thumbs = dto.files.filter(f => f.metadata.thumbnail).map(x => x.metadata.thumbnail ?? "");
         const chosenThumb = thumbs.length > 0 ? Math.floor(Math.random() * thumbs.length) : 0;
         const albumThumb =
-            thumbs.length > 0 ? thumbs[chosenThumb] : `${this.baseUrl ?? ""}/assets/custom/images/albumNoImage.png`;
+            thumbs.length > 0
+                ? thumbs[chosenThumb]
+                : `${this.settingsService.getSetting(GlobalEnv.BASE_URL) ?? ""}/assets/custom/images/albumNoImage.png`;
         const albumName = album.name;
         const albumTooBigToDownload = this.albumService.isAlbumTooBigToDownload(album);
-        return {
+        return super.mergeWithEnvs({
             publicToken,
             albumThumb,
             albumName,
             albumTooBigToDownload,
-        };
+        });
     }
 
     private get activeCaptchaService(): CaptchaServices | null {
