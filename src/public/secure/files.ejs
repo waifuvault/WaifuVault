@@ -516,7 +516,7 @@
                                     <th scope="col">Views</th>
                                  </tr></thead>
                                  </table>`;
-            card.innerHTML = `<div class="card-header d-flex justify-content-between"><div>Current Entries for Album: ${token}</div><div>File Count: <span id="${token}-count"></span></div></div>
+            card.innerHTML = `<div class="card-header d-flex justify-content-between"><div>Current Entries for Album: ${token}</div><div>File Count: <span id="${token}-count" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title=""></span></div></div>
                               <div class="card-body">${fileEntries}</div>
                               <div id="footer-${token}" class="card-footer d-flex justify-content-between">${shareButton}${albumUrl}<button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
             return card;
@@ -647,6 +647,7 @@
                 const curCount = bucketFiles.filter(e => e.albumToken === curToken).length;
                 const counter = document.getElementById(`${curToken}-count`);
                 counter.textContent = `${curCount}/${albumFileLimit}`;
+                counter.setAttribute("data-bs-title", `You have used ${curCount} out of ${albumFileLimit} slots`);
                 counter.style.color = getFileCounterColor(curCount);
             }
         }
@@ -1285,6 +1286,7 @@
                     const curCount = dtOpts.data.length;
                     const counter = document.getElementById(`${el.dataset.album}-count`);
                     counter.textContent = `${curCount}/${albumFileLimit}`;
+                    counter.setAttribute("data-bs-title", `You have used ${curCount} out of ${albumFileLimit} slots`);
                     counter.style.color = getFileCounterColor(curCount);
                 } else if (type === "ips") {
                     dtOpts.ajax = {
