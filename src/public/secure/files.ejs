@@ -84,7 +84,7 @@
                     <% if(loginType === "bucket" && bucket.type === "PREMIUM") { %>
                         <div class="alert alert-info mt-3">
                             <i class="bi bi-question-circle"></i> This is a <%- bucket.type; -%> bucket, this means that
-                            you get unlimited expiry.
+                            you get unlimited expiry, and unlimited files in albums.
                         </div>
                     <% } %>
                 </div>
@@ -647,7 +647,7 @@
                 const curCount = bucketFiles.filter(e => e.albumToken === curToken).length;
                 const counter = document.getElementById(`${curToken}-count`);
                 counter.textContent = `${curCount}/${albumFileLimit}`;
-                counter.setAttribute("data-bs-title", `You have used ${curCount} out of ${albumFileLimit} slots`);
+                counter.setAttribute("data-bs-title", `You have used ${curCount} out of ${albumFileLimit} files`);
                 counter.style.color = getFileCounterColor(curCount);
             }
         }
@@ -1286,7 +1286,7 @@
                     const curCount = dtOpts.data.length;
                     const counter = document.getElementById(`${el.dataset.album}-count`);
                     counter.textContent = `${curCount}/${albumFileLimit}`;
-                    counter.setAttribute("data-bs-title", `You have used ${curCount} out of ${albumFileLimit} slots`);
+                    counter.setAttribute("data-bs-title", `You have used ${curCount} out of ${albumFileLimit} files`);
                     counter.style.color = getFileCounterColor(curCount);
                 } else if (type === "ips") {
                     dtOpts.ajax = {
