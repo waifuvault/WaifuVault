@@ -85,4 +85,23 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
         });
         return r?.albumToken ?? null;
     }
+
+    public getAllAlbums(
+        includeFiles: boolean,
+        bucketToken?: string,
+        transaction?: EntityManager,
+    ): Promise<AlbumModel[]> {
+        if (!bucketToken) {
+            return this.getRepository(transaction).find({
+                relations: includeFiles ? ["files"] : undefined,
+            });
+        } else {
+            return this.getRepository(transaction).find({
+                where: {
+                    bucketToken,
+                },
+                relations: includeFiles ? ["files"] : undefined,
+            });
+        }
+    }
 }
