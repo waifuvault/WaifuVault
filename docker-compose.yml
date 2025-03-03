@@ -55,6 +55,7 @@ services:
       - "127.0.0.1:5006:8080"
     volumes:
       - ./files:/app/files
+      - ./main.sqlite:/app/main.sqlite
     env_file:
       - ./.env
       - ./postgres.env
