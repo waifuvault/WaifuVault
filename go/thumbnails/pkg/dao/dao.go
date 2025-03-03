@@ -41,7 +41,13 @@ func getConnection() (*gorm.DB, error) {
 	}
 
 	if dbType == "sqlite" {
-		open, err := gorm.Open(sqlite.Open("../../main.sqlite"), &gorm.Config{
+		sqlitePath := lo.Ternary(utils.DevMode, "../../main.sqlite", "/app/main.sqlite")
+		// check to see if file exists
+		_, err := os.Stat(sqlitePath)
+		if err != nil {
+			return nil, errors.New("sqlite file does not exist")
+		}
+		open, err := gorm.Open(sqlite.Open(sqlitePath), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Error),
 		})
 		if err != nil {
