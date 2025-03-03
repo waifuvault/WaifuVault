@@ -14,11 +14,11 @@ function getCaptcha() {
 function getHtml() {
     switch (captchaType) {
         case "turnstile":
-            return `<div class="cf-turnstile" data-theme="dark" data-sitekey="${process.env.CAPTCHA_SITE_KEY}"></div>`;
+            return `<div class="cf-turnstile" data-theme="dark" data-sitekey="${CAPTCHA_SITE_KEY}"></div>`;
         case "reCAPTCHA":
-            return `<div class="g-recaptcha" data-theme="dark" data-sitekey="${process.env.CAPTCHA_SITE_KEY}"></div>`;
+            return `<div class="g-recaptcha" data-theme="dark" data-sitekey="${CAPTCHA_SITE_KEY}"></div>`;
         case "hCaptcha":
-            return `<div class="h-captcha" data-theme="dark" data-sitekey="${process.env.CAPTCHA_SITE_KEY}"></div>`;
+            return `<div class="h-captcha" data-theme="dark" data-sitekey="${CAPTCHA_SITE_KEY}"></div>`;
         default:
             return "";
     }

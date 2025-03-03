@@ -1,4 +1,4 @@
-import { constant, Constant, Inject, Service } from "@tsed/di";
+import { Inject, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BadRequest, NotFound } from "@tsed/exceptions";
@@ -10,16 +10,26 @@ import { FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { ThumbnailCacheRepo } from "../db/repo/ThumbnailCacheRepo.js";
 import fs, { ReadStream } from "node:fs";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
 import { AfterInit } from "@tsed/common";
 import { uuid } from "../utils/uuidUtils.js";
 import { ZipFilesService } from "./microServices/zipFiles/ZipFilesService.js";
 import { ThumbnailService } from "./microServices/thumbnails/thumbnailService.js";
+import BucketType from "../model/constants/BucketType.js";
+import { SettingsService } from "./SettingsService.js";
+import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class AlbumService implements AfterInit {
+    private readonly zipMaxFileSize: string;
+
+    private readonly fileLimit: string;
+
+    private readonly albumMaxFiles: string;
+
+    public defaultThumbnail: Buffer;
+
     public constructor(
         @Inject() private albumRepo: AlbumRepo,
         @Inject() private bucketRepo: BucketRepo,
@@ -30,15 +40,12 @@ export class AlbumService implements AfterInit {
         @Inject() private logger: Logger,
         @Inject() private zipFilesService: ZipFilesService,
         @Inject() private thumbnailService: ThumbnailService,
-    ) {}
-
-    @Constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512")
-    private readonly zipMaxFileSize: string;
-
-    @Constant(GlobalEnv.REDIS_URI)
-    private readonly redisUri: string;
-
-    public defaultThumbnail: Buffer;
+        settingsService: SettingsService,
+    ) {
+        this.zipMaxFileSize = settingsService.getSetting(GlobalEnv.ZIP_MAX_SIZE_MB);
+        this.fileLimit = settingsService.getSetting(GlobalEnv.ALBUM_FILE_LIMIT);
+        this.albumMaxFiles = settingsService.getSetting(GlobalEnv.ALBUM_FILE_LIMIT);
+    }
 
     public async $afterInit(): Promise<void> {
         this.defaultThumbnail = await fs.promises.readFile(
@@ -109,7 +116,8 @@ export class AlbumService implements AfterInit {
     }
 
     public async assignFilesToAlbum(albumToken: string, files: string[]): Promise<AlbumModel> {
-        const album = await this.albumRepo.getAlbum(albumToken, false);
+        const fileLimit = Number.parseInt(this.fileLimit, 10);
+        const album = await this.albumRepo.getAlbum(albumToken, true);
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
@@ -127,6 +135,16 @@ export class AlbumService implements AfterInit {
 
         for (const file of filesToAssociate) {
             this.validateForAssociation(file);
+        }
+
+        const fileIdsInAlbum = album.files?.map(f => f.id) ?? [];
+        const fileIdsToAdd = filesToAssociate.map(f => f.id).filter(f => !fileIdsInAlbum.includes(f));
+        const bucket = await album.bucket;
+        if (
+            fileIdsInAlbum.length + fileIdsToAdd.length > fileLimit &&
+            (bucket?.type ?? BucketType.NORMAL) == BucketType.NORMAL
+        ) {
+            throw new BadRequest(`Album cannot have more than ${fileLimit} files`);
         }
 
         const model = await this.addFilesToAlbum(albumToken, filesToAssociate);
@@ -282,8 +300,7 @@ export class AlbumService implements AfterInit {
     }
 
     public isAlbumTooBigToDownload(album: AlbumModel): boolean {
-        const maxFileSizeMb = constant(GlobalEnv.ZIP_MAX_SIZE_MB, "512");
-        const parsedValue = Number.parseInt(maxFileSizeMb);
+        const parsedValue = Number.parseInt(this.albumMaxFiles);
         if (album.files && parsedValue > 0) {
             return album.files.reduce((acc, file) => acc + file.fileSize, 0) > parsedValue * 1024 * 1024;
         }

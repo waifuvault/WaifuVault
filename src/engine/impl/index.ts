@@ -11,6 +11,7 @@ export * from "./ErrorProcessors/ProcessUploadErrorProcessorEngine.js";
 export * from "./fileFilters/AbstractFileFilter.js";
 export * from "./fileFilters/AvFilter.js";
 export * from "./fileFilters/MimeFilter.js";
+export * from "./HttpErrorRenderers/AbstractEjsRenderEngine.js";
 export * from "./HttpErrorRenderers/AuthenticationErrorRenderEngine.js";
 export * from "./HttpErrorRenderers/BucketAuthenticationErrorRenderEngine.js";
 export * from "./HttpErrorRenderers/DefaultHttpRenderEngine.js";

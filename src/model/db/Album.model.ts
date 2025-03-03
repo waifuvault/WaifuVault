@@ -3,7 +3,7 @@ import { AbstractModel } from "./AbstractModel.js";
 import type { FileUploadModel } from "./FileUpload.model.js";
 import type { BucketModel } from "./Bucket.model.js";
 import { constant } from "@tsed/di";
-import GlobalEnv from "../constants/GlobalEnv.js";
+import { GlobalEnv } from "../constants/GlobalEnv.js";
 
 @Entity()
 @Index(["albumToken"], {

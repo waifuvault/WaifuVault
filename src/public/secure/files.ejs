@@ -84,7 +84,7 @@
                     <% if(loginType === "bucket" && bucket.type === "PREMIUM") { %>
                         <div class="alert alert-info mt-3">
                             <i class="bi bi-question-circle"></i> This is a <%- bucket.type; -%> bucket, this means that
-                            you get unlimited expiry.
+                            you get unlimited expiry, and unlimited files in albums.
                         </div>
                     <% } %>
                 </div>
@@ -197,7 +197,7 @@
                                     You can upload files to your bucket by dragging and dropping them here, or by
                                     browsing for files to upload.
                                     <hr />
-                                    if you select an album to upload to, it will be processed <strong>AFTER</strong> all files are uploaded. <br/> <br/>
+                                    If you are upload to an album, it will be processed <strong>AFTER</strong> all files are uploaded. <br/> <br/>
                                     So please do not dismiss this model until all files are uploaded.
                                 </div>
                                 <div id="uploadDropzone"
@@ -250,18 +250,6 @@
                                 <label for="password" class="form-label">Password</label>
                                 <input type="password" class="form-control" id="password" placeholder="Optional">
                             </div>
-                            <div class="col-md-3">
-                                <label for="expires" class="form-label">Album</label>
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button"
-                                            data-bs-toggle="dropdown" aria-expanded="false" id="uploadToAlbumButton">
-                                        Select album
-                                    </button>
-                                    <ul class="dropdown-menu" id="uploadToAlbumSelect">
-                                        <li><a class="dropdown-item" href="#">None</a></li>
-                                    </ul>
-                                </div>
-                            </div>
                         </div>
                         <div class="row py-2">
                             <div class="col-md-3">
@@ -303,6 +291,14 @@
     Site.loadPage(async site => {
         let bucketAlbums = null;
         let dz = null;
+        let albumTarget = null
+
+        function getFilesRemainingTooltipText(curCount, albumFileLimit){
+            if(isPremiumBucket){
+                return "You can add unlimited files to your album";
+            }
+            return `Album capacity: ${curCount} out of ${albumFileLimit} files remaining`;
+        }
 
         async function getBucketData() {
             if (!bucketId) {
@@ -333,7 +329,7 @@
 
         const dtMap = new Map();
 
-        const bucketEntries = await getBucketData();
+        let bucketEntries = await getBucketData();
 
         document.getElementById("filesNav").classList.add("active");
 
@@ -345,7 +341,18 @@
             if (dz) {
                 dz.removeAllFiles();
             }
+            albumTarget = null;
         });
+
+        function getFileCounterColor(fileCount) {
+            if (fileCount >= albumFileLimit*0.99) {
+                return "red";
+            }
+            if (fileCount > albumFileLimit/2) {
+                return "yellow";
+            }
+            return "green";
+        }
 
         async function deleteAlbum(token, alsoFiles) {
             const resp = await fetch(`${baseUrl}/album/${token}?deleteFiles=${alsoFiles.toString()}`, {
@@ -365,6 +372,7 @@
                     b.remove();
                 }
             }
+            albumTarget = null;
             return delObj.success;
         }
 
@@ -399,6 +407,19 @@
         }
 
         async function addFilesToAlbum(token, files) {
+            document.getElementById("selectAll").checked = false;
+            bucketEntries = await getBucketData();
+            const existingTokens = bucketEntries.files.filter(e => e.albumToken === token).map(e => e.token);
+            const newTokens = files.filter(f => !existingTokens.includes(f));
+            if (existingTokens.length + newTokens.length > albumFileLimit && !isPremiumBucket) {
+                const errModal = createErrorModal('addAlbumFilesErrModal', `Album is limited to ${albumFileLimit} files.`);
+                errModal.show();
+                if (existingTokens.length < albumFileLimit) {
+                    files = files.slice(0, albumFileLimit - existingTokens.length);
+                } else {
+                    return;
+                }
+            }
             const resp = await fetch(`${baseUrl}/album/${token}/associate`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -435,29 +456,6 @@
             }
         }
 
-        function buildUploadToAlbumDropdown() {
-            const uploadToAlbumSelect = document.getElementById("uploadToAlbumSelect");
-            uploadToAlbumSelect.innerHTML = "";
-            const item = document.createElement("li");
-            item.addEventListener("click", () => {
-                const b = document.getElementById("uploadToAlbumButton");
-                b.innerHTML = "None";
-                delete b.dataset.token;
-            });
-            item.innerHTML = `<a class="dropdown-item" href="#" id="set-album-none">None</a>`;
-            uploadToAlbumSelect.appendChild(item);
-            for (const a of bucketAlbums) {
-                const item = document.createElement("li");
-                item.innerHTML = `<a class="dropdown-item" href="#" data-token="${a.token}">${a.name}</a>`;
-                item.addEventListener("click", (e) => {
-                    const b = document.getElementById("uploadToAlbumButton");
-                    b.dataset.token = a.token;
-                    b.innerHTML = a.name;
-                });
-                uploadToAlbumSelect.appendChild(item);
-            }
-        }
-
         async function buildAddTo() {
             document.querySelectorAll("#addToAlbumPlaceholder > ul")?.forEach(b => b.remove());
             await getBucketData()
@@ -475,7 +473,6 @@
                 menu.appendChild(item);
             }
             addBtn.appendChild(menu);
-            buildUploadToAlbumDropdown();
         }
 
         async function buildAlbumTabs() {
@@ -503,6 +500,7 @@
                 pane.setAttribute("role", "tabpanel");
                 pane.setAttribute("aria-labelledby", a.token + "-tab");
                 pane.setAttribute("tabindex", "0");
+                pane.setAttribute("data-album-token", a.token);
                 const contents = buildAlbumCard(a.token, a.publicToken);
                 pane.appendChild(contents);
                 albumContents.appendChild(pane);
@@ -525,7 +523,7 @@
                                     <th scope="col">Views</th>
                                  </tr></thead>
                                  </table>`;
-            card.innerHTML = `<div class="card-header"><div>Current Entries for Album: ${token}</div></div>
+            card.innerHTML = `<div class="card-header d-flex justify-content-between"><div>Current Entries for Album: ${token}</div><div>File Count: <span id="${token}-count" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title=""></span></div></div>
                               <div class="card-body">${fileEntries}</div>
                               <div id="footer-${token}" class="card-footer d-flex justify-content-between">${shareButton}${albumUrl}<button class="btn btn-danger deleteAlbum" data-token="${token}">Delete Album</button>`;
             return card;
@@ -582,8 +580,6 @@
                         dtMap.get("entries").forEach(t => {
                             t.ajax.reload();
                         });
-                        buildUploadToAlbumDropdown();
-                        document.getElementById('set-album-none').click();
                     }
 
                     async function yes() {
@@ -655,6 +651,11 @@
                 tab.clear();
                 tab.rows.add(bucketFiles.filter(e => e.albumToken === curToken));
                 tab.draw(false);
+                const curCount = bucketFiles.filter(e => e.albumToken === curToken).length;
+                const counter = document.getElementById(`${curToken}-count`);
+                counter.textContent = `${curCount}/${albumFileLimit}`;
+                counter.setAttribute("data-bs-title", getFilesRemainingTooltipText(curCount, albumFileLimit));
+                counter.style.color = getFileCounterColor(curCount);
             }
         }
 
@@ -747,18 +748,17 @@
             }
 
 
-            function initDropzone() {
-                let album = null;
+            function initDropzone(maxfiles = null) {
                 dz = new Dropzone("#uploadDropzone", {
                     url: "/rest",
                     method: "PUT",
                     uploadMultiple: false,
                     addRemoveLinks: false,
                     maxThumbnailFilesize: 50,
-                    maxFilesize: <%- process.env.FILE_SIZE_UPLOAD_LIMIT_MB; -%>,
+                    maxFilesize: <%- FILE_SIZE_UPLOAD_LIMIT_MB; -%>,
+                    maxFiles: maxfiles,
                 });
                 dz.on("sending", (file, xhr, formData) => {
-                    album = document.getElementById("uploadToAlbumButton").dataset.token;
                     const password = document.getElementById("password").value;
                     if (password) {
                         formData.append("password", password);
@@ -803,15 +803,19 @@
                     }
                 });
                 dz.on("queuecomplete", async function() {
-                    if (album) {
+                    if (albumTarget) {
                         const files = this.files;
-                        const tokens = files.map(f => JSON.parse(f.xhr.responseText).token);
+                        const tokens = files.filter(f => f.status === 'success').map(f => JSON.parse(f.xhr.responseText).token);
                         const dt = dtMap.get("entries")[0];
-                        await addFilesToAlbum(album, tokens);
+                        await addFilesToAlbum(albumTarget, tokens);
                         dt.ajax.reload();
                         await refreshAlbumFiles();
                     }
                     reloadTable(["entries"]);
+                });
+                dz.on("maxfilesreached", file => {
+                    const modalElt = createBasicModal("maxFilesModal", "Maximum Album Files Reached", `You have reached the album file limit of ${albumFileLimit} files`);
+                    modalElt.show();
                 });
             }
 
@@ -1003,6 +1007,7 @@
             }
 
             async function deleteEntry(ids) {
+                document.getElementById("selectAll").checked = false;
                 Site.loading(true);
                 let response;
                 try {
@@ -1123,14 +1128,19 @@
                             text: "Upload file",
                             attr: { id: "uploadFileButton" },
                             action: async (e, dt) => {
+                                albumTarget = null;
+                                dz.destroy();
+                                initDropzone();
                                 uploadModal?.show();
                             }
                         },
+                            <% if(loginType !== "user") { %>
                         {
                             extend: "selected",
                             text: "Add to Album",
                             attr: { id: "addToAlbumPlaceholder" }
                         }
+                        <% } %>
                     );
                 } else if (type === "ips") {
                     buttons.push({
@@ -1168,8 +1178,26 @@
                             await removeFilesFromAlbum(albumArr[0], idArr);
                             dt.rows({ selected: true }).remove().draw(false);
                             reloadTable(["entries"]);
-                        }
-                    });
+                            await refreshAlbumFiles();
+                        }},
+                        {
+                        text: "Upload file",
+                            attr: { id: "uploadAlbumFileButton" },
+                        action: async (e, dt) => {
+                            const tabPane = e.target.closest(".tab-pane");
+                            if (tabPane) {
+                                albumTarget = tabPane.getAttribute("data-album-token");
+                                if (!isPremiumBucket && albumTarget) {
+                                    bucketEntries = await getBucketData();
+                                    const currentFiles = bucketEntries.files.filter(e => e.albumToken === albumTarget).length;
+                                    const filesLeft = albumFileLimit - currentFiles;
+                                    dz.destroy();
+                                    initDropzone(filesLeft > 0 ? filesLeft : 0);
+                                }
+                            }
+                            uploadModal?.show();
+                        }}
+                    );
                 }
                 return buttons;
             }
@@ -1262,6 +1290,11 @@
                     };
                 } else if (type === "albumEntries") {
                     dtOpts.data = bucketEntries.files.filter(e => e.albumToken === el.dataset.album);
+                    const curCount = dtOpts.data.length;
+                    const counter = document.getElementById(`${el.dataset.album}-count`);
+                    counter.textContent = `${curCount}/${albumFileLimit}`;
+                    counter.setAttribute("data-bs-title",  getFilesRemainingTooltipText(curCount, albumFileLimit));
+                    counter.style.color = getFileCounterColor(curCount);
                 } else if (type === "ips") {
                     dtOpts.ajax = {
                         url,

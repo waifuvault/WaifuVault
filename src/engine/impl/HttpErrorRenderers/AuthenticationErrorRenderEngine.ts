@@ -6,13 +6,23 @@ import { Exception } from "@tsed/exceptions";
 import { HttpErrorRenderObj } from "../../../utils/typeings.js";
 import { PlatformResponse } from "@tsed/common";
 import { CaptchaManager } from "../../../manager/CaptchaManager.js";
+import { AbstractEjsRenderEngine } from "./AbstractEjsRenderEngine.js";
+import { SettingsService } from "../../../services/SettingsService.js";
 
 @Injectable({
     scope: ProviderScope.SINGLETON,
     type: HTTP_RENDER_ENGINE,
 })
-export class AuthenticationErrorRenderEngine implements IHttpErrorRenderEngine<string, AuthenticationError> {
-    public constructor(@Inject() private captchaManager: CaptchaManager) {}
+export class AuthenticationErrorRenderEngine
+    extends AbstractEjsRenderEngine<string>
+    implements IHttpErrorRenderEngine<string, AuthenticationError>
+{
+    public constructor(
+        @Inject() private captchaManager: CaptchaManager,
+        @Inject() settingsService: SettingsService,
+    ) {
+        super(settingsService);
+    }
 
     public supportsError(exception: Exception): boolean {
         return exception instanceof AuthenticationError;
@@ -20,9 +30,6 @@ export class AuthenticationErrorRenderEngine implements IHttpErrorRenderEngine<s
 
     public render(obj: HttpErrorRenderObj<AuthenticationError>, response: PlatformResponse): Promise<string> {
         const captchaType = this.captchaManager.engine?.type ?? null;
-        return response.render("login.ejs", {
-            captchaType,
-            ...obj,
-        });
+        return super.renderWithEnvs("login.ejs", response, { captchaType, ...obj });
     }
 }

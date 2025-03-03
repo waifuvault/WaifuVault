@@ -4,8 +4,8 @@ import { AlbumModel } from "../db/Album.model.js";
 import { Builder } from "builder-pattern";
 import { FileUtils } from "../../utils/Utils.js";
 import { constant } from "@tsed/di";
-import GlobalEnv from "../constants/GlobalEnv.js";
 import { FileUploadModel } from "../db/FileUpload.model.js";
+import { GlobalEnv } from "../constants/GlobalEnv.js";
 
 @Name("WaifuPublicFileMetadata")
 @Description("Metadata about a public file in an album")

@@ -22,7 +22,7 @@ export class FileService {
 
     public async processDelete(tokens: string[]): Promise<boolean> {
         let deleted = false;
-        const entries = await this.repo.getEntries(tokens);
+        const entries = await this.repo.getEntries(tokens, false);
         if (entries.length === 0) {
             return false;
         }

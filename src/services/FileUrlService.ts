@@ -1,5 +1,4 @@
-import { Constant, Inject, Service } from "@tsed/di";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
+import { Inject, Service } from "@tsed/di";
 import { BadRequest, Forbidden, HTTPException, RequestURITooLong } from "@tsed/exceptions";
 import path from "node:path";
 import fs from "node:fs";
@@ -10,6 +9,8 @@ import { Readable } from "node:stream";
 import { finished } from "node:stream/promises";
 import { ReadableStream } from "node:stream/web";
 import isLocalhost from "is-localhost-ip";
+import { SettingsService } from "./SettingsService.js";
+import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 const require = Module.createRequire(import.meta.url);
 
@@ -18,18 +19,25 @@ const punycode = require("punycode/");
 
 @Service()
 export class FileUrlService {
-    @Constant(GlobalEnv.FILE_SIZE_UPLOAD_LIMIT_MB)
     private readonly maxSize: string;
 
-    @Constant(GlobalEnv.MAX_URL_LENGTH)
-    private readonly maxUrlLength: string;
+    private readonly maxUrlLength: string | null;
 
-    public constructor(@Inject() private logger: Logger) {}
+    public constructor(
+        @Inject() private logger: Logger,
+        @Inject() settingsService: SettingsService,
+    ) {
+        this.maxSize = settingsService.getSetting(GlobalEnv.FILE_SIZE_UPLOAD_LIMIT_MB);
+        this.maxUrlLength = settingsService.getSetting(GlobalEnv.MAX_URL_LENGTH);
+    }
 
     public async getFile(url: string): Promise<[string, string]> {
-        let maxUrlLength = Number.parseInt(this.maxUrlLength);
-        if (Number.isNaN(maxUrlLength)) {
-            maxUrlLength = -1;
+        let maxUrlLength = -1;
+        if (this.maxUrlLength) {
+            maxUrlLength = Number.parseInt(this.maxUrlLength);
+            if (Number.isNaN(maxUrlLength)) {
+                maxUrlLength = -1;
+            }
         }
 
         if (maxUrlLength <= 0) {

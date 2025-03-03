@@ -1,4 +1,4 @@
-import { Constant, Inject, Service } from "@tsed/di";
+import { Inject, Service } from "@tsed/di";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import type { PlatformMulterFile } from "@tsed/common";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
@@ -7,7 +7,6 @@ import { Builder, type IBuilder } from "builder-pattern";
 import path from "node:path";
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
 import { EntrySettings, FileUploadProps } from "../utils/typeings.js";
 import { BadRequest, Exception, InternalServerError } from "@tsed/exceptions";
@@ -25,11 +24,12 @@ import BucketType from "../model/constants/BucketType.js";
 import { FileFilterManager } from "../manager/FileFilterManager.js";
 import { MimeService } from "./MimeService.js";
 import { uuid } from "../utils/uuidUtils.js";
+import { SettingsService } from "./SettingsService.js";
+import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class FileUploadService {
-    @Constant(GlobalEnv.UPLOAD_SECRET)
-    private readonly secret?: string;
+    private readonly secret: string | null;
 
     public constructor(
         @Inject() private repo: FileRepo,
@@ -41,7 +41,10 @@ export class FileUploadService {
         @Inject() private fileService: FileService,
         @Inject() private bucketService: BucketService,
         @Inject() private fileFilterManager: FileFilterManager,
-    ) {}
+        @Inject() settingsService: SettingsService,
+    ) {
+        this.secret = settingsService.getSetting(GlobalEnv.UPLOAD_SECRET);
+    }
 
     public async processUpload({
         ip,
@@ -281,7 +284,7 @@ export class FileUploadService {
     }
 
     private async hasUnlimitedExpire(secretToken?: string, bucketToken?: string): Promise<boolean> {
-        if (secretToken === this.secret) {
+        if (this.secret && secretToken === this.secret) {
             return true;
         }
 

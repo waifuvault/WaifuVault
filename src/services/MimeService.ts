@@ -1,13 +1,19 @@
-import { Constant, Service } from "@tsed/di";
+import { Inject, Service } from "@tsed/di";
 import mime from "mime";
-import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { fileTypeFromBuffer, fileTypeFromFile } from "file-type";
 import fs from "node:fs/promises";
+import { SettingsService } from "./SettingsService.js";
+import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class MimeService {
-    @Constant(GlobalEnv.BLOCKED_MIME_TYPES)
-    private readonly blockedMimeTypes: string;
+    private readonly blockedMimeTypes: string | null = null;
+
+    public constructor(@Inject() settingsService?: SettingsService) {
+        if (settingsService) {
+            this.blockedMimeTypes = settingsService.getSetting(GlobalEnv.BLOCKED_MIME_TYPES);
+        }
+    }
 
     private async readFirstKB(filePath: string): Promise<Buffer> {
         const fileHandle = await fs.open(filePath, "r");

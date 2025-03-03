@@ -6,9 +6,9 @@ import path from "node:path";
 import type { BucketModel } from "./Bucket.model.js";
 import { AlbumModel } from "./Album.model.js";
 import { constant } from "@tsed/di";
-import GlobalEnv from "../constants/GlobalEnv.js";
 import type { ThumbnailCacheModel } from "./ThumbnailCache.model.js";
 import { ColumnNumericTransformer } from "../../utils/dbUtils.js";
+import { GlobalEnv } from "../constants/GlobalEnv.js";
 
 @Entity()
 @Index(["token"], {
