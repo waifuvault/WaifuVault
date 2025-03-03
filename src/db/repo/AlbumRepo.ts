@@ -70,4 +70,8 @@ export class AlbumRepo {
         const entries = await this.fileRepo.getEntriesByBucket(privateBucketToken);
         return entries.find(e => e.id === imageId) ?? null;
     }
+
+    public getAllAlbums(bucketToken?: string, includeFiles = false): Promise<AlbumModel[]> {
+        return this.albumDao.getAllAlbums(includeFiles, bucketToken);
+    }
 }

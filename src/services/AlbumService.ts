@@ -22,11 +22,9 @@ import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class AlbumService implements AfterInit {
-    private readonly zipMaxFileSize: string;
+    private readonly zipMaxFileSize: number;
 
-    private readonly fileLimit: string;
-
-    private readonly albumMaxFiles: string;
+    private readonly fileLimit: number;
 
     public defaultThumbnail: Buffer;
 
@@ -42,15 +40,33 @@ export class AlbumService implements AfterInit {
         @Inject() private thumbnailService: ThumbnailService,
         settingsService: SettingsService,
     ) {
-        this.zipMaxFileSize = settingsService.getSetting(GlobalEnv.ZIP_MAX_SIZE_MB);
-        this.fileLimit = settingsService.getSetting(GlobalEnv.ALBUM_FILE_LIMIT);
-        this.albumMaxFiles = settingsService.getSetting(GlobalEnv.ALBUM_FILE_LIMIT);
+        this.zipMaxFileSize = Number.parseInt(settingsService.getSetting(GlobalEnv.ZIP_MAX_SIZE_MB));
+        if (Number.isNaN(this.zipMaxFileSize)) {
+            throw new Error(`Invalid zip max size ${this.zipMaxFileSize}`);
+        }
+        this.fileLimit = Number.parseInt(settingsService.getSetting(GlobalEnv.ALBUM_FILE_LIMIT));
+        if (Number.isNaN(this.fileLimit)) {
+            throw new Error(`Invalid album limit ${this.fileLimit}`);
+        }
     }
 
     public async $afterInit(): Promise<void> {
         this.defaultThumbnail = await fs.promises.readFile(
             new URL("../assets/images/thumbnail-gen-top.png", import.meta.url),
         );
+        const allAlbums = await this.albumRepo.getAllAlbums(undefined, true);
+        for (const album of allAlbums) {
+            const bucket = await album.bucket;
+            if (!bucket || bucket.type === BucketType.PREMIUM) {
+                continue;
+            }
+            const filesCount = album.files?.length ?? 0;
+            if (filesCount > this.fileLimit) {
+                throw new Error(
+                    `Album ${album.name} has ${filesCount} files, which is more than the limit of ${this.fileLimit}`,
+                );
+            }
+        }
     }
 
     public async createAlbum(name: string, bucketToken: string): Promise<AlbumModel> {
@@ -116,7 +132,6 @@ export class AlbumService implements AfterInit {
     }
 
     public async assignFilesToAlbum(albumToken: string, files: string[]): Promise<AlbumModel> {
-        const fileLimit = Number.parseInt(this.fileLimit, 10);
         const album = await this.albumRepo.getAlbum(albumToken, true);
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
@@ -141,10 +156,10 @@ export class AlbumService implements AfterInit {
         const fileIdsToAdd = filesToAssociate.map(f => f.id).filter(f => !fileIdsInAlbum.includes(f));
         const bucket = await album.bucket;
         if (
-            fileIdsInAlbum.length + fileIdsToAdd.length > fileLimit &&
+            fileIdsInAlbum.length + fileIdsToAdd.length > this.fileLimit &&
             (bucket?.type ?? BucketType.NORMAL) == BucketType.NORMAL
         ) {
-            throw new BadRequest(`Album cannot have more than ${fileLimit} files`);
+            throw new BadRequest(`Album cannot have more than ${this.fileLimit} files`);
         }
 
         const model = await this.addFilesToAlbum(albumToken, filesToAssociate);
@@ -289,8 +304,7 @@ export class AlbumService implements AfterInit {
         );
 
         const sumFileSize = filesToZip.reduce((n, { fileSize }) => n + fileSize, 0);
-        const parsedZipSize = Number.parseInt(this.zipMaxFileSize);
-        if (parsedZipSize > 0 && sumFileSize > parsedZipSize * 1024 * 1024) {
+        if (this.zipMaxFileSize > 0 && sumFileSize > this.zipMaxFileSize * 1024 * 1024) {
             throw new BadRequest("Zip file is too large");
         }
 
@@ -300,9 +314,8 @@ export class AlbumService implements AfterInit {
     }
 
     public isAlbumTooBigToDownload(album: AlbumModel): boolean {
-        const parsedValue = Number.parseInt(this.albumMaxFiles);
-        if (album.files && parsedValue > 0) {
-            return album.files.reduce((acc, file) => acc + file.fileSize, 0) > parsedValue * 1024 * 1024;
+        if (album.files && this.fileLimit > 0) {
+            return album.files.reduce((acc, file) => acc + file.fileSize, 0) > this.fileLimit * 1024 * 1024;
         }
         return false;
     }
