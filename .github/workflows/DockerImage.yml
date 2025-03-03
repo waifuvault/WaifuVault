@@ -25,15 +25,15 @@ jobs:
          matrix:
             include:
             # This needs changing to your dockerhub reponame.  Can't use variables at jobs level apparently
-            -  image: simonmcnair/zipfiles
+            -  image: waifuvault/zipfiles
                dockerfile: go/zipFiles/Dockerfile
                context: go/zipFiles/
          # This needs changing to your dockerhub reponame.  Can't use variables at jobs level apparently
-            -  image: simonmcnair/thumbnails
+            -  image: waifuvault/thumbnails
                dockerfile: go/thumbnails/Dockerfile
                context: go/thumbnails/
          # This needs changing to your dockerhub reponame.  Can't use variables at jobs level apparently
-            -  image: simonmcnair/waifuvault
+            -  image: waifuvault/waifuvault
                dockerfile: ./Dockerfile
                context: .
 
