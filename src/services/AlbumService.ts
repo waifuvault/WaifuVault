@@ -56,6 +56,10 @@ export class AlbumService implements AfterInit {
         );
         const allAlbums = await this.albumRepo.getAllAlbums(undefined, true);
         for (const album of allAlbums) {
+            const bucket = await album.bucket;
+            if (!bucket || bucket.type === BucketType.PREMIUM) {
+                continue;
+            }
             const filesCount = album.files?.length ?? 0;
             if (filesCount > this.fileLimit) {
                 throw new Error(
