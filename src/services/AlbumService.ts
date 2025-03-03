@@ -314,8 +314,8 @@ export class AlbumService implements AfterInit {
     }
 
     public isAlbumTooBigToDownload(album: AlbumModel): boolean {
-        if (album.files && this.fileLimit > 0) {
-            return album.files.reduce((acc, file) => acc + file.fileSize, 0) > this.fileLimit * 1024 * 1024;
+        if (album.files && this.zipMaxFileSize > 0) {
+            return album.files.reduce((acc, file) => acc + file.fileSize, 0) > this.zipMaxFileSize * 1024 * 1024;
         }
         return false;
     }
