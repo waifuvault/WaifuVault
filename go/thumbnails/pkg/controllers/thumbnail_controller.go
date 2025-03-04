@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/wapimod"
+	"time"
 )
 
 func (s *Service) getAllThumbnailRoutes() []FSetupRoute {
@@ -49,7 +50,9 @@ func (s *Service) generateThumbnails(ctx *fiber.Ctx) error {
 	}
 
 	go func() {
+		start := time.Now()
 		err := s.ThumbnailService.GenerateThumbnails(thumbnailEntries, albumId)
+		log.Info().Msgf("time taken to generate thumbnails: %s", time.Since(start))
 		if err != nil {
 			log.Error().Err(err).Msg("error generating thumbnails")
 		}

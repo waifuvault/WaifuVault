@@ -1,5 +1,5 @@
 import { BaseRestController } from "../BaseRestController.js";
-import { Controller, Inject, InjectContext } from "@tsed/di";
+import { Controller, Inject } from "@tsed/di";
 import {
     CollectionOf,
     Default,
@@ -18,7 +18,7 @@ import { StatusCodes } from "http-status-codes";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 import { AlbumDto } from "../../../model/dto/AlbumDto.js";
 import { BodyParams } from "@tsed/platform-params";
-import { PathParams, type PlatformContext, PlatformResponse, QueryParams, Res } from "@tsed/common";
+import { PathParams, PlatformResponse, QueryParams, Res } from "@tsed/common";
 import { AlbumService } from "../../../services/AlbumService.js";
 import { SuccessModel } from "../../../model/rest/SuccessModel.js";
 import { AlbumModel } from "../../../model/db/Album.model.js";
@@ -43,9 +43,6 @@ export class AlbumController extends BaseRestController {
     ) {
         super();
     }
-
-    @InjectContext()
-    private $ctx: PlatformContext;
 
     @Post("/:bucketToken")
     @Returns(StatusCodes.OK, AlbumDto)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"gorm.io/gorm"
+	"time"
 )
 
 type ThumbnailDao interface {
@@ -35,4 +36,8 @@ func (d dao) storeRedis(thumbnails []mod.Thumbnail) {
 	}
 
 	d.redisClient.MSet(context.Background(), keyValuePairs)
+
+	for key := range keyValuePairs {
+		d.redisClient.Expire(context.Background(), key, time.Hour*24*365)
+	}
 }
