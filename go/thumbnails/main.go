@@ -18,10 +18,12 @@ import (
 )
 
 func main() {
+
+	// configure zero log
+	configureLog()
+
 	// load env
 	utils.LoadEnvs()
-
-	configureLog()
 
 	rdb := initRedis()
 
