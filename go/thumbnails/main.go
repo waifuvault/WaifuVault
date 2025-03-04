@@ -5,6 +5,7 @@ import (
 	"github.com/create-go-app/fiber-go-template/pkg/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/controllers"
@@ -19,6 +20,8 @@ import (
 func main() {
 	// load env
 	utils.LoadEnvs()
+
+	configureLog()
 
 	rdb := initRedis()
 
@@ -67,4 +70,13 @@ func initRedis() *redis.Client {
 	}
 
 	return client
+}
+
+func configureLog() {
+	if utils.DevMode {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	}
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 }

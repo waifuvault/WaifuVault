@@ -120,7 +120,7 @@ func (bp *batchProcessor) batchProcess(resultsChan <-chan mod.Thumbnail, done ch
 			if err != nil {
 				log.Err(err).Msgf("failed to save thumbnail batch %d", batchCount)
 			} else {
-				log.Info().Msgf("saved thumbnail batch %d with %d thumbnails", batchCount, len(batchToSave))
+				log.Debug().Msgf("saved thumbnail batch %d with %d thumbnails", batchCount, len(batchToSave))
 			}
 
 			// Reset the batch
@@ -135,7 +135,7 @@ func (bp *batchProcessor) batchProcess(resultsChan <-chan mod.Thumbnail, done ch
 		if err != nil {
 			log.Err(err).Msgf("failed to save final thumbnail batch")
 		} else {
-			log.Info().Msgf("saved final thumbnail batch with %d thumbnails", len(batch))
+			log.Debug().Msgf("saved final thumbnail batch with %d thumbnails", len(batch))
 		}
 	}
 
