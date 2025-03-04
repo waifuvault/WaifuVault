@@ -5,16 +5,23 @@ import (
 	"github.com/create-go-app/fiber-go-template/pkg/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/controllers"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/routes"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
+	"golang.org/x/net/context"
 	"os"
+	"strings"
 )
 
 func main() {
+
+	// configure zero log
+	configureLog()
+
 	// load env
 	utils.LoadEnvs()
 
@@ -49,9 +56,29 @@ func main() {
 }
 
 func initRedis() *redis.Client {
-	redisUri := lo.Ternary(utils.DevMode, os.Getenv("REDIS_URI"), "redis://redis:6379")
-	log.Info().Msg("connected to redis")
-	return redis.NewClient(&redis.Options{
-		Addr: redisUri,
+	rawRedisUri := lo.Ternary(utils.DevMode, os.Getenv("REDIS_URI"), "redis://redis:6379")
+	redisAddr := strings.TrimPrefix(rawRedisUri, "redis://")
+
+	client := redis.NewClient(&redis.Options{
+		Addr: redisAddr,
 	})
+
+	pong, err := client.Ping(context.Background()).Result()
+	if err != nil {
+		log.Error().Err(err).Msg("failed to connect to Redis")
+		panic(err)
+	} else {
+		log.Info().Str("response", pong).Msg("successfully connected to Redis")
+	}
+
+	return client
+}
+
+func configureLog() {
+	if utils.DevMode {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	}
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 }
