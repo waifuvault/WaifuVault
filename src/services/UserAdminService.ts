@@ -7,6 +7,8 @@ import { AbstractAdminService } from "./AbstractAdminService.js";
 import { IpBlackListModel } from "../model/db/IpBlackList.model.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
+import { BucketRepo } from "../db/repo/BucketRepo.js";
+import BucketType from "../model/constants/BucketType.js";
 
 /**
  * This is an admin service that will work when logged in as a user
@@ -18,6 +20,7 @@ export class UserAdminService extends AbstractAdminService {
         @Inject() fileService: FileService,
         @Inject() settingsDao: SettingsDao,
         @Inject() ipBlackListRepo: IpBlackListRepo,
+        @Inject() private bucketRepo: BucketRepo,
     ) {
         super(ipBlackListRepo, repo, fileService, settingsDao.getSetting(GlobalEnv.BASE_URL));
     }
@@ -52,5 +55,13 @@ export class UserAdminService extends AbstractAdminService {
 
     public removeBlockedIps(ips: string[]): Promise<boolean> {
         return this.ipBlackListRepo.removeBlockedIps(ips);
+    }
+
+    public getBucketType(token: string): Promise<BucketType | null> {
+        return this.bucketRepo.getBucketType(token);
+    }
+
+    public setBucketType(token: string, bucketType: BucketType): Promise<boolean> {
+        return this.bucketRepo.setBucketType(token, bucketType);
     }
 }

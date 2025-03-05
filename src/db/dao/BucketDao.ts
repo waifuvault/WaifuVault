@@ -3,6 +3,8 @@ import { BucketModel } from "../../model/db/Bucket.model.js";
 import { Inject, Injectable } from "@tsed/di";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 import { DataSource, EntityManager } from "typeorm";
+import bucketType from "../../model/constants/BucketType";
+import BucketType from "../../model/constants/BucketType";
 
 @Injectable()
 export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
@@ -51,5 +53,22 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
         return this.getRepository(transaction).existsBy({
             bucketToken: token,
         });
+    }
+
+    public async setBucketType(token: string, newType: bucketType, transaction?: EntityManager): Promise<boolean> {
+        const bucket = await this.getRepository(transaction).findOne({ where: { bucketToken: token } });
+        if (!bucket) {
+            return false;
+        }
+        bucket.type = newType;
+        await this.getRepository(transaction).save(bucket);
+        return true;
+    }
+
+    public async getBucketType(token: string, transaction?: EntityManager): Promise<BucketType | null> {
+        const bType = await this.getRepository(transaction).findOne({
+            where: { bucketToken: token },
+        });
+        return bType?.type ?? null;
     }
 }
