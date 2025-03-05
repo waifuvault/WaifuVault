@@ -1455,11 +1455,6 @@
                         return;
                     }
                     const bucketType = await resp.text();
-                    if (bucketType === "NOTFOUND") {
-                        const errModal = createErrorModal('getBucketErrModal', `Bucket ${bucketToken} not found.`);
-                        errModal.show();
-                        return;
-                    }
                     if (bucketType === "NORMAL") {
                         const promoteModal = createBasicModal("promoteBucketModal", "Promote Bucket", `Bucket ${bucketToken} is a NORMAL bucket.<br/><br/>Do you want to make it a PREMIUM bucket ?`, "Yes", promoteYes, "btn-danger", "No", generalNo, "btn-secondary");
                         promoteModal.show();

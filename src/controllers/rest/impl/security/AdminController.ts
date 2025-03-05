@@ -18,6 +18,7 @@ import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 import { IpBlackListModel } from "../../../../model/db/IpBlackList.model.js";
 import { StatsModel } from "../../../../model/dto/StatsDto.js";
 import BucketType from "../../../../model/constants/BucketType.js";
+import { NotFound } from "@tsed/exceptions";
 
 @Hidden()
 @Authorize("loginAuthProvider")
@@ -61,8 +62,12 @@ export class AdminController extends AbstractAdminController implements IAdminCo
     }
 
     @Get("/getBucketType/:token")
-    public async getBucketType(@PathParams("token") token: string): Promise<BucketType | string> {
-        return (await this.userAdminService.getBucketType(token)) ?? "NOTFOUND";
+    public async getBucketType(@PathParams("token") token: string): Promise<BucketType> {
+        const bucketType = await this.userAdminService.getBucketType(token);
+        if (!bucketType) {
+            throw new NotFound("Bucket not found");
+        }
+        return bucketType;
     }
 
     @Post("/setBucketType")
@@ -74,7 +79,7 @@ export class AdminController extends AbstractAdminController implements IAdminCo
         if (await this.userAdminService.setBucketType(token, bucketType)) {
             return super.doSuccess(res, "Bucket Type Set Succeeded");
         }
-        return super.doError(res, "Bucket Type Set Failed", 500);
+        return super.doError(res, "Bucket Type Set Failed", StatusCodes.INTERNAL_SERVER_ERROR);
     }
 
     @Get("/blockedIps")

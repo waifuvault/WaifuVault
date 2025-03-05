@@ -56,17 +56,13 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
     }
 
     public async setBucketType(token: string, newType: bucketType, transaction?: EntityManager): Promise<boolean> {
-        const bucket = await this.getRepository(transaction).findOne({ where: { bucketToken: token } });
-        if (!bucket) {
-            return false;
-        }
-        bucket.type = newType;
-        await this.getRepository(transaction).save(bucket);
-        return true;
+        const result = await this.getRepository(transaction).update({ bucketToken: token }, { type: newType });
+        return result.affected !== undefined && result.affected > 0;
     }
 
     public async getBucketType(token: string, transaction?: EntityManager): Promise<BucketType | null> {
         const bType = await this.getRepository(transaction).findOne({
+            select: ["type", "id"],
             where: { bucketToken: token },
         });
         return bType?.type ?? null;
