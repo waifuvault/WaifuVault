@@ -92,8 +92,6 @@ func (p *processor) generateVideoThumbnail(videoPath string) ([]byte, error) {
 		"-vcodec", "mjpeg",
 		"-q:v", "10",
 		"-vf", "scale=-1:200",
-		"-skip_frame", "nokey",
-		"-skip_loop_filter", "all",
 		"pipe:1",
 	}
 
