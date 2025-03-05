@@ -11,6 +11,7 @@ import { uuid } from "../../utils/uuidUtils.js";
 import { FileDao } from "../dao/FileDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { dataSource } from "../DataSource.js";
+import BucketType from "../../model/constants/BucketType";
 
 @Injectable()
 export class BucketRepo {
@@ -66,5 +67,13 @@ export class BucketRepo {
 
     public bucketExists(token: string): Promise<boolean> {
         return this.bucketDao.bucketExists(token);
+    }
+
+    public getBucketType(token: string): Promise<BucketType | null> {
+        return this.bucketDao.getBucketType(token);
+    }
+
+    public setBucketType(token: string, bucketType: BucketType): Promise<boolean> {
+        return this.bucketDao.setBucketType(token, bucketType);
     }
 }

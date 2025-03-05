@@ -89,7 +89,12 @@
                     <% } %>
                 </div>
                 <div class="card-body">
-                    <input type="checkbox" id="selectAll" value="all"> Select All
+                    <div class="d-flex justify-content-between">
+                        <div><input type="checkbox" id="selectAll" value="all"> Select All</div>
+                        <% if(loginType === "user") { %>
+                            <div><button class="btn btn-secondary" id="bucketTools">Bucket Tools</button></div>
+                        <% } %>
+                    </div>
                     <table class="table submissionsTable datatables display nowrap" data-type="entries">
                         <thead>
                         <tr>
@@ -443,6 +448,21 @@
             if (!resp.ok) {
                 const err = await resp.json();
                 const errModal = createErrorModal('removeAlbumFilesErrModal', `error ${err.status} - ${err.message}</span>`);
+                errModal.show();
+                return;
+            }
+            return await resp.json();
+        }
+
+        async function setBucketType(token, bucketType) {
+            const resp = await fetch(`${baseUrlSecureRest}/setBucketType`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: token, bucketType: bucketType })
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                const errModal = createErrorModal('setBucketTypeErrModal', `error ${err.status} - ${err.message}</span>`);
                 errModal.show();
                 return;
             }
@@ -1404,6 +1424,54 @@
                 dt.rows().deselect();
             }
         });
+
+        document.getElementById("bucketTools")?.addEventListener("click", async () => {
+            let bucketToken;
+            async function promoteYes() {
+                await setBucketType(bucketToken, "PREMIUM");
+            }
+
+            async function demoteYes() {
+                await setBucketType(bucketToken, "NORMAL");
+            }
+
+            async function generalNo() {
+                return;
+            }
+
+            async function yes() {
+                bucketToken = document.getElementById("bucketToken").value;
+                let resp;
+                try {
+                    site.loading(true);
+                    resp = await fetch(`${baseUrlSecureRest}/getBucketType/${bucketToken}`, {
+                        method: "GET",
+                        headers: { "Content-Type": "application/json" },
+                    });
+                    if (!resp.ok) {
+                        const err = await resp.json();
+                        const errModal = createErrorModal('getBucketErrModal', `error ${err.status} - ${err.message}`);
+                        errModal.show();
+                        return;
+                    }
+                    const bucketType = await resp.text();
+                    if (bucketType === "NORMAL") {
+                        const promoteModal = createBasicModal("promoteBucketModal", "Promote Bucket", `Bucket ${bucketToken} is a NORMAL bucket.<br/><br/>Do you want to make it a PREMIUM bucket ?`, "Yes", promoteYes, "btn-danger", "No", generalNo, "btn-secondary");
+                        promoteModal.show();
+                        return;
+                    }
+                    if (bucketType === "PREMIUM") {
+                        const demoteModal = createBasicModal("demoteBucketModal", "Demote Bucket", `Bucket ${bucketToken} is a PREMIUM bucket.<br/><br/>Do you want to make it a NORMAL bucket ?`, "Yes", demoteYes, "btn-danger", "No", generalNo, "btn-secondary");
+                        demoteModal.show();
+                    }
+                } finally {
+                    site.loading(false);
+                }
+            }
+
+            const getBucketModal = createBasicModal("getBucketModal", "Bucket Token", "<form><label for=\"bucketToken\" class=\"form-label\">Enter Bucket Token</label><input type=\"text\" class=\"form-control\" id=\"bucketToken\"></form>", "Get Bucket Type", yes, "btn-primary");
+            getBucketModal.show();
+        })
     });
 </script>
 </body>

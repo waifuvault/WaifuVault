@@ -2,7 +2,7 @@ import { AbstractAdminController } from "./AbstractAdminController.js";
 import { Controller, Inject } from "@tsed/di";
 import { UserAdminService } from "../../../../services/UserAdminService.js";
 import { Delete, Get, Hidden, Post, Required } from "@tsed/schema";
-import { PlatformResponse, QueryParams, Res } from "@tsed/common";
+import { PathParams, PlatformResponse, QueryParams, Res } from "@tsed/common";
 import type {
     AdminDataTaleEntryModel,
     DatatableColumn,
@@ -17,6 +17,8 @@ import { IAdminController } from "../../IAdminController.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 import { IpBlackListModel } from "../../../../model/db/IpBlackList.model.js";
 import { StatsModel } from "../../../../model/dto/StatsDto.js";
+import BucketType from "../../../../model/constants/BucketType.js";
+import { NotFound } from "@tsed/exceptions";
 
 @Hidden()
 @Authorize("loginAuthProvider")
@@ -57,6 +59,27 @@ export class AdminController extends AbstractAdminController implements IAdminCo
             recordsFiltered: records,
             data: data,
         };
+    }
+
+    @Get("/getBucketType/:token")
+    public async getBucketType(@PathParams("token") token: string): Promise<BucketType> {
+        const bucketType = await this.userAdminService.getBucketType(token);
+        if (!bucketType) {
+            throw new NotFound("Bucket not found");
+        }
+        return bucketType;
+    }
+
+    @Post("/setBucketType")
+    public async setBucketType(
+        @Res() res: PlatformResponse,
+        @Required() @BodyParams("token") token: string,
+        @Required() @BodyParams("bucketType") bucketType: BucketType,
+    ): Promise<PlatformResponse> {
+        if (await this.userAdminService.setBucketType(token, bucketType)) {
+            return super.doSuccess(res, "Bucket Type Set Succeeded");
+        }
+        return super.doError(res, "Bucket Type Set Failed", StatusCodes.INTERNAL_SERVER_ERROR);
     }
 
     @Get("/blockedIps")
