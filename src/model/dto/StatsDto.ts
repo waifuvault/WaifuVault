@@ -33,31 +33,23 @@ export class StatsDto {
     public static async buildStats(entries: AdminFileData[]): Promise<StatsDto> {
         const realFiles = await FileUtils.getFilesCount();
         const fileSizes = entries.reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
-        const bucketSet = entries
-            .map(e => e.bucket)
-            .reduce((set, item) => {
-                set.add(item ?? "");
-                return set;
-            }, new Set<string>());
+        const bucketSet = new Set(entries.map(e => e.bucket).filter(bucket => Boolean(bucket)));
         bucketSet.delete("");
         const bucketSizes = entries.filter(e => e.bucket).reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
-        const albumSet = entries
-            .map(e => e.album)
-            .reduce((set, item) => {
-                set.add(item?.token ?? "");
-                return set;
-            }, new Set<string>());
+        const albumSet = new Set(entries.map(e => e.album?.token).filter(token => Boolean(token)));
         albumSet.delete("");
         const albumSizes = entries.filter(e => e.album).reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
+        const averageBucket = bucketSet.size > 0 ? Math.floor(bucketSizes / bucketSet.size) : 0;
+        const averageAlbum = albumSet.size > 0 ? Math.floor(albumSizes / albumSet.size) : 0;
 
         const statsBuilder = Builder(StatsDto)
             .totalFileCount(entries.length)
             .realFileCount(realFiles)
             .totalFileSize(fileSizes)
             .totalBuckets(bucketSet.size)
-            .averageBucketSize(Math.floor(bucketSizes / bucketSet.size))
+            .averageBucketSize(averageBucket)
             .totalAlbums(albumSet.size)
-            .averageAlbumSize(Math.floor(albumSizes / albumSet.size))
+            .averageAlbumSize(averageAlbum)
             .entries(entries);
         return statsBuilder.build();
     }
