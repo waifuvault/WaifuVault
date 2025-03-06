@@ -34,10 +34,8 @@ export class StatsDto {
         const realFiles = await FileUtils.getFilesCount();
         const fileSizes = entries.reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
         const bucketSet = new Set(entries.map(e => e.bucket).filter(bucket => Boolean(bucket)));
-        bucketSet.delete("");
         const bucketSizes = entries.filter(e => e.bucket).reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
         const albumSet = new Set(entries.map(e => e.album?.token).filter(token => Boolean(token)));
-        albumSet.delete("");
         const albumSizes = entries.filter(e => e.album).reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
         const averageBucket = bucketSet.size > 0 ? Math.floor(bucketSizes / bucketSet.size) : 0;
         const averageAlbum = albumSet.size > 0 ? Math.floor(albumSizes / albumSet.size) : 0;
