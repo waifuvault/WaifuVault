@@ -289,7 +289,7 @@ export class FileUploadService {
         }
 
         if (bucketToken) {
-            const bucket = await this.bucketService.getBucket(bucketToken);
+            const bucket = await this.bucketService.getBucket(bucketToken, false, false);
             if (bucket && bucket.type === BucketType.PREMIUM) {
                 return true;
             }

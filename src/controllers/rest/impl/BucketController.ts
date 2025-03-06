@@ -46,7 +46,7 @@ export class BucketController extends BaseRestController {
     @Description("Get a bucket and all associated files")
     @Summary("Get a bucket")
     public async getBucket(@BodyParams("bucket_token") bucketToken: string): Promise<BucketModel> {
-        const bucket = await this.bucketService.getBucket(bucketToken);
+        const bucket = await this.bucketService.getBucket(bucketToken, true, true);
         if (!bucket) {
             throw new BadRequest(`Unable to find bucket with token ${bucketToken}`);
         }

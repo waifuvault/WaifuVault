@@ -22,11 +22,15 @@ export class BucketService {
         return this.bucketRepo.createBucket();
     }
 
-    public async getBucket(id?: string | number | undefined): Promise<BucketModel | null> {
+    public async getBucket(
+        id?: string | number | undefined,
+        includeFiles = true,
+        includeAlbums = true,
+    ): Promise<BucketModel | null> {
         if (!id) {
             return this.getLoggedInUserBucket();
         }
-        const bucket = await this.bucketRepo.getBucket(id);
+        const bucket = await this.bucketRepo.getBucket(id, includeFiles, includeAlbums);
         if (!bucket) {
             return null;
         }
@@ -42,7 +46,7 @@ export class BucketService {
         if (!currentBucketToken) {
             return Promise.resolve(null);
         }
-        return this.getBucket(currentBucketToken);
+        return this.getBucket(currentBucketToken, true, true);
     }
 
     public getLoggedInBucketToken(): string | null {

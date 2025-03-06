@@ -31,13 +31,11 @@ export class BucketModel extends AbstractModel {
 
     @OneToMany("FileUploadModel", "bucket", {
         cascade: true,
-        eager: true,
     })
     public files?: FileUploadModel[];
 
     @OneToMany("AlbumModel", "bucket", {
         cascade: true,
-        eager: true,
     })
     @JoinColumn({
         name: "bucketToken",
