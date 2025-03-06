@@ -22,7 +22,7 @@ export class AuthenticateBucket implements MiddlewareMethods {
         if (!token) {
             this.throwError(`Token is missing`);
         }
-        const bucket = await this.bucketService.getBucket(token);
+        const bucket = await this.bucketService.getBucket(token, false, false);
         if (!bucket) {
             this.throwError(`Bucket with token ${token} is not found`);
         }

@@ -46,7 +46,7 @@ export class BucketRepo {
     public async deleteBucket(bucketToken: string): Promise<boolean> {
         let files: FileUploadModel[] = [];
         const res = await dataSource.transaction(async tx => {
-            const bucket = await this.bucketDao.getBucket(bucketToken, tx);
+            const bucket = await this.bucketDao.getBucket(bucketToken, true, true, tx);
             if (!bucket) {
                 return false;
             }
@@ -61,8 +61,8 @@ export class BucketRepo {
         return res;
     }
 
-    public getBucket(id: string | number): Promise<BucketModel | null> {
-        return this.bucketDao.getBucket(id);
+    public getBucket(id: string | number, includeFiles = true, includeAlbums = true): Promise<BucketModel | null> {
+        return this.bucketDao.getBucket(id, includeFiles, includeAlbums);
     }
 
     public bucketExists(token: string): Promise<boolean> {

@@ -12,6 +12,16 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
         super(ds, BucketModel);
     }
 
+    private buildRelations(includeFiles: boolean, includeAlbums: boolean): string[] | undefined {
+        if (!includeAlbums && !includeFiles) {
+            return undefined;
+        }
+        if (!includeAlbums && includeFiles) {
+            return ["files"];
+        }
+        return ["files", "albums", "files.album"];
+    }
+
     public createBucket(bucket: BucketModel, transaction?: EntityManager): Promise<BucketModel> {
         return this.getRepository(transaction).save(bucket);
     }
@@ -23,7 +33,12 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
         return deleteResult.affected === 1;
     }
 
-    public getBucket(id: string | number, transaction?: EntityManager): Promise<BucketModel | null> {
+    public getBucket(
+        id: string | number,
+        includeFiles = true,
+        includeAlbums = true,
+        transaction?: EntityManager,
+    ): Promise<BucketModel | null> {
         if (typeof id === "number") {
             return this.getRepository(transaction).findOne({
                 relations: ["albums", "files.album"],
@@ -32,17 +47,23 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
                 },
             });
         }
+
         return this.getRepository(transaction).findOne({
-            relations: ["albums", "files.album"],
+            relations: this.buildRelations(includeFiles, includeAlbums),
             where: {
                 bucketToken: id,
             },
         });
     }
 
-    public getBucketByIp(ip: string, transaction?: EntityManager): Promise<BucketModel | null> {
+    public getBucketByIp(
+        ip: string,
+        includeFiles = true,
+        includeAlbums = true,
+        transaction?: EntityManager,
+    ): Promise<BucketModel | null> {
         return this.getRepository(transaction).findOne({
-            relations: ["albums", "files.album"],
+            relations: this.buildRelations(includeFiles, includeAlbums),
             where: {
                 ip,
             },
@@ -62,7 +83,7 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
 
     public async getBucketType(token: string, transaction?: EntityManager): Promise<BucketType | null> {
         const bType = await this.getRepository(transaction).findOne({
-            select: ["type", "id"],
+            select: ["type"],
             where: { bucketToken: token },
         });
         return bType?.type ?? null;
