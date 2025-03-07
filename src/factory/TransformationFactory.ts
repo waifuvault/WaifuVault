@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@tsed/di";
 import { TRANSFORMER } from "../model/di/tokens.js";
-import { ITransformer } from "../engine/ITransformer.js";
+import type { ITransformer } from "../engine/ITransformer.js";
 
 /**
  * Get a transformation engine for the given model

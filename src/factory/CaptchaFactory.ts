@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@tsed/di";
-import { ICaptchaEngine } from "../engine/ICaptchaEngine.js";
+import type { ICaptchaEngine } from "../engine/ICaptchaEngine.js";
 import { CAPTCHA_ENGINE } from "../model/di/tokens.js";
 
 @Injectable()

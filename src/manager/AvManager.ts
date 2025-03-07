@@ -3,7 +3,7 @@ import { AvFactory } from "../factory/AvFactory.js";
 import type { PlatformMulterFile } from "@tsed/common";
 import { Logger } from "@tsed/logger";
 import path from "node:path";
-import { IAvEngine } from "../engine/IAvEngine.js";
+import type { IAvEngine } from "../engine/IAvEngine.js";
 import { AvScanResult } from "../utils/typeings.js";
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@tsed/di";
 import { AV_ENGINE } from "../model/di/tokens.js";
-import { IAvEngine } from "../engine/IAvEngine.js";
+import type { IAvEngine } from "../engine/IAvEngine.js";
 
 @Injectable()
 export class AvFactory {

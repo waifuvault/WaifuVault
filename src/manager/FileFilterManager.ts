@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@tsed/di";
 import { PlatformMulterFile } from "@tsed/common";
 import { FILE_FILTER } from "../model/di/tokens.js";
-import { IFileFilter } from "../engine/IFileFilter.js";
+import type { IFileFilter } from "../engine/IFileFilter.js";
 
 @Injectable()
 export class FileFilterManager {
