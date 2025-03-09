@@ -17,6 +17,14 @@
         <div class="col-md-6"><h2>Total Files:&nbsp;<span id="totalFiles"></span></h2></div>
         <div class="col-md-6"><h2>Total Size:&nbsp;<span id="totalSize"></span></h2></div>
     </div>
+    <div class="row mb-1">
+        <div class="col-md-6"><h3>Total Used Buckets:&nbsp;<span id="totalBuckets"></span></h3></div>
+        <div class="col-md-6"><h3>Total Used Albums:&nbsp;<span id="totalAlbums"></span></h3></div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6"><h3>Average Bucket:&nbsp;<span id="averageBucketSize"></span></h3></div>
+        <div class="col-md-6"><h3>Average Album:&nbsp;<span id="averageAlbumSize"></span></h3></div>
+    </div>
     <div class="row mb-4">
         <div class="col-md-4">
             <h2>File Size</h2>
@@ -169,6 +177,10 @@
                 document.getElementById("totalFiles").className = "text-danger";
             }
             document.getElementById("totalSize").innerText = sizeReadable(stats.totalFileSize);
+            document.getElementById("totalBuckets").innerText = stats.totalBuckets;
+            document.getElementById("averageBucketSize").innerText = sizeReadable(stats.averageBucketSize);
+            document.getElementById("totalAlbums").innerText = stats.totalAlbums;
+            document.getElementById("averageAlbumSize").innerText = sizeReadable(stats.averageAlbumSize);
 
             //File Protection
             const rootProt = am5.Root.new("chartProtectionDistribution");
