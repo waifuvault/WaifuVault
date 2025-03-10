@@ -284,6 +284,13 @@ async function initRedis(options: Partial<TsED.Configuration>): Promise<void> {
 
         await Promise.all([pubClient.connect(), subClient.connect()]);
         opts.socketIO!.adapter = createShardedAdapter(pubClient, subClient);
+    } else {
+        // Non dynamic must still test connection
+        const pubClient = createClient({
+            url: process.env.REDIS_URI as string,
+        });
+        await pubClient.connect();
+        await pubClient.quit();
     }
 
     options["ioredis"] = [
