@@ -159,7 +159,7 @@ export class FileUploadService {
             originalFileName = originalFileNameRes;
         } else {
             resourcePath = source.path;
-            originalFileName = source.originalname;
+            originalFileName = Buffer.from(source.originalname, "latin1").toString("utf8");
         }
         if (originalFileName.startsWith("/")) {
             originalFileName = originalFileName.substring(1);
