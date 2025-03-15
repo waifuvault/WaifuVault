@@ -25,6 +25,13 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
     public getAlbum(token: string, includeFiles = true, transaction?: EntityManager): Promise<AlbumModel | null> {
         return this.getRepository(transaction).findOne({
             relations: includeFiles ? ["files"] : undefined,
+            order: includeFiles
+                ? {
+                      files: {
+                          addedToAlbumOrder: "ASC",
+                      },
+                  }
+                : undefined,
             where: [
                 {
                     albumToken: token,
