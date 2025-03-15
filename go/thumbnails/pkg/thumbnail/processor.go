@@ -7,10 +7,12 @@ import (
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
+	"golang.org/x/image/webp"
 	"image"
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
 type Processor interface {
@@ -113,7 +115,7 @@ func (p *processor) generateImageThumbnail(fileEntry mod.FileEntry) ([]byte, err
 	intSet := vips.IntParameter{}
 	intSet.Set(-1)
 
-	width, height, err := getResizedDimensions(file)
+	width, height, err := getResizedDimensions(file, fileEntry.Extension)
 	if err != nil {
 		return nil, err
 	}
@@ -150,15 +152,14 @@ func (p *processor) generateImageThumbnail(fileEntry mod.FileEntry) ([]byte, err
 		return nil, err
 	}
 
-	webp, _, err := vipsImage.ExportWebp(nil)
+	thumbnail, _, err := vipsImage.ExportWebp(nil)
 	if err != nil {
 		return nil, err
 	}
-	return webp, nil
+	return thumbnail, nil
 }
 
-// getResizedDimensions calculates new dimensions while maintaining the aspect ratio
-func getResizedDimensions(filePath string) (newWidth, newHeight int, err error) {
+func getResizedDimensions(filePath, extension string) (newWidth, newHeight int, err error) {
 	// Open the image file
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -166,14 +167,28 @@ func getResizedDimensions(filePath string) (newWidth, newHeight int, err error) 
 	}
 	defer file.Close()
 
-	// Decode only the image configuration (metadata) without reading the entire image
-	config, _, err := image.DecodeConfig(file)
-	if err != nil {
-		return 0, 0, err
-	}
+	var origWidth, origHeight int
 
-	origWidth := config.Width
-	origHeight := config.Height
+	// Check if it's a WebP file based on extension
+	if strings.ToLower(extension) == "webp" {
+		// Decode WebP specifically
+		img, err := webp.Decode(file)
+		if err != nil {
+			return 0, 0, err
+		}
+		bounds := img.Bounds()
+		origWidth = bounds.Dx()
+		origHeight = bounds.Dy()
+	} else {
+		// For other formats, use the standard decoder
+		file.Seek(0, 0) // Reset file pointer to beginning
+		config, _, err := image.DecodeConfig(file)
+		if err != nil {
+			return 0, 0, err
+		}
+		origWidth = config.Width
+		origHeight = config.Height
+	}
 
 	if origWidth == 0 {
 		return 0, 0, nil
