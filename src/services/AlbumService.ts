@@ -162,7 +162,12 @@ export class AlbumService implements AfterInit {
             throw new BadRequest(`Album cannot have more than ${this.fileLimit} files`);
         }
 
-        const model = await this.addFilesToAlbum(albumToken, filesToAssociate);
+        const model = await this.addFilesToAlbum(
+            albumToken,
+            filesToAssociate.sort((a, b) => {
+                return a.id - b.id;
+            }),
+        );
 
         if (album.isShared) {
             await this.generateThumbnails(
