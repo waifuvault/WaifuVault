@@ -9,6 +9,9 @@ export class AdminFileData {
     public id: number;
 
     @Property()
+    public addedToAlbumOrder: number;
+
+    @Property()
     public fileName: string;
 
     @Property()
@@ -68,6 +71,7 @@ export class AdminFileData {
             .fileExtension(entry.fileExtension)
             .createdAt(entry.createdAt)
             .id(entry.id)
+            .addedToAlbumOrder(entry.addedToAlbumOrder ?? 0)
             .originalFileName(entry.originalFileName)
             .fileSize(entry.fileSize)
             .fileName(entry.fileName)

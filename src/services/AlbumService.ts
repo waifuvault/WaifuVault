@@ -179,6 +179,25 @@ export class AlbumService implements AfterInit {
         return model;
     }
 
+    public async swapFileOrder(
+        albumToken: string,
+        id: number,
+        oldPosition: number,
+        newPosition: number,
+    ): Promise<boolean> {
+        const album = await this.albumRepo.getAlbum(albumToken, true);
+        if (!album) {
+            throw new BadRequest(`Album with token ${albumToken} not found`);
+        }
+        for (const file of album.files ?? []) {
+            if (file.addedToAlbumOrder === oldPosition && file.id === id) {
+                file.addedToAlbumOrder = newPosition;
+            }
+        }
+        await this.albumRepo.saveOrUpdateAlbum(album);
+        return true;
+    }
+
     private async addFilesToAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
         // Get the current maximum order value once
         const maxOrder = await this.fileRepo.getNextAlbumValue(albumToken);
