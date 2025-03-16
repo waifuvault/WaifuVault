@@ -6,6 +6,7 @@
     <link href="/assets/custom/css/index.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.4/b-3.1.1/b-colvis-3.1.1/fh-4.0.1/r-3.0.2/sc-2.4.3/sl-2.0.5/sr-1.4.1/datatables.min.css"
           rel="stylesheet">
+    <link href="https://cdn.datatables.net/rowreorder/1.5.0/css/rowReorder.dataTables.css" rel="stylesheet">
     <link rel="stylesheet" href="/assets/vendor/dropzone/dropzone.min.css" type="text/css" />
     <style>
         table.dataTable td.dt-type-numeric, table.dataTable th.dt-type-numeric {
@@ -286,6 +287,8 @@
 
 
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.4/b-3.1.1/b-colvis-3.1.1/fh-4.0.1/r-3.0.2/sc-2.4.3/sl-2.0.5/sr-1.4.1/datatables.min.js"></script>
+<script src="https://cdn.datatables.net/rowreorder/1.5.0/js/dataTables.rowReorder.js"></script>
+<script src="https://cdn.datatables.net/rowreorder/1.5.0/js/rowReorder.dataTables.js"></script>
 <script src="/assets/vendor/dropzone/dropzone.min.js"></script>
 <%- include('../snippets/scripts.ejs'); %>
 <script>
@@ -535,6 +538,7 @@
             const albumUrl = pubToken ? `<button class="btn btn-success pubUrlButton" data-token="${pubToken}">${mainRul}/album/${pubToken}</button>` : "";
             const fileEntries = `<table class="table albumFilesTable datatables display nowrap" data-type="albumEntries" data-album="${token}">
                                  <thead><tr>
+                                    <th scope="col">#</th>
                                     <th scope="col">ID</th>
                                     <th scope="col">file Name</th>
                                     <th scope="col">file Extension</th>
@@ -947,6 +951,7 @@
                         ];
                     case "albumEntries":
                         return [
+                            { data: "addedToAlbumOrder"},
                             { data: "id" },
                             { data: "originalFileName", className: "col-filename", render: fileEmbedRender() },
                             { data: "fileExtension", className: "col-fileext" },
@@ -1052,6 +1057,24 @@
                     const errModal = createErrorModal('deleteEntryErrModal', responseJson.message);
                     errModal.show();
                     throw new Error(responseJson.message);
+                }
+            }
+
+            async function swapOrder(albumToken, id, oldPos, newPos) {
+                let resp;
+                try {
+                    site.loading(true);
+                    resp = await fetch(`${baseUrl}/album/${albumToken}/swapFileOrder/${id}/${oldPos}/${newPos}`, {
+                        method: "POST"
+                    });
+                    if (!resp.ok) {
+                        const err = await resp.json();
+                        const errModal = createErrorModal('swapFilesErrModal', `error ${err.status} - ${err.message}`);
+                        errModal.show();
+                        return;
+                    }
+                } finally {
+                    site.loading(false);
                 }
             }
 
@@ -1242,6 +1265,14 @@
 
                 const table = dtMap.get(type);
                 table.forEach(t => {
+                    if (type === "albumEntries") {
+                        t.on("row-reorder", async function (e, diff, edit) {
+                            for (let i = 0; i < diff.length; i++) {
+                                let rowData = t.row(diff[i].node).data();
+                                await swapOrder(rowData.albumToken, rowData.id, diff[i].oldData, diff[i].newData);
+                            }
+                        })
+                    }
                     if (type === "entries" || type === "albumEntries") {
                         t.on("select", function(e, dt, type, indexes) {
                             if (type === "row") {
@@ -1310,6 +1341,7 @@
                     };
                 } else if (type === "albumEntries") {
                     dtOpts.data = bucketEntries.files.filter(e => e.albumToken === el.dataset.album);
+                    dtOpts.rowReorder = { dataSrc: "addedToAlbumOrder"};
                     const curCount = dtOpts.data.length;
                     const counter = document.getElementById(`${el.dataset.album}-count`);
                     counter.textContent = `${curCount}/${albumFileLimit}`;

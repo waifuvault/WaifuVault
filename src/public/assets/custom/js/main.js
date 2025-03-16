@@ -60,6 +60,7 @@ const Site = (function() {
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, {
             sanitize: false
         }));
+        document.querySelectorAll('.bs-tooltip-auto').forEach(opened => opened.remove());
     }
 
 

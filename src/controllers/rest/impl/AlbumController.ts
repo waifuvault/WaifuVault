@@ -97,6 +97,30 @@ export class AlbumController extends BaseRestController {
         return this.albumService.disassociateFilesFromAlbum(albumToken, fileTokens);
     }
 
+    @Post("/:albumToken/swapFileOrder/:id/:oldPosition/:newPosition")
+    @Returns(StatusCodes.OK, AlbumDto)
+    @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
+    @Description(
+        "Associate files with an album, the album must exist and the files must be in the same bucket as the album",
+    )
+    @Summary("Swap file order within an album")
+    public swapFileOrder(
+        @Description("The album token to swap files order within")
+        @PathParams("albumToken")
+        albumToken: string,
+        @Description("The id of the file")
+        @PathParams("id")
+        id: number,
+        @Description("The old position of the file")
+        @PathParams("oldPosition")
+        oldPosition: number,
+        @Description("The new position of the file")
+        @PathParams("newPosition")
+        newPosition: number,
+    ): Promise<boolean> {
+        return this.albumService.swapFileOrder(albumToken, id, oldPosition, newPosition);
+    }
+
     @Delete("/:albumToken")
     @Returns(StatusCodes.OK, SuccessModel)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)

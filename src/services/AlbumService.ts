@@ -162,7 +162,12 @@ export class AlbumService implements AfterInit {
             throw new BadRequest(`Album cannot have more than ${this.fileLimit} files`);
         }
 
-        const model = await this.addFilesToAlbum(albumToken, filesToAssociate);
+        const model = await this.addFilesToAlbum(
+            albumToken,
+            filesToAssociate.sort((a, b) => {
+                return a.id - b.id;
+            }),
+        );
 
         if (album.isShared) {
             await this.generateThumbnails(
@@ -174,10 +179,35 @@ export class AlbumService implements AfterInit {
         return model;
     }
 
-    private async addFilesToAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
-        for (const file of files) {
-            file.albumToken = albumToken;
+    public async swapFileOrder(
+        albumToken: string,
+        id: number,
+        oldPosition: number,
+        newPosition: number,
+    ): Promise<boolean> {
+        const album = await this.albumRepo.getAlbum(albumToken, true);
+        if (!album) {
+            throw new BadRequest(`Album with token ${albumToken} not found`);
         }
+        for (const file of album.files ?? []) {
+            if (file.addedToAlbumOrder === oldPosition && file.id === id) {
+                file.addedToAlbumOrder = newPosition;
+            }
+        }
+        await this.albumRepo.saveOrUpdateAlbum(album);
+        return true;
+    }
+
+    private async addFilesToAlbum(albumToken: string, files: FileUploadModel[]): Promise<AlbumModel> {
+        // Get the current maximum order value once
+        const maxOrder = await this.fileRepo.getNextAlbumValue(albumToken);
+
+        // Assign sequential values starting from maxOrder
+        for (let i = 0; i < files.length; i++) {
+            files[i].albumToken = albumToken;
+            files[i].addedToAlbumOrder = maxOrder + i;
+        }
+
         await this.fileRepo.saveEntries(files);
         return (await this.albumRepo.getAlbum(albumToken))!;
     }
@@ -192,6 +222,7 @@ export class AlbumService implements AfterInit {
         for (const file of album.files ?? []) {
             if (removeTokens.includes(file.token)) {
                 file.albumToken = null;
+                file.addedToAlbumOrder = null;
             }
         }
         await this.albumRepo.saveOrUpdateAlbum(album);

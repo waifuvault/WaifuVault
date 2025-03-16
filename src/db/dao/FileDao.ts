@@ -263,12 +263,22 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         await this.getRepository(transaction).increment({ token }, "views", 1);
     }
 
-    public getExpiredFiles(): Promise<FileUploadModel[]> {
-        return this.getRepository().find({
+    public getExpiredFiles(transaction?: EntityManager): Promise<FileUploadModel[]> {
+        return this.getRepository(transaction).find({
             where: {
                 expires: LessThan(Date.now()),
             },
         });
+    }
+
+    public async getNextAlbumValue(albumToken: string, transaction?: EntityManager): Promise<number> {
+        const maxOrderResult = await this.getRepository(transaction)
+            .createQueryBuilder("file")
+            .select('COALESCE(MAX(file."addedToAlbumOrder"), 0)', "maxOrder")
+            .where('file."albumToken" = :albumToken', { albumToken })
+            .getRawOne();
+
+        return Number.parseInt(maxOrderResult.maxOrder) + 1;
     }
 
     public async getEntriesByBucket(albumToken: string, transaction?: EntityManager): Promise<FileUploadModel[]> {

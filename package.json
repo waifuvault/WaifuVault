@@ -22,7 +22,8 @@
     "revertmigration": "typeorm-ts-node-esm migration:revert -d ./src/db/DataSource.ts",
     "prettier": "prettier ./src --check",
     "prettier:fix": "prettier ./src --write",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docker:compose:build": "docker compose up -d --build"
   },
   "dependencies": {
     "@socket.io/redis-adapter": "^8.3.0",
