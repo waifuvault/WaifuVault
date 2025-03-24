@@ -211,7 +211,7 @@
                     <a class="btn btn-warning btn-lg btn-bucket-access" type="button" href="/bucketAccess"
                        target="_blank">Bucket access</a>
                 </div>
-                <img id="victorique" class="img-fluid" src="assets/custom/images/08.png" alt="logo" />
+                <img id="victorique" class="img-fluid" src="assets/custom/images/vic_vault.webp" alt="logo" />
             </div>
         </div>
 
@@ -606,7 +606,7 @@ console.log(resp.url); // the file download URL
 
 // upload via URL
 const resp = await Waifuvault.uploadFile({
-    url: "https://waifuvault.moe/assets/custom/images/08.png"
+    url: "https://waifuvault.moe/assets/custom/images/vic_vault.webp"
 });
 console.log(resp.url); // the file download URL
 
@@ -641,7 +641,7 @@ import (
 func main() {
 	api := waifuVault.NewWaifuvaltApi(http.Client{})
 	file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
-		Url: "https://waifuvault.moe/assets/custom/images/08.png",
+		Url: "https://waifuvault.moe/assets/custom/images/vic_vault.webp",
 	})
 	if err != nil {
 		return
@@ -726,7 +726,7 @@ upload_res = waifuvault.upload_file(upload_file)
 print(upload_res.url)
 
 # upload via URL
-upload_file = waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png")
+upload_file = waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/vic_vault.webp")
 upload_res = waifuvault.upload_file(upload_file)
 print(upload_res.url)
 
@@ -756,7 +756,7 @@ var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
 Console.WriteLine(uploadResp.url);
 
 // Upload via URL
-var uploadFile = new Waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png");
+var uploadFile = new Waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/vic_vault.webp");
 var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
 Console.WriteLine(uploadResp.url);
 
@@ -829,7 +829,7 @@ use ErnestMarcinko\WaifuVault\WaifuApi;
 
 $waifu = new WaifuApi();
 $response = $waifu->uploadFile(array(
-	'url' =>   'https://waifuvault.moe/assets/custom/images/08.png',
+	'url' =>   'https://waifuvault.moe/assets/custom/images/vic_vault.webp',
 ));
 var_dump($response);
 
