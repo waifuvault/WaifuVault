@@ -90,14 +90,14 @@
 #victorique {
     position: absolute;
     right: 90px;
-    top: 20px;
+    top: 110px;
     width: 297px;
 }
 
 @media (width <= 1400px) {
     #victorique {
         width: 197px;
-        top: 180px;
+        top: 250px;
     }
 }
 
