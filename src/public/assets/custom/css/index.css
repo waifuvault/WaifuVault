@@ -88,38 +88,79 @@
 }
 
 #victorique {
+    right: 0;
+    bottom: 0;
     position: absolute;
-    right: 90px;
-    top: 110px;
-    width: 297px;
 }
 
-@media (width <= 1400px) {
+/* Base styles for larger screens */
+@media (width <= 1400px) and (width > 991px) {
     #victorique {
-        width: 197px;
-        top: 250px;
+        height: 65%;
     }
 }
 
-
-@media (width <= 991px) {
+/* Medium screens */
+@media (width <= 991px) and (width > 767px) {
     #victorique {
-        display: none;
+        left: auto;
+        display: block;
+        height: 320px;
+        width: 320px;
+        right: 170px;
+    }
+
+    #jumbo {
+        height: 800px;
+    }
+}
+
+/* Small screens */
+@media (width <= 767px) and (width > 742px) {
+    #jumbo {
+        height: 900px;
+    }
+
+    #victorique {
+        height: 370px;
+        width: 360px;
+        right: 50px;
+    }
+}
+
+/* Very small screens */
+@media (width <= 742px) {
+    #victorique {
+        left: auto;
+        display: block;
+        height: 340px;
+        width: 320px;
+        right: 90px;
+    }
+
+    #jumbo {
+        height: 800px;
     }
 
     .sdkButton {
-        width: 100% !important;
+        width: 100%;
     }
 
     #sdkWrapper > div.row {
-        margin-bottom: 0 !important;
+        margin-bottom: 0;
     }
 }
 
+/* Extra small screens */
 @media (width <= 512px) {
     #jumbo .callToAction > .btn {
         margin-top: 10px;
         display: block;
+    }
+    #victorique {
+        height: 280px;
+        width: 280px;
+        right: 80px;
     }
 }
 
