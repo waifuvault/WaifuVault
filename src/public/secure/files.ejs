@@ -62,6 +62,10 @@
         .dropzone.dz-drag-hover i {
             opacity: .5;
         }
+
+        .dt-rowReorder-float-parent {
+            cursor: grabbing;
+        }
     </style>
 </head>
 <body>
@@ -1267,6 +1271,12 @@
                 table.forEach(t => {
                     if (type === "albumEntries") {
                         t.on("row-reorder", async function (e, diff, edit) {
+                            const index = edit.triggerRow[0][0];
+                            if (t.row(index).selected()) {
+                                t.row(index).deselect();
+                            } else {
+                                t.row(index).select();
+                            }
                             for (let i = 0; i < diff.length; i++) {
                                 let rowData = t.row(diff[i].node).data();
                                 await swapOrder(rowData.albumToken, rowData.id, diff[i].oldData, diff[i].newData);
@@ -1341,7 +1351,7 @@
                     };
                 } else if (type === "albumEntries") {
                     dtOpts.data = bucketEntries.files.filter(e => e.albumToken === el.dataset.album);
-                    dtOpts.rowReorder = { dataSrc: "addedToAlbumOrder"};
+                    dtOpts.rowReorder = { dataSrc: "addedToAlbumOrder", selector: "tr" };
                     const curCount = dtOpts.data.length;
                     const counter = document.getElementById(`${el.dataset.album}-count`);
                     counter.textContent = `${curCount}/${albumFileLimit}`;
