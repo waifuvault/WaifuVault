@@ -575,6 +575,11 @@
                                     type="button" role="tab" aria-controls="php-tab-pane" aria-selected="false">PHP
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="elixir-tab" data-bs-toggle="tab" data-bs-target="#elixir-tab-pane"
+                                    type="button" role="tab" aria-controls="elixir-tab-pane" aria-selected="false">Elixir
+                            </button>
+                        </li>
                     </ul>
                     <div class="tab-content" id="myTabContent">
                         <div class="tab-pane fade show active" id="curl-tab-pane" role="tabpanel"
@@ -631,81 +636,81 @@ console.log(resp.url); // the file download URL
 package main
 
 import (
-	"context"
-	"fmt"
-	"github.com/waifuvault/waifuVault-go-api/pkg"
-	waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod" // namespace mod
-	"net/http"
+    "context"
+    "fmt"
+    "github.com/waifuvault/waifuVault-go-api/pkg"
+    waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod" // namespace mod
+    "net/http"
 )
 
 func main() {
-	api := waifuVault.NewWaifuvaltApi(http.Client{})
-	file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
-		Url: "https://waifuvault.moe/assets/custom/images/vic_vault.webp",
-	})
-	if err != nil {
-		return
-	}
-	fmt.Printf(file.URL) // the URL
+    api := waifuVault.NewWaifuvaltApi(http.Client{})
+    file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
+        Url: "https://waifuvault.moe/assets/custom/images/vic_vault.webp",
+    })
+    if err != nil {
+        return
+    }
+    fmt.Printf(file.URL) // the URL
 }
 
 // upload file
 package main
 
 import (
-	"context"
-	"fmt"
-	"github.com/waifuvault/waifuVault-go-api/pkg"
-	waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod"
-	"net/http"
-	"os"
+    "context"
+    "fmt"
+    "github.com/waifuvault/waifuVault-go-api/pkg"
+    waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod"
+    "net/http"
+    "os"
 )
 
 func main() {
-	api := waifuVault.NewWaifuvaltApi(http.Client{})
+    api := waifuVault.NewWaifuvaltApi(http.Client{})
 
-	fileStruc, err := os.Open("myCoolFile.jpg")
-	if err != nil {
-		fmt.Print(err)
-	}
+    fileStruc, err := os.Open("myCoolFile.jpg")
+    if err != nil {
+        fmt.Print(err)
+    }
 
-	file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
-		File: fileStruc,
-	})
-	if err != nil {
-		return
-	}
-	fmt.Printf(file.URL) // the URL
+    file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
+        File: fileStruc,
+    })
+    if err != nil {
+        return
+    }
+    fmt.Printf(file.URL) // the URL
 }
 
 // upload buffer
 package main
 
 import (
-	"context"
-	"fmt"
-	"github.com/waifuvault/waifuVault-go-api/pkg"
-	waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod"
-	"net/http"
-	"os"
+    "context"
+    "fmt"
+    "github.com/waifuvault/waifuVault-go-api/pkg"
+    waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod"
+    "net/http"
+    "os"
 )
 
 func main() {
-	api := waifuVault.NewWaifuvaltApi(http.Client{})
+    api := waifuVault.NewWaifuvaltApi(http.Client{})
 
-	b, err := os.ReadFile("myCoolFile.jpg")
-	if err != nil {
-		fmt.Print(err)
-	}
+    b, err := os.ReadFile("myCoolFile.jpg")
+    if err != nil {
+        fmt.Print(err)
+    }
 
-	file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
-		Bytes:    &b,
-		FileName: "myCoolFile.jpg", // make sure you supply the extension
-	})
-	if err != nil {
-		return
-	}
-	fmt.Printf(file.URL) // the URL
+    file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
+        Bytes:    &b,
+        FileName: "myCoolFile.jpg", // make sure you supply the extension
+    })
+    if err != nil {
+        return
+    }
+    fmt.Printf(file.URL) // the URL
 }
 </code>
 </pre>
@@ -820,7 +825,7 @@ use ErnestMarcinko\WaifuVault\WaifuApi;
 
 $waifu = new WaifuApi();
 $response = $waifu->uploadFile(array(
-	'file' =>   __DIR__ . '/image.jpg',
+    'file' =>   __DIR__ . '/image.jpg',
 ));
 var_dump($response);
 
@@ -829,7 +834,7 @@ use ErnestMarcinko\WaifuVault\WaifuApi;
 
 $waifu = new WaifuApi();
 $response = $waifu->uploadFile(array(
-	'url' =>   'https://waifuvault.moe/assets/custom/images/vic_vault.webp',
+    'url' =>   'https://waifuvault.moe/assets/custom/images/vic_vault.webp',
 ));
 var_dump($response);
 
@@ -838,8 +843,8 @@ use ErnestMarcinko\WaifuVault\WaifuApi;
 
 $waifu = new WaifuApi();
 $response = $waifu->uploadFile(array(
-	'file_contents' => file_get_contents(__DIR__ . '/image.jpg'),
-	'filename' => 'image.jpg',
+    'file_contents' => file_get_contents(__DIR__ . '/image.jpg'),
+    'filename' => 'image.jpg',
 ));
 var_dump($response);
 </code>
@@ -891,7 +896,32 @@ public class Example {
 </pre>
                         </div>
                     </div>
+                    <div class="tab-pane fade" id="elixir-tab-pane" role="tabpanel" aria-labelledby="elixir-tab"
+                         tabindex="0">
+                        <p>For Elixir, there is an official SDK that provides access to all of the features of the
+                            site.</p>
+                        <a class="btn btn-primary btn-sm mb-3" href="https://hexdocs.pm/waifu_vault/api-reference.html"
+                           target="_blank">WaifuVault Rust API</a>
+                        <pre><code class="language-elixir">
+require WaifuVault
 
+# Upload file from disk
+  options = %{}
+  {:ok, fileResponse} = WaifuVault.upload_local_file("./mix.exs", "my_mix.exs", options)
+  {:ok, %{...}}
+
+# Upload file from URL
+  options = %{}
+  {:ok, fileResponse} = WaifuVault.upload_via_url(image_url, options)
+  {:ok, %{...}}
+
+# Upload file from buffer
+  {:ok, buffer} = File.read("some/local/file")
+  {:ok, fileResponse} = WaifuVault.upload_file_from_buffer(buffer, "file.name", %{expires: "10m"})
+  {:ok, %{...}}
+</code>
+</pre>
+                    </div>
                 </div>
             </div>
         </div>
