@@ -164,6 +164,14 @@
     }
 }
 
+@media (width <= 474px) {
+    #victorique {
+        height: 220px;
+        width: 210px;
+        right: 100px;
+    }
+}
+
 .card > i {
     font-size: 2rem;
 }
