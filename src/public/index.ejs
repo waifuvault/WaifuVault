@@ -193,8 +193,8 @@
                         class="bi bi-github"></i> Source</a>
         </header>
 
-        <div class="p-5 mb-4 bg-body-tertiary rounded-3 border border-primary-subtle position-relative" id="jumbo">
-            <div class="container-fluid py-5 ">
+        <div class="p-5 mb-5 bg-body-tertiary rounded-3 border border-primary-subtle position-relative" id="jumbo">
+            <div class="py-5 ">
                 <h1 class="display-5 fw-bold">No nonsense temporary file hosting</h1>
                 <% if (HOME_PAGE_FILE_COUNTER !== "disabled"){ %>
                     <h2 class="fw-bold">Serving <span id="fileCount">0</span> public files totalling
@@ -211,9 +211,13 @@
                     <a class="btn btn-warning btn-lg btn-bucket-access" type="button" href="/bucketAccess"
                        target="_blank">Bucket access</a>
                 </div>
-                <img id="victorique" class="img-fluid" src="assets/custom/images/08.png" alt="logo" />
+                <img id="victorique" class="img-fluid" src="assets/custom/images/vic_vault.webp" alt="logo" />
             </div>
         </div>
+        <div style="margin-top: -50px;" class="float-end text-body-secondary">
+            Logo lovingly created by <a href="http://twitch.tv/meru" target="_blank">Meru</a>
+        </div>
+
 
         <div class="row align-items-md-stretch mb-4">
             <div class="col-md-4">
@@ -575,6 +579,11 @@
                                     type="button" role="tab" aria-controls="php-tab-pane" aria-selected="false">PHP
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="elixir-tab" data-bs-toggle="tab" data-bs-target="#elixir-tab-pane"
+                                    type="button" role="tab" aria-controls="elixir-tab-pane" aria-selected="false">Elixir
+                            </button>
+                        </li>
                     </ul>
                     <div class="tab-content" id="myTabContent">
                         <div class="tab-pane fade show active" id="curl-tab-pane" role="tabpanel"
@@ -606,7 +615,7 @@ console.log(resp.url); // the file download URL
 
 // upload via URL
 const resp = await Waifuvault.uploadFile({
-    url: "https://waifuvault.moe/assets/custom/images/08.png"
+    url: "https://waifuvault.moe/assets/custom/images/vic_vault.webp"
 });
 console.log(resp.url); // the file download URL
 
@@ -641,7 +650,7 @@ import (
 func main() {
 	api := waifuVault.NewWaifuvaltApi(http.Client{})
 	file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
-		Url: "https://waifuvault.moe/assets/custom/images/08.png",
+		Url: "https://waifuvault.moe/assets/custom/images/vic_vault.webp",
 	})
 	if err != nil {
 		return
@@ -726,7 +735,7 @@ upload_res = waifuvault.upload_file(upload_file)
 print(upload_res.url)
 
 # upload via URL
-upload_file = waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png")
+upload_file = waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/vic_vault.webp")
 upload_res = waifuvault.upload_file(upload_file)
 print(upload_res.url)
 
@@ -756,7 +765,7 @@ var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
 Console.WriteLine(uploadResp.url);
 
 // Upload via URL
-var uploadFile = new Waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/08.png");
+var uploadFile = new Waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/vic_vault.webp");
 var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
 Console.WriteLine(uploadResp.url);
 
@@ -829,7 +838,7 @@ use ErnestMarcinko\WaifuVault\WaifuApi;
 
 $waifu = new WaifuApi();
 $response = $waifu->uploadFile(array(
-	'url' =>   'https://waifuvault.moe/assets/custom/images/08.png',
+	'url' =>   'https://waifuvault.moe/assets/custom/images/vic_vault.webp',
 ));
 var_dump($response);
 
@@ -891,7 +900,32 @@ public class Example {
 </pre>
                         </div>
                     </div>
+                    <div class="tab-pane fade" id="elixir-tab-pane" role="tabpanel" aria-labelledby="elixir-tab"
+                         tabindex="0">
+                        <p>For Elixir, there is an official SDK that provides access to all of the features of the
+                            site.</p>
+                        <a class="btn btn-primary btn-sm mb-3" href="https://hexdocs.pm/waifu_vault/api-reference.html"
+                           target="_blank">WaifuVault Elixir API</a>
+                        <pre><code class="language-elixir">
+require WaifuVault
 
+# Upload file from disk
+  options = %{}
+  {:ok, fileResponse} = WaifuVault.upload_local_file("./mix.exs", "my_mix.exs", options)
+  {:ok, %{...}}
+
+# Upload file from URL
+  options = %{}
+  {:ok, fileResponse} = WaifuVault.upload_via_url(image_url, options)
+  {:ok, %{...}}
+
+# Upload file from buffer
+  {:ok, buffer} = File.read("some/local/file")
+  {:ok, fileResponse} = WaifuVault.upload_file_from_buffer(buffer, "file.name", %{expires: "10m"})
+  {:ok, %{...}}
+</code>
+</pre>
+                    </div>
                 </div>
             </div>
         </div>
@@ -901,6 +935,8 @@ public class Example {
 <% if(HOME_PAGE_FILE_COUNTER === "dynamic"){ %>
     <script src="<%- BASE_URL; -%>/socket.io/socket.io.min.js"></script>
 <% } %>
+<script src="/assets/vendor/highlightjs/languages/elixir.min.js"></script>
+<script src="/assets/vendor/highlightjs/highlight.min.js"></script>
 <script>
     Site.loadPage(async () => {
 
