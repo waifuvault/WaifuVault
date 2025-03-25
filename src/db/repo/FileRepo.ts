@@ -86,4 +86,8 @@ export class FileRepo {
     public async clearCache(token: string | string[] | null): Promise<void> {
         await this.fileDao.clearCache(token);
     }
+
+    public getNextAlbumValue(albumToken: string): Promise<number> {
+        return this.fileDao.getNextAlbumValue(albumToken);
+    }
 }

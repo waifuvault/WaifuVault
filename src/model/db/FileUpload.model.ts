@@ -112,6 +112,13 @@ export class FileUploadModel extends AbstractModel {
     })
     public views: number;
 
+    @Column({
+        nullable: true,
+        type: "numeric",
+        transformer: new ColumnNumericTransformer<FileUploadModel>("addedToAlbumOrder"),
+    })
+    public addedToAlbumOrder: number | null;
+
     @ManyToOne("BucketModel", "files", {
         ...AbstractModel.cascadeOps,
     })
