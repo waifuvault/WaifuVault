@@ -98,27 +98,36 @@ export class AlbumController extends BaseRestController {
     }
 
     @Post("/:albumToken/swapFileOrder/:id/:oldPosition/:newPosition")
-    @Returns(StatusCodes.OK, AlbumDto)
+    @Returns(StatusCodes.OK, SuccessModel)
     @Returns(StatusCodes.BAD_REQUEST, DefaultRenderException)
     @Description(
-        "Associate files with an album, the album must exist and the files must be in the same bucket as the album",
+        "Swaps the file order in an album, given the private token, the file id, the old position, and the new position",
     )
     @Summary("Swap file order within an album")
-    public swapFileOrder(
-        @Description("The album token to swap files order within")
+    public async swapFileOrder(
+        @Description("The private album token to swap files order within")
         @PathParams("albumToken")
         albumToken: string,
+
         @Description("The id of the file")
         @PathParams("id")
         id: number,
+
         @Description("The old position of the file")
         @PathParams("oldPosition")
         oldPosition: number,
+
         @Description("The new position of the file")
         @PathParams("newPosition")
         newPosition: number,
-    ): Promise<boolean> {
-        return this.albumService.swapFileOrder(albumToken, id, oldPosition, newPosition);
+
+        @Res() res: PlatformResponse,
+    ): Promise<PlatformResponse> {
+        const success = await this.albumService.swapFileOrder(albumToken, id, oldPosition, newPosition);
+        if (success) {
+            return super.doSuccess(res, "file order swap failed");
+        }
+        return super.doError(res, "file order swap failed", StatusCodes.INTERNAL_SERVER_ERROR);
     }
 
     @Delete("/:albumToken")
