@@ -189,6 +189,8 @@ export class AlbumService implements AfterInit {
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
+
+        this.checkPrivateToken(albumToken, album);
         for (const file of album.files ?? []) {
             if (file.addedToAlbumOrder === oldPosition && file.id === id) {
                 file.addedToAlbumOrder = newPosition;
