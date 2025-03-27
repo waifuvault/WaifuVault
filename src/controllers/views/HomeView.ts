@@ -61,7 +61,7 @@ export class HomeView extends BaseViewController {
         if (!albumExists) {
             throw new NotFound("Album does not exist");
         }
-        const album = await this.albumService.getAlbum(publicToken);
+        const album = await this.albumService.getAlbum(publicToken, true, true);
         const dto = PublicAlbumDto.fromModel(album);
         const thumbs = dto.files.filter(f => f.metadata.thumbnail).map(x => x.metadata.thumbnail ?? "");
         const chosenThumb = thumbs.length > 0 ? Math.floor(Math.random() * thumbs.length) : 0;
