@@ -179,7 +179,7 @@ export class AlbumController extends BaseRestController {
         @PathParams("albumToken")
         albumToken: string,
     ): Promise<AlbumModel> {
-        const album = await this.albumService.getAlbum(albumToken);
+        const album = await this.albumService.getAlbum(albumToken, true, true);
         if (!album.isShared) {
             throw new BadRequest("This album is not public");
         }

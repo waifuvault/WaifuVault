@@ -24,7 +24,7 @@ export class AlbumRepo {
     public async deleteAlbum(albumToken: string, deleteFiles = false): Promise<boolean> {
         if (deleteFiles) {
             return this.albumDao.dataSource.transaction(async entityManager => {
-                const album = await this.albumDao.getAlbum(albumToken, true, entityManager);
+                const album = await this.albumDao.getAlbum(albumToken, true, false, entityManager);
                 if (album?.files) {
                     const files = album.files;
                     await this.fileRepo.clearCache(files.map(f => f.token));
@@ -35,7 +35,7 @@ export class AlbumRepo {
             });
         }
         const [res, files] = await this.albumDao.dataSource.transaction(async entityManager => {
-            const album = await this.albumDao.getAlbum(albumToken, true, entityManager);
+            const album = await this.albumDao.getAlbum(albumToken, true, false, entityManager);
             const filesRemoved: FileUploadModel[] = [];
             if (album && album.files && album.files.length > 0) {
                 filesRemoved.push(...album.files);
@@ -50,8 +50,8 @@ export class AlbumRepo {
         return res;
     }
 
-    public getAlbum(token: string, includeFiles = true): Promise<AlbumModel | null> {
-        return this.albumDao.getAlbum(token, includeFiles);
+    public getAlbum(token: string, includeFiles = true, allowPublic = false): Promise<AlbumModel | null> {
+        return this.albumDao.getAlbum(token, includeFiles, allowPublic);
     }
 
     public albumNameExists(name: string, bucketToken: string): Promise<boolean> {

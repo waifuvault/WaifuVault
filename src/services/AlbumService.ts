@@ -83,8 +83,8 @@ export class AlbumService implements AfterInit {
         return this.albumRepo.saveOrUpdateAlbum(albumModel);
     }
 
-    public async getAlbum(albumToken: string): Promise<AlbumModel> {
-        const album = await this.albumRepo.getAlbum(albumToken);
+    public async getAlbum(albumToken: string, includeFiles = true, allowPublic = false): Promise<AlbumModel> {
+        const album = await this.albumRepo.getAlbum(albumToken, includeFiles, allowPublic);
         if (!album) {
             throw new NotFound("Album not found");
         }
@@ -96,7 +96,6 @@ export class AlbumService implements AfterInit {
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-        this.checkPrivateToken(albumToken, album);
         const didDeleteAlbum = await this.albumRepo.deleteAlbum(albumToken, removeFiles);
         if (!didDeleteAlbum) {
             throw new BadRequest(`Unable to delete album with token: "${albumToken}"`);
@@ -119,7 +118,6 @@ export class AlbumService implements AfterInit {
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-        this.checkPrivateToken(albumToken, album);
         const filesToRemove = await this.fileRepo.getEntries(files);
 
         if (album.files && !files.every(file => album!.files!.find(f => f.token === file))) {
@@ -136,7 +134,6 @@ export class AlbumService implements AfterInit {
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-        this.checkPrivateToken(albumToken, album);
         const filesToAssociate = await this.fileRepo.getEntries(files, false);
         if (filesToAssociate.length !== files.length) {
             throw new BadRequest(`some files were not found`);
@@ -190,7 +187,6 @@ export class AlbumService implements AfterInit {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
 
-        this.checkPrivateToken(albumToken, album);
         for (const file of album.files ?? []) {
             if (file.addedToAlbumOrder === oldPosition && file.id === id) {
                 file.addedToAlbumOrder = newPosition;
@@ -220,7 +216,6 @@ export class AlbumService implements AfterInit {
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-        this.checkPrivateToken(albumToken, album);
         for (const file of album.files ?? []) {
             if (removeTokens.includes(file.token)) {
                 file.albumToken = null;
@@ -236,7 +231,6 @@ export class AlbumService implements AfterInit {
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-        this.checkPrivateToken(albumToken, album);
         await this.albumRepo.setShareStatus(albumToken, false);
     }
 
@@ -245,7 +239,6 @@ export class AlbumService implements AfterInit {
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-        this.checkPrivateToken(albumToken, album);
         if (album.publicUrl) {
             return album.publicUrl;
         }
@@ -264,7 +257,6 @@ export class AlbumService implements AfterInit {
         if (!album) {
             throw new NotFound("Album not found");
         }
-        this.checkPrivateToken(privateAlbumToken, album);
 
         const promise = this.thumbnailService.generateThumbnail(album, filesIds);
 
@@ -320,7 +312,7 @@ export class AlbumService implements AfterInit {
     }
 
     public async downloadFiles(publicAlbumToken: string, fileIds: number[]): Promise<[ReadStream, string, string]> {
-        const album = await this.albumRepo.getAlbum(publicAlbumToken);
+        const album = await this.albumRepo.getAlbum(publicAlbumToken, true, true);
         if (!album) {
             throw new NotFound("Album not found");
         }
@@ -351,18 +343,6 @@ export class AlbumService implements AfterInit {
             return album.files.reduce((acc, file) => acc + file.fileSize, 0) > this.zipMaxFileSize * 1024 * 1024;
         }
         return false;
-    }
-
-    private checkPrivateToken(token: string, album: AlbumModel): void {
-        if (album.isPublicToken(token)) {
-            throw new BadRequest("Supplied token is not valid");
-        }
-    }
-
-    private checkPublicToken(token: string, album: AlbumModel): void {
-        if (!album.isPublicToken(token)) {
-            throw new BadRequest("Supplied token is not valid");
-        }
     }
 
     private validateForAssociation(file: FileUploadModel): void {

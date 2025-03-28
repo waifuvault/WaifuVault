@@ -22,7 +22,32 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
         return deleteResult.affected === 1;
     }
 
-    public getAlbum(token: string, includeFiles = true, transaction?: EntityManager): Promise<AlbumModel | null> {
+    public getAlbum(
+        token: string,
+        includeFiles = true,
+        allowPublic = false,
+        transaction?: EntityManager,
+    ): Promise<AlbumModel | null> {
+        if (allowPublic) {
+            return this.getRepository(transaction).findOne({
+                relations: includeFiles ? ["files"] : undefined,
+                order: includeFiles
+                    ? {
+                          files: {
+                              addedToAlbumOrder: "ASC",
+                          },
+                      }
+                    : undefined,
+                where: [
+                    {
+                        albumToken: token,
+                    },
+                    {
+                        publicToken: token,
+                    },
+                ],
+            });
+        }
         return this.getRepository(transaction).findOne({
             relations: includeFiles ? ["files"] : undefined,
             order: includeFiles
@@ -35,9 +60,6 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
             where: [
                 {
                     albumToken: token,
-                },
-                {
-                    publicToken: token,
                 },
             ],
         });
