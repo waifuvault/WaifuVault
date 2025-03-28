@@ -31,6 +31,10 @@ export class FileRepo {
         return this.fileDao.getEntryFileName(Path.parse(fileName).name);
     }
 
+    public getEntryById(id: number): Promise<FileUploadModel | null> {
+        return this.fileDao.getEntryById(id);
+    }
+
     public getEntriesFromChecksum(hash: string): Promise<FileUploadModel[]> {
         return this.fileDao.getEntriesFromChecksum(hash);
     }

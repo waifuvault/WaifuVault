@@ -185,18 +185,22 @@ export class AlbumService implements AfterInit {
         oldPosition: number,
         newPosition: number,
     ): Promise<boolean> {
-        const album = await this.albumRepo.getAlbum(albumToken, true);
+        const album = await this.albumRepo.getAlbum(albumToken, false);
         if (!album) {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
-
         this.checkPrivateToken(albumToken, album);
-        for (const file of album.files ?? []) {
-            if (file.addedToAlbumOrder === oldPosition && file.id === id) {
-                file.addedToAlbumOrder = newPosition;
-            }
+        const file = await this.fileRepo.getEntryById(id);
+        if (!file) {
+            throw new BadRequest(`File with ID ${id} not found`);
         }
-        await this.albumRepo.saveOrUpdateAlbum(album);
+        if (file.albumToken !== albumToken) {
+            throw new BadRequest(`File with ID ${id} not assigned to album`);
+        }
+        if (file.addedToAlbumOrder === oldPosition) {
+            file.addedToAlbumOrder = newPosition;
+        }
+        await this.fileRepo.saveEntry(file);
         return true;
     }
 

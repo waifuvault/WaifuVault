@@ -259,6 +259,15 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         });
     }
 
+    public getEntryById(id: number, transaction?: EntityManager): Promise<FileUploadModel | null> {
+        return this.getRepository(transaction).findOne({
+            where: {
+                id,
+                expires: this.expiresCondition,
+            },
+        });
+    }
+
     public async incrementViews(token: string, transaction?: EntityManager): Promise<void> {
         await this.getRepository(transaction).increment({ token }, "views", 1);
     }
