@@ -304,6 +304,7 @@
         let bucketAlbums = null;
         let dz = null;
         let albumTarget = null
+        let lastRowReorder = null;
 
         function getFilesRemainingTooltipText(curCount, albumFileLimit){
             if(isPremiumBucket){
@@ -1271,16 +1272,19 @@
                 table.forEach(t => {
                     if (type === "albumEntries") {
                         t.on("row-reorder", async function (e, diff, edit) {
-                            const index = edit.triggerRow[0][0];
-                            if (t.row(index).selected()) {
-                                t.row(index).deselect();
+                            if(e.timeStamp === lastRowReorder) {
+                                return;
+                            }
+                            if (edit.triggerRow.selected()) {
+                                edit.triggerRow.deselect();
                             } else {
-                                t.row(index).select();
+                                edit.triggerRow.select();
                             }
                             for (let i = 0; i < diff.length; i++) {
                                 let rowData = t.row(diff[i].node).data();
                                 await swapOrder(rowData.albumToken, rowData.id, diff[i].oldData, diff[i].newData);
                             }
+                            lastRowReorder = e.timeStamp;
                         })
                     }
                     if (type === "entries" || type === "albumEntries") {
