@@ -125,7 +125,7 @@ export class AlbumController extends BaseRestController {
     ): Promise<PlatformResponse> {
         const success = await this.albumService.swapFileOrder(albumToken, id, oldPosition, newPosition);
         if (success) {
-            return super.doSuccess(res, "file order swap failed");
+            return super.doSuccess(res, "file order swap succeeded");
         }
         return super.doError(res, "file order swap failed", StatusCodes.INTERNAL_SERVER_ERROR);
     }
