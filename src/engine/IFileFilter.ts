@@ -1,5 +1,5 @@
 import { Awaitable } from "../utils/typeings.js";
-import type { PlatformMulterFile } from "@tsed/common";
+import { type PlatformMulterFile } from "@tsed/platform-multer";
 import { Exception } from "@tsed/exceptions";
 
 export enum FileFilterPriority {

@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { FileRepo } from "../db/repo/FileRepo.js";
-import type { PlatformMulterFile } from "@tsed/common";
+import { type PlatformMulterFile } from "@tsed/platform-multer";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { FileUrlService } from "./FileUrlService.js";
 import { Builder, type IBuilder } from "builder-pattern";

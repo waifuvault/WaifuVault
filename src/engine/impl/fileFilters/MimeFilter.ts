@@ -1,6 +1,6 @@
 import { Inject, Injectable, ProviderScope } from "@tsed/di";
 import { FILE_FILTER } from "../../../model/di/tokens.js";
-import { PlatformMulterFile } from "@tsed/common";
+import { type PlatformMulterFile } from "@tsed/platform-multer";
 import { AbstractFileFilter } from "./AbstractFileFilter.js";
 import { Logger } from "@tsed/logger";
 import { MimeService } from "../../../services/MimeService.js";
