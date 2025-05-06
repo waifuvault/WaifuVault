@@ -1,5 +1,5 @@
 import { IFileFilter } from "../../IFileFilter.js";
-import { PlatformMulterFile } from "@tsed/common";
+import { type PlatformMulterFile } from "@tsed/platform-multer";
 import { Awaitable } from "../../../utils/typeings.js";
 import { FileUtils } from "../../../utils/Utils.js";
 import { Logger } from "@tsed/logger";

@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnInit } from "@tsed/di";
 import { AvFactory } from "../factory/AvFactory.js";
-import type { PlatformMulterFile } from "@tsed/common";
+import { type PlatformMulterFile } from "@tsed/platform-multer";
 import { Logger } from "@tsed/logger";
 import path from "node:path";
 import { IAvEngine } from "../engine/IAvEngine.js";

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@tsed/di";
-import { PlatformMulterFile } from "@tsed/common";
+import { type PlatformMulterFile } from "@tsed/platform-multer";
 import { FILE_FILTER } from "../model/di/tokens.js";
 import { IFileFilter } from "../engine/IFileFilter.js";
 

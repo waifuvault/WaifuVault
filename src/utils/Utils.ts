@@ -4,7 +4,7 @@ import TimeUnit from "../model/constants/TimeUnit.js";
 import process from "node:process";
 import type { Request } from "express";
 import fs from "node:fs/promises";
-import type { PlatformMulterFile } from "@tsed/common";
+import { type PlatformMulterFile } from "@tsed/platform-multer";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { isFormatSupportedByFfmpeg } from "./ffmpgWrapper.js";
 import { WorkerResponse } from "./typeings.js";

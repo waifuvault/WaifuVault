@@ -1,6 +1,6 @@
 import { Exception } from "@tsed/exceptions";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
-import type { PlatformMulterFile } from "@tsed/common";
+import { type PlatformMulterFile } from "@tsed/platform-multer";
 import { FileUploadQueryParameters } from "../model/rest/FileUploadQueryParameters.js";
 import RestrictionType from "../model/constants/RestrictionType.js";
 
