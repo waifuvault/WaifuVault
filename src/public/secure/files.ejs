@@ -701,7 +701,7 @@
                     const oneTimeDownload = document.getElementById("oneTimeDownload").checked;
                     const uploadButton = document.querySelector(".btn-file-upload");
                     const fileUploadSuccess = document.getElementById("fileUploadedUrl");
-                    const album = document.getElementById("uploadToAlbumButton").dataset.token;
+                    const album = document.getElementById("uploadToAlbumButton")?.dataset?.token;
                     fileUploadSuccess.innerHTML = null;
 
                     uploadButton.setAttribute("disabled", "true");

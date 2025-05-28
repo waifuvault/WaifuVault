@@ -8,6 +8,7 @@ import "@tsed/socketio";
 import "@tsed/platform-log-request";
 import "@tsed/platform-cache";
 import "@tsed/ioredis";
+import "@tsed/scalar";
 // custom index imports
 import "./protocols/index.js";
 import "./filters/index.js";
@@ -155,6 +156,12 @@ const opts: Partial<TsED.Configuration> = {
             },
         },
     },
+    scalar: [
+        {
+            path: "/api-docs-beta",
+            specVersion: "3.1.0",
+        },
+    ],
     swagger: [
         {
             path: "/api-docs",
