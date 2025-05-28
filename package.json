@@ -48,6 +48,7 @@
     "@tsed/platform-params": "^8.9.1",
     "@tsed/platform-response-filter": "^8.9.1",
     "@tsed/platform-views": "^8.9.1",
+    "@tsed/scalar": "^8.9.5",
     "@tsed/schema": "^8.9.1",
     "@tsed/socketio": "^8.9.1",
     "@tsed/swagger": "^8.9.1",
