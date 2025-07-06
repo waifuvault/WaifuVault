@@ -22,7 +22,7 @@ export class FileServerController {
     private readonly allowedChunkMimeTypes = ["video/", "audio/"];
     private readonly chunkSize = 10 ** 6; // 1MB
 
-    @Get("/:t/*file")
+    @Get("/:t/{:file}")
     @Header({
         "Content-Encoding": "identity", // disable gzip
     })
