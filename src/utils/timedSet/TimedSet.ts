@@ -18,6 +18,36 @@ export class TimedSet<T> implements ITimedSet<T> {
         this._map = new Map();
     }
 
+    public entries(): SetIterator<[T, T]> {
+        const mapKeys = this._map.keys();
+        const iterator = {
+            [Symbol.dispose](): void {},
+            next(): IteratorResult<[T, T]> {
+                const result = mapKeys.next();
+                if (result.done) {
+                    return { done: true, value: undefined };
+                }
+                return { done: false, value: [result.value, result.value] };
+            },
+            [Symbol.iterator](): SetIterator<[T, T]> {
+                return iterator;
+            },
+        };
+        return iterator;
+    }
+
+    public keys(): SetIterator<T> {
+        return this._map.keys();
+    }
+
+    public values(): SetIterator<T> {
+        return this._map.keys();
+    }
+
+    public [Symbol.iterator](): SetIterator<T> {
+        return this._map.keys();
+    }
+
     public get size(): number {
         return this._map.size;
     }
@@ -78,27 +108,10 @@ export class TimedSet<T> implements ITimedSet<T> {
         this._map = new Map();
     }
 
-    public [Symbol.iterator](): IterableIterator<T> {
-        return this._map.keys();
-    }
-
-    public entries(): IterableIterator<[T, T]> {
-        const keysArray = Array.from(this._map.keys());
-        return keysArray.map(key => [key, key] as [T, T])[Symbol.iterator]();
-    }
-
     public forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: unknown): void {
         this._map.forEach((_, key) => {
             callbackfn.call(thisArg, key, key, new Set(this._map.keys()));
         });
-    }
-
-    public keys(): IterableIterator<T> {
-        return this._map.keys();
-    }
-
-    public values(): IterableIterator<T> {
-        return this._map.keys();
     }
 
     public getTimeRemaining(key: T): number {
