@@ -18,4 +18,12 @@ async function deleteBuild(directoryPath) {
     }
 }
 
+async function copyGeolite(directoryPath) {
+    const source = path.resolve(directoryPath, '../GeoLite2-Country.mmdb');
+    const dest = path.resolve(directoryPath, 'Geolite2-Country.mmdb');
+    await fs.mkdir(path.dirname(dest), { recursive: true });
+    await fs.copyFile(source, dest);
+}
+
 await deleteBuild(to);
+await copyGeolite(to);

@@ -30,6 +30,12 @@ export class HomeView extends BaseViewController {
         return super.mergeWithEnvs();
     }
 
+    @Get("/ukonlinesafety")
+    @View("ukonlinesafety.ejs")
+    public showUKOnlineSaefty(): unknown {
+        return super.mergeWithEnvs();
+    }
+
     @Get("/bucketAccess")
     @View("bucketAccess.ejs")
     public showBucketLoginPage(@Res() res: Response): unknown {

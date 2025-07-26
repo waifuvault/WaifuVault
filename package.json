@@ -79,6 +79,7 @@
     "ioredis": "^5.6.1",
     "is-localhost-ip": "^2.0.0",
     "lru-cache": "^11.1.0",
+    "maxmind": "^4.3.28",
     "method-override": "^3.0.0",
     "mime": "^4.0.7",
     "node-schedule": "^2.1.1",
