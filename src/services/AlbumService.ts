@@ -70,7 +70,7 @@ export class AlbumService implements AfterInit {
     }
 
     public async createAlbum(name: string, bucketToken: string): Promise<AlbumModel> {
-        const bucket = await this.bucketRepo.getBucket(bucketToken);
+        const bucket = await this.bucketRepo.getBucket(bucketToken, false, false);
         if (!bucket) {
             throw new BadRequest(`Bucket with token ${bucketToken} not found`);
         }
