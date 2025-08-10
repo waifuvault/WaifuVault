@@ -20,7 +20,6 @@ func StartServerWithGracefulShutdown(a *fiber.App) {
 			// Error from closing listeners, or context timeout:
 			log.Printf("Oops... Server is not shutting down! Reason: %v", err)
 		}
-
 		close(idleConnsClosed)
 	}()
 

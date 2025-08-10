@@ -27,6 +27,12 @@ export class FileCleaner implements OnReady {
     public async $onReady(): Promise<void> {
         await this.processFiles();
         await this.sync();
+        await this.removeDupes();
+    }
+
+    @RunEvery("* * * * *")
+    private async checkForDuplicateFiles(): Promise<void> {
+        await this.removeDupes();
     }
 
     private async sync(): Promise<void> {
@@ -40,5 +46,9 @@ export class FileCleaner implements OnReady {
 
     private isFileInDb(fileDbList: FileUploadModel[], fileName: string): boolean {
         return !!fileDbList.find(file => file.fullFileNameOnSystem === fileName);
+    }
+
+    private async removeDupes(): Promise<void> {
+        await this.repo.removeDuplicates();
     }
 }

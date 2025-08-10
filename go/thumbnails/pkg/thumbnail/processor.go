@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/davidbyttow/govips/v2/vips"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
-	"golang.org/x/image/webp"
 	"image"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/waifuvault/WaifuVault/shared/utils"
+	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
+	"golang.org/x/image/webp"
 )
 
 type Processor interface {
@@ -32,7 +33,7 @@ type processor struct {
 // NewProcessor creates a new thumbnail processor
 func NewProcessor(ffmpegFormats []string, supportedExtensions []string) Processor {
 	return &processor{
-		baseUrl:       utils.BaseUrl,
+		baseUrl:       utils.FileBaseUrl,
 		ffmpegFormats: ffmpegFormats,
 		imageFormats:  supportedExtensions,
 	}

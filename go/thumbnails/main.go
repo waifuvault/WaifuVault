@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os"
+	"strings"
+
 	"github.com/create-go-app/fiber-go-template/pkg/configs"
 	"github.com/create-go-app/fiber-go-template/pkg/middleware"
 	"github.com/gofiber/fiber/v2"
@@ -8,22 +11,44 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
+	"github.com/swaggo/fiber-swagger"
+	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/controllers"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/routes"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
 	"golang.org/x/net/context"
-	"os"
-	"strings"
+
+	"github.com/waifuvault/WaifuVault/thumbnails/docs"
+	_ "github.com/waifuvault/WaifuVault/thumbnails/docs" // This line is needed for swag
 )
 
-func main() {
+// @title           Thumbnail Service API
+// @version         1.0
+// @description     A service for generating thumbnails from images and videos using libvips and ffmpeg
+// @termsOfService  http://swagger.io/terms/
 
+// @contact.name   WaifuVault
+// @contact.url    https://github.com/waifuvault/WaifuVault
+// @contact.email  support@waifuvault.moe
+
+// @license.name  MIT
+// @license.url   https://opensource.org/licenses/MIT
+
+// @BasePath  /api/v1
+
+// @schemes   http https
+
+// @tag.name thumbnails
+// @tag.description Operations for generating and managing thumbnails
+func main() {
 	// configure zero log
 	configureLog()
 
 	// load env
 	utils.LoadEnvs()
+
+	// Configure Swagger based on environment
+	configureSwaggerServers()
 
 	rdb := initRedis()
 
@@ -45,6 +70,9 @@ func main() {
 	// Middlewares.
 	middleware.FiberMiddleware(app) // Register Fiber's middleware for app.
 
+	// Swagger documentation
+	app.Get("/swagger/*", fiberSwagger.WrapHandler)
+
 	// Routes.
 	routes.PublicRoutes(*service, app)
 
@@ -55,8 +83,18 @@ func main() {
 	}
 }
 
+func configureSwaggerServers() {
+	// Configure servers based on environment by modifying the SwaggerInfo
+	baseUrl := utils.GetBseUrl()
+	// remove http(s):// from the start
+	baseUrl = strings.TrimPrefix(baseUrl, "https://")
+	baseUrl = strings.TrimPrefix(baseUrl, "http://")
+	docs.SwaggerInfo.Host = baseUrl
+	log.Info().Msgf("Configured Swagger for %s mode", baseUrl)
+}
+
 func initRedis() *redis.Client {
-	rawRedisUri := lo.Ternary(utils.DevMode, os.Getenv("REDIS_URI"), "redis://redis:6379")
+	rawRedisUri := lo.Ternary(utils.DockerMode, os.Getenv("REDIS_URI"), "redis://redis:6379")
 	redisAddr := strings.TrimPrefix(rawRedisUri, "redis://")
 
 	client := redis.NewClient(&redis.Options{
@@ -75,7 +113,7 @@ func initRedis() *redis.Client {
 }
 
 func configureLog() {
-	if utils.DevMode {
+	if utils.DockerMode {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	} else {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)

@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/davidbyttow/govips/v2/vips"
-	"github.com/rs/zerolog/log"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
 	"os/exec"
 	"strings"
+
+	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/rs/zerolog/log"
+	"github.com/waifuvault/WaifuVault/shared/utils"
+	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 )
 
 // fileSupported checks if a file type is supported for thumbnail generation

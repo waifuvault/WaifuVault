@@ -1,0 +1,127 @@
+basePath: /api/v1
+definitions:
+  github_com_waifuvault_WaifuVault_thumbnails_pkg_mod.FileEntry:
+    properties:
+      extension:
+        example: jpg
+        type: string
+      fileOnDisk:
+        example: uploads/image.jpg
+        type: string
+      id:
+        example: 1
+        type: integer
+      mediaType:
+        example: image/jpeg
+        type: string
+    required:
+    - extension
+    - fileOnDisk
+    - id
+    - mediaType
+    type: object
+  github_com_waifuvault_WaifuVault_thumbnails_pkg_wapimod.ApiResult:
+    properties:
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+info:
+  contact:
+    email: support@waifuvault.moe
+    name: WaifuVault
+    url: https://github.com/waifuvault/WaifuVault
+  description: A service for generating thumbnails from images and videos using libvips
+    and ffmpeg
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Thumbnail Service API
+  version: "1.0"
+paths:
+  /generateThumbnails:
+    post:
+      consumes:
+      - application/json
+      description: Processes a batch of files to generate thumbnails. The operation
+        runs asynchronously in the background.
+      parameters:
+      - description: The ID of the album to generate thumbnails for
+        in: query
+        minimum: 1
+        name: albumId
+        required: true
+        type: integer
+      - default: false
+        description: Whether adding additional files to an existing album
+        in: query
+        name: addingAdditionalFiles
+        type: boolean
+      - description: Array of file entries to process
+        in: body
+        name: files
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/github_com_waifuvault_WaifuVault_thumbnails_pkg_mod.FileEntry'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Thumbnail generation started successfully
+          schema:
+            $ref: '#/definitions/github_com_waifuvault_WaifuVault_thumbnails_pkg_wapimod.ApiResult'
+        "400":
+          description: Bad request - invalid payload or missing albumId
+          schema:
+            $ref: '#/definitions/github_com_waifuvault_WaifuVault_thumbnails_pkg_wapimod.ApiResult'
+      summary: Generate thumbnails
+      tags:
+      - thumbnails
+  /generateThumbnails/supported:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all file extensions supported by the thumbnail
+        service for both images and videos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of supported file extensions
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get supported file extensions
+      tags:
+      - thumbnails
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Returns the health status of the thumbnail service
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Service health status
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - system
+schemes:
+- http
+- https
+swagger: "2.0"
+tags:
+- description: Operations for generating and managing thumbnails
+  name: thumbnails

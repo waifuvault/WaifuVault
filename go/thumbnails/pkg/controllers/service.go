@@ -20,6 +20,7 @@ func NewService(dao dao.Dao) *Service {
 func (s *Service) GetAllRoutes() []FSetupRoute {
 	all := []FSetupRoute{}
 	all = append(all, s.getAllThumbnailRoutes()...)
+	all = append(all, s.getAllSystemRoutes()...)
 
 	return all
 }

@@ -1,14 +1,15 @@
 package main
 
 import (
+	"os"
+
 	"github.com/create-go-app/fiber-go-template/pkg/configs"
 	"github.com/create-go-app/fiber-go-template/pkg/middleware"
 	"github.com/create-go-app/fiber-go-template/pkg/routes"
 	"github.com/gofiber/fiber/v2"
+	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/controllers"
 	waifuRoutes "github.com/waifuvault/WaifuVault/zipfiles/pkg/routes"
-	"github.com/waifuvault/WaifuVault/zipfiles/pkg/utils"
-	"os"
 )
 
 func main() {
