@@ -1,5 +1,5 @@
 import { constant as getFromEnv, Inject, Service } from "@tsed/di";
-import { OnReady } from "@tsed/common";
+import { OnReady } from "@tsed/platform-http";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { filesDir, FileUtils } from "../utils/Utils.js";
 import fs from "node:fs/promises";

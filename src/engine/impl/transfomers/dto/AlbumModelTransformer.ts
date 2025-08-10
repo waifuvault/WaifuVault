@@ -3,7 +3,7 @@ import { TRANSFORMER } from "../../../../model/di/tokens.js";
 import type { ITransformer } from "../../../ITransformer.js";
 import { AlbumModel } from "../../../../model/db/Album.model.js";
 import { AlbumDto } from "../../../../model/dto/AlbumDto.js";
-import type { PlatformContext } from "@tsed/common";
+import type { PlatformContext } from "@tsed/platform-http";
 import { InternalServerError } from "@tsed/exceptions";
 import { PublicAlbumDto } from "../../../../model/dto/PublicAlbumDto.js";
 

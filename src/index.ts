@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { $log, PlatformBuilder } from "@tsed/common";
+import { PlatformBuilder } from "@tsed/platform-http";
 import { PlatformExpress } from "@tsed/platform-express";
 import { Server } from "./Server.js";
 import process from "process";
@@ -7,6 +7,7 @@ import { Application } from "express";
 import { registerDatasource } from "./db/registerDatasource.js";
 import { isGhAction } from "./config/envs/index.js";
 import "./utils/uuidUtils.js";
+import { logger } from "@tsed/di";
 
 async function bootstrap(): Promise<void> {
     registerDatasource();
@@ -22,7 +23,7 @@ async function bootstrap(): Promise<void> {
         });
         await stopOnTest(platform, false);
     } catch (error) {
-        $log.error({ event: "SERVER_BOOTSTRAP_ERROR", message: error.message, stack: error.stack });
+        logger().error({ event: "SERVER_BOOTSTRAP_ERROR", message: error.message, stack: error.stack });
         await stopOnTest(platform, true);
     }
 }

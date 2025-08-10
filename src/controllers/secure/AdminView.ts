@@ -2,7 +2,7 @@ import { Get, Hidden, View } from "@tsed/schema";
 import { Controller, Inject } from "@tsed/di";
 import { Authorize } from "@tsed/passport";
 import type { CustomUserInfoModel } from "../../model/auth/CustomUserInfoModel.js";
-import { Req, Res } from "@tsed/common";
+import { Req, Res } from "@tsed/platform-http";
 import type { Request, Response } from "express";
 import { BaseViewController } from "../views/BaseViewController.js";
 import { SettingsService } from "../../services/SettingsService.js";

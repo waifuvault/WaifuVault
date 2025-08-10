@@ -15,7 +15,7 @@ import {
     Or,
 } from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
-import { AfterInit } from "@tsed/common";
+import { AfterInit } from "@tsed/platform-http";
 import xxhash from "xxhash-wasm";
 import { TimedSet } from "../../utils/timedSet/TimedSet.js";
 

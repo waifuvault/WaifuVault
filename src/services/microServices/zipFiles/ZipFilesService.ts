@@ -3,7 +3,7 @@ import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { MicroServiceResponse } from "../../../utils/typeings.js";
 import { HTTPException } from "@tsed/exceptions";
 import { filesDir, NetworkUtils } from "../../../utils/Utils.js";
-import type { PlatformContext } from "@tsed/common";
+import type { PlatformContext } from "@tsed/platform-http";
 
 @Service()
 export class ZipFilesService {

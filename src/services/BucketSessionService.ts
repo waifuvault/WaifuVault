@@ -1,5 +1,5 @@
 import { InjectContext, Service } from "@tsed/di";
-import type { PlatformContext } from "@tsed/common";
+import type { PlatformContext } from "@tsed/platform-http";
 import { BucketModel } from "../model/db/Bucket.model.js";
 
 @Service()

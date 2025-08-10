@@ -4,7 +4,7 @@ import { Exception } from "@tsed/exceptions";
 import { FileProtectedException } from "../../../model/exceptions/FileProtectedException.js";
 import type { IHttpErrorRenderEngine } from "../../IHttpErrorRenderEngine.js";
 import { HttpErrorRenderObj } from "../../../utils/typeings.js";
-import { PlatformResponse } from "@tsed/common";
+import { PlatformResponse } from "@tsed/platform-http";
 import { AbstractEjsRenderEngine } from "./AbstractEjsRenderEngine.js";
 import { SettingsService } from "../../../services/SettingsService.js";
 

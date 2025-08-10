@@ -5,7 +5,7 @@ import type { Request } from "express";
 import { CaptchaResponse } from "../../../utils/typeings.js";
 import { BadRequest } from "@tsed/exceptions";
 import { NetworkUtils } from "../../../utils/Utils.js";
-import { Logger } from "@tsed/common";
+import { Logger } from "@tsed/logger";
 
 export abstract class AbstractCaptchaEngine<T extends CaptchaResponse> implements ICaptchaEngine {
     protected constructor(

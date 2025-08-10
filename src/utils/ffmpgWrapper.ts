@@ -1,6 +1,6 @@
 import ffmpeg from "fluent-ffmpeg";
 import { ffmpegPath, ffprobePath } from "ffmpeg-ffprobe-static";
-import { $log } from "@tsed/common";
+import { $log } from "@tsed/logger";
 
 ffmpeg.setFfmpegPath(ffmpegPath as string);
 ffmpeg.setFfprobePath(ffprobePath as string);

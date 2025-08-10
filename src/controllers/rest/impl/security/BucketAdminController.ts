@@ -1,7 +1,9 @@
 import { AbstractAdminController } from "./AbstractAdminController.js";
 import { Controller, Inject } from "@tsed/di";
 import { Delete, Get, Hidden } from "@tsed/schema";
-import { PlatformResponse, QueryParams, Res, UseBefore } from "@tsed/common";
+import { PlatformResponse, Res } from "@tsed/platform-http";
+import { QueryParams } from "@tsed/platform-params";
+import { UseBefore } from "@tsed/platform-middlewares";
 import type {
     DatatableColumn,
     DatatableOrder,

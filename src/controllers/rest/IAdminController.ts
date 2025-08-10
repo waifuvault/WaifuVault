@@ -1,4 +1,4 @@
-import { PlatformResponse } from "@tsed/common";
+import { PlatformResponse } from "@tsed/platform-http";
 import type { DatatableColumn, DatatableOrder, DatatableSearch } from "../../utils/typeings.js";
 
 export interface IAdminController {

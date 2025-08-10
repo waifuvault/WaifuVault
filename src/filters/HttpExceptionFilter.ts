@@ -1,5 +1,5 @@
-import type { ExceptionFilterMethods, PlatformContext } from "@tsed/common";
-import { Catch } from "@tsed/common";
+import type { PlatformContext } from "@tsed/platform-http";
+import { Catch, type ExceptionFilterMethods } from "@tsed/platform-exceptions";
 import { Exception } from "@tsed/exceptions";
 import { Inject } from "@tsed/di";
 import { HttpErrorFactory } from "../factory/HttpErrorFactory.js";
