@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  github_com_waifuvault_WaifuVault_thumbnails_pkg_mod.FileEntry:
+  mod.FileEntry:
     properties:
       extension:
         example: jpg
@@ -20,7 +20,7 @@ definitions:
     - id
     - mediaType
     type: object
-  github_com_waifuvault_WaifuVault_thumbnails_pkg_wapimod.ApiResult:
+  wapimod.ApiResult:
     properties:
       message:
         example: Operation completed successfully
@@ -31,9 +31,9 @@ definitions:
     type: object
 info:
   contact:
-    email: support@waifuvault.moe
-    name: WaifuVault
-    url: https://github.com/waifuvault/WaifuVault
+    email: victoria@waifuvault.moe
+    name: Victoria
+    url: https://x.com/VictoriqueM
   description: A service for generating thumbnails from images and videos using libvips
     and ffmpeg
   license:
@@ -67,7 +67,7 @@ paths:
         required: true
         schema:
           items:
-            $ref: '#/definitions/github_com_waifuvault_WaifuVault_thumbnails_pkg_mod.FileEntry'
+            $ref: '#/definitions/mod.FileEntry'
           type: array
       produces:
       - application/json
@@ -75,11 +75,11 @@ paths:
         "200":
           description: Thumbnail generation started successfully
           schema:
-            $ref: '#/definitions/github_com_waifuvault_WaifuVault_thumbnails_pkg_wapimod.ApiResult'
+            $ref: '#/definitions/wapimod.ApiResult'
         "400":
           description: Bad request - invalid payload or missing albumId
           schema:
-            $ref: '#/definitions/github_com_waifuvault_WaifuVault_thumbnails_pkg_wapimod.ApiResult'
+            $ref: '#/definitions/wapimod.ApiResult'
       summary: Generate thumbnails
       tags:
       - thumbnails

@@ -11,9 +11,9 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
-            "name": "WaifuVault",
-            "url": "https://github.com/waifuvault/WaifuVault",
-            "email": "support@waifuvault.moe"
+            "name": "Victoria",
+            "url": "https://x.com/VictoriqueM",
+            "email": "victoria@waifuvault.moe"
         },
         "license": {
             "name": "MIT",
@@ -61,7 +61,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_waifuvault_WaifuVault_thumbnails_pkg_mod.FileEntry"
+                                "$ref": "#/definitions/mod.FileEntry"
                             }
                         }
                     }
@@ -70,13 +70,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Thumbnail generation started successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_waifuvault_WaifuVault_thumbnails_pkg_wapimod.ApiResult"
+                            "$ref": "#/definitions/wapimod.ApiResult"
                         }
                     },
                     "400": {
                         "description": "Bad request - invalid payload or missing albumId",
                         "schema": {
-                            "$ref": "#/definitions/github_com_waifuvault_WaifuVault_thumbnails_pkg_wapimod.ApiResult"
+                            "$ref": "#/definitions/wapimod.ApiResult"
                         }
                     }
                 }
@@ -136,7 +136,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_waifuvault_WaifuVault_thumbnails_pkg_mod.FileEntry": {
+        "mod.FileEntry": {
             "type": "object",
             "required": [
                 "extension",
@@ -163,7 +163,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_waifuvault_WaifuVault_thumbnails_pkg_wapimod.ApiResult": {
+        "wapimod.ApiResult": {
             "type": "object",
             "properties": {
                 "message": {

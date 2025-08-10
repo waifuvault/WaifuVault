@@ -27,9 +27,9 @@ import (
 // @description     A service for generating thumbnails from images and videos using libvips and ffmpeg
 // @termsOfService  http://swagger.io/terms/
 
-// @contact.name   WaifuVault
-// @contact.url    https://github.com/waifuvault/WaifuVault
-// @contact.email  support@waifuvault.moe
+// @contact.name   Victoria
+// @contact.url    https://x.com/VictoriqueM
+// @contact.email  victoria@waifuvault.moe
 
 // @license.name  MIT
 // @license.url   https://opensource.org/licenses/MIT
