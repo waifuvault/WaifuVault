@@ -1,0 +1,183 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "A service for generating thumbnails from images and videos using libvips and ffmpeg",
+        "title": "Thumbnail Service API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Victoria",
+            "url": "https://x.com/VictoriqueM",
+            "email": "victoria@waifuvault.moe"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/generateThumbnails": {
+            "post": {
+                "description": "Processes a batch of files to generate thumbnails. The operation runs asynchronously in the background.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thumbnails"
+                ],
+                "summary": "Generate thumbnails",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "The ID of the album to generate thumbnails for",
+                        "name": "albumId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Whether adding additional files to an existing album",
+                        "name": "addingAdditionalFiles",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Array of file entries to process",
+                        "name": "files",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/mod.FileEntry"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thumbnail generation started successfully",
+                        "schema": {
+                            "$ref": "#/definitions/wapimod.ApiResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid payload or missing albumId",
+                        "schema": {
+                            "$ref": "#/definitions/wapimod.ApiResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/generateThumbnails/supported": {
+            "get": {
+                "description": "Returns a list of all file extensions supported by the thumbnail service for both images and videos",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thumbnails"
+                ],
+                "summary": "Get supported file extensions",
+                "responses": {
+                    "200": {
+                        "description": "List of supported file extensions",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Returns the health status of the thumbnail service",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "description": "Service health status",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "mod.FileEntry": {
+            "type": "object",
+            "required": [
+                "extension",
+                "fileOnDisk",
+                "id",
+                "mediaType"
+            ],
+            "properties": {
+                "extension": {
+                    "type": "string",
+                    "example": "jpg"
+                },
+                "fileOnDisk": {
+                    "type": "string",
+                    "example": "uploads/image.jpg"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "mediaType": {
+                    "type": "string",
+                    "example": "image/jpeg"
+                }
+            }
+        },
+        "wapimod.ApiResult": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "description": "Operations for generating and managing thumbnails",
+            "name": "thumbnails"
+        }
+    ]
+}

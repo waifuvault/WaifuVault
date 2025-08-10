@@ -2,7 +2,8 @@ import { AbstractAdminController } from "./AbstractAdminController.js";
 import { Controller, Inject } from "@tsed/di";
 import { UserAdminService } from "../../../../services/UserAdminService.js";
 import { Delete, Get, Hidden, Post, Required } from "@tsed/schema";
-import { PathParams, PlatformResponse, QueryParams, Res } from "@tsed/common";
+import { PlatformResponse, Res } from "@tsed/platform-http";
+import { PathParams, QueryParams } from "@tsed/platform-params";
 import type {
     AdminDataTaleEntryModel,
     DatatableColumn,

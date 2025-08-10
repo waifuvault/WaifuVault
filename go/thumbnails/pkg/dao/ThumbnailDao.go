@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"time"
+
 	"github.com/rs/zerolog/log"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"gorm.io/gorm"
-	"time"
 )
 
 type ThumbnailDao interface {

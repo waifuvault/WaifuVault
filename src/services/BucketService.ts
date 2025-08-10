@@ -2,7 +2,7 @@ import { Inject, InjectContext, Service } from "@tsed/di";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import { BucketModel } from "../model/db/Bucket.model.js";
 import { Logger } from "@tsed/logger";
-import type { PlatformContext } from "@tsed/common";
+import type { PlatformContext } from "@tsed/platform-http";
 import { FileService } from "./FileService.js";
 import { BucketSessionService } from "./BucketSessionService.js";
 

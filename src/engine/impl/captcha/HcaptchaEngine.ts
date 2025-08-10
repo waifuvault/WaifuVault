@@ -2,7 +2,7 @@ import { AbstractCaptchaEngine } from "./AbstractCaptchaEngine.js";
 import { HcaptchaResponse } from "../../../utils/typeings.js";
 import { Inject, Injectable, ProviderScope } from "@tsed/di";
 import { CAPTCHA_ENGINE } from "../../../model/di/tokens.js";
-import { Logger } from "@tsed/common";
+import { Logger } from "@tsed/logger";
 import CaptchaServices from "../../../model/constants/CaptchaServices.js";
 import { SettingsService } from "../../../services/SettingsService.js";
 import { GlobalEnv } from "../../../model/constants/GlobalEnv.js";

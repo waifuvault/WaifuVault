@@ -3,10 +3,11 @@ package thumbnail
 import (
 	"encoding/base64"
 	"fmt"
+	"sync"
+
 	"github.com/rs/zerolog/log"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
-	"sync"
 )
 
 // BatchProcessor handles processing and saving thumbnails in batches

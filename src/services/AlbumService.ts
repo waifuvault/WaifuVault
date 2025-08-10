@@ -12,7 +12,7 @@ import { ThumbnailCacheRepo } from "../db/repo/ThumbnailCacheRepo.js";
 import fs, { ReadStream } from "node:fs";
 import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
-import { AfterInit } from "@tsed/common";
+import { AfterInit } from "@tsed/platform-http";
 import { uuid } from "../utils/uuidUtils.js";
 import { ZipFilesService } from "./microServices/zipFiles/ZipFilesService.js";
 import { ThumbnailService } from "./microServices/thumbnails/thumbnailService.js";
@@ -137,8 +137,12 @@ export class AlbumService implements AfterInit {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
         this.checkPrivateToken(albumToken, album);
-        const filesToAssociate = await this.fileRepo.getEntries(files, false);
-        if (filesToAssociate.length !== files.length) {
+
+        // Remove duplicates from input
+        const uniqueFiles = [...new Set(files)];
+
+        const filesToAssociate = await this.fileRepo.getEntries(uniqueFiles, false);
+        if (filesToAssociate.length !== uniqueFiles.length) {
             throw new BadRequest(`some files were not found`);
         }
 

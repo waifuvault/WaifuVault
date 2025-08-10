@@ -1,6 +1,6 @@
 import { Controller, Inject } from "@tsed/di";
 import { Get, Hidden, View } from "@tsed/schema";
-import { UseBefore } from "@tsed/common";
+import { UseBefore } from "@tsed/platform-middlewares";
 import { BucketService } from "../../services/BucketService.js";
 import { AuthoriseBucket } from "../../middleware/endpoint/AuthoriseBucket.js";
 import { BucketAuthenticationException } from "../../model/exceptions/BucketAuthenticationException.js";

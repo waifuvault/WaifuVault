@@ -3,7 +3,7 @@ import { HTTP_RENDER_ENGINE } from "../../../model/di/tokens.js";
 import type { IHttpErrorRenderEngine } from "../../IHttpErrorRenderEngine.js";
 import { BucketAuthenticationException } from "../../../model/exceptions/BucketAuthenticationException.js";
 import { HttpErrorRenderObj } from "../../../utils/typeings.js";
-import { PlatformResponse } from "@tsed/common";
+import { PlatformResponse } from "@tsed/platform-http";
 import { Exception } from "@tsed/exceptions";
 import { CaptchaManager } from "../../../manager/CaptchaManager.js";
 import { AbstractEjsRenderEngine } from "./AbstractEjsRenderEngine.js";

@@ -8,6 +8,8 @@ import { AlbumModel } from "./Album.model.js";
 @Index(["bucketToken"], {
     unique: true,
 })
+@Index(["type"])
+@Index(["ip", "type"])
 export class BucketModel extends AbstractModel {
     @Column({
         nullable: false,

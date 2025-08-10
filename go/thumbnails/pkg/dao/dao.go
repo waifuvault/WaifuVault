@@ -3,15 +3,16 @@ package dao
 import (
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/utils"
+	"github.com/waifuvault/WaifuVault/shared/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"os"
 )
 
 type Dao interface {
@@ -41,7 +42,7 @@ func getConnection() (*gorm.DB, error) {
 	}
 
 	if dbType == "sqlite" {
-		sqlitePath := lo.Ternary(utils.DevMode, "../../main.sqlite", "/app/main.sqlite")
+		sqlitePath := lo.Ternary(utils.DockerMode, "../../main.sqlite", "/app/main.sqlite")
 		// check to see if file exists
 		_, err := os.Stat(sqlitePath)
 		if err != nil {
@@ -59,11 +60,11 @@ func getConnection() (*gorm.DB, error) {
 
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
-	port := lo.Ternary(utils.DevMode, os.Getenv("POSTGRES_PORT"), "5432")
+	port := lo.Ternary(utils.DockerMode, os.Getenv("POSTGRES_PORT"), "5432")
 
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=waifu_vault port=%s sslmode=disable TimeZone=Etc/UTC",
-		lo.Ternary(utils.DevMode, "localhost", "postgres"),
+		"host=%s user=%s password=%s dbname=waifu_vault port=%s sslmode=disable TimeZone=UTC",
+		lo.Ternary(utils.DockerMode, "localhost", "postgres"),
 		user,
 		password,
 		port,

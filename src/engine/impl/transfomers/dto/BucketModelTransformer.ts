@@ -4,7 +4,7 @@ import { BucketModel } from "../../../../model/db/Bucket.model.js";
 import { ITransformer } from "../../../ITransformer.js";
 import { BucketDto } from "../../../../model/dto/BucketDto.js";
 import { AdminBucketDto } from "../../../../model/dto/AdminBucketDto.js";
-import type { PlatformContext } from "@tsed/common";
+import type { PlatformContext } from "@tsed/platform-http";
 
 @Injectable({
     scope: ProviderScope.SINGLETON,

@@ -5,9 +5,8 @@ import { DefaultRenderException } from "../../../model/rest/DefaultRenderExcepti
 import { BaseRestController } from "../BaseRestController.js";
 import { BucketService } from "../../../services/BucketService.js";
 import { BucketDto } from "../../../model/dto/BucketDto.js";
-import { PathParams } from "@tsed/common";
+import { BodyParams, PathParams } from "@tsed/platform-params";
 import { BadRequest } from "@tsed/exceptions";
-import { BodyParams } from "@tsed/platform-params";
 import { BucketModel } from "../../../model/db/Bucket.model.js";
 
 @Controller("/bucket")

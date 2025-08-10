@@ -1,5 +1,5 @@
 import { SettingsService } from "../../../services/SettingsService.js";
-import { PlatformResponse } from "@tsed/common";
+import { PlatformResponse } from "@tsed/platform-http";
 
 export class AbstractEjsRenderEngine<T> {
     protected constructor(protected settingsService: SettingsService) {}

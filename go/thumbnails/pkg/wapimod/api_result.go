@@ -2,12 +2,14 @@ package wapimod
 
 import (
 	"errors"
+
 	"github.com/rs/zerolog/log"
 )
 
+// ApiResult represents the standard API response format
 type ApiResult struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
+	Success bool   `json:"success" example:"true" description:"Whether the operation was successful"`
+	Message string `json:"message" example:"Operation completed successfully" description:"Result message or error description"`
 }
 
 func NewApiResult(msg string, success bool) ApiResult {

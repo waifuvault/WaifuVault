@@ -1,6 +1,7 @@
 import { Get, Hidden, Required, View } from "@tsed/schema";
 import { Controller, Inject } from "@tsed/di";
-import { PathParams, Req, Res } from "@tsed/common";
+import { Req, Res } from "@tsed/platform-http";
+import { PathParams } from "@tsed/platform-params";
 import CaptchaServices from "../../model/constants/CaptchaServices.js";
 import { CaptchaManager } from "../../manager/CaptchaManager.js";
 import type { Request, Response } from "express";

@@ -3,7 +3,7 @@ services:
     image: redis:latest
     container_name: redis
     restart: always
-    command: ["redis-server", "--maxmemory", "1gb", "--maxmemory-policy", "allkeys-lru"]
+    command: [ "redis-server", "--maxmemory", "1gb", "--maxmemory-policy", "allkeys-lru" ]
     networks:
       default:
         aliases:
@@ -28,8 +28,8 @@ services:
 
   zipFiles:
     build:
-      context: ./go/zipFiles
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./go/zipFiles/Dockerfile
     container_name: zipfiles
     restart: always
     image: waifuvault-zipfiles
@@ -43,8 +43,8 @@ services:
 
   thumbnails:
     build:
-      context: ./go/thumbnails
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./go/thumbnails/Dockerfile
     container_name: thumbnails
     restart: always
     image: waifuvault-thumbnails

@@ -1,6 +1,5 @@
 import { Configuration, Inject } from "@tsed/di";
-import type { BeforeRoutesInit } from "@tsed/common";
-import { PlatformApplication } from "@tsed/common";
+import { BeforeRoutesInit, PlatformApplication } from "@tsed/platform-http";
 import "@tsed/platform-express";
 import "@tsed/ajv";
 import "@tsed/swagger";

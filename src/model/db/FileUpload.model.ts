@@ -14,6 +14,15 @@ import { GlobalEnv } from "../constants/GlobalEnv.js";
 @Index(["token"], {
     unique: true,
 })
+@Index(["checksum"])
+@Index(["expires"])
+@Index(["bucketToken"])
+@Index(["albumToken"])
+@Index(["ip"])
+@Index(["fileName"])
+@Index(["bucketToken", "expires"])
+@Index(["albumToken", "addedToAlbumOrder"])
+@Index(["checksum", "expires"])
 export class FileUploadModel extends AbstractModel {
     @Column({
         nullable: false,

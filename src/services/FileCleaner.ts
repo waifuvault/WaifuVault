@@ -1,5 +1,5 @@
 import { constant as getFromEnv, Inject, Service } from "@tsed/di";
-import { OnReady } from "@tsed/common";
+import { OnReady } from "@tsed/platform-http";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { filesDir, FileUtils } from "../utils/Utils.js";
 import fs from "node:fs/promises";
@@ -27,6 +27,12 @@ export class FileCleaner implements OnReady {
     public async $onReady(): Promise<void> {
         await this.processFiles();
         await this.sync();
+        await this.removeDupes();
+    }
+
+    @RunEvery("* * * * *")
+    private async checkForDuplicateFiles(): Promise<void> {
+        await this.removeDupes();
     }
 
     private async sync(): Promise<void> {
@@ -40,5 +46,9 @@ export class FileCleaner implements OnReady {
 
     private isFileInDb(fileDbList: FileUploadModel[], fileName: string): boolean {
         return !!fileDbList.find(file => file.fullFileNameOnSystem === fileName);
+    }
+
+    private async removeDupes(): Promise<void> {
+        await this.repo.removeDuplicates();
     }
 }

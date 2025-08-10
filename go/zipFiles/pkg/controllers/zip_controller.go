@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/wapimod"

@@ -2,6 +2,7 @@ package wapimod
 
 import (
 	"errors"
+
 	"github.com/rs/zerolog/log"
 )
 

@@ -1,7 +1,8 @@
 import { Controller, Inject, ProviderScope, Scope } from "@tsed/di";
 import { Authenticate, Authorize } from "@tsed/passport";
 import { Get, Hidden, Post, Returns, Security } from "@tsed/schema";
-import { PlatformResponse, Req, Res, UseBefore } from "@tsed/common";
+import { PlatformResponse, Req, Res } from "@tsed/platform-http";
+import { UseBefore } from "@tsed/platform-middlewares";
 import { StatusCodes } from "http-status-codes";
 import { BodyParams } from "@tsed/platform-params";
 import { UserModel } from "../../../../model/db/User.model.js";

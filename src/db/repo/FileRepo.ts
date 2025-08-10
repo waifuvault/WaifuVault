@@ -94,4 +94,8 @@ export class FileRepo {
     public getNextAlbumValue(albumToken: string): Promise<number> {
         return this.fileDao.getNextAlbumValue(albumToken);
     }
+
+    public removeDuplicates(): Promise<FileUploadModel[]> {
+        return this.fileDao.removeDuplicates();
+    }
 }

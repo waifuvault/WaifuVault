@@ -1,12 +1,16 @@
 package zip
 
 import (
-	"github.com/klauspost/compress/zip"
-	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
-	"github.com/waifuvault/WaifuVault/zipfiles/pkg/utils"
+	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/google/uuid"
+	"github.com/klauspost/compress/zip"
+	"github.com/waifuvault/WaifuVault/shared/utils"
+	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
 )
 
 var activeZipping sync.Map
@@ -36,7 +40,7 @@ func (s *service) ZipFiles(
 	activeZipping.LoadOrStore(concurrentKey, true)
 	defer activeZipping.Delete(concurrentKey)
 
-	outFile, zipName, err := utils.CreateZipFile(albumName)
+	outFile, zipName, err := createZipFile(albumName)
 	if err != nil {
 		return "", err
 	}
@@ -54,7 +58,7 @@ func (s *service) ZipFiles(
 }
 
 func addFileToZip(zipWriter *zip.Writer, fileObject mod.ZipFileEntry) error {
-	file, err := utils.GetFileToZip(fileObject)
+	file, err := getFileToZip(fileObject)
 	if err != nil {
 		return err
 	}
@@ -81,4 +85,18 @@ func addFileToZip(zipWriter *zip.Writer, fileObject mod.ZipFileEntry) error {
 	_, err = io.Copy(writer, file)
 
 	return err
+}
+
+func createZipFile(name string) (*os.File, string, error) {
+	zipName := fmt.Sprintf("%s_%s.zip", uuid.New(), name)
+	zipLocation := utils.FileBaseUrl + "/" + zipName
+	create, err := os.Create(zipLocation)
+	if err != nil {
+		return nil, "", err
+	}
+	return create, zipName, nil
+}
+
+func getFileToZip(FileOnDisk mod.ZipFileEntry) (*os.File, error) {
+	return os.Open(filepath.Join(utils.FileBaseUrl, FileOnDisk.FullFileNameOnSystem))
 }

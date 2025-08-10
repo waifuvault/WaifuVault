@@ -3,7 +3,7 @@ import { Inject, Injectable, ProviderScope } from "@tsed/di";
 import { CAPTCHA_ENGINE } from "../../../model/di/tokens.js";
 import CaptchaServices from "../../../model/constants/CaptchaServices.js";
 import { TurnstileResponse } from "../../../utils/typeings.js";
-import { Logger } from "@tsed/common";
+import { Logger } from "@tsed/logger";
 import { GlobalEnv } from "../../../model/constants/GlobalEnv.js";
 import { SettingsService } from "../../../services/SettingsService.js";
 

@@ -1,5 +1,7 @@
-import { $log, type DILoggerOptions } from "@tsed/common";
+import { type DILoggerOptions } from "@tsed/di";
+import { $log } from "@tsed/logger";
 import { isProduction } from "../envs/index.js";
+import process from "process";
 
 if (isProduction) {
     $log.appenders.set("stdout", {
@@ -19,8 +21,15 @@ if (isProduction) {
     });
 }
 
+$log.level = getLogLevelsByEnv();
+
 export default <DILoggerOptions>{
     disableRoutesSummary: isProduction,
     logRequest: !isProduction,
     ignoreUrlPatterns: ["\\/apple-touch-icon"],
+    level: getLogLevelsByEnv(),
 };
+
+function getLogLevelsByEnv(): string {
+    return process.env.LOG_LEVEL ?? "info";
+}

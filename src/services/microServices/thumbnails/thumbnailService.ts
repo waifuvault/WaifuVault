@@ -3,7 +3,7 @@ import { AlbumModel } from "../../../model/db/Album.model";
 import { ThumbnailCacheRepo } from "../../../db/repo/ThumbnailCacheRepo.js";
 import { Logger } from "@tsed/logger";
 import { FileUtils } from "../../../utils/Utils.js";
-import { AfterInit } from "@tsed/common";
+import { AfterInit } from "@tsed/platform-http";
 import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { isGhAction } from "../../../config/envs/index.js";
 import { HTTPException } from "@tsed/exceptions";

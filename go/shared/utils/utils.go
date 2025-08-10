@@ -2,11 +2,12 @@ package utils
 
 import (
 	"errors"
-	"github.com/joho/godotenv"
-	"github.com/rs/zerolog/log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/joho/godotenv"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -14,19 +15,19 @@ const (
 	devFilesDir   = "../../files"
 )
 
-var DevMode = false
+var DockerMode = false
 
 func getFileBaseDir() string {
 	if _, err := os.Stat(dockerFileDir); err != nil {
 		if os.IsNotExist(err) {
 			log.Info().Msgf("dev mode detected, using %s as base dir", devFilesDir)
-			DevMode = true
+			DockerMode = true
 			return devFilesDir
 		}
 		panic(errors.New("error getting file base dir"))
 	}
 	log.Info().Msgf("docker mode detected, using %s as base dir", dockerFileDir)
-	DevMode = false
+	DockerMode = false
 	return dockerFileDir
 }
 
@@ -58,4 +59,11 @@ func IsVideo(mediaType string) bool {
 	return strings.HasPrefix(mediaType, "video/")
 }
 
-var BaseUrl = getFileBaseDir()
+func GetBseUrl() string {
+	if os.Getenv("NODE_ENV") == "development" {
+		return "http://127.0.0.1:5006"
+	}
+	return os.Getenv("BASE_URL")
+}
+
+var FileBaseUrl = getFileBaseDir()

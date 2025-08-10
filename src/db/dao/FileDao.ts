@@ -15,7 +15,7 @@ import {
     Or,
 } from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
-import { AfterInit } from "@tsed/common";
+import { AfterInit } from "@tsed/platform-http";
 import xxhash from "xxhash-wasm";
 import { TimedSet } from "../../utils/timedSet/TimedSet.js";
 
@@ -63,7 +63,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         loadRelations = true,
         transaction?: EntityManager,
     ): Promise<FileUploadModel[]> {
-        let r: FileUploadModel[] = [];
+        let r: FileUploadModel[];
         if (loadRelations) {
             r = await this.getRepository(transaction).find({
                 where: {
@@ -326,5 +326,47 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
 
     private generateKey(entryToken: string | string[] | number | number[]): string {
         return this.h64ToString(`entryCache_${entryToken}`);
+    }
+
+    public async removeDuplicates(transaction?: EntityManager): Promise<FileUploadModel[]> {
+        const repository = this.getRepository(transaction);
+
+        const duplicatesQuery = repository
+            .createQueryBuilder("file")
+            .select("file.checksum")
+            .addSelect("COUNT(*)", "count")
+            .groupBy("file.checksum")
+            .having("COUNT(*) > 1");
+
+        const duplicateChecksums = await duplicatesQuery.getRawMany();
+
+        if (duplicateChecksums.length === 0) {
+            return [];
+        }
+
+        const deletedRecords: FileUploadModel[] = [];
+
+        for (const { checksum } of duplicateChecksums) {
+            const recordsWithChecksum = await repository.find({
+                where: { checksum },
+                order: { id: "ASC" },
+            });
+
+            if (recordsWithChecksum.length > 1) {
+                const recordsToDelete = recordsWithChecksum.slice(1);
+                const tokensToDelete = recordsToDelete.map(record => record.token);
+
+                deletedRecords.push(...recordsToDelete);
+
+                await repository.delete({
+                    token: In(tokensToDelete),
+                });
+            }
+        }
+
+        // Clear cache after deletion
+        await this.clearCache(deletedRecords.map(record => record.token));
+
+        return deletedRecords;
     }
 }
