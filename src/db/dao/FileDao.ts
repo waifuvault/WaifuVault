@@ -346,7 +346,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
 
         const deletedRecords: FileUploadModel[] = [];
 
-        for (const { checksum } of duplicateChecksums) {
+        for (const { file_checksum: checksum } of duplicateChecksums) {
             const recordsWithChecksum = await repository.find({
                 where: { checksum },
                 order: { id: "ASC" },
