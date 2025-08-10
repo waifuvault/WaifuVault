@@ -12,6 +12,11 @@ import { GlobalEnv } from "../constants/GlobalEnv.js";
 @Index(["bucketToken", "name"], {
     unique: true,
 })
+@Index(["publicToken"], {
+    unique: true,
+})
+@Index(["bucketToken"])
+@Index(["name"])
 export class AlbumModel extends AbstractModel {
     @Column({
         nullable: false,

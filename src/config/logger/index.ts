@@ -31,5 +31,5 @@ export default <DILoggerOptions>{
 };
 
 function getLogLevelsByEnv(): string {
-    return process.env.LOG_LEVEL!;
+    return process.env.LOG_LEVEL ?? "info";
 }
