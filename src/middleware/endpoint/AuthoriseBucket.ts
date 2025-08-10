@@ -1,5 +1,5 @@
 import { Middleware, MiddlewareMethods } from "@tsed/platform-middlewares";
-import { Next } from "@tsed/common";
+import { Next } from "@tsed/platform-http";
 import { BucketAuthenticationException } from "../../model/exceptions/BucketAuthenticationException.js";
 import { Inject } from "@tsed/di";
 import { BucketSessionService } from "../../services/BucketSessionService.js";

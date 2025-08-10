@@ -17,8 +17,8 @@ import {
 import { StatusCodes } from "http-status-codes";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 import { AlbumDto } from "../../../model/dto/AlbumDto.js";
-import { BodyParams } from "@tsed/platform-params";
-import { PathParams, PlatformResponse, QueryParams, Res } from "@tsed/common";
+import { BodyParams, QueryParams, PathParams } from "@tsed/platform-params";
+import { PlatformResponse, Res } from "@tsed/platform-http";
 import { AlbumService } from "../../../services/AlbumService.js";
 import { SuccessModel } from "../../../model/rest/SuccessModel.js";
 import { AlbumModel } from "../../../model/db/Album.model.js";

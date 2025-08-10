@@ -1,4 +1,4 @@
-import { PlatformResponse } from "@tsed/common";
+import { PlatformResponse } from "@tsed/platform-http";
 import { StatusCodes } from "http-status-codes";
 import { ErrorModel } from "../../model/rest/ErrorModel.js";
 import { SuccessModel } from "../../model/rest/SuccessModel.js";

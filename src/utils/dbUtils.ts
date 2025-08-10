@@ -1,5 +1,5 @@
 import { ValueTransformer } from "typeorm/decorator/options/ValueTransformer.js";
-import { $log } from "@tsed/common";
+import { $log } from "@tsed/logger";
 import { AbstractModel } from "../model/db/AbstractModel.js";
 
 export class ColumnNumericTransformer<T extends AbstractModel> implements ValueTransformer {

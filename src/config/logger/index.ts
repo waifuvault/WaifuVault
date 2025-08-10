@@ -1,4 +1,5 @@
-import { $log, type DILoggerOptions } from "@tsed/common";
+import { type DILoggerOptions } from "@tsed/di";
+import { $log } from "@tsed/logger";
 import { isProduction } from "../envs/index.js";
 import process from "process";
 

@@ -1,5 +1,5 @@
 import { exec } from "node:child_process";
-import { $log } from "@tsed/common";
+import { $log } from "@tsed/logger";
 import crypto from "node:crypto";
 import { UUID } from "crypto";
 import cluster from "node:cluster";

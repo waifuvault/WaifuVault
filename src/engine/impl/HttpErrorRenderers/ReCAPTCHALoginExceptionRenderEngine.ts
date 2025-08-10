@@ -3,7 +3,7 @@ import { ReCAPTCHAException } from "../../../model/exceptions/ReCAPTCHAException
 import { Inject, Injectable, InjectContext, ProviderScope } from "@tsed/di";
 import { HTTP_RENDER_ENGINE } from "../../../model/di/tokens.js";
 import { HttpErrorRenderObj } from "../../../utils/typeings.js";
-import { type PlatformContext, PlatformResponse } from "@tsed/common";
+import { type PlatformContext, PlatformResponse } from "@tsed/platform-http";
 import { Exception } from "@tsed/exceptions";
 import { CaptchaManager } from "../../../manager/CaptchaManager.js";
 import { AbstractEjsRenderEngine } from "./AbstractEjsRenderEngine.js";

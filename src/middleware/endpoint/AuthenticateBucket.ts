@@ -1,5 +1,5 @@
 import { Middleware, MiddlewareMethods } from "@tsed/platform-middlewares";
-import { Next } from "@tsed/common";
+import { Next } from "@tsed/platform-http";
 import { Inject } from "@tsed/di";
 import { BucketService } from "../../services/BucketService.js";
 import { BodyParams } from "@tsed/platform-params";

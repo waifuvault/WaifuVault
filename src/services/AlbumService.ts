@@ -12,7 +12,7 @@ import { ThumbnailCacheRepo } from "../db/repo/ThumbnailCacheRepo.js";
 import fs, { ReadStream } from "node:fs";
 import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
-import { AfterInit } from "@tsed/common";
+import { AfterInit } from "@tsed/platform-http";
 import { uuid } from "../utils/uuidUtils.js";
 import { ZipFilesService } from "./microServices/zipFiles/ZipFilesService.js";
 import { ThumbnailService } from "./microServices/thumbnails/thumbnailService.js";

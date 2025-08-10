@@ -1,6 +1,7 @@
 import { Get, Header, Hidden } from "@tsed/schema";
 import { Controller, Inject } from "@tsed/di";
-import { HeaderParams, PathParams, QueryParams, Req, Res } from "@tsed/common";
+import { Req, Res } from "@tsed/platform-http";
+import { HeaderParams, PathParams, QueryParams } from "@tsed/platform-params";
 import * as Path from "node:path";
 import { FileProtectedException } from "../../model/exceptions/FileProtectedException.js";
 import type { Request, Response } from "express";
