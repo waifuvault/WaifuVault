@@ -1,17 +1,15 @@
 module github.com/waifuvault/WaifuVault/thumbnails
 
-go 1.24.0
-
-toolchain go1.24.5
+go 1.25
 
 require (
 	github.com/create-go-app/fiber-go-template v1.14.0
 	github.com/davidbyttow/govips/v2 v2.16.0
 	github.com/gofiber/fiber/v2 v2.52.9
-	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.12.0
 	github.com/rs/zerolog v1.34.0
 	github.com/samber/lo v1.51.0
+	github.com/swaggo/fiber-swagger v1.3.0
 	github.com/swaggo/swag v1.16.6
 	github.com/waifuvault/WaifuVault/shared v0.0.0
 	golang.org/x/image v0.30.0
@@ -41,6 +39,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
@@ -49,7 +48,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mattn/go-sqlite3 v1.14.30 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/swaggo/fiber-swagger v1.3.0 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.64.0 // indirect
@@ -59,6 +57,5 @@ require (
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
