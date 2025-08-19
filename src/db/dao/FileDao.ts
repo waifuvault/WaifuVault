@@ -93,18 +93,15 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         return r;
     }
 
-    public async getEntriesFromChecksum(checksum: string, transaction?: EntityManager): Promise<FileUploadModel[]> {
-        const r = await this.getRepository(transaction).find({
-            where: {
-                checksum,
-            },
-            cache: {
-                milliseconds: this.cacheTime,
-                id: this.generateKey(checksum),
-            },
+    public getEntriesFromChecksum(
+        checksum: string,
+        bucket?: string,
+        transaction?: EntityManager,
+    ): Promise<FileUploadModel[]> {
+        const whereCondition = bucket ? { checksum, bucketToken: bucket } : { checksum, bucketToken: IsNull() };
+        return this.getRepository(transaction).find({
+            where: whereCondition,
         });
-        this.cachedToken.add(checksum);
-        return r;
     }
 
     public async deleteEntries(tokens: string[], transaction?: EntityManager): Promise<boolean> {
@@ -331,24 +328,60 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
     public async removeDuplicates(transaction?: EntityManager): Promise<FileUploadModel[]> {
         const repository = this.getRepository(transaction);
 
-        const duplicatesQuery = repository
+        // For bucketed files: find duplicates by checksum within each bucket
+        const bucketedDuplicatesQuery = repository
             .createQueryBuilder("file")
             .select("file.checksum")
+            .addSelect("file.bucketToken")
             .addSelect("COUNT(*)", "count")
-            .groupBy("file.checksum")
+            .where("file.bucketToken IS NOT NULL")
+            .groupBy("file.checksum, file.bucketToken")
             .having("COUNT(*) > 1");
 
-        const duplicateChecksums = await duplicatesQuery.getRawMany();
+        // For non-bucketed files: find duplicates by checksum AND IP
+        const nonBucketedDuplicatesQuery = repository
+            .createQueryBuilder("file")
+            .select("file.checksum")
+            .addSelect("file.ip")
+            .addSelect("COUNT(*)", "count")
+            .where("file.bucketToken IS NULL")
+            .groupBy("file.checksum, file.ip")
+            .having("COUNT(*) > 1");
 
-        if (duplicateChecksums.length === 0) {
+        const [bucketedDuplicates, nonBucketedDuplicates] = await Promise.all([
+            bucketedDuplicatesQuery.getRawMany(),
+            nonBucketedDuplicatesQuery.getRawMany(),
+        ]);
+
+        if (bucketedDuplicates.length === 0 && nonBucketedDuplicates.length === 0) {
             return [];
         }
 
         const deletedRecords: FileUploadModel[] = [];
 
-        for (const { file_checksum: checksum } of duplicateChecksums) {
+        // Handle bucketed duplicates
+        for (const { file_checksum: checksum, file_bucketToken: bucketToken } of bucketedDuplicates) {
             const recordsWithChecksum = await repository.find({
-                where: { checksum },
+                where: { checksum, bucketToken },
+                order: { id: "ASC" },
+            });
+
+            if (recordsWithChecksum.length > 1) {
+                const recordsToDelete = recordsWithChecksum.slice(1);
+                const tokensToDelete = recordsToDelete.map(record => record.token);
+
+                deletedRecords.push(...recordsToDelete);
+
+                await repository.delete({
+                    token: In(tokensToDelete),
+                });
+            }
+        }
+
+        // Handle non-bucketed duplicates
+        for (const { file_checksum: checksum, file_ip: ip } of nonBucketedDuplicates) {
+            const recordsWithChecksum = await repository.find({
+                where: { checksum, bucketToken: IsNull(), ip },
                 order: { id: "ASC" },
             });
 
