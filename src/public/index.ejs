@@ -78,7 +78,7 @@
                         the password to. Even we cannot decrypt the file should you lose the password.</p>
                     <p>When you upload a file, you can set a password on it. Only users you provide with the password
                         can access the file.</p>
-                    <p>Perfect for sensitive data, privacy concerns and secure file sharing.</p>
+                    <p>Perfect for sensitive data, privacy concerns, and secure file sharing.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -146,7 +146,7 @@
                         you have access to with a random unique key. No identifying information is used.</p>
                     <p>With the key, you can access an administration interface that allows you to:</p>
                     <ul>
-                        <li>Track Statistics - types of uploads, sizes of uploads and upload velocity</li>
+                        <li>Track Statistics - types of uploads, sizes of uploads, and upload velocity</li>
                         <li>Manage Files - upload files, remove files and change options for files</li>
                         <li>Manage Albums - create albums, share albums and remove albums</li>
                     </ul>
@@ -195,7 +195,7 @@
 
         <div class="p-5 mb-4 bg-body-tertiary rounded-3 border border-primary-subtle position-relative" id="jumbo">
             <div class="py-5 ">
-                <h1 class="display-5 fw-bold">No nonsense temporary file hosting</h1>
+                <h1 class="display-5 fw-bold">No Nonsense Temporary File Hosting</h1>
                 <% if (HOME_PAGE_FILE_COUNTER !== "disabled"){ %>
                     <h2 class="fw-bold">Serving <span id="fileCount">0</span> public files totalling
                         <span id="totalFileSize">0kb</span>
@@ -226,10 +226,11 @@
                         <div class="col-lg-8">
                             <h3 class="mb-3 fw-bold">
                                 <i class="bi bi-rocket-takeoff me-2 text-primary"></i>
-                                Need to share a file fast?
+                                Need To Share A File Fast?
                             </h3>
                             <p class="lead mb-3">
-                                Upload and share files up to <strong><%- FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</strong> - no sign-up, no expiration, just quick and easy sharing!
+                                Upload and share files up to <strong><%- FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</strong> - no
+                                sign-up, no expiration, just quick and easy sharing!
                             </p>
                             <a class="btn btn-primary btn-lg px-4"
                                href="https://upload.waifuvault.moe/"
@@ -403,7 +404,7 @@
                         <li class="list-group-item">Extremist material</li>
                         <li class="list-group-item">Malware</li>
                         <li class="list-group-item">Crypto shit</li>
-                        <li class="list-group-item">Anything illegal under British Law</li>
+                        <li class="list-group-item">Anything illegal under German Law</li>
                         <li class="list-group-item">File Limit: <%- FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</li>
                     </ul>
                     <p>The amount of time a given file is hosted for is determined by its size. Files are hosted for a
@@ -448,7 +449,7 @@
                         <p>We securely hash your IP address using SHA-256.</p>
                         <p>This hash is only used for bucket validation and is never stored in plain text or logged.</p>
                         <p>Even we cannot access or determine what your original IP address is.</p>
-                        <p>We also do not request, log or retain any personal information from you.</p>
+                        <p>We also do not request, log, or retain any personal information from you.</p>
                     </div>
                     <a class="btn btn-secondary btn-sm mt-3" href="mailto:victoria@waifuvault.moe">Contact me if you
                         have any issues</a>
@@ -603,8 +604,10 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="elixir-tab" data-bs-toggle="tab" data-bs-target="#elixir-tab-pane"
-                                    type="button" role="tab" aria-controls="elixir-tab-pane" aria-selected="false">Elixir
+                            <button class="nav-link" id="elixir-tab" data-bs-toggle="tab"
+                                    data-bs-target="#elixir-tab-pane"
+                                    type="button" role="tab" aria-controls="elixir-tab-pane" aria-selected="false">
+                                Elixir
                             </button>
                         </li>
                     </ul>
@@ -926,7 +929,8 @@ public class Example {
                              tabindex="0">
                             <p>For Elixir, there is an official SDK that provides access to all of the features of the
                                 site.</p>
-                            <a class="btn btn-primary btn-sm mb-3" href="https://hexdocs.pm/waifu_vault/api-reference.html"
+                            <a class="btn btn-primary btn-sm mb-3"
+                               href="https://hexdocs.pm/waifu_vault/api-reference.html"
                                target="_blank">WaifuVault Elixir API</a>
                             <pre><code class="language-elixir">
 require WaifuVault
@@ -952,14 +956,28 @@ require WaifuVault
                 </div>
             </div>
         </div>
+    </div>
 </main>
+<footer class="bg-dark text-light py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p class="mb-0">&copy; <span id="copyright"></span> WaifuVault. All Rights Reserved.</p>
+                <small class="text-muted">
+                    Built with ❤️ By <a href="https://x.com/VictoriqueM" target="_blank">Victoria</a>
+                </small>
+            </div>
+        </div>
+    </div>
+</footer>
+
 <%- include('snippets/scripts.ejs'); %>
 <% if(HOME_PAGE_FILE_COUNTER === "dynamic"){ %>
     <script src="<%- BASE_URL; -%>/socket.io/socket.io.min.js"></script>
 <% } %>
 <script>
     Site.loadPage(async () => {
-
+        document.getElementById("copyright").textContent = new Date().getFullYear().toString();
         <% if(HOME_PAGE_FILE_COUNTER === "dynamic"){ %>
         const socket = io(`${mainRul}/recordInfo`, {
             path: "/socket.io/recordInfo"
