@@ -96,7 +96,7 @@
 /* Base styles for larger screens */
 @media (width <= 1400px) and (width > 991px) {
     #victorique {
-        height: 65%;
+        height: 50%;
     }
 }
 
@@ -111,14 +111,14 @@
     }
 
     #jumbo {
-        height: 800px;
+        height: 1050px;
     }
 }
 
 /* Small screens */
 @media (width <= 767px) and (width > 742px) {
     #jumbo {
-        height: 900px;
+        height: 1050px;
     }
 
     #victorique {
@@ -139,7 +139,7 @@
     }
 
     #jumbo {
-        height: 800px;
+        height: 1100px;
     }
 
     .sdkButton {
