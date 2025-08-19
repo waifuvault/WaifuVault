@@ -60,7 +60,7 @@ export class FileUploadService {
         try {
             [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
             const checksum = await this.getFileHash(resourcePath);
-            const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip);
+            const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip, bucketToken);
 
             if (existingFileModel) {
                 await FileUtils.deleteFile(path.basename(resourcePath), true);
@@ -171,9 +171,20 @@ export class FileUploadService {
         resourcePath: string,
         checksum: string,
         ip: string,
+        bucket?: string,
     ): Promise<FileUploadModel | null> {
-        const existingFileModels = await this.repo.getEntriesFromChecksum(checksum);
-        const existingFileModel = existingFileModels.find(m => m.ip === ip);
+        const existingFileModels = await this.repo.getEntriesFromChecksum(checksum, bucket);
+        if (existingFileModels.length === 0) {
+            return null;
+        }
+
+        let existingFileModel: FileUploadModel | undefined;
+        if (bucket) {
+            existingFileModel = existingFileModels[0];
+        } else {
+            existingFileModel = existingFileModels.find(m => m.ip === ip);
+        }
+
         if (existingFileModel) {
             if (!existingFileModel.hasExpired) {
                 await FileUtils.deleteFile(resourcePath);

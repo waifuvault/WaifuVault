@@ -35,8 +35,8 @@ export class FileRepo {
         return this.fileDao.getEntryById(id);
     }
 
-    public getEntriesFromChecksum(hash: string): Promise<FileUploadModel[]> {
-        return this.fileDao.getEntriesFromChecksum(hash);
+    public getEntriesFromChecksum(hash: string, bucket?: string): Promise<FileUploadModel[]> {
+        return this.fileDao.getEntriesFromChecksum(hash, bucket);
     }
 
     public getExpiredFiles(): Promise<FileUploadModel[]> {
