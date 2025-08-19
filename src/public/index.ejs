@@ -211,19 +211,37 @@
                     <a class="btn btn-warning btn-lg btn-bucket-access" type="button" href="/bucketAccess"
                        target="_blank">Bucket access</a>
                 </div>
-                <p class="col-md-8 fs-4 pt-5">
-                    <b>Need to share a file fast?</b><br/>
-                    Upload and share files up to 1GB instantly - no sign-up, no expiration, just quick and easy sharing!<br/><br/>
-                    <a class="btn btn-primary btn-lg" type="button" href="https://upload.waifuvault.moe/" target="_blank">Click here</a> and start sharing in seconds!
-                </p>
                 <img id="victorique" class="img-fluid" src="assets/custom/images/vic_vault.webp" alt="logo" />
             </div>
         </div>
-        <div style="margin-top: -50px;" class="float-end text-body-secondary">
-            Logo lovingly created by <a href="http://twitch.tv/meru" target="_blank">Meru</a>
+        <div class="text-end" style="margin-top: -20px">
+            <small class="text-body-secondary">
+                Logo lovingly created by <a href="https://twitch.tv/meru" target="_blank">Meru</a>
+            </small>
         </div>
-
-
+        <div class="row mt-5 mb-5">
+            <div class="col-12">
+                <div class="text-center p-4 rounded-3 border border-primary-subtle bg-body-tertiary">
+                    <div class="row align-items-center justify-content-center">
+                        <div class="col-lg-8">
+                            <h3 class="mb-3 fw-bold">
+                                <i class="bi bi-rocket-takeoff me-2 text-primary"></i>
+                                Need to share a file fast?
+                            </h3>
+                            <p class="lead mb-3">
+                                Upload and share files up to <strong><%- FILE_SIZE_UPLOAD_LIMIT_MB; -%>MB</strong> - no sign-up, no expiration, just quick and easy sharing!
+                            </p>
+                            <a class="btn btn-primary btn-lg px-4"
+                               href="https://upload.waifuvault.moe/"
+                               target="_blank">
+                                <i class="bi bi-upload me-2"></i>
+                                Start Sharing Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row align-items-md-stretch mb-4">
             <div class="col-md-4">
                 <div class="card text-center border-0">
@@ -904,13 +922,13 @@ public class Example {
 </code>
 </pre>
                         </div>
-                    <div class="tab-pane fade" id="elixir-tab-pane" role="tabpanel" aria-labelledby="elixir-tab"
-                         tabindex="0">
-                        <p>For Elixir, there is an official SDK that provides access to all of the features of the
-                            site.</p>
-                        <a class="btn btn-primary btn-sm mb-3" href="https://hexdocs.pm/waifu_vault/api-reference.html"
-                           target="_blank">WaifuVault Elixir API</a>
-                        <pre><code class="language-elixir">
+                        <div class="tab-pane fade" id="elixir-tab-pane" role="tabpanel" aria-labelledby="elixir-tab"
+                             tabindex="0">
+                            <p>For Elixir, there is an official SDK that provides access to all of the features of the
+                                site.</p>
+                            <a class="btn btn-primary btn-sm mb-3" href="https://hexdocs.pm/waifu_vault/api-reference.html"
+                               target="_blank">WaifuVault Elixir API</a>
+                            <pre><code class="language-elixir">
 require WaifuVault
 
 # Upload file from disk
@@ -929,11 +947,11 @@ require WaifuVault
   {:ok, %{...}}
 </code>
 </pre>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 </main>
 <%- include('snippets/scripts.ejs'); %>
 <% if(HOME_PAGE_FILE_COUNTER === "dynamic"){ %>
