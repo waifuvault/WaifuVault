@@ -203,6 +203,7 @@ export class Server implements BeforeRoutesInit {
     }
 
     public $beforeRoutesInit(): void {
+        this.app.getApp().set("query parser", "extended");
         if (isProduction) {
             this.app.getApp().set("trust proxy", 1);
         }
