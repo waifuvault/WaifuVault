@@ -1,0 +1,24 @@
+@use "themes/anime";
+@use "themes/cyberpunk";
+@use "themes/terminal";
+@use "themes/orange-terminal";
+@use "themes/steampunk";
+@use "themes/minimal";
+@use "variables" as vars;
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.container::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-bg);
+    @include vars.float-animation;
+    z-index: -1;
+}

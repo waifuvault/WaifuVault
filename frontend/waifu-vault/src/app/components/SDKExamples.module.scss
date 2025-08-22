@@ -1,0 +1,272 @@
+.sdkExamples {
+    margin-bottom: 2rem;
+}
+
+.examplesWrapper {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 1rem;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.examplesWrapper::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-bg);
+    opacity: 0.1;
+    z-index: 0;
+}
+
+.examplesWrapper > * {
+    position: relative;
+    z-index: 1;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.swaggerLink {
+    color: var(--text-accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.swaggerLink:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+}
+
+.sdkSelector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    border: 1px solid var(--border-secondary);
+}
+
+.sdkButton {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.sdkButton::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--text-accent), transparent);
+    opacity: 0.1;
+    transition: left 0.5s ease;
+}
+
+.sdkButton:hover {
+    color: var(--text-primary);
+    border-color: var(--border-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sdkButton:hover::before {
+    left: 100%;
+}
+
+.sdkButton.active {
+    background: var(--text-accent);
+    color: var(--bg-primary);
+    border-color: var(--text-accent);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.sdkButton.active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.exampleContent {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.description {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-secondary);
+    background: var(--bg-secondary);
+}
+
+.description p {
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+    line-height: 1.6;
+}
+
+.outdatedWarning {
+    background: var(--error-color);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.codeBlock {
+    position: relative;
+    overflow: hidden;
+}
+
+.codeBlock pre {
+    margin: 0;
+    padding: 2rem;
+    overflow-x: auto;
+    font-family: "Fira Code", "JetBrains Mono", "Cascadia Code", "Monaco", "Menlo", monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    border-radius: 0;
+}
+
+/* Dark theme styling - only apply to non-minimal themes */
+[data-theme="anime"] .codeBlock pre,
+[data-theme="cyberpunk"] .codeBlock pre,
+[data-theme="terminal"] .codeBlock pre,
+[data-theme="orangeterminal"] .codeBlock pre,
+[data-theme="steampunk"] .codeBlock pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+}
+
+/* Light theme styling - let highlight.js handle colors */
+[data-theme="minimal"] .codeBlock pre {
+    background: transparent;
+    color: inherit;
+}
+
+.codeBlock pre::-webkit-scrollbar {
+    height: 8px;
+}
+
+.codeBlock pre::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+.codeBlock pre::-webkit-scrollbar-thumb {
+    background: var(--text-accent);
+    border-radius: 4px;
+}
+
+.codeBlock pre::-webkit-scrollbar-thumb:hover {
+    background: var(--text-primary);
+}
+
+.codeBlock code {
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .examplesWrapper {
+        padding: 2rem 1.5rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .sdkSelector {
+        padding: 0.75rem;
+        gap: 0.25rem;
+    }
+
+    .sdkButton {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        flex: 1;
+        min-width: calc(50% - 0.125rem);
+    }
+
+    .description {
+        padding: 1rem;
+    }
+
+    .codeBlock pre {
+        padding: 1rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Theme-specific styling */
+[data-theme="cyberpunk"] .examplesWrapper {
+    border-color: var(--border-primary);
+    box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
+}
+
+[data-theme="cyberpunk"] .sdkSelector {
+    border-color: var(--border-primary);
+    box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.05);
+}
+
+[data-theme="cyberpunk"] .sdkButton.active {
+    box-shadow: 0 0 20px var(--text-accent);
+}
+
+[data-theme="cyberpunk"] .exampleContent {
+    border-color: var(--border-primary);
+    box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.05);
+}
+
+[data-theme="terminal"] .title,
+[data-theme="orangeterminal"] .title {
+    font-family: "Courier New", "Monaco", "Menlo", monospace;
+}
+
+[data-theme="steampunk"] .title {
+    font-family: "Crimson Text", "Times New Roman", serif;
+}
+
+[data-theme="steampunk"] .examplesWrapper {
+    border-color: var(--border-primary);
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+}

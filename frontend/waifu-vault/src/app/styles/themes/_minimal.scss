@@ -1,0 +1,52 @@
+@use "../variables" as vars;
+
+// Minimal theme colors
+$minimal-bg-primary: #ffffff;
+$minimal-bg-secondary: rgba(0, 0, 0, 0.05);
+$minimal-bg-tertiary: rgba(0, 0, 0, 0.1);
+$minimal-text-primary: #333333;
+$minimal-text-secondary: #666666;
+$minimal-text-accent: #007bff;
+$minimal-border-primary: rgba(0, 0, 0, 0.2);
+$minimal-border-secondary: rgba(0, 0, 0, 0.1);
+$minimal-gradient-primary: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+$minimal-gradient-bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+$minimal-success: #28a745;
+$minimal-error: #dc3545;
+$minimal-warning: #ffc107;
+$minimal-shadow-primary: 0 8px 32px rgba(0, 0, 0, 0.1);
+$minimal-shadow-secondary: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+[data-theme="minimal"] {
+    @include vars.theme-variables(
+        $minimal-bg-primary,
+        $minimal-bg-secondary,
+        $minimal-bg-tertiary,
+        $minimal-text-primary,
+        $minimal-text-secondary,
+        $minimal-text-accent,
+        $minimal-border-primary,
+        $minimal-border-secondary,
+        $minimal-gradient-primary,
+        $minimal-gradient-bg,
+        $minimal-success,
+        $minimal-error,
+        $minimal-warning,
+        $minimal-shadow-primary,
+        $minimal-shadow-secondary,
+        blur(10px)
+    );
+
+    --theme-text: #000000;
+}
+
+[data-theme="minimal"] {
+    .container::before {
+        background: var(--gradient-bg);
+        animation: none;
+    }
+
+    .title {
+        @include vars.gradient-text(var(--gradient-primary));
+    }
+}

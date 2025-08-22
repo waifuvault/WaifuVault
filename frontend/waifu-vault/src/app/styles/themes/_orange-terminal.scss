@@ -1,0 +1,116 @@
+@use "../variables" as vars;
+
+// Orange Terminal theme colors
+$orange-terminal-bg-primary: #000000;
+$orange-terminal-bg-secondary: rgba(255, 165, 0, 0.05);
+$orange-terminal-bg-tertiary: rgba(255, 165, 0, 0.1);
+$orange-terminal-text-primary: #ffa500;
+$orange-terminal-text-secondary: #cc8400;
+$orange-terminal-text-accent: #ffb733;
+$orange-terminal-border-primary: rgba(255, 165, 0, 0.5);
+$orange-terminal-border-secondary: rgba(255, 165, 0, 0.2);
+$orange-terminal-gradient-primary: linear-gradient(135deg, #ffa500 0%, #cc8400 100%);
+$orange-terminal-gradient-bg:
+    radial-gradient(circle at 20% 80%, rgba(255, 165, 0, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(204, 132, 0, 0.05) 0%, transparent 50%);
+$orange-terminal-success: #ffa500;
+$orange-terminal-error: #ff4444;
+$orange-terminal-warning: #ffff00;
+$orange-terminal-shadow-primary: 0 8px 32px rgba(255, 165, 0, 0.2);
+$orange-terminal-shadow-secondary: 0 4px 16px rgba(255, 165, 0, 0.3);
+
+// Terminal specific effects
+@mixin terminal-blink {
+    animation: terminalBlink 1s infinite;
+}
+
+@keyframes terminalBlink {
+    0%,
+    50% {
+        opacity: 1;
+    }
+    51%,
+    100% {
+        opacity: 0.8;
+    }
+}
+
+@mixin terminal-scan {
+    animation: terminalScan 2s linear infinite;
+}
+
+@keyframes terminalScan {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 0% 100%;
+    }
+}
+
+@mixin terminal-cursor {
+    &::after {
+        content: "█";
+        animation: terminalCursor 1s infinite;
+        margin-left: 2px;
+    }
+}
+
+@keyframes terminalCursor {
+    0%,
+    50% {
+        opacity: 1;
+    }
+    51%,
+    100% {
+        opacity: 0;
+    }
+}
+
+[data-theme="orangeterminal"] {
+    @include vars.theme-variables(
+        $orange-terminal-bg-primary,
+        $orange-terminal-bg-secondary,
+        $orange-terminal-bg-tertiary,
+        $orange-terminal-text-primary,
+        $orange-terminal-text-secondary,
+        $orange-terminal-text-accent,
+        $orange-terminal-border-primary,
+        $orange-terminal-border-secondary,
+        $orange-terminal-gradient-primary,
+        $orange-terminal-gradient-bg,
+        $orange-terminal-success,
+        $orange-terminal-error,
+        $orange-terminal-warning,
+        $orange-terminal-shadow-primary,
+        $orange-terminal-shadow-secondary,
+        none
+    );
+}
+
+[data-theme="orangeterminal"] {
+    body {
+        font-family: vars.$font-mono;
+    }
+
+    .container::before {
+        background: var(--gradient-bg);
+        @include terminal-scan;
+    }
+
+    .title {
+        @include vars.gradient-text(var(--gradient-primary));
+        font-family: vars.$font-mono;
+        @include vars.glow(var(--text-primary), 10px);
+        @include terminal-blink;
+    }
+
+    .subtitle {
+        @include terminal-cursor;
+    }
+
+    input,
+    button {
+        font-family: vars.$font-mono;
+    }
+}

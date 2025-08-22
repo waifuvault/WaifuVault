@@ -1,0 +1,26 @@
+.container {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family:
+        "Inter",
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+    position: relative;
+}
+
+.containerInner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .containerInner {
+        padding: 1rem;
+    }
+}

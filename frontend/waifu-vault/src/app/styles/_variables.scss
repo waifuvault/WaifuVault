@@ -1,0 +1,94 @@
+// Base colors
+$black: #000000 !default;
+$white: #ffffff !default;
+
+// Common theme variables structure
+@mixin theme-variables(
+    $bg-primary,
+    $bg-secondary,
+    $bg-tertiary,
+    $text-primary,
+    $text-secondary,
+    $text-accent,
+    $border-primary,
+    $border-secondary,
+    $gradient-primary,
+    $gradient-bg,
+    $success-color,
+    $error-color,
+    $warning-color,
+    $shadow-primary,
+    $shadow-secondary,
+    $backdrop-blur: blur(10px)
+) {
+    --bg-primary: #{$bg-primary};
+    --bg-secondary: #{$bg-secondary};
+    --bg-tertiary: #{$bg-tertiary};
+    --text-primary: #{$text-primary};
+    --text-secondary: #{$text-secondary};
+    --text-accent: #{$text-accent};
+    --border-primary: #{$border-primary};
+    --border-secondary: #{$border-secondary};
+    --gradient-primary: #{$gradient-primary};
+    --gradient-bg: #{$gradient-bg};
+    --success-color: #{$success-color};
+    --error-color: #{$error-color};
+    --warning-color: #{$warning-color};
+    --shadow-primary: #{$shadow-primary};
+    --shadow-secondary: #{$shadow-secondary};
+    --backdrop-blur: #{$backdrop-blur};
+}
+
+// Font families
+$font-inter:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    Segoe UI,
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    Fira Sans,
+    Droid Sans,
+    Helvetica Neue,
+    sans-serif !default;
+$font-mono: "Courier New", "Monaco", "Menlo", monospace !default;
+$font-serif: "Crimson Text", "Times New Roman", serif !default;
+
+// Common animations
+@mixin float-animation {
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    33% {
+        transform: translateY(-20px) rotate(1deg);
+    }
+    66% {
+        transform: translateY(-10px) rotate(-1deg);
+    }
+}
+
+// Common gradient text effect
+@mixin gradient-text($gradient) {
+    background: $gradient;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+// Glow effect mixin
+@mixin glow($color, $size: 10px) {
+    text-shadow: 0 0 $size $color;
+}
+
+// Button hover effect
+@mixin button-hover($translate: -2px, $shadow: var(--shadow-secondary)) {
+    transform: translateY($translate);
+    box-shadow: $shadow;
+}

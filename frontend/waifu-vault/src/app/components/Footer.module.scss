@@ -1,0 +1,27 @@
+.footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-primary);
+    padding: 2rem 0;
+    margin-top: 3rem;
+}
+
+.footerContent {
+    text-align: center;
+    color: var(--text-secondary);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.footerContent p {
+    margin-bottom: 0.5rem;
+}
+
+.footerContent a {
+    color: var(--text-accent);
+    text-decoration: none;
+}
+
+.footerContent a:hover {
+    text-decoration: underline;
+}

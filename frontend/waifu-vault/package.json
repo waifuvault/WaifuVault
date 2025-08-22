@@ -1,0 +1,36 @@
+{
+  "name": "waifu-vault",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack -p 8280",
+    "build": "next build",
+    "start": "next start -H localhost -p 8280",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prettier": "prettier ./src --check",
+    "prettier:fix": "prettier ./src --write"
+  },
+  "dependencies": {
+    "@types/qrcode": "^1.5.5",
+    "bootstrap-icons": "^1.13.1",
+    "highlight.js": "^11.11.1",
+    "next": "15.5.0",
+    "prettier": "^3.6.2",
+    "qrcode": "^1.5.4",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "sass": "^1.90.0",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.0",
+    "typescript": "^5"
+  }
+}

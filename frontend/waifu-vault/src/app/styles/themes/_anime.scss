@@ -1,0 +1,43 @@
+@use "../variables" as vars;
+
+// Anime theme colors
+$anime-bg-primary: #0a0a0a;
+$anime-bg-secondary: rgba(255, 255, 255, 0.05);
+$anime-bg-tertiary: rgba(255, 255, 255, 0.1);
+$anime-text-primary: #ffffff;
+$anime-text-secondary: #a0a0a0;
+$anime-text-accent: #667eea;
+$anime-border-primary: rgba(255, 255, 255, 0.2);
+$anime-border-secondary: rgba(255, 255, 255, 0.1);
+$anime-gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$anime-gradient-bg:
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+$anime-success: #28a745;
+$anime-error: #dc3545;
+$anime-warning: #ffc107;
+$anime-shadow-primary: 0 8px 32px rgba(102, 126, 234, 0.2);
+$anime-shadow-secondary: 0 4px 16px rgba(102, 126, 234, 0.4);
+
+:root,
+[data-theme="anime"] {
+    @include vars.theme-variables(
+        $anime-bg-primary,
+        $anime-bg-secondary,
+        $anime-bg-tertiary,
+        $anime-text-primary,
+        $anime-text-secondary,
+        $anime-text-accent,
+        $anime-border-primary,
+        $anime-border-secondary,
+        $anime-gradient-primary,
+        $anime-gradient-bg,
+        $anime-success,
+        $anime-error,
+        $anime-warning,
+        $anime-shadow-primary,
+        $anime-shadow-secondary,
+        blur(10px)
+    );
+}

@@ -1,0 +1,116 @@
+@use "../variables" as vars;
+
+// Terminal theme colors
+$terminal-bg-primary: #000000;
+$terminal-bg-secondary: rgba(0, 255, 0, 0.05);
+$terminal-bg-tertiary: rgba(0, 255, 0, 0.1);
+$terminal-text-primary: #00ff00;
+$terminal-text-secondary: #008000;
+$terminal-text-accent: #00ff00;
+$terminal-border-primary: rgba(0, 255, 0, 0.5);
+$terminal-border-secondary: rgba(0, 255, 0, 0.2);
+$terminal-gradient-primary: linear-gradient(135deg, #00ff00 0%, #008000 100%);
+$terminal-gradient-bg:
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 128, 0, 0.05) 0%, transparent 50%);
+$terminal-success: #00ff00;
+$terminal-error: #ff4444;
+$terminal-warning: #ffff00;
+$terminal-shadow-primary: 0 8px 32px rgba(0, 255, 0, 0.2);
+$terminal-shadow-secondary: 0 4px 16px rgba(0, 255, 0, 0.3);
+
+[data-theme="terminal"] {
+    @include vars.theme-variables(
+        $terminal-bg-primary,
+        $terminal-bg-secondary,
+        $terminal-bg-tertiary,
+        $terminal-text-primary,
+        $terminal-text-secondary,
+        $terminal-text-accent,
+        $terminal-border-primary,
+        $terminal-border-secondary,
+        $terminal-gradient-primary,
+        $terminal-gradient-bg,
+        $terminal-success,
+        $terminal-error,
+        $terminal-warning,
+        $terminal-shadow-primary,
+        $terminal-shadow-secondary,
+        none
+    );
+}
+
+// Terminal specific effects
+@mixin terminal-blink {
+    animation: terminalBlink 1s infinite;
+}
+
+@keyframes terminalBlink {
+    0%,
+    50% {
+        opacity: 1;
+    }
+    51%,
+    100% {
+        opacity: 0.8;
+    }
+}
+
+@mixin terminal-scan {
+    animation: terminalScan 2s linear infinite;
+}
+
+@keyframes terminalScan {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 0% 100%;
+    }
+}
+
+@mixin terminal-cursor {
+    &::after {
+        content: "█";
+        animation: terminalCursor 1s infinite;
+        margin-left: 2px;
+    }
+}
+
+@keyframes terminalCursor {
+    0%,
+    50% {
+        opacity: 1;
+    }
+    51%,
+    100% {
+        opacity: 0;
+    }
+}
+
+[data-theme="terminal"] {
+    body {
+        font-family: vars.$font-mono;
+    }
+
+    .container::before {
+        background: var(--gradient-bg);
+        @include terminal-scan;
+    }
+
+    .title {
+        @include vars.gradient-text(var(--gradient-primary));
+        font-family: vars.$font-mono;
+        @include vars.glow(var(--text-primary), 10px);
+        @include terminal-blink;
+    }
+
+    .subtitle {
+        @include terminal-cursor;
+    }
+
+    input,
+    button {
+        font-family: vars.$font-mono;
+    }
+}

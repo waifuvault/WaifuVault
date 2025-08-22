@@ -1,0 +1,17 @@
+{
+  "name": "WaifuVault",
+  "short_name": "WV Uploader",
+  "description": "Quick, free and easy temporary file hosting",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ],
+  "theme_color": "#667eea",
+  "background_color": "#0a0a0a",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}

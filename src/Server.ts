@@ -115,7 +115,7 @@ const opts: Partial<TsED.Configuration> = {
         socketIoStatus === "dynamic"
             ? {
                   cors: {
-                      origin: process.env.BASE_URL,
+                      origin: [process.env.BASE_URL!, process.env.FRONT_END_URL!],
                   },
               }
             : undefined,
@@ -130,7 +130,7 @@ const opts: Partial<TsED.Configuration> = {
             },
         }),
         cors({
-            origin: process.env.BASE_URL,
+            origin: [process.env.BASE_URL!, process.env.FRONT_END_URL!],
             exposedHeaders: ["Location", "Content-Disposition"],
         }),
         cookieParser(),

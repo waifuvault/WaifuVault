@@ -1,0 +1,101 @@
+@use "../variables" as vars;
+
+// Cyberpunk theme colors
+$cyberpunk-bg-primary: #0a0a0a;
+$cyberpunk-bg-secondary: rgba(0, 255, 255, 0.05);
+$cyberpunk-bg-tertiary: rgba(0, 255, 255, 0.1);
+$cyberpunk-text-primary: #00ffff;
+$cyberpunk-text-secondary: #ff00ff;
+$cyberpunk-text-accent: #00ff00;
+$cyberpunk-border-primary: rgba(0, 255, 255, 0.5);
+$cyberpunk-border-secondary: rgba(0, 255, 255, 0.2);
+$cyberpunk-gradient-primary: linear-gradient(135deg, #00ffff 0%, #ff00ff 50%, #ffff00 100%);
+$cyberpunk-gradient-bg:
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 0, 0.1) 0%, transparent 50%);
+$cyberpunk-success: #00ff00;
+$cyberpunk-error: #ff0040;
+$cyberpunk-warning: #ffff00;
+$cyberpunk-shadow-primary: 0 8px 32px rgba(0, 255, 255, 0.4);
+$cyberpunk-shadow-secondary: 0 4px 16px rgba(0, 255, 255, 0.6);
+
+[data-theme="cyberpunk"] {
+    @include vars.theme-variables(
+        $cyberpunk-bg-primary,
+        $cyberpunk-bg-secondary,
+        $cyberpunk-bg-tertiary,
+        $cyberpunk-text-primary,
+        $cyberpunk-text-secondary,
+        $cyberpunk-text-accent,
+        $cyberpunk-border-primary,
+        $cyberpunk-border-secondary,
+        $cyberpunk-gradient-primary,
+        $cyberpunk-gradient-bg,
+        $cyberpunk-success,
+        $cyberpunk-error,
+        $cyberpunk-warning,
+        $cyberpunk-shadow-primary,
+        $cyberpunk-shadow-secondary,
+        blur(5px)
+    );
+}
+
+// Cyberpunk specific effects
+@mixin cyberpunk-glow {
+    animation: cyberpunkGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes cyberpunkGlow {
+    0% {
+        opacity: 0.8;
+        filter: hue-rotate(0deg);
+    }
+    100% {
+        opacity: 1;
+        filter: hue-rotate(30deg);
+    }
+}
+
+@mixin cyberpunk-text {
+    @include vars.gradient-text(var(--gradient-primary));
+    @include vars.glow(var(--text-accent), 20px);
+    animation: cyberpunkText 2s ease-in-out infinite alternate;
+}
+
+@keyframes cyberpunkText {
+    0% {
+        filter: brightness(1);
+    }
+    100% {
+        filter: brightness(1.2);
+    }
+}
+
+[data-theme="cyberpunk"] {
+    .container::before {
+        background: var(--gradient-bg);
+        @include cyberpunk-glow;
+    }
+
+    .title {
+        @include cyberpunk-text;
+    }
+
+    .primaryBtn,
+    .warningBtn,
+    .sourceBtn {
+        box-shadow: 0 0 10px currentColor;
+    }
+
+    .jumbo {
+        border-color: var(--border-primary);
+        box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
+    }
+
+    .featureCard,
+    .featureCardAdvanced {
+        border-color: var(--border-secondary);
+        box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.05);
+    }
+}

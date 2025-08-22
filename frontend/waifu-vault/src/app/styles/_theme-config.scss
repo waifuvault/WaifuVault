@@ -1,0 +1,346 @@
+@use "sass:map";
+
+$base-colors: (
+    black: #000000,
+    white: #ffffff,
+    transparent: transparent,
+);
+
+$fonts: (
+    inter: (
+        "Inter",
+        -apple-system,
+        BlinkMacSystemFont,
+        Segoe UI,
+        Roboto,
+        Oxygen,
+        Ubuntu,
+        Cantarell,
+        Fira Sans,
+        Droid Sans,
+        Helvetica Neue,
+        sans-serif,
+    ),
+    mono: (
+        "Courier New",
+        "Monaco",
+        "Menlo",
+        monospace,
+    ),
+    serif: (
+        "Crimson Text",
+        "Times New Roman",
+        serif,
+    ),
+);
+
+$spacing: (
+    xs: 0.25rem,
+    sm: 0.5rem,
+    md: 1rem,
+    lg: 1.5rem,
+    xl: 2rem,
+    2xl: 3rem,
+    3xl: 4rem,
+);
+
+$radius: (
+    none: 0,
+    sm: 4px,
+    md: 8px,
+    lg: 12px,
+    xl: 16px,
+    full: 50%,
+);
+
+$shadows: (
+    sm: (
+        0 2px 4px rgba(0, 0, 0, 0.1),
+    ),
+    md: (
+        0 4px 16px rgba(137, 180, 250, 0.4),
+    ),
+    lg: (
+        0 8px 32px rgba(137, 180, 250, 0.2),
+    ),
+    xl: (
+        0 12px 48px rgba(137, 180, 250, 0.3),
+    ),
+);
+
+$duration: (
+    fast: 0.15s,
+    normal: 0.3s,
+    slow: 0.5s,
+    slower: 0.75s,
+);
+
+$breakpoints: (
+    sm: 640px,
+    md: 768px,
+    lg: 1024px,
+    xl: 1280px,
+);
+$themes: (
+    anime: (
+        bg: (
+            primary: #0a0a0a,
+            secondary: rgba(255, 255, 255, 0.05),
+            tertiary: rgba(255, 255, 255, 0.1),
+        ),
+        text: (
+            primary: #ffffff,
+            secondary: #a0a0a0,
+            accent: #667eea,
+        ),
+        border: (
+            primary: rgba(255, 255, 255, 0.2),
+            secondary: rgba(255, 255, 255, 0.1),
+        ),
+        gradients: (
+            primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%),
+            bg: (
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+            ),
+        ),
+        status: (
+            success: #28a745,
+            error: #dc3545,
+            warning: #ffc107,
+        ),
+        shadows: (
+            primary: 0 8px 32px rgba(102, 126, 234, 0.2),
+            secondary: 0 4px 16px rgba(102, 126, 234, 0.4),
+        ),
+        blur: blur(10px),
+    ),
+
+    cyberpunk: (
+        bg: (
+            primary: #0a0a0a,
+            secondary: rgba(0, 255, 255, 0.05),
+            tertiary: rgba(0, 255, 255, 0.1),
+        ),
+        text: (
+            primary: #00ffff,
+            secondary: #ff00ff,
+            accent: #00ff00,
+        ),
+        border: (
+            primary: rgba(0, 255, 255, 0.5),
+            secondary: rgba(0, 255, 255, 0.2),
+        ),
+        gradients: (
+            primary: linear-gradient(135deg, #00ffff 0%, #ff00ff 50%, #ffff00 100%),
+            bg: (
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 0, 0.1) 0%, transparent 50%),
+            ),
+        ),
+        status: (
+            success: #00ff00,
+            error: #ff0040,
+            warning: #ffff00,
+        ),
+        shadows: (
+            primary: 0 8px 32px rgba(0, 255, 255, 0.4),
+            secondary: 0 4px 16px rgba(0, 255, 255, 0.6),
+        ),
+        blur: blur(5px),
+    ),
+
+    terminal: (
+        bg: (
+            primary: #000000,
+            secondary: rgba(0, 255, 0, 0.05),
+            tertiary: rgba(0, 255, 0, 0.1),
+        ),
+        text: (
+            primary: #00ff00,
+            secondary: #008000,
+            accent: #00ff00,
+        ),
+        border: (
+            primary: rgba(0, 255, 0, 0.5),
+            secondary: rgba(0, 255, 0, 0.2),
+        ),
+        gradients: (
+            primary: linear-gradient(135deg, #00ff00 0%, #008000 100%),
+            bg: (
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 128, 0, 0.05) 0%, transparent 50%),
+            ),
+        ),
+        status: (
+            success: #00ff00,
+            error: #ff4444,
+            warning: #ffff00,
+        ),
+        shadows: (
+            primary: 0 8px 32px rgba(0, 255, 0, 0.2),
+            secondary: 0 4px 16px rgba(0, 255, 0, 0.3),
+        ),
+        blur: none,
+    ),
+
+    steampunk: (
+        bg: (
+            primary: #1a1310,
+            secondary: rgba(205, 127, 50, 0.1),
+            tertiary: rgba(205, 127, 50, 0.2),
+        ),
+        text: (
+            primary: #f4e4bc,
+            secondary: #cd7f32,
+            accent: #daa520,
+        ),
+        border: (
+            primary: rgba(205, 127, 50, 0.6),
+            secondary: rgba(205, 127, 50, 0.3),
+        ),
+        gradients: (
+            primary: linear-gradient(135deg, #cd7f32 0%, #b8860b 50%, #daa520 100%),
+            bg: (
+                radial-gradient(circle at 20% 80%, rgba(205, 127, 50, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(184, 134, 11, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
+            ),
+        ),
+        status: (
+            success: #daa520,
+            error: #cd5c5c,
+            warning: #ff8c00,
+        ),
+        shadows: (
+            primary: 0 8px 32px rgba(205, 127, 50, 0.3),
+            secondary: 0 4px 16px rgba(205, 127, 50, 0.5),
+        ),
+        blur: blur(8px),
+    ),
+
+    minimal: (
+        bg: (
+            primary: #ffffff,
+            secondary: rgba(0, 0, 0, 0.05),
+            tertiary: rgba(0, 0, 0, 0.1),
+        ),
+        text: (
+            primary: #333333,
+            secondary: #666666,
+            accent: #007bff,
+        ),
+        border: (
+            primary: rgba(0, 0, 0, 0.2),
+            secondary: rgba(0, 0, 0, 0.1),
+        ),
+        gradients: (
+            primary: linear-gradient(135deg, #007bff 0%, #0056b3 100%),
+            bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%),
+        ),
+        status: (
+            success: #28a745,
+            error: #dc3545,
+            warning: #ffc107,
+        ),
+        shadows: (
+            primary: 0 8px 32px rgba(0, 0, 0, 0.1),
+            secondary: 0 4px 16px rgba(0, 0, 0, 0.15),
+        ),
+        blur: blur(10px),
+    ),
+);
+
+// Utility functions
+@function get-theme($theme-name, $property-path...) {
+    $theme: map.get($themes, $theme-name);
+    @each $key in $property-path {
+        $theme: map.get($theme, $key);
+    }
+    @return $theme;
+}
+
+@function get-spacing($size) {
+    @return map.get($spacing, $size);
+}
+
+@function get-radius($size) {
+    @return map.get($radius, $size);
+}
+
+@function get-shadow($size) {
+    @return map.get($shadows, $size);
+}
+
+@function get-font($family) {
+    @return map.get($fonts, $family);
+}
+
+@function get-duration($speed) {
+    @return map.get($duration, $speed);
+}
+
+// Mixins
+@mixin respond-to($breakpoint) {
+    @if map.has-key($breakpoints, $breakpoint) {
+        @media (min-width: map.get($breakpoints, $breakpoint)) {
+            @content;
+        }
+    }
+}
+@mixin generate-theme($theme-name) {
+    $theme: map.get($themes, $theme-name);
+
+    // Background colors
+    @each $variant, $color in map.get($theme, bg) {
+        --bg-#{$variant}: #{$color};
+    }
+
+    // Text colors
+    @each $variant, $color in map.get($theme, text) {
+        --text-#{$variant}: #{$color};
+    }
+
+    // Border colors
+    @each $variant, $color in map.get($theme, border) {
+        --border-#{$variant}: #{$color};
+    }
+
+    // Status colors
+    @each $variant, $color in map.get($theme, status) {
+        --#{$variant}-color: #{$color};
+    }
+
+    // Gradients
+    @if map.has-key($theme, gradients) {
+        $gradients: map.get($theme, gradients);
+        --gradient-primary: #{map.get($gradients, primary)};
+
+        @if map.has-key($gradients, bg) {
+            $bg-gradients: map.get($gradients, bg);
+            @if type-of($bg-gradients) == list and length($bg-gradients) > 1 {
+                $gradient-string: "";
+                @for $i from 1 through length($bg-gradients) {
+                    @if $i == 1 {
+                        $gradient-string: #{nth($bg-gradients, $i)};
+                    } @else {
+                        $gradient-string: $gradient-string + ", " + #{nth($bg-gradients, $i)};
+                    }
+                }
+                --gradient-bg: #{$gradient-string};
+            } @else {
+                --gradient-bg: #{$bg-gradients};
+            }
+        }
+    }
+
+    // Shadows
+    @each $variant, $shadow in map.get($theme, shadows) {
+        --shadow-#{$variant}: #{$shadow};
+    }
+
+    // Blur
+    --backdrop-blur: #{map.get($theme, blur)};
+}

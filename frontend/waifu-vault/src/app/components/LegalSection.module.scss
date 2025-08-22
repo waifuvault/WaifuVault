@@ -1,0 +1,32 @@
+.legalSection {
+    margin: 2rem 0;
+}
+
+.legalGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: stretch;
+}
+
+.restrictionsColumn,
+.privacyColumn {
+    height: 100%;
+}
+
+.restrictionsColumn > div,
+.privacyColumn > div {
+    height: 100%;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .legalGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .legalSection {
+        margin: 1rem 0;
+    }
+}

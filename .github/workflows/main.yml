@@ -36,8 +36,38 @@ jobs:
           cd go/zipFiles
           go build .
 
+  frontend-build:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/waifu-vault
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setup Node.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          check-latest: true
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check Prettier formatting
+        run: npm run prettier
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build application
+        run: npm run build
+
   waifuvault-build:
-    name: Build Waifuvault
+    name: Build Backend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
