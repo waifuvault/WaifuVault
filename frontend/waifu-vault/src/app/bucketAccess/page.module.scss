@@ -1,0 +1,135 @@
+@use "../styles/layout.scss";
+
+.container {
+    @extend .page-container;
+}
+
+.headerSection {
+    @extend .page-content;
+}
+
+.pageMain {
+    @extend .page-main;
+}
+
+.containerInner {
+    @extend .page-content-centered;
+    z-index: 0;
+}
+
+.bucketCard {
+    margin-top: 2rem;
+    width: 100%;
+    max-width: 600px;
+}
+
+.bucketForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    color: var(--text-primary, #ffffff);
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.input {
+    background: var(--input-bg, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--input-border, rgba(255, 255, 255, 0.2));
+    border-radius: 8px;
+    color: var(--text-primary, #ffffff);
+    font-size: 1rem;
+    padding: 0.875rem 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.input::placeholder {
+    color: var(--text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary-color, #667eea);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: var(--input-bg-focus, rgba(255, 255, 255, 0.08));
+}
+
+.input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.buttonGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.infoAlert {
+    background: rgba(13, 202, 240, 0.1);
+    border: 1px solid rgba(13, 202, 240, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.infoAlert p {
+    color: var(--text-secondary, #b0b0b0);
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.lightAlert {
+    background: rgba(248, 249, 250, 0.05);
+    border: 1px solid rgba(248, 249, 250, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.lightAlert p {
+    color: var(--text-secondary, #b0b0b0);
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.errorAlert {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.errorAlert p {
+    color: var(--error-color, #ff6b6b);
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .containerInner {
+        padding: 1rem;
+        min-height: calc(100vh - 150px);
+    }
+
+    .bucketCard {
+        margin-top: 1rem;
+    }
+}

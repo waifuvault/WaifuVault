@@ -1,6 +1,6 @@
 .themeSelector {
     position: relative;
-    z-index: 1000;
+    z-index: 10000;
 }
 
 .themeButton {
@@ -62,9 +62,7 @@
 }
 
 .popup {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    right: 0;
+    position: fixed;
     background: rgba(10, 10, 10, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
@@ -74,6 +72,7 @@
     min-width: 320px;
     max-width: 400px;
     animation: popupAppear 0.2s ease;
+    z-index: 99999;
 }
 
 @keyframes popupAppear {

@@ -222,7 +222,8 @@ export class Server implements BeforeRoutesInit {
                         httpOnly: true,
                         maxAge: 86400000,
                         secure: this.https === "true",
-                        sameSite: "strict",
+                        sameSite: "lax",
+                        domain: process.env.NODE_ENV === "production" ? process.env.COOKIE_DOMAIN : undefined,
                     },
                 }),
             );

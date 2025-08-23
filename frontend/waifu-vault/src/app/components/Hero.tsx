@@ -42,7 +42,7 @@ export default function Hero({ stats, showCounter, fileSizeLimit }: HeroProps) {
                         <Button href={apiDocsUrl} target="_blank" rel="noopener noreferrer">
                             Api Documentation
                         </Button>
-                        <Button href={bucketAccessUrl} target="_blank" rel="noopener noreferrer">
+                        <Button href={bucketAccessUrl} rel="noopener noreferrer">
                             Bucket access
                         </Button>
                     </div>

@@ -12,7 +12,7 @@ import {
     LegalSection,
     Logo,
     ParticleBackground,
-    SDKExamples,
+    SDKExamples
 } from "@/app/components";
 import { useStats } from "@/app/hooks/useStats";
 import { useRestrictions } from "@/app/hooks/useRestrictions";
@@ -36,7 +36,7 @@ export default function Home() {
     return (
         <div className={styles.container}>
             <ParticleBackground intensity="medium" />
-            <main>
+            <main className={styles.pageMain}>
                 <div className={styles.containerInner}>
                     <Header />
                     <Logo />

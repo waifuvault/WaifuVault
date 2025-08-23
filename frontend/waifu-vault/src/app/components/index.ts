@@ -12,3 +12,4 @@ export { default as Footer } from "@/app/components/Footer";
 export { default as Button } from "@/app/components/Button";
 export { default as ThemeSelector } from "@/app/components/ThemeSelector";
 export { default as ParticleBackground } from "@/app/components/ParticleBackground";
+export { default as Card, CardHeader, CardBody } from "@/app/components/Card";

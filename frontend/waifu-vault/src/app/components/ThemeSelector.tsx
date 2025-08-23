@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./ThemeSelector.module.scss";
 import { localStoreThemeKey, useTheme } from "@/app/contexts/ThemeContext";
 import { ThemeType } from "@/app/constants/theme";
@@ -8,6 +8,8 @@ import { ThemeType } from "@/app/constants/theme";
 export default function ThemeSelector() {
     const { currentTheme, setTheme, themes, particlesEnabled, setParticlesEnabled } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
+    const [popupPosition, setPopupPosition] = useState({ top: 0, right: 0 });
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         const saved = localStorage.getItem(localStoreThemeKey) as ThemeType;
@@ -24,17 +26,34 @@ export default function ThemeSelector() {
         setIsOpen(false);
     };
 
+    const calculatePopupPosition = () => {
+        if (buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            setPopupPosition({
+                top: rect.bottom + scrollTop + 8,
+                right: window.innerWidth - rect.right,
+            });
+        }
+    };
+
+    const toggleOpen = () => {
+        if (!isOpen) {
+            calculatePopupPosition();
+        }
+        setIsOpen(!isOpen);
+    };
+
     const currentThemeData = themes.find(theme => theme.id === currentTheme) ?? themes[0];
 
     return (
         <div className={styles.themeSelector}>
             <button
+                ref={buttonRef}
                 aria-expanded={isOpen}
                 aria-label="Theme selector"
                 className={styles.themeButton}
-                onClick={() => {
-                    setIsOpen(!isOpen);
-                }}
+                onClick={toggleOpen}
             >
                 <i aria-hidden="true" className={`${currentThemeData.icon} ${styles.themeIcon}`}></i>
                 <span className={styles.themeText}>
@@ -49,7 +68,13 @@ export default function ThemeSelector() {
             </button>
 
             {isOpen && (
-                <div className={styles.popup}>
+                <div
+                    className={styles.popup}
+                    style={{
+                        top: `${popupPosition.top}px`,
+                        right: `${popupPosition.right}px`,
+                    }}
+                >
                     <div className={styles.popupHeader}>
                         <h3>Choose Theme</h3>
                         <button
