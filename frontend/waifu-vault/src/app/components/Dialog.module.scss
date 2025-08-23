@@ -1,0 +1,218 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 16px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: var(--shadow-primary);
+    animation: modalSlideIn 0.3s ease-out;
+    position: relative;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-secondary);
+    background: var(--bg-tertiary);
+}
+
+.title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.closeButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+/* Content */
+.content {
+    padding: 1.5rem;
+    max-height: calc(90vh - 200px);
+    overflow-y: auto;
+}
+
+/* Theme-Specific Styles */
+.themeAnime {
+}
+
+.themeAnime .modal {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-image: linear-gradient(45deg, #667eea, #764ba2) 1;
+}
+
+.themeCyberpunk {
+}
+
+.themeCyberpunk .modal {
+    border-color: #00ffff;
+    box-shadow:
+        0 0 30px rgba(0, 255, 255, 0.3),
+        inset 0 0 30px rgba(0, 255, 255, 0.05);
+}
+
+.themeCyberpunk .title,
+.themeCyberpunk .closeButton {
+    color: #00ffff;
+}
+
+.themeCyberpunk .closeButton:hover {
+    color: #00ffff;
+    background: rgba(0, 255, 255, 0.1);
+}
+
+.themeTerminal,
+.themeOrangeterminal {
+    font-family: "Courier New", monospace;
+}
+
+.themeTerminal .modal {
+    background: rgba(0, 0, 0, 0.95);
+    border-color: #00ff00;
+    box-shadow:
+        0 0 20px rgba(0, 255, 0, 0.3),
+        inset 0 0 20px rgba(0, 255, 0, 0.05);
+}
+
+.themeTerminal .title,
+.themeTerminal .closeButton {
+    color: #00ff00;
+}
+
+.themeTerminal .closeButton:hover {
+    color: #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.themeOrangeterminal .modal {
+    background: rgba(0, 0, 0, 0.95);
+    border-color: #ffa500;
+    box-shadow:
+        0 0 20px rgba(255, 165, 0, 0.3),
+        inset 0 0 20px rgba(255, 165, 0, 0.05);
+}
+
+.themeOrangeterminal .title,
+.themeOrangeterminal .closeButton {
+    color: #ffa500;
+}
+
+.themeOrangeterminal .closeButton:hover {
+    color: #ffa500;
+    background: rgba(255, 165, 0, 0.1);
+}
+
+.themeMinimal {
+}
+
+.themeMinimal .modal {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(0, 123, 255, 0.3);
+    color: #333;
+}
+
+.themeMinimal .title,
+.themeMinimal .closeButton {
+    color: #333;
+}
+
+.themeMinimal .closeButton:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .modal {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+    }
+
+    .header {
+        padding: 1rem;
+    }
+
+    .content {
+        padding: 1rem;
+        max-height: calc(90vh - 150px);
+    }
+
+    .title {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal {
+        margin: 0.75rem;
+        width: calc(100% - 1.5rem);
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .overlay,
+    .modal {
+        animation: none !important;
+    }
+}

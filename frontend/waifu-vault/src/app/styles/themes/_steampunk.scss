@@ -1,0 +1,190 @@
+@use "../variables" as vars;
+
+// Steampunk theme colors
+$steampunk-bg-primary: #1a1310;
+$steampunk-bg-secondary: rgba(205, 127, 50, 0.1);
+$steampunk-bg-tertiary: rgba(205, 127, 50, 0.2);
+$steampunk-text-primary: #f4e4bc;
+$steampunk-text-secondary: #cd7f32;
+$steampunk-text-accent: #daa520;
+$steampunk-border-primary: rgba(205, 127, 50, 0.6);
+$steampunk-border-secondary: rgba(205, 127, 50, 0.3);
+$steampunk-gradient-primary: linear-gradient(135deg, #cd7f32 0%, #b8860b 50%, #daa520 100%);
+$steampunk-gradient-bg:
+    radial-gradient(circle at 20% 80%, rgba(205, 127, 50, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(184, 134, 11, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(139, 69, 19, 0.1) 0%, transparent 50%);
+$steampunk-success: #daa520;
+$steampunk-error: #cd5c5c;
+$steampunk-warning: #ff8c00;
+$steampunk-shadow-primary: 0 8px 32px rgba(205, 127, 50, 0.3);
+$steampunk-shadow-secondary: 0 4px 16px rgba(205, 127, 50, 0.5);
+
+[data-theme="steampunk"] {
+    @include vars.theme-variables(
+        $steampunk-bg-primary,
+        $steampunk-bg-secondary,
+        $steampunk-bg-tertiary,
+        $steampunk-text-primary,
+        $steampunk-text-secondary,
+        $steampunk-text-accent,
+        $steampunk-border-primary,
+        $steampunk-border-secondary,
+        $steampunk-gradient-primary,
+        $steampunk-gradient-bg,
+        $steampunk-success,
+        $steampunk-error,
+        $steampunk-warning,
+        $steampunk-shadow-primary,
+        $steampunk-shadow-secondary,
+        blur(8px)
+    );
+}
+
+// Steampunk specific effects
+@mixin steam-pulse {
+    animation: steamPulse 4s ease-in-out infinite;
+}
+
+@keyframes steamPulse {
+    0%,
+    100% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+
+@mixin gear-rotate {
+    animation: gearRotate 20s linear infinite;
+}
+
+@keyframes gearRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@mixin brass-glow {
+    animation: brassGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes brassGlow {
+    0% {
+        filter: brightness(1) drop-shadow(0 0 10px rgba(205, 127, 50, 0.3));
+    }
+    100% {
+        filter: brightness(1.2) drop-shadow(0 0 20px rgba(205, 127, 50, 0.6));
+    }
+}
+
+@mixin gear-spin {
+    animation: gearSpin 4s linear infinite;
+}
+
+@keyframes gearSpin {
+    0% {
+        transform: translateY(-50%) rotate(0deg);
+    }
+    100% {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
+@mixin steam-rise {
+    animation: steamRise 2s ease-in-out infinite;
+}
+
+@keyframes steamRise {
+    0%,
+    100% {
+        transform: translateY(0px);
+        opacity: 0.7;
+    }
+    50% {
+        transform: translateY(-5px);
+        opacity: 1;
+    }
+}
+
+[data-theme="steampunk"] {
+    body {
+        font-family: vars.$font-serif;
+        background: linear-gradient(135deg, #1a1310 0%, #2d1b14 100%);
+    }
+
+    .container::before {
+        background: var(--gradient-bg);
+        @include steam-pulse;
+        position: relative;
+    }
+
+    .container::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+            radial-gradient(circle at 25% 25%, rgba(205, 127, 50, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(184, 134, 11, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: -1;
+        @include gear-rotate;
+    }
+
+    .title {
+        @include vars.gradient-text(var(--gradient-primary));
+        font-family: vars.$font-serif;
+        font-weight: bold;
+        @include vars.glow(rgba(205, 127, 50, 0.5), 20px);
+        @include brass-glow;
+        position: relative;
+
+        &::before {
+            content: "⚙";
+            position: absolute;
+            left: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+            color: var(--text-accent);
+            @include gear-spin;
+        }
+
+        &::after {
+            content: "⚙";
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+            color: var(--text-accent);
+            animation: gearSpin 4s linear infinite reverse;
+        }
+    }
+
+    .subtitle {
+        font-family: vars.$font-serif;
+        font-style: italic;
+
+        &::after {
+            content: "💨";
+            @include steam-rise;
+            margin-left: 8px;
+            display: inline-block;
+        }
+    }
+
+    input,
+    button {
+        font-family: vars.$font-serif;
+    }
+}

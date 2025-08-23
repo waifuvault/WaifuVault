@@ -115,7 +115,7 @@ const opts: Partial<TsED.Configuration> = {
         socketIoStatus === "dynamic"
             ? {
                   cors: {
-                      origin: process.env.BASE_URL,
+                      origin: [process.env.BASE_URL!, process.env.FRONT_END_URL!],
                   },
               }
             : undefined,
@@ -130,7 +130,7 @@ const opts: Partial<TsED.Configuration> = {
             },
         }),
         cors({
-            origin: process.env.BASE_URL,
+            origin: [process.env.BASE_URL!, process.env.FRONT_END_URL!],
             exposedHeaders: ["Location", "Content-Disposition"],
         }),
         cookieParser(),
@@ -222,7 +222,8 @@ export class Server implements BeforeRoutesInit {
                         httpOnly: true,
                         maxAge: 86400000,
                         secure: this.https === "true",
-                        sameSite: "strict",
+                        sameSite: "lax",
+                        domain: process.env.NODE_ENV === "production" ? process.env.COOKIE_DOMAIN : undefined,
                     },
                 }),
             );

@@ -1,0 +1,357 @@
+@use "sass:map";
+$button-border-radius: 8px;
+$button-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$button-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+$button-sizes: (
+    small: (
+        padding: 0.5rem 1rem,
+        font-size: 0.875rem,
+        line-height: 1.25rem,
+    ),
+    medium: (
+        padding: 0.75rem 1.5rem,
+        font-size: 1rem,
+        line-height: 1.5rem,
+    ),
+    large: (
+        padding: 1rem 2rem,
+        font-size: 1.125rem,
+        line-height: 1.75rem,
+    ),
+);
+
+$button-variants: (
+    primary: (
+        bg: var(--gradient-primary),
+        text: white,
+        hover-transform: translateY(-2px),
+        hover-shadow: var(--shadow-secondary),
+    ),
+    secondary: (
+        bg: var(--bg-tertiary),
+        text: var(--text-secondary),
+        border: 1px solid var(--border-secondary),
+        hover-bg: var(--bg-secondary),
+        hover-text: var(--text-primary),
+    ),
+    outline: (
+        bg: transparent,
+        text: var(--text-accent),
+        border: 2px solid var(--text-accent),
+        hover-bg: var(--text-accent),
+        hover-text: var(--bg-primary),
+    ),
+);
+@mixin button-base {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    border-radius: $button-border-radius;
+    font-family: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: $button-transition;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--text-accent);
+        outline-offset: 2px;
+    }
+}
+
+@mixin button-size($size) {
+    $size-map: map.get($button-sizes, $size);
+    padding: map.get($size-map, padding);
+    font-size: map.get($size-map, font-size);
+    line-height: map.get($size-map, line-height);
+}
+
+@mixin button-variant($variant) {
+    $variant-map: map.get($button-variants, $variant);
+    background: map.get($variant-map, bg);
+    color: map.get($variant-map, text);
+
+    @if map.has-key($variant-map, border) {
+        border: map.get($variant-map, border);
+    }
+
+    &:hover:not(:disabled) {
+        @if map.has-key($variant-map, hover-bg) {
+            background: map.get($variant-map, hover-bg);
+        }
+
+        @if map.has-key($variant-map, hover-text) {
+            color: map.get($variant-map, hover-text);
+        }
+
+        @if map.has-key($variant-map, hover-transform) {
+            transform: map.get($variant-map, hover-transform);
+        }
+
+        @if map.has-key($variant-map, hover-shadow) {
+            box-shadow: map.get($variant-map, hover-shadow);
+        }
+
+        filter: brightness(1.05);
+    }
+}
+@mixin ripple-effect($color: rgba(255, 255, 255, 0.3)) {
+    &::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: $color;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition:
+            width 0.3s ease,
+            height 0.3s ease;
+        z-index: 0;
+    }
+
+    &:active::before {
+        width: 300px;
+        height: 300px;
+    }
+    > * {
+        position: relative;
+        z-index: 1;
+    }
+}
+.button {
+    @include button-base;
+    @include ripple-effect;
+    @each $size-name, $size-props in $button-sizes {
+        &--#{$size-name} {
+            @include button-size($size-name);
+            @media (max-width: 768px) {
+                @if $size-name == large {
+                    @include button-size(medium);
+                }
+            }
+        }
+    }
+    @each $variant-name, $variant-props in $button-variants {
+        &--#{$variant-name} {
+            @include button-variant($variant-name);
+        }
+    }
+    &--loading {
+        pointer-events: none;
+
+        &::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .button__text {
+            opacity: 0;
+        }
+    }
+    &--icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+
+        &.button--small {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        &.button--large {
+            width: 3rem;
+            height: 3rem;
+        }
+    }
+    &--fab {
+        border-radius: 50%;
+        box-shadow: $button-shadow;
+
+        &:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px) scale(1.05);
+        }
+    }
+}
+.button-group {
+    display: flex;
+
+    .button {
+        border-radius: 0;
+
+        &:first-child {
+            border-top-left-radius: $button-border-radius;
+            border-bottom-left-radius: $button-border-radius;
+        }
+
+        &:last-child {
+            border-top-right-radius: $button-border-radius;
+            border-bottom-right-radius: $button-border-radius;
+        }
+
+        &:not(:last-child) {
+            border-right: none;
+        }
+    }
+    &--vertical {
+        flex-direction: column;
+
+        .button {
+            border-radius: 0;
+
+            &:first-child {
+                border-radius: $button-border-radius $button-border-radius 0 0;
+            }
+
+            &:last-child {
+                border-radius: 0 0 $button-border-radius $button-border-radius;
+            }
+
+            &:not(:last-child) {
+                border-bottom: none;
+            }
+        }
+    }
+}
+
+// Theme-specific styling
+.theme-cyberpunk .button {
+    &--primary,
+    &--secondary,
+    &--outline {
+        box-shadow: 0 0 10px currentColor;
+
+        &::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: -100%;
+            border-radius: 0;
+            transform: none;
+            transition: left 0.5s ease;
+        }
+
+        &:hover::before {
+            left: 100%;
+        }
+    }
+}
+
+.theme-terminal .button,
+.theme-orange-terminal .button {
+    font-family: "Courier New", monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+    &--primary::after {
+        content: " >";
+        font-weight: normal;
+    }
+}
+
+.theme-steampunk .button {
+    font-family: "Crimson Text", serif;
+    border-radius: 12px;
+    position: relative;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        background: linear-gradient(45deg, #cd7f32, #b8860b);
+        border-radius: inherit;
+        z-index: -2;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover::after {
+        opacity: 0.3;
+    }
+
+    &--large::before {
+        content: "⚙";
+        position: static;
+        margin-right: 0.5rem;
+        animation: gear-spin 2s linear infinite;
+    }
+}
+
+.theme-minimal .button {
+    border-radius: 4px;
+    box-shadow: none;
+
+    &:hover {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}
+
+// Animations
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes gear-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Utility classes
+$utilities: (
+    "w-full": (
+        width: 100%,
+    ),
+    "w-auto": (
+        width: auto,
+    ),
+    "justify-start": (
+        justify-content: flex-start,
+    ),
+    "justify-center": (
+        justify-content: center,
+    ),
+    "justify-end": (
+        justify-content: flex-end,
+    ),
+);
+
+@each $class-name, $properties in $utilities {
+    .#{$class-name} {
+        @each $property, $value in $properties {
+            #{$property}: #{$value};
+        }
+    }
+}
+
+// Functions
+@function lighten-color($color, $amount) {
+    @return mix(white, $color, $amount);
+}
+
+@function darken-color($color, $amount) {
+    @return mix(black, $color, $amount);
+}

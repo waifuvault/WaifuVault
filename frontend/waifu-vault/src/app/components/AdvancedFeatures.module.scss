@@ -1,0 +1,138 @@
+.advancedFeatures {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.sectionTitle {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.alert {
+    background: rgba(137, 180, 250, 0.1);
+    border: 1px solid var(--text-accent);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-accent);
+    font-weight: 500;
+    margin-bottom: 2rem;
+}
+
+.featureGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.featureCardAdvanced {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    font-family: inherit;
+    width: 100%;
+}
+
+.featureCardAdvanced:hover {
+    background: var(--bg-secondary);
+    border-color: var(--border-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-primary);
+}
+
+.featureCardAdvanced i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.featureCardAdvanced:nth-child(1) i {
+    color: var(--text-accent);
+}
+.featureCardAdvanced:nth-child(2) i {
+    color: var(--success-color);
+}
+.featureCardAdvanced:nth-child(3) i {
+    color: var(--error-color);
+}
+.featureCardAdvanced:nth-child(4) i {
+    color: var(--warning-color);
+}
+.featureCardAdvanced:nth-child(5) i {
+    color: var(--text-secondary);
+}
+.featureCardAdvanced:nth-child(6) i {
+    color: #89b4fa;
+}
+
+.featureContent h5 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.featureContent p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.modalContent {
+    color: var(--text-primary);
+}
+
+.modalContent p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.modalContent ul {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.modalContent li {
+    margin-bottom: 0.5rem;
+}
+
+.modalActions {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.modalButton {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.modalButton:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-secondary);
+}
+
+@media (max-width: 768px) {
+    .featureGrid {
+        grid-template-columns: 1fr;
+    }
+}
