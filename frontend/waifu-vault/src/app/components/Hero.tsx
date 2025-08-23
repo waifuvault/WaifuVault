@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import styles from "./Hero.module.scss";
 import { useEnvironment } from "@/app/hooks/useEnvironment";
 import Button from "@/app/components/Button";
@@ -17,7 +18,7 @@ interface HeroProps {
 }
 
 export default function Hero({ stats, showCounter, fileSizeLimit }: HeroProps) {
-    const { apiDocsUrl, bucketAccessUrl, uploadUrl } = useEnvironment();
+    const { apiDocsUrl, uploadUrl } = useEnvironment();
 
     return (
         <>
@@ -42,9 +43,9 @@ export default function Hero({ stats, showCounter, fileSizeLimit }: HeroProps) {
                         <Button href={apiDocsUrl} target="_blank" rel="noopener noreferrer">
                             Api Documentation
                         </Button>
-                        <Button href={bucketAccessUrl} rel="noopener noreferrer">
-                            Bucket access
-                        </Button>
+                        <Link href="/bucketAccess">
+                            <Button>Bucket access</Button>
+                        </Link>
                     </div>
                 </div>
             </div>
