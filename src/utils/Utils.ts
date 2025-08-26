@@ -13,6 +13,7 @@ import * as crypto from "node:crypto";
 import { constant, inject } from "@tsed/di";
 import { ThumbnailService } from "../services/microServices/thumbnails/thumbnailService.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
+import { $log } from "@tsed/logger";
 
 export class ObjectUtils {
     public static getNumber(source: string): number {
@@ -213,6 +214,7 @@ export class NetworkUtils {
             ip = req.ip as string;
         }
         const extractedIp = this.extractIp(ip);
+        $log.info(`Extracted IP: ${extractedIp}`);
         const salt = constant(GlobalEnv.IP_SALT, "");
         return crypto
             .createHash("sha256")
