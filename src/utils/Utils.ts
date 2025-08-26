@@ -215,6 +215,7 @@ export class NetworkUtils {
         }
         const extractedIp = this.extractIp(ip);
         $log.info(`Extracted IP: ${extractedIp}`);
+        $log.info(req.headers);
         const salt = constant(GlobalEnv.IP_SALT, "");
         return crypto
             .createHash("sha256")
