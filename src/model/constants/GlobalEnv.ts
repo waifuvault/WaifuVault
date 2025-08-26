@@ -32,6 +32,7 @@ export enum GlobalEnv {
     IP_SALT = `${prefix}IP_SALT`,
     HOME_PAGE_FILE_COUNTER = `${prefix}HOME_PAGE_FILE_COUNTER`,
     ALBUM_FILE_LIMIT = `${prefix}ALBUM_FILE_LIMIT`,
+    TRUSTED_UPLOADER_IPS = `${prefix}TRUSTED_UPLOADER_IPS`,
 }
 
 export type GuaranteedString = WithDefault | MandatoryValues;
