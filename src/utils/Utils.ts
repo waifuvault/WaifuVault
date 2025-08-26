@@ -205,13 +205,21 @@ export class FileUtils {
 
 export class NetworkUtils {
     public static getIp(req: Request): string {
-        const useCf = process.env.USE_CLOUDFLARE === "true";
+        const useCf = constant(GlobalEnv.USE_CLOUDFLARE, "false");
+        const trustedUploaders = constant(GlobalEnv.TRUSTED_UPLOADER_IPS, "")?.split(",") ?? [];
+
         let ip: string;
+
+        const reqIp = req.ip as string;
+
         if (useCf && req.headers["cf-connecting-ip"]) {
             ip = req.headers["cf-connecting-ip"] as string;
+        } else if (trustedUploaders.includes(reqIp)) {
+            ip = (req.headers["x-real-ip"] as string) ?? reqIp;
         } else {
-            ip = req.ip as string;
+            ip = reqIp;
         }
+
         const extractedIp = this.extractIp(ip);
         const salt = constant(GlobalEnv.IP_SALT, "");
         return crypto

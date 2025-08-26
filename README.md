@@ -74,6 +74,7 @@ Optional Settings
 | HOME_PAGE_FILE_COUNTER | This controls the file counter on the home page, the values can be `static`, `dynamic`, `off`. `static` means that the websocket is disabled and the file count will be static, `dynamic` means the file count will increase without reloading, and `off` means this is hidden. defaults to `dynamic` |
 | DATABASE_TYPE          | This controls what database you want, select from `postgres` and `sqlite`, if you are using sqlite, you do not need to start `postgres` from the docker-compose and can be removed before starting it                                                                                                 |
 | ALBUM_FILE_LIMIT       | This controls the number of files that can be associated with an album for normal buckets, if missing defaults to 256                                                                                                                                                                                 |
+| TRUSTED_UPLOADER_IPS   | A comma seperated list of ips that are trusted to extra the ip from a custom `x-real-ip` header                                                                                                                                                                                                       |
 
 The available `CAPTCHA_SERVICE` values are:
 
