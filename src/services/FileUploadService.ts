@@ -26,10 +26,13 @@ import { MimeService } from "./MimeService.js";
 import { uuid } from "../utils/uuidUtils.js";
 import { SettingsService } from "./SettingsService.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
+import { FileReputationService } from "./FileReputationService.js";
 
 @Service()
 export class FileUploadService {
     private readonly secret: string | null;
+    private readonly vtApiKey: string | null;
+    private readonly dangerousMimeTypes: string | null;
 
     public constructor(
         @Inject() private repo: FileRepo,
@@ -41,9 +44,12 @@ export class FileUploadService {
         @Inject() private fileService: FileService,
         @Inject() private bucketService: BucketService,
         @Inject() private fileFilterManager: FileFilterManager,
+        @Inject() private fileReputationService: FileReputationService,
         @Inject() settingsService: SettingsService,
     ) {
         this.secret = settingsService.getSetting(GlobalEnv.UPLOAD_SECRET);
+        this.vtApiKey = settingsService.getSetting(GlobalEnv.VIRUSTOTAL_KEY);
+        this.dangerousMimeTypes = settingsService.getSetting(GlobalEnv.DANGEROUS_MIME_TYPES);
     }
 
     public async processUpload({
@@ -118,6 +124,13 @@ export class FileUploadService {
                 }
             }
             const savedEntry = await this.repo.saveEntry(uploadEntry.build());
+
+            // Check if dangerous type and enqueue for scanning if so
+            if (this.vtApiKey && this.dangerousMimeTypes) {
+                if (this.dangerousMimeTypes.includes(mediaType ?? "")) {
+                    this.fileReputationService.enqueueFile(savedEntry);
+                }
+            }
 
             await this.recordInfoSocket.emit();
 
