@@ -75,7 +75,6 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
                 break;
         }
 
-        // Handle mime types with keywords
         if (mimeType.includes("zip") || mimeType.includes("archive")) {
             return "archive";
         }
@@ -83,7 +82,6 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
             return "document";
         }
 
-        // Fallback to filename extension for edge cases
         if (
             /\.(txt|md|js|ts|jsx|tsx|css|html|xml|yml|yaml|json|csv|log|conf|config|ini|toml|properties)$/i.test(
                 fileName,
@@ -139,7 +137,6 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
                                 duration: formatDuration(video.duration),
                             });
 
-                            // Seek to 10% of video duration to get a thumbnail
                             video.currentTime = video.duration * 0.1;
                         }
                     };

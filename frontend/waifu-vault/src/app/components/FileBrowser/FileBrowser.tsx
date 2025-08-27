@@ -101,7 +101,6 @@ export function FileBrowser({
         });
     }, [filteredFiles, sortField, sortOrder, getFileType]);
 
-    // Close context menu when clicking elsewhere
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (contextMenuRef.current && !contextMenuRef.current.contains(event.target as Node)) {
@@ -208,23 +207,18 @@ export function FileBrowser({
         event.preventDefault();
         event.stopPropagation();
 
-        // Get viewport dimensions
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        // Get the mouse position relative to the page, not the element
         const mouseX = event.pageX || event.clientX;
         const mouseY = event.pageY || event.clientY;
 
-        // Context menu dimensions (approximate)
         const menuWidth = 180;
         const menuHeight = 200;
 
-        // Calculate position - start with mouse position
         let x = mouseX;
         let y = mouseY;
 
-        // Adjust position to keep menu in viewport
         if (x + menuWidth > viewportWidth) {
             x = mouseX - menuWidth;
         }
@@ -232,7 +226,6 @@ export function FileBrowser({
             y = mouseY - menuHeight;
         }
 
-        // Ensure minimum distance from edges
         x = Math.max(10, x);
         y = Math.max(10, y);
 
@@ -270,7 +263,6 @@ export function FileBrowser({
 
     const handleDrop = useCallback((event: React.DragEvent) => {
         event.preventDefault();
-        // Handle file reordering logic here
         setDraggedFiles([]);
     }, []);
 
