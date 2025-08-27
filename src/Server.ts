@@ -14,7 +14,6 @@ import "./filters/index.js";
 import "./engine/impl/index.js";
 import * as rest from "./controllers/rest/index.js";
 import "./services/FileCleaner.js";
-import "./services/FileReputationService.js";
 import * as views from "./controllers/views/index.js";
 import * as adminViews from "./controllers/secure/index.js";
 import * as globalMiddleware from "./middleware/global/index.js";
