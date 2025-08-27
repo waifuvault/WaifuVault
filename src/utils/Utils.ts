@@ -201,31 +201,6 @@ export class FileUtils {
             return false;
         }
     }
-
-    public static async fileReputation(filehash: string, apikey: string): Promise<number> {
-        try {
-            const headers: Record<string, string> = {};
-            headers["x-apikey"] = apikey;
-            headers["accept"] = "application/json";
-            const response = await fetch(`https://www.virustotal.com/api/v3/files/${filehash}`, { headers: headers });
-            if (response.ok) {
-                const json = await response.json();
-                if (json) {
-                    if (json.data.attributes.total_votes) {
-                        return Math.floor(
-                            (json.data.attributes.total_votes.malicious /
-                                (json.data.attributes.total_votes.malicious +
-                                    json.data.attributes.total_votes.harmless)) *
-                                10,
-                        );
-                    }
-                }
-            }
-        } catch {
-            return 0;
-        }
-        return 0;
-    }
 }
 
 export class NetworkUtils {
