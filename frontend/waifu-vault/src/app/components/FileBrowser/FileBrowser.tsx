@@ -10,16 +10,6 @@ type ViewMode = "grid" | "list" | "detailed";
 type SortField = "name" | "date" | "size" | "type";
 type SortOrder = "asc" | "desc";
 
-interface FileItem {
-    id: number;
-    fileName: string;
-    fileSize?: number;
-    createdAt: string | Date;
-    url: string;
-    expires?: string;
-    addedToAlbumOrder?: number | null;
-}
-
 interface ContextMenuState {
     visible: boolean;
     x: number;
@@ -32,8 +22,6 @@ interface FileBrowserProps {
     onFilesSelected?: (fileIds: number[]) => void;
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
     onRenameFile?: (fileId: number, newName: string) => Promise<void>;
-    onCopyFiles?: (fileIds: number[]) => Promise<void>;
-    onMoveFiles?: (fileIds: number[]) => Promise<void>;
     onLogout?: () => void;
     showSearch?: boolean;
     showSort?: boolean;
@@ -41,8 +29,6 @@ interface FileBrowserProps {
     allowSelection?: boolean;
     allowDeletion?: boolean;
     allowRename?: boolean;
-    allowCopy?: boolean;
-    allowMove?: boolean;
     mode: "bucket" | "admin";
 }
 
@@ -51,8 +37,6 @@ export function FileBrowser({
     onFilesSelected,
     onDeleteFiles,
     onRenameFile,
-    onCopyFiles,
-    onMoveFiles,
     onLogout,
     showSearch = true,
     showSort = true,
@@ -60,8 +44,6 @@ export function FileBrowser({
     allowSelection = true,
     allowDeletion = true,
     allowRename = true,
-    allowCopy = true,
-    allowMove = true,
 }: FileBrowserProps) {
     const [selectedFiles, setSelectedFiles] = useState<Set<number>>(new Set());
     const [lastSelectedFile, setLastSelectedFile] = useState<number | null>(null);
@@ -93,7 +75,7 @@ export function FileBrowser({
 
     const sortedFiles = useMemo(() => {
         return [...filteredFiles].sort((a, b) => {
-            let comparison = 0;
+            let comparison;
 
             switch (sortField) {
                 case "date":
@@ -128,6 +110,28 @@ export function FileBrowser({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const handleSelectAll = useCallback(() => {
+        const allFileIds = new Set(sortedFiles.map(f => f.id));
+        setSelectedFiles(allFileIds);
+        onFilesSelected?.(Array.from(allFileIds));
+    }, [sortedFiles, onFilesSelected]);
+
+    const handleClearSelection = useCallback(() => {
+        setSelectedFiles(new Set());
+        onFilesSelected?.([]);
+    }, [onFilesSelected]);
+
+    const handleDeleteSelected = useCallback(async () => {
+        if (!allowDeletion || selectedFiles.size === 0 || !onDeleteFiles) {
+            return;
+        }
+
+        if (confirm(`Are you sure you want to delete ${selectedFiles.size} file(s)?`)) {
+            await onDeleteFiles(Array.from(selectedFiles));
+            setSelectedFiles(new Set());
+        }
+    }, [allowDeletion, selectedFiles, onDeleteFiles]);
+
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -136,18 +140,6 @@ export function FileBrowser({
                     case "a":
                         event.preventDefault();
                         handleSelectAll();
-                        break;
-                    case "c":
-                        if (selectedFiles.size > 0 && allowCopy) {
-                            event.preventDefault();
-                            handleCopyFiles();
-                        }
-                        break;
-                    case "x":
-                        if (selectedFiles.size > 0 && allowMove) {
-                            event.preventDefault();
-                            handleCutFiles();
-                        }
                         break;
                 }
             } else if (event.key === "Delete" && selectedFiles.size > 0 && allowDeletion) {
@@ -161,23 +153,23 @@ export function FileBrowser({
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [selectedFiles, allowCopy, allowMove, allowDeletion]);
+    }, [selectedFiles, allowDeletion, handleSelectAll, handleDeleteSelected]);
 
     const handleFileSelect = useCallback(
         (fileId: number, event?: React.MouseEvent) => {
-            if (!allowSelection) return;
+            if (!allowSelection) {
+                return;
+            }
 
             let newSelected = new Set(selectedFiles);
 
             if (event?.ctrlKey || event?.metaKey) {
-                // Ctrl/Cmd + Click: Toggle selection
                 if (newSelected.has(fileId)) {
                     newSelected.delete(fileId);
                 } else {
                     newSelected.add(fileId);
                 }
             } else if (event?.shiftKey && lastSelectedFile !== null) {
-                // Shift + Click: Select range
                 const fileIds = sortedFiles.map(f => f.id);
                 const startIndex = fileIds.indexOf(lastSelectedFile);
                 const endIndex = fileIds.indexOf(fileId);
@@ -187,7 +179,6 @@ export function FileBrowser({
                     newSelected.add(fileIds[i]);
                 }
             } else {
-                // Regular click: Select only this file
                 newSelected = new Set([fileId]);
             }
 
@@ -197,36 +188,6 @@ export function FileBrowser({
         },
         [selectedFiles, lastSelectedFile, sortedFiles, allowSelection, onFilesSelected],
     );
-
-    const handleSelectAll = useCallback(() => {
-        const allFileIds = new Set(sortedFiles.map(f => f.id));
-        setSelectedFiles(allFileIds);
-        onFilesSelected?.(Array.from(allFileIds));
-    }, [sortedFiles, onFilesSelected]);
-
-    const handleClearSelection = useCallback(() => {
-        setSelectedFiles(new Set());
-        onFilesSelected?.([]);
-    }, [onFilesSelected]);
-
-    const handleDeleteSelected = useCallback(async () => {
-        if (!allowDeletion || selectedFiles.size === 0 || !onDeleteFiles) return;
-
-        if (confirm(`Are you sure you want to delete ${selectedFiles.size} file(s)?`)) {
-            await onDeleteFiles(Array.from(selectedFiles));
-            setSelectedFiles(new Set());
-        }
-    }, [allowDeletion, selectedFiles, onDeleteFiles]);
-
-    const handleCopyFiles = useCallback(async () => {
-        if (!allowCopy || selectedFiles.size === 0 || !onCopyFiles) return;
-        await onCopyFiles(Array.from(selectedFiles));
-    }, [allowCopy, selectedFiles, onCopyFiles]);
-
-    const handleCutFiles = useCallback(async () => {
-        if (!allowMove || selectedFiles.size === 0 || !onMoveFiles) return;
-        await onMoveFiles(Array.from(selectedFiles));
-    }, [allowMove, selectedFiles, onMoveFiles]);
 
     const handleRenameStart = useCallback((fileId: number, currentName: string) => {
         setIsRenaming(fileId);
@@ -272,8 +233,58 @@ export function FileBrowser({
         setDraggedFiles([]);
     }, []);
 
-    const getFileIcon = useCallback((filename: string) => {
-        const ext = filename?.split(".").pop()?.toLowerCase();
+    const renderFileName = useCallback(
+        (file: { id: number; originalFileName: string }) => {
+            return isRenaming === file.id ? (
+                <input
+                    type="text"
+                    value={renameValue}
+                    onChange={e => setRenameValue(e.target.value)}
+                    onBlur={handleRenameComplete}
+                    onKeyDown={e => {
+                        if (e.key === "Enter") {
+                            handleRenameComplete();
+                        }
+                        if (e.key === "Escape") {
+                            setIsRenaming(null);
+                            setRenameValue("");
+                        }
+                    }}
+                    className={styles.renameInput}
+                    autoFocus
+                />
+            ) : (
+                file.originalFileName
+            );
+        },
+        [isRenaming, renameValue, handleRenameComplete],
+    );
+
+    const renderFileCheckbox = useCallback(
+        (fileId: number) => {
+            return (
+                <input
+                    type="checkbox"
+                    checked={selectedFiles.has(fileId)}
+                    onChange={e => {
+                        e.stopPropagation();
+                        const newSelected = new Set(selectedFiles);
+                        if (newSelected.has(fileId)) {
+                            newSelected.delete(fileId);
+                        } else {
+                            newSelected.add(fileId);
+                        }
+                        setSelectedFiles(newSelected);
+                        setLastSelectedFile(fileId);
+                        onFilesSelected?.(Array.from(newSelected));
+                    }}
+                />
+            );
+        },
+        [selectedFiles, onFilesSelected],
+    );
+
+    const getFileIcon = useCallback((ext: string | null) => {
         switch (ext) {
             case "jpg":
             case "jpeg":
@@ -282,48 +293,48 @@ export function FileBrowser({
             case "webp":
             case "svg":
             case "bmp":
-                return { icon: "🖼️", color: "#4CAF50" };
+                return { icon: <i className="bi bi-image"></i>, color: "#4CAF50" };
             case "mp4":
             case "mov":
             case "avi":
             case "webm":
             case "mkv":
-                return { icon: "🎥", color: "#F44336" };
+                return { icon: <i className="bi bi-camera-video"></i>, color: "#F44336" };
             case "mp3":
             case "wav":
             case "flac":
             case "ogg":
             case "aac":
-                return { icon: "🎵", color: "#9C27B0" };
+                return { icon: <i className="bi bi-music-note"></i>, color: "#9C27B0" };
             case "pdf":
-                return { icon: "📄", color: "#F44336" };
+                return { icon: <i className="bi bi-file-earmark-pdf"></i>, color: "#F44336" };
             case "txt":
             case "md":
             case "rtf":
-                return { icon: "📝", color: "#2196F3" };
+                return { icon: <i className="bi bi-file-earmark-text"></i>, color: "#2196F3" };
             case "zip":
             case "rar":
             case "7z":
             case "tar":
             case "gz":
-                return { icon: "📦", color: "#FF9800" };
+                return { icon: <i className="bi bi-archive"></i>, color: "#FF9800" };
             case "js":
             case "ts":
             case "jsx":
             case "tsx":
-                return { icon: "⚡", color: "#FFD600" };
+                return { icon: <i className="bi bi-code-slash"></i>, color: "#FFD600" };
             case "css":
             case "scss":
             case "sass":
-                return { icon: "🎨", color: "#2196F3" };
+                return { icon: <i className="bi bi-palette"></i>, color: "#2196F3" };
             case "html":
             case "htm":
-                return { icon: "🌐", color: "#FF5722" };
+                return { icon: <i className="bi bi-globe"></i>, color: "#FF5722" };
             case "json":
             case "xml":
-                return { icon: "📋", color: "#4CAF50" };
+                return { icon: <i className="bi bi-braces"></i>, color: "#4CAF50" };
             default:
-                return { icon: "📎", color: "#757575" };
+                return { icon: <i className="bi bi-file-earmark"></i>, color: "#757575" };
         }
     }, []);
 
@@ -340,10 +351,18 @@ export function FileBrowser({
     );
 
     const formatFileSize = useCallback((bytes?: number) => {
-        if (!bytes) return "-";
-        if (bytes < 1024) return `${bytes} B`;
-        if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-        if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+        if (!bytes) {
+            return "-";
+        }
+        if (bytes < 1024) {
+            return `${bytes} B`;
+        }
+        if (bytes < 1024 * 1024) {
+            return `${Math.round(bytes / 1024)} KB`;
+        }
+        if (bytes < 1024 * 1024 * 1024) {
+            return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+        }
         return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
     }, []);
 
@@ -367,34 +386,36 @@ export function FileBrowser({
                 <div className={styles.toolbarLeft}>
                     {showViewToggle && (
                         <div className={styles.viewControls}>
-                            <button
-                                className={`${styles.viewBtn} ${viewMode === "grid" ? styles.active : ""}`}
+                            <Button
+                                variant={viewMode === "grid" ? "primary" : "outline"}
+                                size="small"
                                 onClick={() => setViewMode("grid")}
                             >
-                                ⚏
-                            </button>
-                            <button
-                                className={`${styles.viewBtn} ${viewMode === "list" ? styles.active : ""}`}
+                                <i className="bi bi-grid-3x3"></i> Grid
+                            </Button>
+                            <Button
+                                variant={viewMode === "list" ? "primary" : "outline"}
+                                size="small"
                                 onClick={() => setViewMode("list")}
                             >
-                                ☰
-                            </button>
-                            <button
-                                className={`${styles.viewBtn} ${viewMode === "detailed" ? styles.active : ""}`}
+                                <i className="bi bi-list"></i> List
+                            </Button>
+                            <Button
+                                variant={viewMode === "detailed" ? "primary" : "outline"}
+                                size="small"
                                 onClick={() => setViewMode("detailed")}
                             >
-                                ≣
-                            </button>
+                                <i className="bi bi-table"></i> Table
+                            </Button>
                         </div>
                     )}
-
-                    <div className={styles.selectionInfo}>
-                        {selectedFiles.size > 0 && (
+                    {selectedFiles.size > 0 && (
+                        <div className={styles.selectionInfo}>
                             <span className={styles.selectionCount}>
                                 {selectedFiles.size} of {sortedFiles.length} selected
                             </span>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className={styles.toolbarCenter}>
@@ -408,9 +429,9 @@ export function FileBrowser({
                                 onChange={e => setSearchQuery(e.target.value)}
                             />
                             {searchQuery && (
-                                <button className={styles.searchClear} onClick={() => setSearchQuery("")}>
-                                    ✕
-                                </button>
+                                <Button variant="outline" size="small" onClick={() => setSearchQuery("")}>
+                                    <i className="bi bi-x"></i>
+                                </Button>
                             )}
                         </div>
                     )}
@@ -420,16 +441,6 @@ export function FileBrowser({
                     <div className={styles.fileActions}>
                         {selectedFiles.size > 0 && (
                             <>
-                                {allowCopy && (
-                                    <Button variant="outline" size="small" onClick={handleCopyFiles}>
-                                        📋 Copy
-                                    </Button>
-                                )}
-                                {allowMove && (
-                                    <Button variant="outline" size="small" onClick={handleCutFiles}>
-                                        ✂️ Cut
-                                    </Button>
-                                )}
                                 {allowDeletion && (
                                     <Button
                                         variant="outline"
@@ -437,7 +448,7 @@ export function FileBrowser({
                                         onClick={handleDeleteSelected}
                                         className={styles.deleteBtn}
                                     >
-                                        🗑️ Delete ({selectedFiles.size})
+                                        <i className="bi bi-trash"></i> Delete ({selectedFiles.size})
                                     </Button>
                                 )}
                             </>
@@ -466,30 +477,34 @@ export function FileBrowser({
             {showSort && (
                 <div className={styles.sortHeader}>
                     <div className={styles.sortControls}>
-                        <button
-                            className={`${styles.sortBtn} ${sortField === "name" ? styles.active : ""}`}
+                        <Button
+                            variant={sortField === "name" ? "primary" : "outline"}
+                            size="small"
                             onClick={() => handleSort("name")}
                         >
                             Name {sortField === "name" && (sortOrder === "asc" ? "↑" : "↓")}
-                        </button>
-                        <button
-                            className={`${styles.sortBtn} ${sortField === "date" ? styles.active : ""}`}
+                        </Button>
+                        <Button
+                            variant={sortField === "date" ? "primary" : "outline"}
+                            size="small"
                             onClick={() => handleSort("date")}
                         >
                             Date {sortField === "date" && (sortOrder === "asc" ? "↑" : "↓")}
-                        </button>
-                        <button
-                            className={`${styles.sortBtn} ${sortField === "size" ? styles.active : ""}`}
+                        </Button>
+                        <Button
+                            variant={sortField === "size" ? "primary" : "outline"}
+                            size="small"
                             onClick={() => handleSort("size")}
                         >
                             Size {sortField === "size" && (sortOrder === "asc" ? "↑" : "↓")}
-                        </button>
-                        <button
-                            className={`${styles.sortBtn} ${sortField === "type" ? styles.active : ""}`}
+                        </Button>
+                        <Button
+                            variant={sortField === "type" ? "primary" : "outline"}
+                            size="small"
                             onClick={() => handleSort("type")}
                         >
                             Type {sortField === "type" && (sortOrder === "asc" ? "↑" : "↓")}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}
@@ -501,81 +516,112 @@ export function FileBrowser({
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
             >
-                <div className={styles.fileGrid}>
-                    {sortedFiles.map(file => {
-                        const fileIconData = getFileIcon(file.fileName);
-                        return (
-                            <div
-                                key={file.id}
-                                className={`${styles.fileItem} ${selectedFiles.has(file.id) ? styles.selected : ""} ${
-                                    draggedFiles.includes(file.id) ? styles.dragging : ""
-                                }`}
-                                onClick={e => handleFileSelect(file.id, e)}
-                                onContextMenu={e => handleContextMenu(e, file.id)}
-                                onDoubleClick={() => window.open(file.url, "_blank")}
-                                draggable
-                                onDragStart={e => handleDragStart(e, file.id)}
-                            >
-                                <div className={styles.filePreview}>
-                                    <div className={styles.fileIcon} style={{ color: fileIconData.color }}>
-                                        {fileIconData.icon}
+                {viewMode === "grid" && (
+                    <div className={styles.fileGrid}>
+                        {sortedFiles.map(file => {
+                            const fileIconData = getFileIcon(file.fileExtension);
+                            return (
+                                <div
+                                    key={file.id}
+                                    className={`${styles.fileItem} ${selectedFiles.has(file.id) ? styles.selected : ""} ${
+                                        draggedFiles.includes(file.id) ? styles.dragging : ""
+                                    }`}
+                                    onClick={e => handleFileSelect(file.id, e)}
+                                    onContextMenu={e => handleContextMenu(e, file.id)}
+                                    draggable
+                                    onDragStart={e => handleDragStart(e, file.id)}
+                                >
+                                    <div className={styles.filePreview}>
+                                        <div className={styles.fileIcon} style={{ color: fileIconData.color }}>
+                                            {fileIconData.icon}
+                                        </div>
+                                        <div className={styles.fileOverlay}>
+                                            <Button
+                                                size="small"
+                                                variant="primary"
+                                                onClick={() => window.open(file.url, "_blank")}
+                                            >
+                                                View
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div className={styles.fileOverlay}>
-                                        <Button
-                                            size="small"
-                                            variant="primary"
-                                            onClick={() => window.open(file.url, "_blank")}
-                                        >
-                                            View
-                                        </Button>
-                                    </div>
-                                </div>
 
-                                <div className={styles.fileInfo}>
-                                    <div className={styles.fileName} title={file.fileName}>
-                                        {isRenaming === file.id ? (
-                                            <input
-                                                type="text"
-                                                value={renameValue}
-                                                onChange={e => setRenameValue(e.target.value)}
-                                                onBlur={handleRenameComplete}
-                                                onKeyDown={e => {
-                                                    if (e.key === "Enter") handleRenameComplete();
-                                                    if (e.key === "Escape") {
-                                                        setIsRenaming(null);
-                                                        setRenameValue("");
-                                                    }
-                                                }}
-                                                className={styles.renameInput}
-                                                autoFocus
-                                            />
-                                        ) : (
-                                            file.fileName
+                                    <div className={styles.fileInfo}>
+                                        <div className={styles.fileName} title={file.originalFileName}>
+                                            {renderFileName(file)}
+                                        </div>
+                                        <div className={styles.fileDetails}>
+                                            <span className={styles.fileSize}>{formatFileSize(file.fileSize)}</span>
+                                            <span className={styles.fileDate}>{formatDate(file.createdAt)}</span>
+                                        </div>
+                                        {file.expires && (
+                                            <div className={styles.expiresInfo}>
+                                                Expires:{" "}
+                                                {formatDate(
+                                                    typeof file.expires === "number"
+                                                        ? new Date(file.expires)
+                                                        : file.expires,
+                                                )}
+                                            </div>
                                         )}
                                     </div>
-                                    <div className={styles.fileDetails}>
-                                        <span className={styles.fileSize}>{formatFileSize(file.fileSize)}</span>
-                                        <span className={styles.fileDate}>{formatDate(file.createdAt)}</span>
-                                    </div>
-                                    {file.expires && <div className={styles.expiresInfo}>Expires: {file.expires}</div>}
-                                </div>
 
-                                {allowSelection && (
-                                    <div className={styles.selectCheckbox}>
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedFiles.has(file.id)}
-                                            onChange={e => {
-                                                e.stopPropagation();
-                                                handleFileSelect(file.id);
-                                            }}
-                                        />
-                                    </div>
-                                )}
+                                    {allowSelection && (
+                                        <div className={styles.selectCheckbox}>{renderFileCheckbox(file.id)}</div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {(viewMode === "list" || viewMode === "detailed") && (
+                    <div className={styles.fileList}>
+                        {viewMode === "detailed" && (
+                            <div className={styles.listHeader}>
+                                <div className={styles.headerCell}>Name</div>
+                                <div className={styles.headerCell}>Size</div>
+                                <div className={styles.headerCell}>Type</div>
+                                <div className={styles.headerCell}>Date</div>
                             </div>
-                        );
-                    })}
-                </div>
+                        )}
+                        {sortedFiles.map(file => {
+                            const fileIconData = getFileIcon(file.fileExtension);
+                            return (
+                                <div
+                                    key={file.id}
+                                    className={`${styles.fileListItem} ${selectedFiles.has(file.id) ? styles.selected : ""} ${
+                                        draggedFiles.includes(file.id) ? styles.dragging : ""
+                                    }`}
+                                    onClick={e => handleFileSelect(file.id, e)}
+                                    onContextMenu={e => handleContextMenu(e, file.id)}
+                                    draggable
+                                    onDragStart={e => handleDragStart(e, file.id)}
+                                >
+                                    {allowSelection && (
+                                        <div className={styles.fileListCheckbox}>{renderFileCheckbox(file.id)}</div>
+                                    )}
+
+                                    <div className={styles.fileListIcon} style={{ color: fileIconData.color }}>
+                                        {fileIconData.icon}
+                                    </div>
+
+                                    <div className={styles.fileListName}>{renderFileName(file)}</div>
+
+                                    {viewMode === "detailed" && (
+                                        <>
+                                            <div className={styles.fileListSize}>{formatFileSize(file.fileSize)}</div>
+                                            <div className={styles.fileListType}>
+                                                {file.originalFileName.split(".").pop()?.toUpperCase() || "FILE"}
+                                            </div>
+                                            <div className={styles.fileListDate}>{formatDate(file.createdAt)}</div>
+                                        </>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Context Menu */}
@@ -588,87 +634,72 @@ export function FileBrowser({
                     {contextMenu.fileId ? (
                         (() => {
                             const file = sortedFiles.find(f => f.id === contextMenu.fileId);
-                            if (!file) return null;
+                            if (!file) {
+                                return null;
+                            }
                             return (
                                 <>
-                                    <button
-                                        className={styles.contextMenuItem}
+                                    <Button
+                                        variant="outline"
+                                        size="small"
                                         onClick={() => {
                                             window.open(file.url, "_blank");
                                             setContextMenu({ visible: false, x: 0, y: 0 });
                                         }}
                                     >
-                                        🔗 Open
-                                    </button>
+                                        <i className="bi bi-box-arrow-up-right"></i> Open
+                                    </Button>
                                     {allowRename && (
-                                        <button
-                                            className={styles.contextMenuItem}
+                                        <Button
+                                            variant="outline"
+                                            size="small"
                                             onClick={() => {
                                                 handleRenameStart(file.id, file.fileName);
                                                 setContextMenu({ visible: false, x: 0, y: 0 });
                                             }}
                                         >
-                                            ✏️ Rename
-                                        </button>
-                                    )}
-                                    {allowCopy && (
-                                        <button
-                                            className={styles.contextMenuItem}
-                                            onClick={() => {
-                                                handleCopyFiles();
-                                                setContextMenu({ visible: false, x: 0, y: 0 });
-                                            }}
-                                        >
-                                            📋 Copy
-                                        </button>
-                                    )}
-                                    {allowMove && (
-                                        <button
-                                            className={styles.contextMenuItem}
-                                            onClick={() => {
-                                                handleCutFiles();
-                                                setContextMenu({ visible: false, x: 0, y: 0 });
-                                            }}
-                                        >
-                                            ✂️ Cut
-                                        </button>
+                                            <i className="bi bi-pencil"></i> Rename
+                                        </Button>
                                     )}
                                     <div className={styles.contextMenuSeparator} />
                                     {allowDeletion && (
-                                        <button
-                                            className={`${styles.contextMenuItem} ${styles.contextMenuDanger}`}
+                                        <Button
+                                            variant="secondary"
+                                            size="small"
                                             onClick={() => {
                                                 handleDeleteSelected();
                                                 setContextMenu({ visible: false, x: 0, y: 0 });
                                             }}
                                         >
-                                            🗑️ Delete
-                                        </button>
+                                            <i className="bi bi-trash"></i> Delete
+                                        </Button>
                                     )}
                                 </>
                             );
                         })()
                     ) : (
                         <>
-                            <button
-                                className={styles.contextMenuItem}
+                            <Button
+                                variant="outline"
+                                size="small"
                                 onClick={() => {
                                     handleSelectAll();
                                     setContextMenu({ visible: false, x: 0, y: 0 });
                                 }}
                             >
-                                ✓ Select All
-                            </button>
+                                <i className="bi bi-check-all"></i> Select All
+                            </Button>
                             {selectedFiles.size > 0 && (
-                                <button
-                                    className={styles.contextMenuItem}
+                                <Button
+                                    variant="outline"
+                                    size="small"
                                     onClick={() => {
                                         handleClearSelection();
                                         setContextMenu({ visible: false, x: 0, y: 0 });
                                     }}
                                 >
-                                    ✕ Clear Selection
-                                </button>
+                                    <i className="bi bi-x-circle"></i> Clear Selection
+                                </Button>
                             )}
                         </>
                     )}

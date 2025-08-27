@@ -25,7 +25,7 @@ $button-variants: (
         border: 2px solid var(--text-accent),
         hover: (
             bg: var(--text-accent),
-            color: var(--bg-primary),
+            color: white,
             transform: -1px,
         ),
     ),
@@ -183,6 +183,12 @@ $button-sizes: (
 
     &.primary {
         background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+
+    &.outline {
+        &:hover:not(:disabled) {
+            color: var(--text-primary) !important;
+        }
     }
 
     &:hover {
