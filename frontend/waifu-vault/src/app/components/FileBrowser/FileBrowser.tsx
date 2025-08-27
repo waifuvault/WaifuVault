@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Button from "../Button";
+import { FilePreview } from "./FilePreview";
 import styles from "./FileBrowser.module.scss";
 import type { UrlFileMixin } from "../../../../../../src/model/dto/AdminBucketDto.js";
 import type { AdminFileData } from "../../../../../../src/model/dto/AdminData.js";
@@ -204,10 +206,49 @@ export function FileBrowser({
 
     const handleContextMenu = useCallback((event: React.MouseEvent, fileId?: number) => {
         event.preventDefault();
+        event.stopPropagation();
+
+        // Get viewport dimensions
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        // Get the mouse position relative to the page, not the element
+        const mouseX = event.pageX || event.clientX;
+        const mouseY = event.pageY || event.clientY;
+
+        // Context menu dimensions (approximate)
+        const menuWidth = 180;
+        const menuHeight = 200;
+
+        // Calculate position - start with mouse position
+        let x = mouseX;
+        let y = mouseY;
+
+        // Adjust position to keep menu in viewport
+        if (x + menuWidth > viewportWidth) {
+            x = mouseX - menuWidth;
+        }
+        if (y + menuHeight > viewportHeight) {
+            y = mouseY - menuHeight;
+        }
+
+        // Ensure minimum distance from edges
+        x = Math.max(10, x);
+        y = Math.max(10, y);
+
+        console.log("Context menu debug:", {
+            mouse: { pageX: event.pageX, pageY: event.pageY, clientX: event.clientX, clientY: event.clientY },
+            calculated: { mouseX, mouseY },
+            final: { x, y },
+            viewport: { viewportWidth, viewportHeight },
+            element: event.currentTarget?.getBoundingClientRect(),
+            scrollOffset: { scrollX: window.scrollX, scrollY: window.scrollY },
+        });
+
         setContextMenu({
             visible: true,
-            x: event.clientX,
-            y: event.clientY,
+            x,
+            y,
             fileId,
         });
     }, []);
@@ -284,58 +325,28 @@ export function FileBrowser({
         [selectedFiles, onFilesSelected],
     );
 
-    const getFileIcon = useCallback((ext: string | null) => {
-        switch (ext) {
-            case "jpg":
-            case "jpeg":
-            case "png":
-            case "gif":
-            case "webp":
-            case "svg":
-            case "bmp":
-                return { icon: <i className="bi bi-image"></i>, color: "#4CAF50" };
-            case "mp4":
-            case "mov":
-            case "avi":
-            case "webm":
-            case "mkv":
-                return { icon: <i className="bi bi-camera-video"></i>, color: "#F44336" };
-            case "mp3":
-            case "wav":
-            case "flac":
-            case "ogg":
-            case "aac":
-                return { icon: <i className="bi bi-music-note"></i>, color: "#9C27B0" };
-            case "pdf":
-                return { icon: <i className="bi bi-file-earmark-pdf"></i>, color: "#F44336" };
-            case "txt":
-            case "md":
-            case "rtf":
-                return { icon: <i className="bi bi-file-earmark-text"></i>, color: "#2196F3" };
-            case "zip":
-            case "rar":
-            case "7z":
-            case "tar":
-            case "gz":
-                return { icon: <i className="bi bi-archive"></i>, color: "#FF9800" };
-            case "js":
-            case "ts":
-            case "jsx":
-            case "tsx":
-                return { icon: <i className="bi bi-code-slash"></i>, color: "#FFD600" };
-            case "css":
-            case "scss":
-            case "sass":
-                return { icon: <i className="bi bi-palette"></i>, color: "#2196F3" };
-            case "html":
-            case "htm":
-                return { icon: <i className="bi bi-globe"></i>, color: "#FF5722" };
-            case "json":
-            case "xml":
-                return { icon: <i className="bi bi-braces"></i>, color: "#4CAF50" };
-            default:
-                return { icon: <i className="bi bi-file-earmark"></i>, color: "#757575" };
+    const getFileIcon = useCallback((file: AdminFileData | UrlFileMixin) => {
+        const mediaType = file.mediaType?.toLowerCase() || "";
+
+        if (mediaType.startsWith("image/")) {
+            return { icon: <i className="bi bi-image"></i>, color: "#4CAF50" };
         }
+        if (mediaType.startsWith("video/")) {
+            return { icon: <i className="bi bi-camera-video"></i>, color: "#F44336" };
+        }
+        if (mediaType.startsWith("audio/")) {
+            return { icon: <i className="bi bi-music-note"></i>, color: "#9C27B0" };
+        }
+        if (mediaType === "application/pdf") {
+            return { icon: <i className="bi bi-file-earmark-pdf"></i>, color: "#F44336" };
+        }
+        if (mediaType.includes("zip") || mediaType.includes("archive") || mediaType.includes("compressed")) {
+            return { icon: <i className="bi bi-archive"></i>, color: "#FF9800" };
+        }
+        if (mediaType.startsWith("text/") || mediaType.includes("json") || mediaType.includes("javascript")) {
+            return { icon: <i className="bi bi-file-earmark-text"></i>, color: "#2196F3" };
+        }
+        return { icon: <i className="bi bi-file-earmark"></i>, color: "#757575" };
     }, []);
 
     const handleSort = useCallback(
@@ -519,7 +530,6 @@ export function FileBrowser({
                 {viewMode === "grid" && (
                     <div className={styles.fileGrid}>
                         {sortedFiles.map(file => {
-                            const fileIconData = getFileIcon(file.fileExtension);
                             return (
                                 <div
                                     key={file.id}
@@ -531,10 +541,8 @@ export function FileBrowser({
                                     draggable
                                     onDragStart={e => handleDragStart(e, file.id)}
                                 >
-                                    <div className={styles.filePreview}>
-                                        <div className={styles.fileIcon} style={{ color: fileIconData.color }}>
-                                            {fileIconData.icon}
-                                        </div>
+                                    <div className={styles.filePreviewContainer}>
+                                        <FilePreview file={file} size="large" />
                                         <div className={styles.fileOverlay}>
                                             <Button
                                                 size="small"
@@ -586,7 +594,7 @@ export function FileBrowser({
                             </div>
                         )}
                         {sortedFiles.map(file => {
-                            const fileIconData = getFileIcon(file.fileExtension);
+                            const fileIconData = getFileIcon(file);
                             return (
                                 <div
                                     key={file.id}
@@ -625,86 +633,89 @@ export function FileBrowser({
             </div>
 
             {/* Context Menu */}
-            {contextMenu.visible && (
-                <div
-                    ref={contextMenuRef}
-                    className={styles.contextMenu}
-                    style={{ left: contextMenu.x, top: contextMenu.y }}
-                >
-                    {contextMenu.fileId ? (
-                        (() => {
-                            const file = sortedFiles.find(f => f.id === contextMenu.fileId);
-                            if (!file) {
-                                return null;
-                            }
-                            return (
-                                <>
-                                    <Button
-                                        variant="outline"
-                                        size="small"
-                                        onClick={() => {
-                                            window.open(file.url, "_blank");
-                                            setContextMenu({ visible: false, x: 0, y: 0 });
-                                        }}
-                                    >
-                                        <i className="bi bi-box-arrow-up-right"></i> Open
-                                    </Button>
-                                    {allowRename && (
+            {contextMenu.visible &&
+                typeof document !== "undefined" &&
+                createPortal(
+                    <div
+                        ref={contextMenuRef}
+                        className={styles.contextMenu}
+                        style={{ left: contextMenu.x, top: contextMenu.y }}
+                    >
+                        {contextMenu.fileId ? (
+                            (() => {
+                                const file = sortedFiles.find(f => f.id === contextMenu.fileId);
+                                if (!file) {
+                                    return null;
+                                }
+                                return (
+                                    <>
                                         <Button
                                             variant="outline"
                                             size="small"
                                             onClick={() => {
-                                                handleRenameStart(file.id, file.fileName);
+                                                window.open(file.url, "_blank");
                                                 setContextMenu({ visible: false, x: 0, y: 0 });
                                             }}
                                         >
-                                            <i className="bi bi-pencil"></i> Rename
+                                            <i className="bi bi-box-arrow-up-right"></i> Open
                                         </Button>
-                                    )}
-                                    <div className={styles.contextMenuSeparator} />
-                                    {allowDeletion && (
-                                        <Button
-                                            variant="secondary"
-                                            size="small"
-                                            onClick={() => {
-                                                handleDeleteSelected();
-                                                setContextMenu({ visible: false, x: 0, y: 0 });
-                                            }}
-                                        >
-                                            <i className="bi bi-trash"></i> Delete
-                                        </Button>
-                                    )}
-                                </>
-                            );
-                        })()
-                    ) : (
-                        <>
-                            <Button
-                                variant="outline"
-                                size="small"
-                                onClick={() => {
-                                    handleSelectAll();
-                                    setContextMenu({ visible: false, x: 0, y: 0 });
-                                }}
-                            >
-                                <i className="bi bi-check-all"></i> Select All
-                            </Button>
-                            {selectedFiles.size > 0 && (
+                                        {allowRename && (
+                                            <Button
+                                                variant="outline"
+                                                size="small"
+                                                onClick={() => {
+                                                    handleRenameStart(file.id, file.fileName);
+                                                    setContextMenu({ visible: false, x: 0, y: 0 });
+                                                }}
+                                            >
+                                                <i className="bi bi-pencil"></i> Rename
+                                            </Button>
+                                        )}
+                                        <div className={styles.contextMenuSeparator} />
+                                        {allowDeletion && (
+                                            <Button
+                                                variant="secondary"
+                                                size="small"
+                                                onClick={() => {
+                                                    handleDeleteSelected();
+                                                    setContextMenu({ visible: false, x: 0, y: 0 });
+                                                }}
+                                            >
+                                                <i className="bi bi-trash"></i> Delete
+                                            </Button>
+                                        )}
+                                    </>
+                                );
+                            })()
+                        ) : (
+                            <>
                                 <Button
                                     variant="outline"
                                     size="small"
                                     onClick={() => {
-                                        handleClearSelection();
+                                        handleSelectAll();
                                         setContextMenu({ visible: false, x: 0, y: 0 });
                                     }}
                                 >
-                                    <i className="bi bi-x-circle"></i> Clear Selection
+                                    <i className="bi bi-check-all"></i> Select All
                                 </Button>
-                            )}
-                        </>
-                    )}
-                </div>
-            )}
+                                {selectedFiles.size > 0 && (
+                                    <Button
+                                        variant="outline"
+                                        size="small"
+                                        onClick={() => {
+                                            handleClearSelection();
+                                            setContextMenu({ visible: false, x: 0, y: 0 });
+                                        }}
+                                    >
+                                        <i className="bi bi-x-circle"></i> Clear Selection
+                                    </Button>
+                                )}
+                            </>
+                        )}
+                    </div>,
+                    document.body,
+                )}
         </div>
     );
 }
