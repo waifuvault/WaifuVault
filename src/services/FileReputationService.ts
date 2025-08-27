@@ -12,20 +12,18 @@ export class FileReputationService implements OnReady {
     private queue: FileUploadModel[];
     private readonly vtApiKey: string | null;
     private readonly vtReputationLimit: string | null;
-    private readonly dangerousMimeTypes: string | null;
 
     public constructor(
-        @Inject() private settingsService: SettingsService,
+        @Inject() settingsService: SettingsService,
         @Inject() private fileService: FileService,
         @Inject() private logger: Logger,
     ) {
         this.queue = [];
         this.vtApiKey = settingsService.getSetting(GlobalEnv.VIRUSTOTAL_KEY);
         this.vtReputationLimit = settingsService.getSetting(GlobalEnv.VIRUSTOTAL_REPUTATION_LIMIT);
-        this.dangerousMimeTypes = settingsService.getSetting(GlobalEnv.DANGEROUS_MIME_TYPES);
     }
 
-    public async processFiles(): Promise<void> {
+    private async processFiles(): Promise<void> {
         await this.sleep(5000); // wait 5 seconds to avoid too early
         const batch = this.queue.splice(0, 4);
         const tokensToDelete: string[] = [];
