@@ -30,6 +30,9 @@ import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 @Service()
 export class FileUploadService {
     private readonly secret: string | null;
+    private readonly vtApiKey: string | null;
+    private readonly vtReputationLimit: string | null;
+    private readonly dangerousMimeTypes: string | null;
 
     public constructor(
         @Inject() private repo: FileRepo,
@@ -44,6 +47,9 @@ export class FileUploadService {
         @Inject() settingsService: SettingsService,
     ) {
         this.secret = settingsService.getSetting(GlobalEnv.UPLOAD_SECRET);
+        this.vtApiKey = settingsService.getSetting(GlobalEnv.VIRUSTOTAL_KEY);
+        this.vtReputationLimit = settingsService.getSetting(GlobalEnv.VIRUSTOTAL_REPUTATION_LIMIT);
+        this.dangerousMimeTypes = settingsService.getSetting(GlobalEnv.DANGEROUS_MIME_TYPES);
     }
 
     public async processUpload({
@@ -79,6 +85,16 @@ export class FileUploadService {
             uploadEntry.fileName(path.parse(resourcePath).name);
             const mediaType = await this.mimeService.findMimeType(resourcePath);
             uploadEntry.mediaType(mediaType);
+
+            if (this.vtApiKey && this.vtReputationLimit && this.dangerousMimeTypes) {
+                if (this.dangerousMimeTypes.includes(mediaType ?? "")) {
+                    const reputation = await FileUtils.fileReputation(checksum, this.vtApiKey);
+                    if (reputation > parseInt(this.vtReputationLimit, 10)) {
+                        throw new BadRequest("Dangerous file type exceeds reputation limit");
+                    }
+                }
+            }
+
             const fileSize = await FileUtils.getFileSize(path.basename(resourcePath));
             uploadEntry.fileSize(fileSize);
 
