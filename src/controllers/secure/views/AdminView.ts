@@ -1,11 +1,11 @@
 import { Get, Hidden, View } from "@tsed/schema";
 import { Controller, Inject } from "@tsed/di";
 import { Authorize } from "@tsed/passport";
-import type { CustomUserInfoModel } from "../../model/auth/CustomUserInfoModel.js";
+import type { CustomUserInfoModel } from "../../../model/auth/CustomUserInfoModel.js";
 import { Req, Res } from "@tsed/platform-http";
 import type { Request, Response } from "express";
-import { BaseViewController } from "../views/BaseViewController.js";
-import { SettingsService } from "../../services/SettingsService.js";
+import { BaseViewController } from "../../views/index.js";
+import { SettingsService } from "../../../services/SettingsService.js";
 
 @Controller("/")
 @Hidden()
@@ -16,7 +16,6 @@ export class AdminView extends BaseViewController {
     }
 
     @Get()
-    @Authorize("loginAuthProvider")
     public showAdmin(@Req() req: Request, @Res() res: Response): unknown {
         res.redirect("/admin/files");
         return {

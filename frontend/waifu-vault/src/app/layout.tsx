@@ -3,7 +3,10 @@ import "./globals.scss";
 import "./styles/themes.scss";
 import React from "react";
 import { ThemeProvider } from "@/app/contexts/ThemeContext";
+import { LoadingProvider } from "@/app/contexts/LoadingContext";
+import { BucketAuthProvider } from "@/app/contexts/BucketAuthContext";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import Head from "next/head.js";
 
 const opts = {
     description: "No Nonsense Temporary File Hosting",
@@ -59,13 +62,17 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en">
-            <head>
+            <Head>
                 <link href="/favicon.ico" rel="icon" type="image/x-icon" />
                 <link href="/site.webmanifest" rel="manifest" />
                 <meta content="#667eea" name="theme-color" />
-            </head>
+            </Head>
             <body>
-                <ThemeProvider>{children}</ThemeProvider>
+                <LoadingProvider>
+                    <BucketAuthProvider>
+                        <ThemeProvider>{children}</ThemeProvider>
+                    </BucketAuthProvider>
+                </LoadingProvider>
             </body>
         </html>
     );

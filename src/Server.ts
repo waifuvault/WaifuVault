@@ -15,7 +15,7 @@ import "./engine/impl/index.js";
 import * as rest from "./controllers/rest/index.js";
 import "./services/FileCleaner.js";
 import * as views from "./controllers/views/index.js";
-import * as adminViews from "./controllers/secure/index.js";
+import * as adminViews from "./controllers/secure/views/index.js";
 import * as globalMiddleware from "./middleware/global/index.js";
 import "./platformOverrides/index.js";
 import { FileServerController } from "./controllers/serve/FileServerController.js";
@@ -132,6 +132,7 @@ const opts: Partial<TsED.Configuration> = {
         cors({
             origin: [process.env.BASE_URL!, process.env.FRONT_END_URL!],
             exposedHeaders: ["Location", "Content-Disposition"],
+            credentials: true,
         }),
         cookieParser(),
         methodOverride(),

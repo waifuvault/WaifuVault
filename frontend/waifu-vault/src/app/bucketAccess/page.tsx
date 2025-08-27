@@ -1,52 +1,74 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./page.module.scss";
 import { Button, Card, CardBody, CardHeader, Footer, Header, ParticleBackground } from "@/app/components";
 import { useEnvironment } from "@/app/hooks/useEnvironment";
+import { useBucketAuthContext } from "@/app/contexts/BucketAuthContext";
+import { useLoading } from "@/app/contexts/LoadingContext";
 
 export default function BucketAccess() {
     const [token, setToken] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const { backendRestBaseUrl } = useEnvironment();
+    const { setIsAuthenticated } = useBucketAuthContext();
+    const { withLoading, isLoading } = useLoading();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        if (searchParams.get("error") === "no_token") {
+            setError("no bucket token");
+        }
+    }, [searchParams]);
 
     const handleCreateBucket = async () => {
-        try {
-            setIsLoading(true);
-            const response = await fetch(`${backendRestBaseUrl}/bucket/create`);
-            const json = await response.json();
-            if (!response.ok) {
-                setError(json.message);
-                return;
+        await withLoading(async () => {
+            try {
+                const response = await fetch(`${backendRestBaseUrl}/bucket/create`);
+                const json = await response.json();
+                if (!response.ok) {
+                    setError(json.message);
+                    return;
+                }
+                setToken(json.token);
+            } catch {
+                setError("Failed to create bucket");
             }
-            setToken(json.token);
-        } catch {
-            setError("Failed to create bucket");
-        } finally {
-            setIsLoading(false);
-        }
+        });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!token.trim()) return;
 
-        setIsLoading(true);
         setError("");
 
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = `${backendRestBaseUrl}/auth/authenticate_bucket`;
+        try {
+            console.log("Making request to:", `${backendRestBaseUrl}/auth/authenticate_bucket_frontend`);
+            const response = await fetch(`${backendRestBaseUrl}/auth/authenticate_bucket_frontend`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ token }),
+                credentials: "include",
+            });
 
-        const tokenInput = document.createElement("input");
-        tokenInput.type = "hidden";
-        tokenInput.name = "token";
-        tokenInput.value = token;
-
-        form.appendChild(tokenInput);
-        document.body.appendChild(form);
-        form.submit();
+            if (response.ok) {
+                setIsAuthenticated(true);
+                router.push("/admin/bucket");
+            } else {
+                const errorData = await response.json().catch(() => {
+                    return { message: "Authentication failed" };
+                });
+                setError(errorData.message || "Authentication failed");
+            }
+        } catch (err) {
+            console.log("Network error:", err);
+            setError("Network error. Please try again.");
+        }
     };
 
     return (

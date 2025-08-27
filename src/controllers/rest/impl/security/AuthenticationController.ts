@@ -37,6 +37,15 @@ export class AuthenticationController extends BaseRestController {
         res.redirect("/admin/bucket");
     }
 
+    @Post("/authenticate_bucket_frontend")
+    @UseBefore(CaptchaMiddleWare)
+    @UseBefore(AuthenticateBucket)
+    @Returns(StatusCodes.OK, SuccessModel)
+    @Returns(StatusCodes.UNAUTHORIZED)
+    public authenticateBucketFrontend(@Res() res: PlatformResponse): PlatformResponse {
+        return this.doSuccess(res, "Authentication successful");
+    }
+
     @Post("/login")
     @UseBefore(CaptchaMiddleWare)
     @Authenticate("loginAuthProvider", { failWithError: true })
@@ -44,6 +53,16 @@ export class AuthenticationController extends BaseRestController {
     @Returns(StatusCodes.UNAUTHORIZED)
     public login(@Res() res: Response): void {
         res.redirect("/admin");
+    }
+
+    @Get("/bucket_status")
+    @Returns(StatusCodes.OK, SuccessModel)
+    @Returns(StatusCodes.UNAUTHORIZED)
+    public bucketStatus(@Res() res: PlatformResponse): PlatformResponse {
+        if (!this.bucketSessionService.hasActiveSession()) {
+            return this.doError(res, "Not authenticated", StatusCodes.UNAUTHORIZED);
+        }
+        return this.doSuccess(res, "Authenticated");
     }
 
     @Get("/close_bucket")
