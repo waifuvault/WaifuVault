@@ -93,6 +93,22 @@ The available `CAPTCHA_SERVICE` values are:
 > **Note Well** if a path to an Antivirus engine is not defined it will not be used, if no paths are defined then no
 > antivirus scanning will be used
 
+#### File Reputation Check
+
+In addition to blocking certain file types, you can allow a given set of file types, but subject those file to a reputation check using VirusTotal.
+Newly uploaded files will be checked using their hash by a background service.  If they exceed a set threshold (settable int he env file), they will be deleted.
+For this you will need a virustotal API key and to set the following in the .env file.
+
+> If the VIRUSTOTAL_KEY is not set, this system will not be used
+
+| Setting                     | Description                                                                                                                                       |
+|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| VIRUSTOTAL_KEY              | The API Key to use for calls to virustotal                                                                                                        |
+| VIRUSTOTAL_REPUTATION_LIMIT | This is a value from 0 (requires almost no malicious reports) to 9 (will pass with 90% malicious reports) to decide if the file should be deleted |
+| DANGEROUS_MIME_TYPES        | A comma seperated list of mime types that will be subjected to file reputation check                                                              |
+| FILE_REPUTATION_CRON        | This allows you to set a custom cron schedule to check recent uploads                                                                             | 
+
+
 ### Build and Run commands
 
 ```batch
