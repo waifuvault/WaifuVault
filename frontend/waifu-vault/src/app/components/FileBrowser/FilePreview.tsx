@@ -193,6 +193,7 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
                     setIsLoading(false);
                 }
             } catch (error) {
+                console.error("Error loading metadata:", error);
                 if (mounted) {
                     setPreviewError("Failed to generate preview");
                     setIsLoading(false);
@@ -252,6 +253,7 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
             case "image":
                 return (
                     <div className={styles.imageContainer}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             alt={fileName}
                             className={styles.previewImage}
@@ -270,6 +272,7 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
                 return (
                     <div className={styles.videoContainer}>
                         {videoThumbnail ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img alt={`${fileName} thumbnail`} className={styles.previewImage} src={videoThumbnail} />
                         ) : (
                             <div className={styles.videoPlaceholder}>

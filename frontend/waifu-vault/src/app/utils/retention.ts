@@ -23,7 +23,9 @@ export function timeToHuman(value: number): string {
         const value = level[0] as number;
         const unit = level[1] as string;
 
-        if (value === 0) continue;
+        if (value === 0) {
+            continue;
+        }
 
         returntext += " " + value + " " + (value === 1 ? unit.substr(0, unit.length - 1) : unit);
     }

@@ -41,7 +41,9 @@ export default function BucketAccess() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!token.trim()) return;
+        if (!token.trim()) {
+            return;
+        }
 
         setError("");
 
