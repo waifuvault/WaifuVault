@@ -30,7 +30,7 @@ export class FileReputationService implements OnReady {
         let i = 0;
         const tokensToDelete: string[] = [];
         while (this.queue.length > 0 && i < 4) {
-            const file = this.queue.pop();
+            const file = this.queue.shift();
             if (file && this.vtReputationLimit && this.vtApiKey) {
                 const reputation = await this.fileReputation(file.checksum, this.vtApiKey);
                 if (reputation > parseInt(this.vtReputationLimit, 10)) {
