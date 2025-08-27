@@ -27,20 +27,26 @@ export class FileReputationService implements OnReady {
 
     public async processFiles(): Promise<void> {
         await this.sleep(5000); // wait 5 seconds to avoid too early
-        let i = 0;
+        const batch = this.queue.splice(0, 4);
         const tokensToDelete: string[] = [];
-        while (this.queue.length > 0 && i < 4) {
-            const file = this.queue.shift();
-            if (file && this.vtReputationLimit && this.vtApiKey) {
-                const reputation = await this.fileReputation(file.checksum, this.vtApiKey);
-                if (reputation > parseInt(this.vtReputationLimit, 10)) {
+
+        if (batch.length > 0 && this.vtApiKey && this.vtReputationLimit) {
+            const reputationLimit = parseInt(this.vtReputationLimit, 10);
+            const results = await Promise.all(
+                batch.map(async file => {
+                    const reputation = await this.fileReputation(file.checksum, this.vtApiKey ?? "");
+                    return { file, reputation };
+                }),
+            );
+            for (const r of results) {
+                const { file, reputation } = r;
+                if (reputation > reputationLimit) {
                     this.logger.error(
                         `File ${file.fullFileNameOnSystem} failed reputation check with score ${reputation} and was removed`,
                     );
                     tokensToDelete.push(file.token);
                 }
             }
-            i++;
         }
         if (tokensToDelete.length > 0) {
             await this.fileService.processDelete(tokensToDelete);
