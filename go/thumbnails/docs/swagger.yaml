@@ -76,8 +76,8 @@ paths:
       tags:
       - system
 schemes:
-- http
 - https
+- http
 swagger: "2.0"
 tags:
 - description: Operations for generating and managing thumbnails

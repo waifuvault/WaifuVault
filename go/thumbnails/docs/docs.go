@@ -130,7 +130,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"http", "https"},
+	Schemes:          []string{"https", "http"},
 	Title:            "Thumbnail Service API",
 	Description:      "A service for generating thumbnails from images and videos using libvips and ffmpeg",
 	InfoInstanceName: "swagger",

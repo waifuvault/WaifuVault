@@ -431,7 +431,7 @@
         
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>Generating thumbnail...</p>
+            <p id="loadingText">Uploading file...</p>
         </div>
         
         <div class="error" id="error"></div>
@@ -518,49 +518,79 @@
             }
         }
         
-        async function uploadFile() {
+        function uploadFile() {
             if (!selectedFile) {
                 return;
             }
             
             const loading = document.getElementById('loading');
+            const loadingText = document.getElementById('loadingText');
             const error = document.getElementById('error');
             const result = document.getElementById('result');
             const uploadBtn = document.getElementById('uploadBtn');
             
             loading.style.display = 'block';
+            loadingText.textContent = 'Uploading file...';
             error.style.display = 'none';
             result.style.display = 'none';
             uploadBtn.disabled = true;
             
-            try {
-                const formData = new FormData();
-                formData.append('file', selectedFile);
-                
-                const response = await fetch('/api/v1/generateThumbnail', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message ?? 'Failed to generate thumbnail');
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            const xhr = new XMLHttpRequest();
+            
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    loadingText.textContent = `Uploading file... ${Math.round(percentComplete)}%`;
+                }
+            });
+            
+            xhr.upload.addEventListener('load', function() {
+                loadingText.textContent = 'Generating thumbnail...';
+            });
+            
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200) {
+                    try {
+                        const response = xhr.response;
+                        thumbnailBlob = new Blob([response], { type: 'image/webp' });
+                        const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
+                        
+                        document.getElementById('thumbnailImg').src = thumbnailUrl;
+                        result.style.display = 'block';
+                    } catch (err) {
+                        console.error('Error:', err);
+                        document.getElementById('error').textContent = 'Failed to process thumbnail';
+                        error.style.display = 'block';
+                    }
+                } else {
+                    let errorMessage = 'Failed to generate thumbnail';
+                    try {
+                        const errorData = JSON.parse(xhr.responseText);
+                        errorMessage = errorData.message || errorMessage;
+                    } catch (e) {
+                    }
+                    document.getElementById('error').textContent = errorMessage;
+                    error.style.display = 'block';
                 }
                 
-                thumbnailBlob = await response.blob();
-                const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
-                
-                document.getElementById('thumbnailImg').src = thumbnailUrl;
-                result.style.display = 'block';
-                
-            } catch (err) {
-                console.error('Error:', err);
-                document.getElementById('error').textContent = err.message;
-                error.style.display = 'block';
-            } finally {
                 loading.style.display = 'none';
                 uploadBtn.disabled = false;
-            }
+            });
+            
+            xhr.addEventListener('error', function() {
+                console.error('Upload error');
+                document.getElementById('error').textContent = 'Upload failed';
+                error.style.display = 'block';
+                loading.style.display = 'none';
+                uploadBtn.disabled = false;
+            });
+            
+            xhr.responseType = 'arraybuffer';
+            xhr.open('POST', '/api/v1/generateThumbnail');
+            xhr.send(formData);
         }
         
         function downloadThumbnail() {

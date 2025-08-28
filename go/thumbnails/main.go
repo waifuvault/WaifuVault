@@ -36,7 +36,7 @@ import (
 
 // @BasePath  /api/v1
 
-// @schemes   http https
+// @schemes   https http
 
 // @tag.name thumbnails
 // @tag.description Operations for generating and managing thumbnails
