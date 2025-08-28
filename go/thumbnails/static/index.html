@@ -4,27 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Victoria">
-    <meta name="description" content="Generate thumbnails from images and videos instantly. Fast, free thumbnail generation service with API access.">
+    <meta name="description"
+          content="Generate thumbnails from images and videos instantly. Fast, free thumbnail generation service with API access.">
     <meta name="keywords" content="Thumbnail, Generator, Image, Video, API, WebP, Conversion">
-    
+
     <meta property="og:type" content="website">
     <meta property="og:title" content="WaifuVault Thumbnail Generator">
     <meta property="og:site_name" content="WaifuVault">
-    <meta property="og:description" content="Generate thumbnails from images and videos instantly. Fast, free thumbnail generation service with API access.">
+    <meta property="og:description"
+          content="Generate thumbnails from images and videos instantly. Fast, free thumbnail generation service with API access.">
     <meta property="og:url" content="https://thumbnails.waifuvault.moe">
-    <meta property="og:image" content="/thumbnail-preview.svg">
-    <meta property="og:image:type" content="image/svg+xml">
+    <meta property="og:image" content="https://thumbnails.waifuvault.moe/thumbnail-preview.png">
+    <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="800">
     <meta property="og:image:height" content="400">
-    <meta property="og:image:alt" content="WaifuVault Thumbnail Generator">
-    
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="WaifuVault Thumbnail Generator">
-    <meta property="twitter:description" content="Generate thumbnails from images and videos instantly. Fast, free thumbnail generation service with API access.">
-    <meta property="twitter:image" content="/thumbnail-preview.svg">
-    
+    <meta property="og:image:alt"
+          content="WaifuVault Thumbnail Generator - Generate thumbnails from images and videos instantly">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="WaifuVault Thumbnail Generator">
+    <meta name="twitter:description"
+          content="Generate thumbnails from images and videos instantly. Fast, free thumbnail generation service with API access.">
+    <meta name="twitter:image" content="https://thumbnails.waifuvault.moe/thumbnail-preview.png">
+    <meta name="twitter:image:alt" content="WaifuVault Thumbnail Generator">
+
+    <meta property="og:locale" content="en_GB">
+    <meta name="twitter:creator" content="@VictoriqueM">
+    <meta name="twitter:site" content="@VictoriqueM">
+
     <title>Thumbnail Generator - WaifuVault</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📷</text></svg>">
+    <link rel="icon"
+          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📷</text></svg>">
+
     <style>
         * {
             margin: 0;
@@ -35,9 +46,8 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0a0a0f;
-            background-image:
-                radial-gradient(at 47% 33%, hsl(162.00, 77%, 40%) 0px, transparent 59%),
-                radial-gradient(at 82% 65%, hsl(198.00, 100%, 50%) 0px, transparent 55%);
+            background-image: radial-gradient(at 47% 33%, hsl(162.00, 77%, 40%) 0px, transparent 59%),
+            radial-gradient(at 82% 65%, hsl(198.00, 100%, 50%) 0px, transparent 55%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -45,21 +55,20 @@
             padding: 20px;
             color: #ffffff;
         }
-        
+
         .container {
             background: rgba(17, 24, 39, 0.95);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(75, 85, 99, 0.3);
             border-radius: 24px;
-            box-shadow: 
-                0 25px 50px -12px rgba(0, 0, 0, 0.8),
-                0 0 0 1px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8),
+            0 0 0 1px rgba(255, 255, 255, 0.05);
             padding: 48px;
             max-width: 640px;
             width: 100%;
             text-align: center;
         }
-        
+
         h1 {
             background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
             background-clip: text;
@@ -70,14 +79,14 @@
             font-weight: 800;
             letter-spacing: -0.02em;
         }
-        
+
         .subtitle {
             color: #9ca3af;
             margin-bottom: 40px;
             font-size: 1.2rem;
             font-weight: 400;
         }
-        
+
         .upload-area {
             border: 2px dashed #374151;
             border-radius: 20px;
@@ -89,33 +98,33 @@
             background: rgba(31, 41, 55, 0.5);
             backdrop-filter: blur(10px);
         }
-        
+
         .upload-area:hover {
             border-color: #60a5fa;
             background: rgba(59, 130, 246, 0.1);
             transform: translateY(-4px);
         }
-        
+
         .upload-area.dragover {
             border-color: #a78bfa;
             background: rgba(167, 139, 250, 0.2);
             transform: translateY(-4px) scale(1.02);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
         }
-        
+
         .upload-area.file-selected {
             border-color: #10b981;
             background: rgba(16, 185, 129, 0.15);
             box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.3);
         }
-        
+
         .upload-area.file-selected .upload-icon {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
+
         .upload-icon {
             font-size: 5rem;
             background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
@@ -125,7 +134,7 @@
             margin-bottom: 24px;
             filter: drop-shadow(0 4px 8px rgba(96, 165, 250, 0.3));
         }
-        
+
         .upload-text {
             font-size: 1.3rem;
             color: #f3f4f6;
@@ -136,18 +145,18 @@
             max-width: 100%;
             line-height: 1.4;
         }
-        
+
         .upload-subtext {
             color: #9ca3af;
             font-size: 1rem;
             word-break: break-word;
             overflow-wrap: break-word;
         }
-        
+
         input[type="file"] {
             display: none;
         }
-        
+
         .btn {
             background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
             color: white;
@@ -162,7 +171,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .btn:before {
             content: '';
             position: absolute;
@@ -173,18 +182,17 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s;
         }
-        
+
         .btn:hover:before {
             left: 100%;
         }
-        
+
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 
-                0 20px 25px -5px rgba(0, 0, 0, 0.3),
-                0 0 30px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+            0 0 30px rgba(59, 130, 246, 0.4);
         }
-        
+
         .btn:disabled {
             background: #374151;
             cursor: not-allowed;
@@ -192,16 +200,16 @@
             box-shadow: none;
             opacity: 0.6;
         }
-        
+
         .btn:disabled:before {
             display: none;
         }
-        
+
         .loading {
             display: none;
             margin: 32px 0;
         }
-        
+
         .spinner {
             width: 48px;
             height: 48px;
@@ -211,17 +219,21 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 16px;
         }
-        
+
         .loading p {
             color: #9ca3af;
             font-size: 1.1rem;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        
+
         .result {
             display: none;
             margin-top: 40px;
@@ -230,13 +242,13 @@
             border-radius: 16px;
             border: 1px solid rgba(75, 85, 99, 0.3);
         }
-        
+
         .result h3 {
             color: #f3f4f6;
             margin-bottom: 20px;
             font-size: 1.3rem;
         }
-        
+
         .thumbnail {
             max-width: 100%;
             border-radius: 12px;
@@ -244,7 +256,7 @@
             margin-bottom: 24px;
             border: 1px solid rgba(75, 85, 99, 0.3);
         }
-        
+
         .error {
             color: #fca5a5;
             background: rgba(239, 68, 68, 0.1);
@@ -255,7 +267,7 @@
             display: none;
             font-weight: 500;
         }
-        
+
         .supported-formats {
             margin-top: 40px;
             padding: 24px;
@@ -263,19 +275,19 @@
             border-radius: 16px;
             border: 1px solid rgba(75, 85, 99, 0.3);
         }
-        
+
         .supported-formats h3 {
             color: #f3f4f6;
             margin-bottom: 16px;
             font-size: 1.2rem;
         }
-        
+
         .format-list {
             color: #d1d5db;
             font-size: 0.95rem;
             line-height: 1.8;
         }
-        
+
         .show-all-formats {
             color: #60a5fa;
             cursor: pointer;
@@ -285,11 +297,11 @@
             display: inline-block;
             transition: color 0.2s ease;
         }
-        
+
         .show-all-formats:hover {
             color: #a78bfa;
         }
-        
+
         .all-formats {
             margin-top: 16px;
             padding: 16px;
@@ -300,44 +312,44 @@
             overflow: hidden;
             transition: max-height 0.3s ease, padding 0.3s ease;
         }
-        
+
         .all-formats.expanded {
             max-height: 300px;
             padding: 16px;
             overflow-y: auto;
         }
-        
+
         .all-formats.collapsed {
             max-height: 0;
             padding: 0 16px;
             overflow: hidden;
         }
-        
+
         /* Custom scrollbar styling */
         .all-formats::-webkit-scrollbar {
             width: 8px;
         }
-        
+
         .all-formats::-webkit-scrollbar-track {
             background: rgba(55, 65, 81, 0.3);
             border-radius: 4px;
         }
-        
+
         .all-formats::-webkit-scrollbar-thumb {
             background: rgba(96, 165, 250, 0.6);
             border-radius: 4px;
         }
-        
+
         .all-formats::-webkit-scrollbar-thumb:hover {
             background: rgba(96, 165, 250, 0.8);
         }
-        
+
         .all-formats h4 {
             color: #f3f4f6;
             margin-bottom: 8px;
             font-size: 0.9rem;
         }
-        
+
         .format-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -345,7 +357,7 @@
             color: #9ca3af;
             font-size: 0.8rem;
         }
-        
+
         .api-info {
             margin: 32px 0;
             padding: 24px;
@@ -353,24 +365,24 @@
             border-radius: 16px;
             border: 1px solid rgba(59, 130, 246, 0.3);
         }
-        
+
         .api-info:first-of-type {
             margin-top: 0;
             margin-bottom: 32px;
             background: rgba(16, 185, 129, 0.1);
             border: 1px solid rgba(16, 185, 129, 0.3);
         }
-        
+
         .api-info h3 {
             color: #f3f4f6;
             margin-bottom: 12px;
             font-size: 1.2rem;
         }
-        
+
         .api-info p {
             color: #d1d5db;
         }
-        
+
         .api-link {
             background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
             background-clip: text;
@@ -380,24 +392,24 @@
             font-weight: 600;
             transition: all 0.2s ease;
         }
-        
+
         .api-link:hover {
             text-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
         }
-        
+
         @media (max-width: 640px) {
             .container {
                 padding: 32px 24px;
             }
-            
+
             h1 {
                 font-size: 2.5rem;
             }
-            
+
             .upload-area {
                 padding: 60px 20px;
             }
-            
+
             .upload-icon {
                 font-size: 4rem;
             }
@@ -405,278 +417,279 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📷 Thumbnail Generator</h1>
-        <p class="subtitle">Upload an image or video to generate a thumbnail</p>
-        
-        <div class="api-info">
-            <h3>🚀 For Developers</h3>
-            <p>Building something? Check out our <a href="/swagger/index.html" class="api-link">REST API documentation</a> for programmatic thumbnail generation.</p>
+<div class="container">
+    <h1>📷 Thumbnail Generator</h1>
+    <p class="subtitle">Upload an image or video to generate a thumbnail</p>
+
+    <div class="api-info">
+        <h3>🚀 For Developers</h3>
+        <p>Building something? Check out our <a href="/swagger/index.html" class="api-link">REST API documentation</a>
+            for programmatic thumbnail generation.</p>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📁</div>
+        <div class="upload-text">Drop your file here or click to browse</div>
+        <div class="upload-subtext">Supports images and videos</div>
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*,video/*">
+
+    <button class="btn" onclick="document.getElementById('fileInput').click()">
+        Choose File
+    </button>
+    <button class="btn" onclick="uploadFile()" id="uploadBtn" disabled>
+        Generate Thumbnail
+    </button>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p id="loadingText">Uploading file...</p>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+        <h3>Generated Thumbnail</h3>
+        <img class="thumbnail" id="thumbnailImg" alt="Generated thumbnail">
+        <button class="btn" onclick="downloadThumbnail()">Download Thumbnail</button>
+    </div>
+
+    <div class="supported-formats">
+        <h3>Supported Formats</h3>
+        <div class="format-list" id="supportedFormats">
+            Loading supported formats...
         </div>
-        
-        <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">📁</div>
-            <div class="upload-text">Drop your file here or click to browse</div>
-            <div class="upload-subtext">Supports images and videos</div>
+        <div class="show-all-formats" id="showAllFormats" onclick="toggleAllFormats()" style="display: none;">
+            + show all supported formats
         </div>
-        
-        <input type="file" id="fileInput" accept="image/*,video/*">
-        
-        <button class="btn" onclick="document.getElementById('fileInput').click()">
-            Choose File
-        </button>
-        <button class="btn" onclick="uploadFile()" id="uploadBtn" disabled>
-            Generate Thumbnail
-        </button>
-        
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p id="loadingText">Uploading file...</p>
-        </div>
-        
-        <div class="error" id="error"></div>
-        
-        <div class="result" id="result">
-            <h3>Generated Thumbnail</h3>
-            <img class="thumbnail" id="thumbnailImg" alt="Generated thumbnail">
-            <button class="btn" onclick="downloadThumbnail()">Download Thumbnail</button>
-        </div>
-        
-        <div class="supported-formats">
-            <h3>Supported Formats</h3>
-            <div class="format-list" id="supportedFormats">
-                Loading supported formats...
-            </div>
-            <div class="show-all-formats" id="showAllFormats" onclick="toggleAllFormats()" style="display: none;">
-                + show all supported formats
-            </div>
-            <div class="all-formats collapsed" id="allFormats">
-                <h4>Complete List of Supported Formats:</h4>
-                <div class="format-grid" id="allFormatsList">
-                    Loading all formats...
-                </div>
+        <div class="all-formats collapsed" id="allFormats">
+            <h4>Complete List of Supported Formats:</h4>
+            <div class="format-grid" id="allFormatsList">
+                Loading all formats...
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        let selectedFile = null;
-        let thumbnailBlob = null;
-        
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                selectedFile = file;
-                updateUI();
-            }
-        });
-        
-        const uploadArea = document.getElementById('uploadArea');
-        
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        
-        uploadArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-        });
-        
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                selectedFile = files[0];
-                document.getElementById('fileInput').files = files;
-                updateUI();
-            }
-        });
-        
-        uploadArea.addEventListener('click', function() {
-            document.getElementById('fileInput').click();
-        });
-        
-        function updateUI() {
-            const uploadBtn = document.getElementById('uploadBtn');
-            const uploadText = document.querySelector('.upload-text');
-            const uploadArea = document.getElementById('uploadArea');
-            const uploadSubtext = document.querySelector('.upload-subtext');
-            
-            if (selectedFile) {
-                uploadBtn.disabled = false;
-                uploadText.textContent = `✅ Selected: ${selectedFile.name}`;
-                uploadSubtext.textContent = `Size: ${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`;
-                uploadArea.classList.add('file-selected');
-            } else {
-                uploadBtn.disabled = true;
-                uploadText.textContent = 'Drop your file here or click to browse';
-                uploadSubtext.textContent = 'Supports images and videos';
-                uploadArea.classList.remove('file-selected');
-            }
+<script>
+    let selectedFile = null;
+    let thumbnailBlob = null;
+
+    document.getElementById("fileInput").addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            selectedFile = file;
+            updateUI();
         }
-        
-        function uploadFile() {
-            if (!selectedFile) {
-                return;
-            }
-            
-            const loading = document.getElementById('loading');
-            const loadingText = document.getElementById('loadingText');
-            const error = document.getElementById('error');
-            const result = document.getElementById('result');
-            const uploadBtn = document.getElementById('uploadBtn');
-            
-            loading.style.display = 'block';
-            loadingText.textContent = 'Uploading file...';
-            error.style.display = 'none';
-            result.style.display = 'none';
+    });
+
+    const uploadArea = document.getElementById("uploadArea");
+
+    uploadArea.addEventListener("dragover", function(e) {
+        e.preventDefault();
+        uploadArea.classList.add("dragover");
+    });
+
+    uploadArea.addEventListener("dragleave", function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+    });
+
+    uploadArea.addEventListener("drop", function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            selectedFile = files[0];
+            document.getElementById("fileInput").files = files;
+            updateUI();
+        }
+    });
+
+    uploadArea.addEventListener("click", function() {
+        document.getElementById("fileInput").click();
+    });
+
+    function updateUI() {
+        const uploadBtn = document.getElementById("uploadBtn");
+        const uploadText = document.querySelector(".upload-text");
+        const uploadArea = document.getElementById("uploadArea");
+        const uploadSubtext = document.querySelector(".upload-subtext");
+
+        if (selectedFile) {
+            uploadBtn.disabled = false;
+            uploadText.textContent = `✅ Selected: ${selectedFile.name}`;
+            uploadSubtext.textContent = `Size: ${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`;
+            uploadArea.classList.add("file-selected");
+        } else {
             uploadBtn.disabled = true;
-            
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            
-            const xhr = new XMLHttpRequest();
-            
-            xhr.upload.addEventListener('progress', function(e) {
-                if (e.lengthComputable) {
-                    const percentComplete = (e.loaded / e.total) * 100;
-                    loadingText.textContent = `Uploading file... ${Math.round(percentComplete)}%`;
-                }
-            });
-            
-            xhr.upload.addEventListener('load', function() {
-                loadingText.textContent = 'Generating thumbnail...';
-            });
-            
-            xhr.addEventListener('load', function() {
-                if (xhr.status === 200) {
-                    try {
-                        const response = xhr.response;
-                        thumbnailBlob = new Blob([response], { type: 'image/webp' });
-                        const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
-                        
-                        document.getElementById('thumbnailImg').src = thumbnailUrl;
-                        result.style.display = 'block';
-                    } catch (err) {
-                        console.error('Error:', err);
-                        document.getElementById('error').textContent = 'Failed to process thumbnail';
-                        error.style.display = 'block';
-                    }
-                } else {
-                    let errorMessage = 'Failed to generate thumbnail';
-                    try {
-                        const errorData = JSON.parse(xhr.responseText);
-                        errorMessage = errorData.message || errorMessage;
-                    } catch (e) {
-                    }
-                    document.getElementById('error').textContent = errorMessage;
-                    error.style.display = 'block';
-                }
-                
-                loading.style.display = 'none';
-                uploadBtn.disabled = false;
-            });
-            
-            xhr.addEventListener('error', function() {
-                console.error('Upload error');
-                document.getElementById('error').textContent = 'Upload failed';
-                error.style.display = 'block';
-                loading.style.display = 'none';
-                uploadBtn.disabled = false;
-            });
-            
-            xhr.responseType = 'arraybuffer';
-            xhr.open('POST', '/api/v1/generateThumbnail');
-            xhr.send(formData);
+            uploadText.textContent = "Drop your file here or click to browse";
+            uploadSubtext.textContent = "Supports images and videos";
+            uploadArea.classList.remove("file-selected");
         }
-        
-        function downloadThumbnail() {
-            if (!thumbnailBlob) {
-                return;
-            }
-            
-            const url = URL.createObjectURL(thumbnailBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'thumbnail.webp';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+    }
+
+    function uploadFile() {
+        if (!selectedFile) {
+            return;
         }
-        
-        async function loadSupportedFormats() {
-            try {
-                const response = await fetch('/api/v1/generateThumbnails/supported');
-                if (response.ok) {
-                    const extensions = await response.json();
-                    
-                    const commonImageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'tif', 'svg', 'heic', 'heif', 'avif', 'jxl'];
-                    const commonVideoExts = ['mp4', 'avi', 'mov', 'mkv', 'webm', 'flv', 'wmv', 'm4v', '3gp', 'ogv', 'mpg', 'mpeg', 'm2v'];
-                    
-                    const imageExts = extensions.filter(ext => 
-                        commonImageExts.includes(ext.toLowerCase())
-                    );
-                    const videoExts = extensions.filter(ext => 
-                        commonVideoExts.includes(ext.toLowerCase())
-                    );
-                    
-                    let formatText = '';
-                    if (imageExts.length > 0) {
-                        formatText += `<strong>Images:</strong> ${imageExts.map(e => e.toUpperCase()).join(', ')}`;
-                    }
-                    if (videoExts.length > 0) {
-                        if (formatText) formatText += '<br>';
-                        formatText += `<strong>Videos:</strong> ${videoExts.map(e => e.toUpperCase()).join(', ')}`;
-                    }
-                    
-                    document.getElementById('supportedFormats').innerHTML = formatText;
-                    
-                    document.getElementById('showAllFormats').style.display = 'inline-block';
-                    
-                    const allFormatsGrid = document.getElementById('allFormatsList');
-                    allFormatsGrid.innerHTML = extensions.map(ext => 
-                        `<span>${ext.toUpperCase()}</span>`
-                    ).join('');
-                    
-                    const commonFormats = [...imageExts, ...videoExts].map(ext => '.' + ext);
-                    if (commonFormats.length > 0) {
-                        document.getElementById('fileInput').accept = commonFormats.join(',');
-                    }
-                } else {
-                    document.getElementById('supportedFormats').innerHTML = 'Various image and video formats supported';
-                }
-            } catch (error) {
-                console.error('Error loading supported formats:', error);
-                document.getElementById('supportedFormats').innerHTML = 'Various image and video formats supported';
-            }
-        }
-        
-        function toggleAllFormats() {
-            const allFormats = document.getElementById('allFormats');
-            const showButton = document.getElementById('showAllFormats');
-            
-            if (allFormats.classList.contains('collapsed')) {
-                allFormats.classList.remove('collapsed');
-                allFormats.classList.add('expanded');
-                showButton.textContent = '− hide all formats';
-            } else {
-                allFormats.classList.remove('expanded');
-                allFormats.classList.add('collapsed');
-                showButton.textContent = '+ show all supported formats';
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', loadSupportedFormats);
-        
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && selectedFile && !document.getElementById('uploadBtn').disabled) {
-                uploadFile();
+
+        const loading = document.getElementById("loading");
+        const loadingText = document.getElementById("loadingText");
+        const error = document.getElementById("error");
+        const result = document.getElementById("result");
+        const uploadBtn = document.getElementById("uploadBtn");
+
+        loading.style.display = "block";
+        loadingText.textContent = "Uploading file...";
+        error.style.display = "none";
+        result.style.display = "none";
+        uploadBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener("progress", function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                loadingText.textContent = `Uploading file... ${Math.round(percentComplete)}%`;
             }
         });
-    </script>
+
+        xhr.upload.addEventListener("load", function() {
+            loadingText.textContent = "Generating thumbnail...";
+        });
+
+        xhr.addEventListener("load", function() {
+            if (xhr.status === 200) {
+                try {
+                    const response = xhr.response;
+                    thumbnailBlob = new Blob([response], { type: "image/webp" });
+                    const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
+
+                    document.getElementById("thumbnailImg").src = thumbnailUrl;
+                    result.style.display = "block";
+                } catch (err) {
+                    console.error("Error:", err);
+                    document.getElementById("error").textContent = "Failed to process thumbnail";
+                    error.style.display = "block";
+                }
+            } else {
+                let errorMessage = "Failed to generate thumbnail";
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    errorMessage = errorData.message || errorMessage;
+                } catch (e) {
+                }
+                document.getElementById("error").textContent = errorMessage;
+                error.style.display = "block";
+            }
+
+            loading.style.display = "none";
+            uploadBtn.disabled = false;
+        });
+
+        xhr.addEventListener("error", function() {
+            console.error("Upload error");
+            document.getElementById("error").textContent = "Upload failed";
+            error.style.display = "block";
+            loading.style.display = "none";
+            uploadBtn.disabled = false;
+        });
+
+        xhr.responseType = "arraybuffer";
+        xhr.open("POST", "/api/v1/generateThumbnail");
+        xhr.send(formData);
+    }
+
+    function downloadThumbnail() {
+        if (!thumbnailBlob) {
+            return;
+        }
+
+        const url = URL.createObjectURL(thumbnailBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "thumbnail.webp";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    async function loadSupportedFormats() {
+        try {
+            const response = await fetch("/api/v1/generateThumbnails/supported");
+            if (response.ok) {
+                const extensions = await response.json();
+
+                const commonImageExts = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "tiff", "tif", "svg", "heic", "heif", "avif", "jxl"];
+                const commonVideoExts = ["mp4", "avi", "mov", "mkv", "webm", "flv", "wmv", "m4v", "3gp", "ogv", "mpg", "mpeg", "m2v"];
+
+                const imageExts = extensions.filter(ext =>
+                    commonImageExts.includes(ext.toLowerCase())
+                );
+                const videoExts = extensions.filter(ext =>
+                    commonVideoExts.includes(ext.toLowerCase())
+                );
+
+                let formatText = "";
+                if (imageExts.length > 0) {
+                    formatText += `<strong>Images:</strong> ${imageExts.map(e => e.toUpperCase()).join(", ")}`;
+                }
+                if (videoExts.length > 0) {
+                    if (formatText) formatText += "<br>";
+                    formatText += `<strong>Videos:</strong> ${videoExts.map(e => e.toUpperCase()).join(", ")}`;
+                }
+
+                document.getElementById("supportedFormats").innerHTML = formatText;
+
+                document.getElementById("showAllFormats").style.display = "inline-block";
+
+                const allFormatsGrid = document.getElementById("allFormatsList");
+                allFormatsGrid.innerHTML = extensions.map(ext =>
+                    `<span>${ext.toUpperCase()}</span>`
+                ).join("");
+
+                const commonFormats = [...imageExts, ...videoExts].map(ext => "." + ext);
+                if (commonFormats.length > 0) {
+                    document.getElementById("fileInput").accept = commonFormats.join(",");
+                }
+            } else {
+                document.getElementById("supportedFormats").innerHTML = "Various image and video formats supported";
+            }
+        } catch (error) {
+            console.error("Error loading supported formats:", error);
+            document.getElementById("supportedFormats").innerHTML = "Various image and video formats supported";
+        }
+    }
+
+    function toggleAllFormats() {
+        const allFormats = document.getElementById("allFormats");
+        const showButton = document.getElementById("showAllFormats");
+
+        if (allFormats.classList.contains("collapsed")) {
+            allFormats.classList.remove("collapsed");
+            allFormats.classList.add("expanded");
+            showButton.textContent = "− hide all formats";
+        } else {
+            allFormats.classList.remove("expanded");
+            allFormats.classList.add("collapsed");
+            showButton.textContent = "+ show all supported formats";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadSupportedFormats);
+
+    document.addEventListener("keypress", function(e) {
+        if (e.key === "Enter" && selectedFile && !document.getElementById("uploadBtn").disabled) {
+            uploadFile();
+        }
+    });
+</script>
 </body>
 </html>
