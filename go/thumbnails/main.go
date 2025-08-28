@@ -86,7 +86,7 @@ func main() {
 
 func configureSwaggerServers() {
 	// Configure servers based on environment by modifying the SwaggerInfo
-	baseUrl := utils.GetBseUrl()
+	baseUrl := GetBseUrl()
 	// remove http(s):// from the start
 	baseUrl = strings.TrimPrefix(baseUrl, "https://")
 	baseUrl = strings.TrimPrefix(baseUrl, "http://")
@@ -120,4 +120,11 @@ func configureLog() {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+}
+
+func GetBseUrl() string {
+	if os.Getenv("NODE_ENV") == "development" {
+		return "http://127.0.0.1:8080"
+	}
+	return os.Getenv("THUMBNAIL_SERVICE_BASE_URL")
 }

@@ -6,4 +6,4 @@ swag init --parseDependency --parseInternal
 
 # Start the application
 echo "Starting thumbnails service..."
-exec ./thumbnails
+go run ./main.go
