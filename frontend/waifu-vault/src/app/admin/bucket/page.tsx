@@ -6,7 +6,7 @@ import { useEnvironment } from "@/app/hooks/useEnvironment";
 import { useLoading } from "@/app/contexts/LoadingContext";
 import { Card, CardBody, CardHeader, FileBrowser, Footer, Header, ParticleBackground } from "@/app/components";
 import styles from "./page.module.scss";
-import type { AdminBucketDto } from "../../../../../../src/model/dto/AdminBucketDto.js";
+import type { AdminBucketDto } from "@/types/AdminTypes";
 
 export default function BucketAdmin() {
     const { isAuthenticated, logout } = useBucketAuth();
@@ -61,7 +61,7 @@ export default function BucketAdmin() {
         }
     }, [isAuthenticated, fetchBucketData]);
 
-    if (isAuthenticated !== true) {
+    if (isAuthenticated !== true || !bucketData) {
         return null;
     }
 
@@ -96,6 +96,7 @@ export default function BucketAdmin() {
                                 allowSelection={true}
                                 allowDeletion={true}
                                 mode="bucket"
+                                allowReorder={false}
                             />
                         </CardBody>
                     </Card>

@@ -208,6 +208,22 @@
     opacity: 1;
 }
 
+.videoIcon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+
+    i {
+        font-size: 3rem;
+        opacity: 0.9;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+}
+
 /* Audio Preview */
 .audioContainer {
     display: flex;
@@ -225,7 +241,7 @@
 
     .waveform {
         display: flex;
-        align-items: end;
+        align-items: flex-end;
         justify-content: center;
         height: 30px;
         gap: 2px;

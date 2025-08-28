@@ -54,6 +54,7 @@ func main() {
 
 	// Define Fiber config.
 	config := configs.FiberConfig()
+	config.BodyLimit = 100 * 1024 * 1024
 
 	// Define a new Fiber app with config.
 	app := fiber.New(config)

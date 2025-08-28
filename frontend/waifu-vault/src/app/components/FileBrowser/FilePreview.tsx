@@ -3,8 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTheme } from "@/app/contexts/ThemeContext";
 import styles from "./FilePreview.module.scss";
-import type { UrlFileMixin } from "../../../../../../src/model/dto/AdminBucketDto.js";
-import type { AdminFileData } from "../../../../../../src/model/dto/AdminData.js";
+import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
 
 interface FilePreviewProps {
     file: AdminFileData | UrlFileMixin;
@@ -23,7 +22,6 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [isHovered, setIsHovered] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
-    const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const { getThemeClass } = useTheme();
@@ -121,55 +119,6 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
                         }
                     };
                     img.src = fileUrl;
-                } else if (fileType === "video") {
-                    const video = document.createElement("video");
-                    const canvas = document.createElement("canvas");
-                    const ctx = canvas.getContext("2d");
-
-                    video.crossOrigin = "anonymous";
-                    video.preload = "metadata";
-                    video.muted = true;
-
-                    const handleMetadata = () => {
-                        if (mounted && !isNaN(video.duration)) {
-                            setMetadata({
-                                dimensions: `${video.videoWidth}×${video.videoHeight}`,
-                                duration: formatDuration(video.duration),
-                            });
-
-                            video.currentTime = video.duration * 0.1;
-                        }
-                    };
-
-                    const handleSeeked = () => {
-                        if (mounted && ctx) {
-                            canvas.width = video.videoWidth;
-                            canvas.height = video.videoHeight;
-
-                            try {
-                                ctx.drawImage(video, 0, 0);
-                                const thumbnailUrl = canvas.toDataURL("image/jpeg", 0.8);
-                                setVideoThumbnail(thumbnailUrl);
-                            } catch (error) {
-                                console.warn("Failed to generate video thumbnail:", error);
-                            }
-                        }
-                        setIsLoading(false);
-                        video.remove();
-                    };
-
-                    const handleError = () => {
-                        if (mounted) {
-                            setPreviewError("Failed to load video");
-                            setIsLoading(false);
-                        }
-                        video.remove();
-                    };
-
-                    video.addEventListener("loadedmetadata", handleMetadata);
-                    video.addEventListener("seeked", handleSeeked);
-                    video.addEventListener("error", handleError);
-                    video.src = fileUrl;
                 } else if (fileType === "audio") {
                     const audio = new Audio();
                     audio.crossOrigin = "anonymous";
@@ -187,6 +136,7 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
                     };
                     audio.src = fileUrl;
                 } else {
+                    // For videos and other file types, just show icon - no loading
                     setIsLoading(false);
                 }
             } catch (error) {
@@ -224,7 +174,10 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
 
     if (isLoading) {
         return (
-            <div className={`${styles.filePreview} ${styles[sizeClass]} ${styles.loading} ${styles[themeClass]}`}>
+            <div
+                ref={containerRef}
+                className={`${styles.filePreview} ${styles[sizeClass]} ${styles.loading} ${styles[themeClass]}`}
+            >
                 <div className={styles.loadingSpinner}>
                     <div className={styles.spinner}></div>
                 </div>
@@ -268,23 +221,9 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
             case "video":
                 return (
                     <div className={styles.videoContainer}>
-                        {videoThumbnail ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img alt={`${fileName} thumbnail`} className={styles.previewImage} src={videoThumbnail} />
-                        ) : (
-                            <div className={styles.videoPlaceholder}>
-                                <i className="bi bi-play-circle-fill"></i>
-                            </div>
-                        )}
-                        <div className={styles.playOverlay}>
+                        <div className={styles.videoIcon}>
                             <i className="bi bi-play-circle-fill"></i>
                         </div>
-                        {metadata.duration && <div className={styles.durationBadge}>{metadata.duration}</div>}
-                        {metadata.dimensions && (
-                            <div className={styles.videoOverlay}>
-                                <span className={styles.metadataTag}>{metadata.dimensions}</span>
-                            </div>
-                        )}
                     </div>
                 );
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./page.module.scss";
 import { Button, Card, CardBody, CardHeader, Footer, Header, ParticleBackground } from "@/app/components";
@@ -8,7 +8,7 @@ import { useEnvironment } from "@/app/hooks/useEnvironment";
 import { useBucketAuthContext } from "@/app/contexts/BucketAuthContext";
 import { useLoading } from "@/app/contexts/LoadingContext";
 
-export default function BucketAccess() {
+function BucketAccessContent() {
     const [token, setToken] = useState("");
     const [error, setError] = useState("");
     const { backendRestBaseUrl } = useEnvironment();
@@ -18,10 +18,24 @@ export default function BucketAccess() {
     const searchParams = useSearchParams();
 
     useEffect(() => {
-        if (searchParams.get("error") === "no_token") {
-            setError("no bucket token");
+        const errorParam = searchParams.get("error");
+        if (errorParam === "invalid_token") {
+            setError("Invalid or expired token. Please enter your bucket token to continue.");
+        } else if (errorParam === "no_token") {
+            setError("No bucket token provided. Please enter your bucket token below or create a new bucket.");
         }
     }, [searchParams]);
+
+    // Also check immediately on mount in case searchParams is available
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorParam = urlParams.get("error");
+        if (errorParam === "invalid_token") {
+            setError("Invalid or expired token. Please enter your bucket token to continue.");
+        } else if (errorParam === "no_token") {
+            setError("No bucket token provided. Please enter your bucket token below or create a new bucket.");
+        }
+    }, []);
 
     const handleCreateBucket = async () => {
         await withLoading(async () => {
@@ -147,5 +161,35 @@ export default function BucketAccess() {
             </main>
             <Footer />
         </div>
+    );
+}
+
+export default function BucketAccess() {
+    return (
+        <Suspense
+            fallback={
+                <div className={styles.container}>
+                    <ParticleBackground intensity="medium" />
+                    <div className={styles.headerSection}>
+                        <Header />
+                    </div>
+                    <main className={styles.pageMain}>
+                        <div className={styles.containerInner}>
+                            <Card className={styles.bucketCard}>
+                                <CardHeader>
+                                    <h1>Bucket Access</h1>
+                                </CardHeader>
+                                <CardBody>
+                                    <p>Loading...</p>
+                                </CardBody>
+                            </Card>
+                        </div>
+                    </main>
+                    <Footer />
+                </div>
+            }
+        >
+            <BucketAccessContent />
+        </Suspense>
     );
 }

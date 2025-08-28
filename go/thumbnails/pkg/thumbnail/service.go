@@ -1,6 +1,9 @@
 package thumbnail
 
 import (
+	"fmt"
+	"mime/multipart"
+
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
@@ -8,6 +11,7 @@ import (
 
 type Service interface {
 	GenerateThumbnails(files []mod.FileEntry, album int) error
+	GenerateThumbnail(header *multipart.FileHeader) ([]byte, error)
 	GetAllSupportedExtensions() []string
 	IsAlbumLoading(album int) bool
 }
@@ -59,4 +63,16 @@ func (s *service) IsAlbumLoading(albumId int) bool {
 func (s *service) GenerateThumbnails(files []mod.FileEntry, albumId int) error {
 	bulkBatchProcessor := NewBatchProcessor(s.dao, s.processor, files, albumId)
 	return bulkBatchProcessor.Process()
+}
+
+func (s *service) GenerateThumbnail(header *multipart.FileHeader) ([]byte, error) {
+	if !s.processor.SupportsMultipartFile(header) {
+		return nil, fmt.Errorf("unsupported file type: %s", header.Header.Get("Content-Type"))
+	}
+	file, err := header.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	return s.processor.GenerateThumbnailFromMultipart(file, header)
 }

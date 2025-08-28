@@ -1,29 +1,23 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import Button from "../Button";
 import { FilePreview } from "./FilePreview";
+import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
+import { useContextMenu } from "../../hooks/useContextMenu";
 import styles from "./FileBrowser.module.scss";
-import type { UrlFileMixin } from "../../../../../../src/model/dto/AdminBucketDto.js";
-import type { AdminFileData } from "../../../../../../src/model/dto/AdminData.js";
+import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
 
 type ViewMode = "grid" | "list" | "detailed";
 type SortField = "name" | "date" | "size" | "type";
 type SortOrder = "asc" | "desc";
-
-interface ContextMenuState {
-    visible: boolean;
-    x: number;
-    y: number;
-    fileId?: number;
-}
 
 interface FileBrowserProps {
     files: AdminFileData[] | UrlFileMixin[];
     onFilesSelected?: (fileIds: number[]) => void;
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
     onRenameFile?: (fileId: number, newName: string) => Promise<void>;
+    onReorderFiles?: (fileId: number, oldPosition: number, newPosition: number) => Promise<void>;
     onLogout?: () => void;
     showSearch?: boolean;
     showSort?: boolean;
@@ -31,6 +25,8 @@ interface FileBrowserProps {
     allowSelection?: boolean;
     allowDeletion?: boolean;
     allowRename?: boolean;
+    allowReorder?: boolean;
+    albumToken?: string;
     mode: "bucket" | "admin";
 }
 
@@ -39,6 +35,7 @@ export function FileBrowser({
     onFilesSelected,
     onDeleteFiles,
     onRenameFile,
+    onReorderFiles,
     onLogout,
     showSearch = true,
     showSort = true,
@@ -46,6 +43,8 @@ export function FileBrowser({
     allowSelection = true,
     allowDeletion = true,
     allowRename = true,
+    allowReorder = false,
+    albumToken,
 }: FileBrowserProps) {
     const [selectedFiles, setSelectedFiles] = useState<Set<number>>(new Set());
     const [lastSelectedFile, setLastSelectedFile] = useState<number | null>(null);
@@ -53,31 +52,27 @@ export function FileBrowser({
     const [viewMode, setViewMode] = useState<ViewMode>("grid");
     const [sortField, setSortField] = useState<SortField>("name");
     const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
-    const [contextMenu, setContextMenu] = useState<ContextMenuState>({ visible: false, x: 0, y: 0 });
+    const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
     const [draggedFiles, setDraggedFiles] = useState<number[]>([]);
     const [isRenaming, setIsRenaming] = useState<number | null>(null);
     const [renameValue, setRenameValue] = useState("");
+    const [draggedOverFile, setDraggedOverFile] = useState<number | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
     const fileListRef = useRef<HTMLDivElement>(null);
-    const contextMenuRef = useRef<HTMLDivElement>(null);
 
-    // Helper function for file type detection
-    const getFileType = useCallback((filename: string) => {
-        return filename.split(".").pop()?.toLowerCase() || "unknown";
-    }, []);
-
-    // Filter and sort files
     const filteredFiles = useMemo(() => {
         return files.filter(file => {
             const searchLower = searchQuery.toLowerCase();
             return (
-                file.fileName.toLowerCase().includes(searchLower) || getFileType(file.fileName).includes(searchLower)
+                file.originalFileName.toLowerCase().includes(searchLower) ??
+                file.originalFileName?.includes(searchLower)
             );
         });
-    }, [files, searchQuery, getFileType]);
+    }, [files, searchQuery]);
 
     const sortedFiles = useMemo(() => {
         return [...filteredFiles].sort((a, b) => {
-            let comparison;
+            let comparison: number;
 
             switch (sortField) {
                 case "date":
@@ -89,27 +84,19 @@ export function FileBrowser({
                     comparison = (a.fileSize || 0) - (b.fileSize || 0);
                     break;
                 case "type":
-                    comparison = getFileType(a.fileName).localeCompare(getFileType(b.fileName));
+                    const aFileExtension = a?.fileExtension?.toLowerCase() ?? "";
+                    const bFileExtension = b?.fileExtension?.toLowerCase() ?? "";
+                    comparison = aFileExtension.localeCompare(bFileExtension);
                     break;
                 case "name":
                 default:
-                    comparison = a.fileName.localeCompare(b.fileName);
+                    comparison = a.originalFileName.localeCompare(b.originalFileName);
                     break;
             }
 
             return sortOrder === "asc" ? comparison : -comparison;
         });
-    }, [filteredFiles, sortField, sortOrder, getFileType]);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (contextMenuRef.current && !contextMenuRef.current.contains(event.target as Node)) {
-                setContextMenu({ visible: false, x: 0, y: 0 });
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    }, [filteredFiles, sortField, sortOrder]);
 
     const handleSelectAll = useCallback(() => {
         const allFileIds = new Set(sortedFiles.map(f => f.id));
@@ -148,13 +135,13 @@ export function FileBrowser({
                 handleDeleteSelected();
             } else if (event.key === "Escape") {
                 setSelectedFiles(new Set());
-                setContextMenu({ visible: false, x: 0, y: 0 });
+                hideContextMenu();
             }
         };
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [selectedFiles, allowDeletion, handleSelectAll, handleDeleteSelected]);
+    }, [selectedFiles, allowDeletion, handleSelectAll, handleDeleteSelected, hideContextMenu]);
 
     const handleFileSelect = useCallback(
         (fileId: number, event?: React.MouseEvent) => {
@@ -162,15 +149,9 @@ export function FileBrowser({
                 return;
             }
 
-            let newSelected = new Set(selectedFiles);
+            const newSelected = new Set(selectedFiles);
 
-            if (event?.ctrlKey || event?.metaKey) {
-                if (newSelected.has(fileId)) {
-                    newSelected.delete(fileId);
-                } else {
-                    newSelected.add(fileId);
-                }
-            } else if (event?.shiftKey && lastSelectedFile !== null) {
+            if (event?.shiftKey && lastSelectedFile !== null) {
                 const fileIds = sortedFiles.map(f => f.id);
                 const startIndex = fileIds.indexOf(lastSelectedFile);
                 const endIndex = fileIds.indexOf(fileId);
@@ -180,7 +161,11 @@ export function FileBrowser({
                     newSelected.add(fileIds[i]);
                 }
             } else {
-                newSelected = new Set([fileId]);
+                if (newSelected.has(fileId)) {
+                    newSelected.delete(fileId);
+                } else {
+                    newSelected.add(fileId);
+                }
             }
 
             setSelectedFiles(newSelected);
@@ -203,67 +188,138 @@ export function FileBrowser({
         setRenameValue("");
     }, [isRenaming, onRenameFile, renameValue]);
 
-    const handleContextMenu = useCallback((event: React.MouseEvent, fileId?: number) => {
-        event.preventDefault();
-        event.stopPropagation();
+    const handleContextMenu = useCallback(
+        (event: React.MouseEvent, fileId?: number) => {
+            const file = fileId ? sortedFiles.find(f => f.id === fileId) : null;
 
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+            const contextMenuItems: ContextMenuItem[] = [];
 
-        const mouseX = event.pageX || event.clientX;
-        const mouseY = event.pageY || event.clientY;
+            if (file) {
+                contextMenuItems.push({
+                    id: "open",
+                    label: "Open",
+                    icon: <i className="bi bi-box-arrow-up-right"></i>,
+                    onClick: () => window.open(file.url, "_blank"),
+                });
 
-        const menuWidth = 180;
-        const menuHeight = 200;
+                if (allowRename) {
+                    contextMenuItems.push({
+                        id: "rename",
+                        label: "Rename",
+                        icon: <i className="bi bi-pencil"></i>,
+                        onClick: () => handleRenameStart(file.id, file.fileName || file.originalFileName),
+                    });
+                }
 
-        let x = mouseX;
-        let y = mouseY;
+                if (allowDeletion) {
+                    contextMenuItems.push({
+                        id: "delete",
+                        label: "Delete",
+                        icon: <i className="bi bi-trash"></i>,
+                        onClick: handleDeleteSelected,
+                        variant: "danger" as const,
+                        separator: true,
+                    });
+                }
+            } else {
+                contextMenuItems.push({
+                    id: "selectAll",
+                    label: "Select All",
+                    icon: <i className="bi bi-check-all"></i>,
+                    onClick: handleSelectAll,
+                });
 
-        if (x + menuWidth > viewportWidth) {
-            x = mouseX - menuWidth;
-        }
-        if (y + menuHeight > viewportHeight) {
-            y = mouseY - menuHeight;
-        }
+                if (selectedFiles.size > 0) {
+                    contextMenuItems.push({
+                        id: "clearSelection",
+                        label: "Clear Selection",
+                        icon: <i className="bi bi-x-circle"></i>,
+                        onClick: handleClearSelection,
+                    });
+                }
+            }
 
-        x = Math.max(10, x);
-        y = Math.max(10, y);
-
-        console.log("Context menu debug:", {
-            mouse: { pageX: event.pageX, pageY: event.pageY, clientX: event.clientX, clientY: event.clientY },
-            calculated: { mouseX, mouseY },
-            final: { x, y },
-            viewport: { viewportWidth, viewportHeight },
-            element: event.currentTarget?.getBoundingClientRect(),
-            scrollOffset: { scrollX: window.scrollX, scrollY: window.scrollY },
-        });
-
-        setContextMenu({
-            visible: true,
-            x,
-            y,
-            fileId,
-        });
-    }, []);
+            showContextMenu(event, contextMenuItems);
+        },
+        [
+            sortedFiles,
+            allowRename,
+            allowDeletion,
+            selectedFiles.size,
+            handleRenameStart,
+            handleDeleteSelected,
+            handleSelectAll,
+            handleClearSelection,
+            showContextMenu,
+        ],
+    );
 
     const handleDragStart = useCallback(
         (event: React.DragEvent, fileId: number) => {
-            const selectedFileIds = selectedFiles.has(fileId) ? Array.from(selectedFiles) : [fileId];
-            setDraggedFiles(selectedFileIds);
-            event.dataTransfer.setData("text/plain", selectedFileIds.join(","));
+            if (!allowReorder || !albumToken) {
+                const selectedFileIds = selectedFiles.has(fileId) ? Array.from(selectedFiles) : [fileId];
+                setDraggedFiles(selectedFileIds);
+                event.dataTransfer.setData("text/plain", selectedFileIds.join(","));
+                event.dataTransfer.effectAllowed = "move";
+                return;
+            }
+
+            setIsDragging(true);
+            setDraggedFiles([fileId]);
+            event.dataTransfer.setData("text/plain", fileId.toString());
             event.dataTransfer.effectAllowed = "move";
         },
-        [selectedFiles],
+        [selectedFiles, allowReorder, albumToken],
     );
 
-    const handleDragOver = useCallback((event: React.DragEvent) => {
-        event.preventDefault();
-        event.dataTransfer.dropEffect = "move";
-    }, []);
+    const handleDragOver = useCallback(
+        (event: React.DragEvent, targetFileId?: number) => {
+            event.preventDefault();
+            if (allowReorder && albumToken && targetFileId && isDragging) {
+                event.dataTransfer.dropEffect = "move";
+                setDraggedOverFile(targetFileId);
+            }
+        },
+        [allowReorder, albumToken, isDragging],
+    );
 
-    const handleDrop = useCallback((event: React.DragEvent) => {
-        event.preventDefault();
+    const handleDrop = useCallback(
+        async (event: React.DragEvent, targetFileId?: number) => {
+            event.preventDefault();
+
+            if (allowReorder && albumToken && targetFileId && isDragging && onReorderFiles) {
+                const draggedFileId = parseInt(event.dataTransfer.getData("text/plain"));
+
+                if (draggedFileId !== targetFileId) {
+                    const draggedFile = sortedFiles.find(f => f.id === draggedFileId);
+                    const targetFile = sortedFiles.find(f => f.id === targetFileId);
+
+                    if (draggedFile && targetFile) {
+                        const oldPosition = sortedFiles.findIndex(f => f.id === draggedFileId);
+                        const newPosition = sortedFiles.findIndex(f => f.id === targetFileId);
+
+                        if (oldPosition !== newPosition && oldPosition !== -1 && newPosition !== -1) {
+                            try {
+                                await onReorderFiles(draggedFileId, oldPosition, newPosition);
+                            } catch (error) {
+                                console.error("Failed to reorder files:", error);
+                            }
+                        }
+                    }
+                }
+            }
+
+            setDraggedFiles([]);
+            setDraggedOverFile(null);
+            setIsDragging(false);
+        },
+        [allowReorder, albumToken, isDragging, onReorderFiles, sortedFiles],
+    );
+
+    const handleDragEnd = useCallback(() => {
         setDraggedFiles([]);
+        setDraggedOverFile(null);
+        setIsDragging(false);
     }, []);
 
     const renderFileName = useCallback(
@@ -527,11 +583,14 @@ export function FileBrowser({
                                     key={file.id}
                                     className={`${styles.fileItem} ${selectedFiles.has(file.id) ? styles.selected : ""} ${
                                         draggedFiles.includes(file.id) ? styles.dragging : ""
-                                    }`}
+                                    } ${draggedOverFile === file.id ? styles.dragOver : ""}`}
                                     onClick={e => handleFileSelect(file.id, e)}
                                     onContextMenu={e => handleContextMenu(e, file.id)}
-                                    draggable
+                                    draggable={allowReorder ? allowReorder : true}
                                     onDragStart={e => handleDragStart(e, file.id)}
+                                    onDragOver={e => handleDragOver(e, file.id)}
+                                    onDrop={e => handleDrop(e, file.id)}
+                                    onDragEnd={handleDragEnd}
                                 >
                                     <div className={styles.filePreviewContainer}>
                                         <FilePreview file={file} size="large" />
@@ -567,7 +626,9 @@ export function FileBrowser({
                                     </div>
 
                                     {allowSelection && (
-                                        <div className={styles.selectCheckbox}>{renderFileCheckbox(file.id)}</div>
+                                        <div className={styles.selectCheckbox} onClick={e => e.stopPropagation()}>
+                                            {renderFileCheckbox(file.id)}
+                                        </div>
                                     )}
                                 </div>
                             );
@@ -592,14 +653,19 @@ export function FileBrowser({
                                     key={file.id}
                                     className={`${styles.fileListItem} ${selectedFiles.has(file.id) ? styles.selected : ""} ${
                                         draggedFiles.includes(file.id) ? styles.dragging : ""
-                                    }`}
+                                    } ${draggedOverFile === file.id ? styles.dragOver : ""}`}
                                     onClick={e => handleFileSelect(file.id, e)}
                                     onContextMenu={e => handleContextMenu(e, file.id)}
-                                    draggable
+                                    draggable={allowReorder ? allowReorder : true}
                                     onDragStart={e => handleDragStart(e, file.id)}
+                                    onDragOver={e => handleDragOver(e, file.id)}
+                                    onDrop={e => handleDrop(e, file.id)}
+                                    onDragEnd={handleDragEnd}
                                 >
                                     {allowSelection && (
-                                        <div className={styles.fileListCheckbox}>{renderFileCheckbox(file.id)}</div>
+                                        <div className={styles.fileListCheckbox} onClick={e => e.stopPropagation()}>
+                                            {renderFileCheckbox(file.id)}
+                                        </div>
                                     )}
 
                                     <div className={styles.fileListIcon} style={{ color: fileIconData.color }}>
@@ -624,90 +690,13 @@ export function FileBrowser({
                 )}
             </div>
 
-            {/* Context Menu */}
-            {contextMenu.visible &&
-                typeof document !== "undefined" &&
-                createPortal(
-                    <div
-                        ref={contextMenuRef}
-                        className={styles.contextMenu}
-                        style={{ left: contextMenu.x, top: contextMenu.y }}
-                    >
-                        {contextMenu.fileId ? (
-                            (() => {
-                                const file = sortedFiles.find(f => f.id === contextMenu.fileId);
-                                if (!file) {
-                                    return null;
-                                }
-                                return (
-                                    <>
-                                        <Button
-                                            variant="outline"
-                                            size="small"
-                                            onClick={() => {
-                                                window.open(file.url, "_blank");
-                                                setContextMenu({ visible: false, x: 0, y: 0 });
-                                            }}
-                                        >
-                                            <i className="bi bi-box-arrow-up-right"></i> Open
-                                        </Button>
-                                        {allowRename && (
-                                            <Button
-                                                variant="outline"
-                                                size="small"
-                                                onClick={() => {
-                                                    handleRenameStart(file.id, file.fileName);
-                                                    setContextMenu({ visible: false, x: 0, y: 0 });
-                                                }}
-                                            >
-                                                <i className="bi bi-pencil"></i> Rename
-                                            </Button>
-                                        )}
-                                        <div className={styles.contextMenuSeparator} />
-                                        {allowDeletion && (
-                                            <Button
-                                                variant="secondary"
-                                                size="small"
-                                                onClick={() => {
-                                                    handleDeleteSelected();
-                                                    setContextMenu({ visible: false, x: 0, y: 0 });
-                                                }}
-                                            >
-                                                <i className="bi bi-trash"></i> Delete
-                                            </Button>
-                                        )}
-                                    </>
-                                );
-                            })()
-                        ) : (
-                            <>
-                                <Button
-                                    variant="outline"
-                                    size="small"
-                                    onClick={() => {
-                                        handleSelectAll();
-                                        setContextMenu({ visible: false, x: 0, y: 0 });
-                                    }}
-                                >
-                                    <i className="bi bi-check-all"></i> Select All
-                                </Button>
-                                {selectedFiles.size > 0 && (
-                                    <Button
-                                        variant="outline"
-                                        size="small"
-                                        onClick={() => {
-                                            handleClearSelection();
-                                            setContextMenu({ visible: false, x: 0, y: 0 });
-                                        }}
-                                    >
-                                        <i className="bi bi-x-circle"></i> Clear Selection
-                                    </Button>
-                                )}
-                            </>
-                        )}
-                    </div>,
-                    document.body,
-                )}
+            <ContextMenu
+                visible={contextMenu.visible}
+                x={contextMenu.x}
+                y={contextMenu.y}
+                items={contextMenu.items}
+                onClose={hideContextMenu}
+            />
         </div>
     );
 }
