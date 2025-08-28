@@ -71,6 +71,9 @@ func main() {
 	// Middlewares.
 	middleware.FiberMiddleware(app) // Register Fiber's middleware for app.
 
+	// Static files
+	app.Static("/", "./static")
+
 	// Swagger documentation
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 

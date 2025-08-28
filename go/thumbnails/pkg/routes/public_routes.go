@@ -6,8 +6,6 @@ import (
 )
 
 func PublicRoutes(s controllers.Service, app *fiber.App) {
-	app.Get("/", s.RootRedirect)
-
 	// API routes group
 	routes := s.GetAllRoutes()
 	router := app.Group("/api/v1")
