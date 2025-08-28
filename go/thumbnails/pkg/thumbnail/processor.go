@@ -122,6 +122,67 @@ func (p *processor) generateImageThumbnail(fileEntry mod.FileEntry) ([]byte, err
 
 // generateImageThumbnailFromFile creates a thumbnail from an image file path
 func (p *processor) generateImageThumbnailFromFile(filePath, extension string) ([]byte, error) {
+	if isAnimatedImage(extension) {
+		hasMultipleFrames, err := p.checkIfActuallyAnimated(filePath)
+		if err != nil {
+			return p.generateStaticThumbnail(filePath, extension)
+		}
+
+		if hasMultipleFrames {
+			return p.generateAnimatedThumbnail(filePath, extension)
+		}
+	}
+
+	return p.generateStaticThumbnail(filePath, extension)
+}
+
+// checkIfActuallyAnimated checks if a file actually has multiple frames using LoadThumbnailFromFile
+func (p *processor) checkIfActuallyAnimated(filePath string) (bool, error) {
+	intSet := vips.IntParameter{}
+	intSet.Set(-1)
+	importParams := &vips.ImportParams{NumPages: intSet}
+
+	vipsImage, err := vips.LoadThumbnailFromFile(filePath, 100, 100, vips.InterestingCentre, vips.SizeDown, importParams)
+	if err != nil {
+		return false, err
+	}
+	defer vipsImage.Close()
+
+	pages := vipsImage.Pages()
+	return pages > 1, nil
+}
+
+// generateAnimatedThumbnail handles animated images (memory-intensive but preserves animation)
+func (p *processor) generateAnimatedThumbnail(filePath, extension string) ([]byte, error) {
+	importParams := p.getImportParams(extension)
+	vipsImage, err := vips.LoadImageFromFile(filePath, importParams)
+	if err != nil {
+		return nil, err
+	}
+	defer vipsImage.Close()
+
+	err = vipsImage.ThumbnailWithSize(DefaultThumbnailWidth, 0, vips.InterestingNone, vips.SizeDown)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := vipsImage.AutoRotate(); err != nil {
+		return nil, err
+	}
+
+	if err := vipsImage.RemoveMetadata("delay", "dispose", "loop", "loop_count"); err != nil {
+		return nil, err
+	}
+
+	thumbnail, _, err := vipsImage.ExportWebp(nil)
+	if err != nil {
+		return nil, err
+	}
+	return thumbnail, nil
+}
+
+// generateStaticThumbnail handles static images (memory-efficient streaming approach)
+func (p *processor) generateStaticThumbnail(filePath, extension string) ([]byte, error) {
 	width, height, err := getResizedDimensions(filePath, extension)
 	if err != nil {
 		return nil, err
@@ -134,16 +195,6 @@ func (p *processor) generateImageThumbnailFromFile(filePath, extension string) (
 	}
 
 	return p.processVipsImage(vipsImage)
-}
-
-// getImportParams returns vips import parameters for the given extension
-func (p *processor) getImportParams(extension string) *vips.ImportParams {
-	if isAnimatedImage(extension) {
-		intSet := vips.IntParameter{}
-		intSet.Set(-1)
-		return &vips.ImportParams{NumPages: intSet}
-	}
-	return vips.NewImportParams()
 }
 
 // processVipsImage applies common processing to a vips image and exports as WebP
@@ -163,6 +214,16 @@ func (p *processor) processVipsImage(vipsImage *vips.ImageRef) ([]byte, error) {
 		return nil, err
 	}
 	return thumbnail, nil
+}
+
+// getImportParams returns vips import parameters for the given extension
+func (p *processor) getImportParams(extension string) *vips.ImportParams {
+	if isAnimatedImage(extension) {
+		intSet := vips.IntParameter{}
+		intSet.Set(-1)
+		return &vips.ImportParams{NumPages: intSet}
+	}
+	return vips.NewImportParams()
 }
 
 // generateVideoThumbnailFromPath creates a thumbnail from a video file path (without baseUrl prefix)

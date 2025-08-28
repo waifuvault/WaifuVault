@@ -172,6 +172,11 @@
             overflow: hidden;
         }
 
+        .download_btn{
+            display: block;
+            margin: auto;
+        }
+
         .btn:before {
             content: '';
             position: absolute;
@@ -352,10 +357,17 @@
 
         .format-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             color: #9ca3af;
             font-size: 0.8rem;
+        }
+        
+        .format-grid span {
+            white-space: nowrap;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .api-info {
@@ -452,7 +464,7 @@
     <div class="result" id="result">
         <h3>Generated Thumbnail</h3>
         <img class="thumbnail" id="thumbnailImg" alt="Generated thumbnail">
-        <button class="btn" onclick="downloadThumbnail()">Download Thumbnail</button>
+        <button class="btn download_btn" onclick="downloadThumbnail()">Download Thumbnail</button>
     </div>
 
     <div class="supported-formats">
@@ -652,7 +664,7 @@
 
                 const allFormatsGrid = document.getElementById("allFormatsList");
                 allFormatsGrid.innerHTML = extensions.map(ext =>
-                    `<span>${ext.toUpperCase()}</span>`
+                    `<span title="${ext.toUpperCase()}">${ext.toUpperCase()}</span>`
                 ).join("");
 
                 const commonFormats = [...imageExts, ...videoExts].map(ext => "." + ext);
