@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import styles from "./Hero.module.scss";
 import { useEnvironment } from "@/app/hooks/useEnvironment";
-import Button from "@/app/components/Button";
+import Button from "@/app/components/Button/Button";
 
 interface StatsData {
     recordCount: number;

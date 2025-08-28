@@ -3,8 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import styles from "./Header.module.scss";
-import ThemeSelector from "@/app/components/ThemeSelector";
-import Button from "@/app/components/Button";
+import ThemeSelector from "@/app/components/ThemeSelector/ThemeSelector";
+import Button from "@/app/components/Button/Button";
 
 export default function Header() {
     return (

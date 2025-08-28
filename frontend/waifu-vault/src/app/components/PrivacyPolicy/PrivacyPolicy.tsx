@@ -2,7 +2,7 @@
 
 import React from "react";
 import styles from "./PrivacyPolicy.module.scss";
-import Button from "@/app/components/Button";
+import Button from "@/app/components/Button/Button";
 
 export default function PrivacyPolicy() {
     return (

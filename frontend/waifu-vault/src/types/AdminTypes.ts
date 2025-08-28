@@ -1,5 +1,3 @@
-// Type definitions for admin functionality
-
 export interface UrlFileMixin {
     id: number;
     fileName: string;

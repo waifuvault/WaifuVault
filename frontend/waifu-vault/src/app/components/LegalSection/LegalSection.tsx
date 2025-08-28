@@ -2,8 +2,8 @@
 
 import React from "react";
 import styles from "./LegalSection.module.scss";
-import Restrictions from "@/app/components/Restrictions";
-import PrivacyPolicy from "@/app/components/PrivacyPolicy";
+import Restrictions from "@/app/components/Restrictions/Restrictions";
+import PrivacyPolicy from "@/app/components/PrivacyPolicy/PrivacyPolicy";
 
 export default function LegalSection() {
     return (

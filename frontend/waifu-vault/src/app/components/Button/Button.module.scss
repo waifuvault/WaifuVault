@@ -1,6 +1,6 @@
 @use "sass:map";
-@use "../styles/theme-config" as config;
-@use "../styles/mixins" as mix;
+@use "../../styles/theme-config" as config;
+@use "../../styles/mixins" as mix;
 $button-variants: (
     primary: (
         bg: var(--gradient-primary),

@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import styles from "./BespokeSDKs.module.scss";
-import Button from "@/app/components/Button";
+import Button from "@/app/components/Button/Button";
 
 interface SDK {
     name: string;

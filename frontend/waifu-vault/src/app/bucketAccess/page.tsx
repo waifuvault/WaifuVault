@@ -62,7 +62,6 @@ function BucketAccessContent() {
         setError("");
 
         try {
-            console.log("Making request to:", `${backendRestBaseUrl}/auth/authenticate_bucket_frontend`);
             const response = await fetch(`${backendRestBaseUrl}/auth/authenticate_bucket_frontend`, {
                 method: "POST",
                 headers: {
