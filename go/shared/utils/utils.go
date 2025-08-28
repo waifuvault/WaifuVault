@@ -59,11 +59,4 @@ func IsVideo(mediaType string) bool {
 	return strings.HasPrefix(mediaType, "video/")
 }
 
-func GetBseUrl() string {
-	if os.Getenv("NODE_ENV") == "development" {
-		return "http://127.0.0.1:5006"
-	}
-	return os.Getenv("BASE_URL")
-}
-
 var FileBaseUrl = getFileBaseDir()

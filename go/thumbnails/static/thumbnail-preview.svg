@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" style="background: linear-gradient(135deg, #0a0a0f 0%, #1a1b23 100%);">
+  <defs>
+    <linearGradient id="titleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#60a5fa" />
+      <stop offset="50%" style="stop-color:#a78bfa" />
+      <stop offset="100%" style="stop-color:#f472b6" />
+    </linearGradient>
+    
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <rect width="800" height="400" fill="linear-gradient(135deg, #0a0a0f 0%, #1a1b23 100%)"/>
+  
+  <circle cx="120" cy="80" r="60" fill="#60a5fa" opacity="0.3"/>
+  <circle cx="680" cy="320" r="80" fill="#a78bfa" opacity="0.2"/>
+  <circle cx="200" cy="300" r="40" fill="#f472b6" opacity="0.25"/>
+  
+  
+  <text x="80" y="140" font-family="Arial, sans-serif" font-size="52" font-weight="bold" fill="url(#titleGrad)" filter="url(#glow)">
+    📷✨ Thumbnails!
+  </text>
+  
+  <text x="80" y="190" font-family="Arial, sans-serif" font-size="24" fill="#d1d5db">
+    Instant cute previews~ (´｡• ᵕ •｡`) ♡
+  </text>
+  
+  <text x="80" y="280" font-family="Arial, sans-serif" font-size="28" fill="#f472b6" font-weight="600">
+    💜 WaifuVault.moe 💜
+  </text>
+  
+  <g fill="#f472b6" opacity="0.8">
+    <polygon points="150,60 155,70 165,70 157,77 160,87 150,80 140,87 143,77 135,70 145,70" filter="url(#glow)"/>
+    <polygon points="300,40 303,46 309,46 304,50 306,56 300,52 294,56 296,50 291,46 297,46" filter="url(#glow)"/>
+    <polygon points="700,50 703,56 709,56 704,60 706,66 700,62 694,66 696,60 691,56 697,56" filter="url(#glow)"/>
+    <polygon points="100,250 103,256 109,256 104,260 106,266 100,262 94,266 96,260 91,256 97,256" filter="url(#glow)"/>
+    <polygon points="350,320 353,326 359,326 354,330 356,336 350,332 344,336 346,330 341,326 347,326" filter="url(#glow)"/>
+  </g>
+  
+  <g fill="#60a5fa" opacity="0.7">
+    <circle cx="200" cy="80" r="3" filter="url(#glow)"/>
+    <circle cx="450" cy="60" r="2" filter="url(#glow)"/>
+    <circle cx="650" cy="90" r="2.5" filter="url(#glow)"/>
+    <circle cx="120" cy="320" r="2" filter="url(#glow)"/>
+    <circle cx="400" cy="350" r="3" filter="url(#glow)"/>
+  </g>
+  
+  <g fill="#ec4899" opacity="0.6">
+    <text x="250" y="100" font-size="20">♡</text>
+    <text x="600" y="80" font-size="16">♡</text>
+    <text x="180" y="320" font-size="18">♡</text>
+    <text x="480" y="340" font-size="14">♡</text>
+  </g>
+</svg>

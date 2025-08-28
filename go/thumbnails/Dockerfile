@@ -42,5 +42,8 @@ COPY --from=builder /app/thumbnails/thumbnails .
 # Copy the generated docs folder
 COPY --from=builder /app/thumbnails/docs ./docs
 
+# Copy the static files folder
+COPY --from=builder /app/thumbnails/static ./static
+
 EXPOSE 8080
 CMD ["./thumbnails"]
