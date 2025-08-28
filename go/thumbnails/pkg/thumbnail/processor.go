@@ -5,12 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	"io"
+	"mime/multipart"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 
 	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"golang.org/x/image/webp"
@@ -22,6 +25,12 @@ type Processor interface {
 
 	// SupportsFile checks if the file can be processed
 	SupportsFile(fileEntry mod.FileEntry) bool
+
+	// GenerateThumbnailFromMultipart creates a thumbnail for a multipart file
+	GenerateThumbnailFromMultipart(file multipart.File, header *multipart.FileHeader) ([]byte, error)
+
+	// SupportsMultipartFile checks if the multipart file can be processed
+	SupportsMultipartFile(header *multipart.FileHeader) bool
 }
 
 type processor struct {
@@ -59,9 +68,105 @@ func (p *processor) SupportsFile(fileEntry mod.FileEntry) bool {
 	return fileSupported(fileEntry, p.ffmpegFormats, p.imageFormats)
 }
 
+// GenerateThumbnailFromMultipart creates a thumbnail for a multipart file
+func (p *processor) GenerateThumbnailFromMultipart(file multipart.File, header *multipart.FileHeader) ([]byte, error) {
+	if !p.SupportsMultipartFile(header) {
+		return nil, fmt.Errorf("unsupported file type: %s", header.Header.Get("Content-Type"))
+	}
+
+	extension := getExtensionFromFilename(header.Filename)
+
+	tempFile, err := os.CreateTemp("", "thumbnail-*"+extension)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(tempFile.Name())
+	defer tempFile.Close()
+
+	_, err = io.Copy(tempFile, file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to copy file content: %w", err)
+	}
+
+	mediaType := header.Header.Get("Content-Type")
+
+	if utils.IsImage(mediaType) {
+		return p.generateImageThumbnailFromFile(tempFile.Name(), extension)
+	} else if utils.IsVideo(mediaType) {
+		return p.generateVideoThumbnailFromPath(tempFile.Name())
+	}
+
+	return nil, fmt.Errorf("unsupported media type: %s", mediaType)
+}
+
+// SupportsMultipartFile checks if the multipart file can be processed
+func (p *processor) SupportsMultipartFile(header *multipart.FileHeader) bool {
+	mediaType := header.Header.Get("Content-Type")
+	extension := getExtensionFromFilename(header.Filename)
+
+	return (utils.IsImage(mediaType) && lo.Contains(p.imageFormats, extension)) ||
+		(utils.IsVideo(mediaType) && lo.Contains(p.ffmpegFormats, extension))
+}
+
 // generateVideoThumbnail creates a thumbnail from a video file
 func (p *processor) generateVideoThumbnail(videoPath string) ([]byte, error) {
-	videoPath = p.baseUrl + "/" + videoPath
+	fullPath := p.baseUrl + "/" + videoPath
+	return p.generateVideoThumbnailFromPath(fullPath)
+}
+
+// generateImageThumbnail creates a thumbnail from an image file (streaming)
+func (p *processor) generateImageThumbnail(fileEntry mod.FileEntry) ([]byte, error) {
+	file := p.baseUrl + "/" + fileEntry.FullFileNameOnSystem
+	return p.generateImageThumbnailFromFile(file, fileEntry.Extension)
+}
+
+// generateImageThumbnailFromFile creates a thumbnail from an image file path
+func (p *processor) generateImageThumbnailFromFile(filePath, extension string) ([]byte, error) {
+	width, height, err := getResizedDimensions(filePath, extension)
+	if err != nil {
+		return nil, err
+	}
+
+	importParams := p.getImportParams(extension)
+	vipsImage, err := vips.LoadThumbnailFromFile(filePath, width, height, vips.InterestingCentre, vips.SizeDown, importParams)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.processVipsImage(vipsImage)
+}
+
+// getImportParams returns vips import parameters for the given extension
+func (p *processor) getImportParams(extension string) *vips.ImportParams {
+	if isAnimatedImage(extension) {
+		intSet := vips.IntParameter{}
+		intSet.Set(-1)
+		return &vips.ImportParams{NumPages: intSet}
+	}
+	return vips.NewImportParams()
+}
+
+// processVipsImage applies common processing to a vips image and exports as WebP
+func (p *processor) processVipsImage(vipsImage *vips.ImageRef) ([]byte, error) {
+	defer vipsImage.Close()
+
+	if err := vipsImage.AutoRotate(); err != nil {
+		return nil, err
+	}
+
+	if err := vipsImage.RemoveMetadata("delay", "dispose", "loop", "loop_count"); err != nil {
+		return nil, err
+	}
+
+	thumbnail, _, err := vipsImage.ExportWebp(nil)
+	if err != nil {
+		return nil, err
+	}
+	return thumbnail, nil
+}
+
+// generateVideoThumbnailFromPath creates a thumbnail from a video file path (without baseUrl prefix)
+func (p *processor) generateVideoThumbnailFromPath(videoPath string) ([]byte, error) {
 	probeCmd := exec.Command("ffprobe", "-v", "error", "-show_format", "-print_format", "json", videoPath)
 	probeOut, err := probeCmd.Output()
 	if err != nil {
@@ -109,96 +214,55 @@ func (p *processor) generateVideoThumbnail(videoPath string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// generateImageThumbnail creates a thumbnail from an image file
-func (p *processor) generateImageThumbnail(fileEntry mod.FileEntry) ([]byte, error) {
-	file := p.baseUrl + "/" + fileEntry.FullFileNameOnSystem
-
-	intSet := vips.IntParameter{}
-	intSet.Set(-1)
-
-	width, height, err := getResizedDimensions(file, fileEntry.Extension)
-	if err != nil {
-		return nil, err
+func getExtensionFromFilename(filename string) string {
+	lastDot := strings.LastIndex(filename, ".")
+	if lastDot == -1 {
+		return ""
 	}
-
-	var importParams *vips.ImportParams
-
-	if isAnimatedImage(fileEntry.Extension) {
-		importParams = &vips.ImportParams{
-			NumPages: intSet,
-		}
-	} else {
-		importParams = vips.NewImportParams()
-	}
-
-	vipsImage, err := vips.LoadThumbnailFromFile(
-		file,
-		width,
-		height,
-		vips.InterestingCentre,
-		vips.SizeDown,
-		importParams,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	err = vipsImage.AutoRotate()
-	if err != nil {
-		return nil, err
-	}
-
-	err = vipsImage.RemoveMetadata("delay", "dispose", "loop", "loop_count")
-	if err != nil {
-		return nil, err
-	}
-
-	thumbnail, _, err := vipsImage.ExportWebp(nil)
-	if err != nil {
-		return nil, err
-	}
-	return thumbnail, nil
+	return strings.ToLower(filename[lastDot+1:])
 }
 
 func getResizedDimensions(filePath, extension string) (newWidth, newHeight int, err error) {
-	// Open the image file
 	file, err := os.Open(filePath)
 	if err != nil {
 		return 0, 0, err
 	}
 	defer file.Close()
 
-	var origWidth, origHeight int
+	origWidth, origHeight, err := getImageDimensions(file, extension)
+	if err != nil {
+		return 0, 0, err
+	}
+	return calculateThumbnailDimensions(origWidth, origHeight)
+}
 
-	// Check if it's a WebP file based on extension
+// getImageDimensions extracts width and height from any io.ReadSeeker
+func getImageDimensions(reader io.ReadSeeker, extension string) (width, height int, err error) {
 	if strings.ToLower(extension) == "webp" {
-		// Decode WebP specifically
-		img, err := webp.Decode(file)
+		img, err := webp.Decode(reader)
 		if err != nil {
 			return 0, 0, err
 		}
 		bounds := img.Bounds()
-		origWidth = bounds.Dx()
-		origHeight = bounds.Dy()
+		return bounds.Dx(), bounds.Dy(), nil
 	} else {
-		// For other formats, use the standard decoder
-		file.Seek(0, 0) // Reset file pointer to beginning
-		config, _, err := image.DecodeConfig(file)
+		reader.Seek(0, 0) // Reset to beginning for non-WebP
+		config, _, err := image.DecodeConfig(reader)
 		if err != nil {
 			return 0, 0, err
 		}
-		origWidth = config.Width
-		origHeight = config.Height
+		return config.Width, config.Height, nil
 	}
+}
 
+// calculateThumbnailDimensions calculates scaled dimensions maintaining the aspect ratio
+func calculateThumbnailDimensions(origWidth, origHeight int) (newWidth, newHeight int, err error) {
 	if origWidth == 0 {
 		return 0, 0, nil
 	}
 
-	// Fix the new width to the default and calculate the scaling factor
 	newWidth = DefaultThumbnailWidth
 	scaleFactor := float64(newWidth) / float64(origWidth)
 	newHeight = int(float64(origHeight) * scaleFactor)
-
-	return
+	return newWidth, newHeight, nil
 }

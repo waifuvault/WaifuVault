@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,6 +12,14 @@ import (
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/wapimod"
 )
+
+func (s *Service) getAllThumbnailRoutes() []FSetupRoute {
+	return []FSetupRoute{
+		s.setupGenerateThumbnailsRoute,
+		s.setupGetAllSupportedExtensionsRoute,
+		s.setupUploadFileRoute,
+	}
+}
 
 // GetAllSupportedExtensions godoc
 //
@@ -21,13 +30,6 @@ import (
 //	@Produce		json
 //	@Success		200	{array}	string	"List of supported file extensions"
 //	@Router			/generateThumbnails/supported [get]
-func (s *Service) getAllThumbnailRoutes() []FSetupRoute {
-	return []FSetupRoute{
-		s.setupGenerateThumbnailsRoute,
-		s.setupGetAllSupportedExtensionsRoute,
-	}
-}
-
 func (s *Service) setupGetAllSupportedExtensionsRoute(routeGroup fiber.Router) {
 	routeGroup.Get("/generateThumbnails/supported", s.getAllSupportedExtensionsRoute)
 }
@@ -38,19 +40,6 @@ func (s *Service) getAllSupportedExtensionsRoute(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fileTypes)
 }
 
-// GenerateThumbnails godoc
-//
-//	@Summary		Generate thumbnails
-//	@Description	Processes a batch of files to generate thumbnails. The operation runs asynchronously in the background.
-//	@Tags			thumbnails
-//	@Accept			json
-//	@Produce		json
-//	@Param	albumId					query		int					true	"The ID of the album to generate thumbnails for"		minimum(1)
-//	@Param			addingAdditionalFiles	query		bool				false	"Whether adding additional files to an existing album"	default(false)
-//	@Param			files					body		[]mod.FileEntry		true	"Array of file entries to process"
-//	@Success	200						{object}	wapimod.ApiResult	"Thumbnail generation started successfully"
-//	@Failure		400						{object}	wapimod.ApiResult	"Bad request - invalid payload or missing albumId"
-//	@Router			/generateThumbnails [post]
 func (s *Service) setupGenerateThumbnailsRoute(routeGroup fiber.Router) {
 	routeGroup.Post("/generateThumbnails", s.generateThumbnails)
 }
@@ -87,4 +76,42 @@ func (s *Service) generateThumbnails(ctx *fiber.Ctx) error {
 		}
 	}()
 	return ctx.Status(fiber.StatusOK).JSON(wapimod.NewApiResult("", true))
+}
+
+// Generate thumbnail godoc
+//
+//	@Summary	Upload a file
+//	@Description	Accepts a file upload via multipart form data
+//	@Tags	thumbnails
+//	@Accept	multipart/form-data
+//	@Produce	json
+//	@Param	file	formData	file	true	"File to upload"
+//	@Success	200	{object}	map[string]interface{}	"File uploaded successfully"
+//	@Failure	400	{object}	map[string]interface{}	"Bad request - no file uploaded"
+//	@Router	/generateThumbnail [post]
+func (s *Service) setupUploadFileRoute(routeGroup fiber.Router) {
+	routeGroup.Post("/generateThumbnail", s.generateThumbnail)
+}
+
+func (s *Service) generateThumbnail(ctx *fiber.Ctx) error {
+	fileHeader, err := ctx.FormFile("file")
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "No file uploaded",
+		})
+	}
+
+	thumbnail, err := s.ThumbnailService.GenerateThumbnail(fileHeader)
+	if err != nil {
+		if strings.Contains(err.Error(), "unsupported file type") {
+			return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("unsupported file type", err))
+		}
+		return ctx.Status(fiber.StatusInternalServerError).JSON(wapimod.NewApiError("error generating thumbnail", err))
+	}
+
+	ctx.Set("Content-Length", fmt.Sprintf("%d", len(thumbnail)))
+	ctx.Status(fiber.StatusOK)
+	ctx.Set(fiber.HeaderContentType, "image/webp")
+
+	return ctx.Send(thumbnail)
 }
