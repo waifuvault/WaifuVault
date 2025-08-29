@@ -1,0 +1,13 @@
+@use "./styles/layout.scss";
+
+.container {
+    @extend .page-container;
+}
+
+.pageMain {
+    @extend .page-main;
+}
+
+.containerInner {
+    @extend .page-content;
+}

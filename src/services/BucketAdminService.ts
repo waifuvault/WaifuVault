@@ -31,10 +31,11 @@ export class BucketAdminService extends AbstractAdminService {
     }
 
     public override async getAllEntries(): Promise<FileUploadModel[]> {
-        const allEntries = await this.repo.getAllEntries();
         const bucket = await this.bucketService.getBucket();
-        const finalEntries = bucket ? (bucket.files ?? []) : allEntries;
-        return finalEntries.filter(e => !e.hasExpired);
+        if (!bucket) {
+            return [];
+        }
+        return bucket.files?.filter(e => !e.hasExpired) ?? [];
     }
 
     public override getPagedEntries(
