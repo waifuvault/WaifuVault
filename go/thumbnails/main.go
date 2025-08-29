@@ -5,13 +5,13 @@ import (
 	"strings"
 
 	"github.com/create-go-app/fiber-go-template/pkg/configs"
-	"github.com/create-go-app/fiber-go-template/pkg/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/swaggo/fiber-swagger"
+	"github.com/waifuvault/WaifuVault/shared/middleware"
 	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/controllers"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
@@ -66,10 +66,10 @@ func main() {
 	}
 
 	// services
-	service := controllers.NewService(mainDao)
+	service := controllers.NewService(mainDao, rdb)
 
 	// Middlewares.
-	middleware.FiberMiddleware(app) // Register Fiber's middleware for app.
+	middleware.SetupCommonMiddleware(app)
 
 	// Static files
 	app.Static("/", "./static")

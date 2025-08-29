@@ -1,9 +1,22 @@
 package mod
 
-// FileEntry represents a file entry for thumbnail generation
+import "github.com/google/uuid"
+
 type FileEntry struct {
-	Id                   int    `json:"id" example:"1" validate:"required" description:"Unique identifier for the file"`
-	FullFileNameOnSystem string `json:"fileOnDisk" example:"uploads/image.jpg" validate:"required" description:"Path to the file on the server"`
-	MediaType            string `json:"mediaType" example:"image/jpeg" validate:"required" description:"MIME type of the file"`
-	Extension            string `json:"extension" example:"jpg" validate:"required" description:"File extension"`
+	Id        int       `json:"id" gorm:"column:id;primary_key;auto_increment"`
+	MediaType string    `json:"mediaType" gorm:"column:mediaType"`
+	Extension string    `json:"extension" gorm:"column:fileExtension"`
+	FileName  string    `json:"fileName" gorm:"column:fileName"`
+	Token     uuid.UUID `json:"token" gorm:"column:token"`
+}
+
+func (f FileEntry) TableName() string {
+	return "file_upload_model"
+}
+
+func (f FileEntry) FullFileNameOnSystem() string {
+	if f.Extension != "" {
+		return f.FileName + "." + f.Extension
+	}
+	return f.FileName
 }

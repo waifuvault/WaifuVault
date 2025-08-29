@@ -10,11 +10,11 @@ import (
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/rs/zerolog/log"
 	"github.com/waifuvault/WaifuVault/shared/utils"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
+	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dto"
 )
 
 // fileSupported checks if a file type is supported for thumbnail generation
-func fileSupported(file mod.FileEntry, ffmpegFormats []string, imageExtensions []string) bool {
+func fileSupported(file dto.FileEntryDto, ffmpegFormats []string, imageExtensions []string) bool {
 	if utils.IsImage(file.MediaType) {
 		for _, ext := range imageExtensions {
 			lower := strings.ToLower(file.Extension)

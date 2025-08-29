@@ -5,6 +5,8 @@ import { useTheme } from "@/app/contexts/ThemeContext";
 import styles from "./FilePreview.module.scss";
 import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
 
+const thumbnailCache = new Map<string, string>();
+
 interface FilePreviewProps {
     file: AdminFileData | UrlFileMixin;
     size?: "small" | "medium" | "large";
@@ -12,16 +14,11 @@ interface FilePreviewProps {
 
 type FilePreviewType = "audio" | "image" | "pdf" | "text" | "unknown" | "video" | "archive" | "document";
 
-interface FileMetadata {
-    dimensions?: string;
-    duration?: string;
-}
-
 export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
-    const [metadata, setMetadata] = useState<FileMetadata>({});
     const [isLoading, setIsLoading] = useState(true);
     const [isHovered, setIsHovered] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
+    const [cachedImageUrl, setCachedImageUrl] = useState<string | null>(null);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const { getThemeClass } = useTheme();
@@ -91,10 +88,10 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
         return "unknown";
     }, []);
 
-    // Extract file properties based on the file type (AdminFileData vs UrlFileMixin)
     const fileName = "originalFileName" in file ? file.originalFileName : (file as UrlFileMixin).parsedFilename;
-    const fileUrl = "url" in file ? (file as UrlFileMixin).url : "";
     const mediaType = file.mediaType;
+    const fileToken = "token" in file ? file.token : file.fileToken;
+    const fileUrl = `${process.env.NEXT_PUBLIC_THUMBNAIL_SERVICE}/api/v1/generateThumbnail/${fileToken}?animate=false`;
 
     const fileType = getFileType(mediaType, fileName);
 
@@ -104,39 +101,45 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
         const loadMetadata = async () => {
             try {
                 if (fileType === "image") {
-                    const img = document.createElement("img");
-                    img.crossOrigin = "anonymous";
-                    img.onload = () => {
+                    const cacheKey = fileToken;
+                    if (thumbnailCache.has(cacheKey)) {
                         if (mounted) {
-                            setMetadata({ dimensions: `${img.width}×${img.height}` });
+                            setCachedImageUrl(thumbnailCache.get(cacheKey)!);
                             setIsLoading(false);
                         }
-                    };
-                    img.onerror = () => {
-                        if (mounted) {
-                            setPreviewError("Failed to load image");
-                            setIsLoading(false);
-                        }
-                    };
-                    img.src = fileUrl;
+                        return;
+                    }
+
+                    const response = await fetch(fileUrl);
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch thumbnail");
+                    }
+
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    thumbnailCache.set(cacheKey, blobUrl);
+
+                    if (mounted) {
+                        setCachedImageUrl(blobUrl);
+                        setIsLoading(false);
+                    }
                 } else if (fileType === "audio") {
                     const audio = new Audio();
                     audio.crossOrigin = "anonymous";
                     audio.onloadedmetadata = () => {
                         if (mounted) {
-                            setMetadata({ duration: formatDuration(audio.duration) });
+                            setIsLoading(false);
                         }
-                        setIsLoading(false);
                     };
                     audio.onerror = () => {
                         if (mounted) {
                             setPreviewError("Failed to load audio");
+                            setIsLoading(false);
                         }
-                        setIsLoading(false);
                     };
                     audio.src = fileUrl;
                 } else {
-                    // For videos and other file types, just show icon - no loading
                     setIsLoading(false);
                 }
             } catch (error) {
@@ -153,13 +156,7 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
         return () => {
             mounted = false;
         };
-    }, [fileUrl, fileType, mediaType, fileName]);
-
-    const formatDuration = (seconds: number): string => {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, "0")}`;
-    };
+    }, [fileUrl, fileType, mediaType, fileName, fileToken]);
 
     const handleMouseEnter = () => {
         setIsHovered(true);
@@ -207,14 +204,9 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
                         <img
                             alt={fileName}
                             className={styles.previewImage}
-                            src={fileUrl}
+                            src={cachedImageUrl ?? fileUrl}
                             onError={() => setPreviewError("Failed to load image")}
                         />
-                        {metadata.dimensions && (
-                            <div className={styles.imageOverlay}>
-                                <span className={styles.metadataTag}>{metadata.dimensions}</span>
-                            </div>
-                        )}
                     </div>
                 );
 

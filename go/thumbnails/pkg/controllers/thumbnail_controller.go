@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/waifuvault/WaifuVault/shared/utils"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
+	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dto"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/wapimod"
 )
 
@@ -18,6 +19,7 @@ func (s *Service) getAllThumbnailRoutes() []FSetupRoute {
 		s.setupGenerateThumbnailsRoute,
 		s.setupGetAllSupportedExtensionsRoute,
 		s.setupUploadFileRoute,
+		s.setupGenerateThumbnailByTokenRoute,
 	}
 }
 
@@ -45,7 +47,7 @@ func (s *Service) setupGenerateThumbnailsRoute(routeGroup fiber.Router) {
 }
 
 func (s *Service) generateThumbnails(ctx *fiber.Ctx) error {
-	var thumbnailEntries []mod.FileEntry
+	var thumbnailEntries []dto.FileEntryDto
 	if err := ctx.BodyParser(&thumbnailEntries); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("invalid payload", err))
 	}
@@ -108,6 +110,55 @@ func (s *Service) generateThumbnail(ctx *fiber.Ctx) error {
 	if err != nil {
 		if strings.Contains(err.Error(), "unsupported file type") {
 			return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("unsupported file type", err))
+		}
+		return ctx.Status(fiber.StatusInternalServerError).JSON(wapimod.NewApiError("error generating thumbnail", err))
+	}
+
+	ctx.Set("Content-Length", fmt.Sprintf("%d", len(thumbnail)))
+	ctx.Status(fiber.StatusOK)
+	ctx.Set(fiber.HeaderContentType, "image/webp")
+
+	return ctx.Send(thumbnail)
+}
+
+// Generate thumbnail by token godoc
+//
+//	@Summary	Generate thumbnail from file token
+//	@Description	Generates a thumbnail from an existing file using its token
+//	@Tags	thumbnails
+//	@Produce	image/webp
+//	@Param	fileToken	path	string	true	"File token to generate thumbnail for"
+//	@Param	animate	query	bool	false	"set to true if you want to animate the thumbnail (only works with animated gif, webp or heif)"
+//	@Success	200	{string}	map[string]interface{}	"Thumbnail image in WebP format"
+//	@Failure	400	{object}	map[string]interface{}	"Bad request - invalid file token or unsupported file type"
+//	@Failure	500	{object}	map[string]interface{}	"Internal server error"
+//	@Router	/generateThumbnail/{fileToken} [get]
+func (s *Service) setupGenerateThumbnailByTokenRoute(routeGroup fiber.Router) {
+	routeGroup.Get("/generateThumbnail/:fileToken", s.generateThumbnailByToken)
+}
+
+func (s *Service) generateThumbnailByToken(ctx *fiber.Ctx) error {
+	fileToken := ctx.Params("fileToken")
+	if fileToken == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "File token is required",
+		})
+	}
+
+	tokenUUid, err := uuid.Parse(fileToken)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("invalid file token", err))
+	}
+
+	animate := ctx.QueryBool("animate", true)
+
+	thumbnail, err := s.ThumbnailService.GenerateThumbnailByToken(tokenUUid, animate)
+	if err != nil {
+		if strings.Contains(err.Error(), "unsupported file type") {
+			return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("unsupported file type", err))
+		}
+		if strings.Contains(err.Error(), "file not found") {
+			return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("file not found", err))
 		}
 		return ctx.Status(fiber.StatusInternalServerError).JSON(wapimod.NewApiError("error generating thumbnail", err))
 	}

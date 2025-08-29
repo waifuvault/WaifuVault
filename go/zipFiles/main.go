@@ -4,9 +4,9 @@ import (
 	"os"
 
 	"github.com/create-go-app/fiber-go-template/pkg/configs"
-	"github.com/create-go-app/fiber-go-template/pkg/middleware"
 	"github.com/create-go-app/fiber-go-template/pkg/routes"
 	"github.com/gofiber/fiber/v2"
+	"github.com/waifuvault/WaifuVault/shared/middleware"
 	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/controllers"
 	waifuRoutes "github.com/waifuvault/WaifuVault/zipfiles/pkg/routes"
@@ -26,7 +26,7 @@ func main() {
 	service := controllers.NewService()
 
 	// Middlewares.
-	middleware.FiberMiddleware(app)
+	middleware.SetupCommonMiddleware(app)
 
 	// Routes.
 	waifuRoutes.PublicRoutes(*service, app) // Register a public routes for app.

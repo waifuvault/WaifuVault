@@ -12,7 +12,7 @@ export interface UrlFileMixin {
     oneTimeDownload: boolean;
     mediaType: string | null;
     bucket: string | null;
-    fileToken: string;
+    token: string;
     views: number;
     parsedFilename: string;
     expiresString: string | null;
