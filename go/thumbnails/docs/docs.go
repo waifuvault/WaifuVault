@@ -44,6 +44,12 @@ const docTemplate = `{
                         "name": "file",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "set to true if you want to animate the thumbnail (only works with animated gif, webp or heif)",
+                        "name": "animate",
+                        "in": "query"
                     }
                 ],
                 "responses": {

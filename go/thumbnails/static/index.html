@@ -172,7 +172,7 @@
             overflow: hidden;
         }
 
-        .download_btn{
+        .download_btn {
             display: block;
             margin: auto;
         }
@@ -362,7 +362,7 @@
             color: #9ca3af;
             font-size: 0.8rem;
         }
-        
+
         .format-grid span {
             white-space: nowrap;
             text-align: center;
@@ -409,6 +409,60 @@
             text-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
         }
 
+        .animate-control {
+            margin: 24px 0;
+            text-align: center;
+        }
+
+        .toggle-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .slider {
+            width: 50px;
+            height: 26px;
+            background: #374151;
+            border-radius: 26px;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .slider:before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch input:checked + .slider {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+        }
+
+        .toggle-switch input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .toggle-switch input:disabled + .slider {
+            opacity: 0.5;
+        }
+
+        .slider-text {
+            color: #9ca3af;
+            font-size: 1rem;
+        }
+
         @media (max-width: 640px) {
             .container {
                 padding: 32px 24px;
@@ -446,6 +500,14 @@
     </div>
 
     <input type="file" id="fileInput" accept="image/*,video/*">
+
+    <div class="animate-control" id="animateControl" style="display: none;">
+        <label class="toggle-switch">
+            <input type="checkbox" id="animateToggle" disabled>
+            <span class="slider"></span>
+            <span class="slider-text">Animate Thumbnail</span>
+        </label>
+    </div>
 
     <button class="btn" onclick="document.getElementById('fileInput').click()">
         Choose File
@@ -529,17 +591,38 @@
         const uploadText = document.querySelector(".upload-text");
         const uploadArea = document.getElementById("uploadArea");
         const uploadSubtext = document.querySelector(".upload-subtext");
+        const animateControl = document.getElementById("animateControl");
+        const animateToggle = document.getElementById("animateToggle");
 
         if (selectedFile) {
             uploadBtn.disabled = false;
             uploadText.textContent = `✅ Selected: ${selectedFile.name}`;
             uploadSubtext.textContent = `Size: ${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`;
             uploadArea.classList.add("file-selected");
+
+            // Check if file is an animated format
+            const fileName = selectedFile.name.toLowerCase();
+            const isAnimatedFormat = fileName.endsWith(".gif") ||
+                fileName.endsWith(".webp") ||
+                fileName.endsWith(".heif") ||
+                fileName.endsWith(".heic");
+
+            if (isAnimatedFormat) {
+                animateControl.style.display = "block";
+                animateToggle.disabled = false;
+            } else {
+                animateControl.style.display = "none";
+                animateToggle.disabled = true;
+                animateToggle.checked = false;
+            }
         } else {
             uploadBtn.disabled = true;
             uploadText.textContent = "Drop your file here or click to browse";
             uploadSubtext.textContent = "Supports images and videos";
             uploadArea.classList.remove("file-selected");
+            animateControl.style.display = "none";
+            animateToggle.disabled = true;
+            animateToggle.checked = false;
         }
     }
 
@@ -562,6 +645,10 @@
 
         const formData = new FormData();
         formData.append("file", selectedFile);
+
+        // Get animate parameter
+        const animateToggle = document.getElementById("animateToggle");
+        const animate = animateToggle.checked && !animateToggle.disabled;
 
         const xhr = new XMLHttpRequest();
 
@@ -614,7 +701,8 @@
         });
 
         xhr.responseType = "arraybuffer";
-        xhr.open("POST", "/api/v1/generateThumbnail");
+        const url = `/api/v1/generateThumbnail?animate=${animate}`;
+        xhr.open("POST", url);
         xhr.send(formData);
     }
 
