@@ -67,6 +67,55 @@
                 }
             }
         },
+        "/generateThumbnail/{fileToken}": {
+            "get": {
+                "description": "Generates a thumbnail from an existing file using its token",
+                "produces": [
+                    "image/webp"
+                ],
+                "tags": [
+                    "thumbnails"
+                ],
+                "summary": "Generate thumbnail from file token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File token to generate thumbnail for",
+                        "name": "fileToken",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "set to true if you want to animate the thumbnail (only works with animated gif, webp or heif)",
+                        "name": "animate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thumbnail image in WebP format",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid file token or unsupported file type",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/generateThumbnails/supported": {
             "get": {
                 "description": "Returns a list of all file extensions supported by the thumbnail service for both images and videos",

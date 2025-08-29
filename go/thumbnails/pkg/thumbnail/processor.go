@@ -15,16 +15,16 @@ import (
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/shared/utils"
-	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
+	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dto"
 	"golang.org/x/image/webp"
 )
 
 type Processor interface {
 	// GenerateThumbnail creates a thumbnail for a file
-	GenerateThumbnail(fileEntry mod.FileEntry) ([]byte, error)
+	GenerateThumbnail(fileEntry dto.FileEntryDto, animate bool) ([]byte, error)
 
 	// SupportsFile checks if the file can be processed
-	SupportsFile(fileEntry mod.FileEntry) bool
+	SupportsFile(fileEntry dto.FileEntryDto) bool
 
 	// GenerateThumbnailFromMultipart creates a thumbnail for a multipart file
 	GenerateThumbnailFromMultipart(file multipart.File, header *multipart.FileHeader, animate bool) ([]byte, error)
@@ -49,13 +49,13 @@ func NewProcessor(ffmpegFormats []string, supportedExtensions []string) Processo
 }
 
 // GenerateThumbnail determines the file type and creates an appropriate thumbnail
-func (p *processor) GenerateThumbnail(fileEntry mod.FileEntry) ([]byte, error) {
+func (p *processor) GenerateThumbnail(fileEntry dto.FileEntryDto, animate bool) ([]byte, error) {
 	if !p.SupportsFile(fileEntry) {
 		return nil, fmt.Errorf("unsupported file type: %s", fileEntry.MediaType)
 	}
 
 	if utils.IsImage(fileEntry.MediaType) {
-		return p.generateImageThumbnail(fileEntry)
+		return p.generateImageThumbnailFromFileEntry(fileEntry, animate)
 	} else if utils.IsVideo(fileEntry.MediaType) {
 		return p.generateVideoThumbnail(fileEntry.FullFileNameOnSystem)
 	}
@@ -64,7 +64,7 @@ func (p *processor) GenerateThumbnail(fileEntry mod.FileEntry) ([]byte, error) {
 }
 
 // SupportsFile checks if the file type can be processed
-func (p *processor) SupportsFile(fileEntry mod.FileEntry) bool {
+func (p *processor) SupportsFile(fileEntry dto.FileEntryDto) bool {
 	return fileSupported(fileEntry, p.ffmpegFormats, p.imageFormats)
 }
 
@@ -114,10 +114,10 @@ func (p *processor) generateVideoThumbnail(videoPath string) ([]byte, error) {
 	return p.generateVideoThumbnailFromPath(fullPath)
 }
 
-// generateImageThumbnail creates a thumbnail from an image file (streaming)
-func (p *processor) generateImageThumbnail(fileEntry mod.FileEntry) ([]byte, error) {
+// generateImageThumbnailFromFileEntry creates a thumbnail from a file entry with animate parameter
+func (p *processor) generateImageThumbnailFromFileEntry(fileEntry dto.FileEntryDto, animate bool) ([]byte, error) {
 	file := p.baseUrl + "/" + fileEntry.FullFileNameOnSystem
-	return p.generateImageThumbnailFromFile(file, fileEntry.Extension, true)
+	return p.generateImageThumbnailFromFile(file, fileEntry.Extension, animate)
 }
 
 // generateImageThumbnailFromFile creates a thumbnail from an image file path
