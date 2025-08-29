@@ -24,6 +24,11 @@ paths:
         name: file
         required: true
         type: file
+      - description: set to true if you want to animate the thumbnail (only works
+          with animated gif, webp or heif)
+        in: query
+        name: animate
+        type: boolean
       produces:
       - application/json
       responses:

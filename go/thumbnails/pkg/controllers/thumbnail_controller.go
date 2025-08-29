@@ -86,6 +86,7 @@ func (s *Service) generateThumbnails(ctx *fiber.Ctx) error {
 //	@Accept	multipart/form-data
 //	@Produce	json
 //	@Param	file	formData	file	true	"File to upload"
+//	@Param	animate	query	bool	false	"set to true if you want to animate the thumbnail (only works with animated gif, webp or heif)"
 //	@Success	200	{object}	map[string]interface{}	"File uploaded successfully"
 //	@Failure	400	{object}	map[string]interface{}	"Bad request - no file uploaded"
 //	@Router	/generateThumbnail [post]
@@ -101,7 +102,9 @@ func (s *Service) generateThumbnail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	thumbnail, err := s.ThumbnailService.GenerateThumbnail(fileHeader)
+	animate := ctx.QueryBool("animate", true)
+
+	thumbnail, err := s.ThumbnailService.GenerateThumbnail(fileHeader, animate)
 	if err != nil {
 		if strings.Contains(err.Error(), "unsupported file type") {
 			return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("unsupported file type", err))
