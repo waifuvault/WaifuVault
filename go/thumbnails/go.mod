@@ -6,6 +6,7 @@ require (
 	github.com/create-go-app/fiber-go-template v1.14.0
 	github.com/davidbyttow/govips/v2 v2.16.0
 	github.com/gofiber/fiber/v2 v2.52.9
+	github.com/google/uuid v1.6.0
 	github.com/redis/go-redis/v9 v9.12.0
 	github.com/rs/zerolog v1.34.0
 	github.com/samber/lo v1.51.0
@@ -32,7 +33,6 @@ require (
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/gofiber/jwt/v2 v2.2.7 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.7.5 // indirect
