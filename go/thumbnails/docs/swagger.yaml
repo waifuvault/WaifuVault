@@ -1,34 +1,4 @@
 basePath: /api/v1
-definitions:
-  mod.FileEntry:
-    properties:
-      extension:
-        example: jpg
-        type: string
-      fileOnDisk:
-        example: uploads/image.jpg
-        type: string
-      id:
-        example: 1
-        type: integer
-      mediaType:
-        example: image/jpeg
-        type: string
-    required:
-    - extension
-    - fileOnDisk
-    - id
-    - mediaType
-    type: object
-  wapimod.ApiResult:
-    properties:
-      message:
-        example: Operation completed successfully
-        type: string
-      success:
-        example: true
-        type: boolean
-    type: object
 info:
   contact:
     email: victoria@waifuvault.moe
@@ -43,44 +13,36 @@ info:
   title: Thumbnail Service API
   version: "1.0"
 paths:
-  /generateThumbnails:
+  /generateThumbnail:
     post:
       consumes:
-      - application/json
-      description: Processes a batch of files to generate thumbnails. The operation
-        runs asynchronously in the background.
+      - multipart/form-data
+      description: Accepts a file upload via multipart form data
       parameters:
-      - description: The ID of the album to generate thumbnails for
-        in: query
-        minimum: 1
-        name: albumId
+      - description: File to upload
+        in: formData
+        name: file
         required: true
-        type: integer
-      - default: false
-        description: Whether adding additional files to an existing album
+        type: file
+      - description: set to true if you want to animate the thumbnail (only works
+          with animated gif, webp or heif)
         in: query
-        name: addingAdditionalFiles
+        name: animate
         type: boolean
-      - description: Array of file entries to process
-        in: body
-        name: files
-        required: true
-        schema:
-          items:
-            $ref: '#/definitions/mod.FileEntry'
-          type: array
       produces:
       - application/json
       responses:
         "200":
-          description: Thumbnail generation started successfully
+          description: File uploaded successfully
           schema:
-            $ref: '#/definitions/wapimod.ApiResult'
+            additionalProperties: true
+            type: object
         "400":
-          description: Bad request - invalid payload or missing albumId
+          description: Bad request - no file uploaded
           schema:
-            $ref: '#/definitions/wapimod.ApiResult'
-      summary: Generate thumbnails
+            additionalProperties: true
+            type: object
+      summary: Upload a file
       tags:
       - thumbnails
   /generateThumbnails/supported:
@@ -119,8 +81,8 @@ paths:
       tags:
       - system
 schemes:
-- http
 - https
+- http
 swagger: "2.0"
 tags:
 - description: Operations for generating and managing thumbnails

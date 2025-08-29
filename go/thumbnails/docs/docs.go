@@ -24,11 +24,11 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/generateThumbnails": {
+        "/generateThumbnail": {
             "post": {
-                "description": "Processes a batch of files to generate thumbnails. The operation runs asynchronously in the background.",
+                "description": "Accepts a file upload via multipart form data",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -36,47 +36,35 @@ const docTemplate = `{
                 "tags": [
                     "thumbnails"
                 ],
-                "summary": "Generate thumbnails",
+                "summary": "Upload a file",
                 "parameters": [
                     {
-                        "minimum": 1,
-                        "type": "integer",
-                        "description": "The ID of the album to generate thumbnails for",
-                        "name": "albumId",
-                        "in": "query",
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
                         "required": true
                     },
                     {
                         "type": "boolean",
-                        "default": false,
-                        "description": "Whether adding additional files to an existing album",
-                        "name": "addingAdditionalFiles",
+                        "description": "set to true if you want to animate the thumbnail (only works with animated gif, webp or heif)",
+                        "name": "animate",
                         "in": "query"
-                    },
-                    {
-                        "description": "Array of file entries to process",
-                        "name": "files",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/mod.FileEntry"
-                            }
-                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Thumbnail generation started successfully",
+                        "description": "File uploaded successfully",
                         "schema": {
-                            "$ref": "#/definitions/wapimod.ApiResult"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Bad request - invalid payload or missing albumId",
+                        "description": "Bad request - no file uploaded",
                         "schema": {
-                            "$ref": "#/definitions/wapimod.ApiResult"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -135,48 +123,6 @@ const docTemplate = `{
             }
         }
     },
-    "definitions": {
-        "mod.FileEntry": {
-            "type": "object",
-            "required": [
-                "extension",
-                "fileOnDisk",
-                "id",
-                "mediaType"
-            ],
-            "properties": {
-                "extension": {
-                    "type": "string",
-                    "example": "jpg"
-                },
-                "fileOnDisk": {
-                    "type": "string",
-                    "example": "uploads/image.jpg"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "mediaType": {
-                    "type": "string",
-                    "example": "image/jpeg"
-                }
-            }
-        },
-        "wapimod.ApiResult": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "Operation completed successfully"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                }
-            }
-        }
-    },
     "tags": [
         {
             "description": "Operations for generating and managing thumbnails",
@@ -190,7 +136,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"http", "https"},
+	Schemes:          []string{"https", "http"},
 	Title:            "Thumbnail Service API",
 	Description:      "A service for generating thumbnails from images and videos using libvips and ffmpeg",
 	InfoInstanceName: "swagger",

@@ -36,7 +36,7 @@ import (
 
 // @BasePath  /api/v1
 
-// @schemes   http https
+// @schemes   https http
 
 // @tag.name thumbnails
 // @tag.description Operations for generating and managing thumbnails
@@ -71,6 +71,9 @@ func main() {
 	// Middlewares.
 	middleware.FiberMiddleware(app) // Register Fiber's middleware for app.
 
+	// Static files
+	app.Static("/", "./static")
+
 	// Swagger documentation
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
@@ -86,7 +89,7 @@ func main() {
 
 func configureSwaggerServers() {
 	// Configure servers based on environment by modifying the SwaggerInfo
-	baseUrl := utils.GetBseUrl()
+	baseUrl := GetBseUrl()
 	// remove http(s):// from the start
 	baseUrl = strings.TrimPrefix(baseUrl, "https://")
 	baseUrl = strings.TrimPrefix(baseUrl, "http://")
@@ -120,4 +123,11 @@ func configureLog() {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+}
+
+func GetBseUrl() string {
+	if os.Getenv("NODE_ENV") == "development" {
+		return "http://127.0.0.1:8080"
+	}
+	return os.Getenv("THUMBNAIL_SERVICE_BASE_URL")
 }

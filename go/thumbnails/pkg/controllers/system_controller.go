@@ -28,7 +28,3 @@ func (s *Service) healthCheck(ctx *fiber.Ctx) error {
 		"service": "thumbnail-service",
 	})
 }
-
-func (s *Service) RootRedirect(ctx *fiber.Ctx) error {
-	return ctx.Redirect("/swagger/index.html", 302)
-}

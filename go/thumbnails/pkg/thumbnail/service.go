@@ -11,7 +11,7 @@ import (
 
 type Service interface {
 	GenerateThumbnails(files []mod.FileEntry, album int) error
-	GenerateThumbnail(header *multipart.FileHeader) ([]byte, error)
+	GenerateThumbnail(header *multipart.FileHeader, animate bool) ([]byte, error)
 	GetAllSupportedExtensions() []string
 	IsAlbumLoading(album int) bool
 }
@@ -65,7 +65,7 @@ func (s *service) GenerateThumbnails(files []mod.FileEntry, albumId int) error {
 	return bulkBatchProcessor.Process()
 }
 
-func (s *service) GenerateThumbnail(header *multipart.FileHeader) ([]byte, error) {
+func (s *service) GenerateThumbnail(header *multipart.FileHeader, animate bool) ([]byte, error) {
 	if !s.processor.SupportsMultipartFile(header) {
 		return nil, fmt.Errorf("unsupported file type: %s", header.Header.Get("Content-Type"))
 	}
@@ -74,5 +74,5 @@ func (s *service) GenerateThumbnail(header *multipart.FileHeader) ([]byte, error
 		return nil, err
 	}
 	defer file.Close()
-	return s.processor.GenerateThumbnailFromMultipart(file, header)
+	return s.processor.GenerateThumbnailFromMultipart(file, header, animate)
 }
