@@ -1,0 +1,112 @@
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Background gradient -->
+        <radialGradient id="bgGradient1" cx="47%" cy="33%" r="30%">
+            <stop offset="0%" style="stop-color:#40E0D0;stop-opacity:0.4"/>
+            <stop offset="100%" style="stop-color:#40E0D0;stop-opacity:0"/>
+        </radialGradient>
+        <radialGradient id="bgGradient2" cx="82%" cy="65%" r="25%">
+            <stop offset="0%" style="stop-color:#00BFFF;stop-opacity:0.4"/>
+            <stop offset="100%" style="stop-color:#00BFFF;stop-opacity:0"/>
+        </radialGradient>
+
+        <!-- Title gradient -->
+        <linearGradient id="titleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#60A5FA"/>
+            <stop offset="50%" style="stop-color:#A78BFA"/>
+            <stop offset="100%" style="stop-color:#F472B6"/>
+        </linearGradient>
+
+        <!-- Card background -->
+        <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#1F2937;stop-opacity:0.95"/>
+            <stop offset="100%" style="stop-color:#111827;stop-opacity:0.95"/>
+        </linearGradient>
+
+        <!-- Icon gradient -->
+        <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#3B82F6"/>
+            <stop offset="50%" style="stop-color:#8B5CF6"/>
+            <stop offset="100%" style="stop-color:#EC4899"/>
+        </linearGradient>
+    </defs>
+
+    <!-- Background -->
+    <rect width="800" height="400" fill="#0A0A0F"/>
+    <ellipse cx="376" cy="132" rx="240" ry="120" fill="url(#bgGradient1)"/>
+    <ellipse cx="656" cy="260" rx="200" ry="100" fill="url(#bgGradient2)"/>
+
+    <!-- Decorative elements -->
+    <circle cx="100" cy="80" r="3" fill="#60A5FA" opacity="0.6"/>
+    <circle cx="700" cy="120" r="2" fill="#A78BFA" opacity="0.4"/>
+    <circle cx="150" cy="300" r="2" fill="#F472B6" opacity="0.5"/>
+    <circle cx="680" cy="320" r="3" fill="#40E0D0" opacity="0.4"/>
+
+    <!-- Main card -->
+    <rect x="100" y="60" width="600" height="280" rx="20" ry="20"
+          fill="url(#cardGradient)"
+          stroke="rgba(75, 85, 99, 0.3)"
+          stroke-width="1"/>
+
+    <!-- Camera icon -->
+    <g transform="translate(325, 120)">
+        <rect x="0" y="8" width="48" height="32" rx="6" ry="6" fill="url(#iconGradient)" opacity="0.8"/>
+        <rect x="6" y="14" width="36" height="20" rx="3" ry="3" fill="none" stroke="white" stroke-width="2" opacity="0.9"/>
+        <circle cx="24" cy="24" r="8" fill="none" stroke="white" stroke-width="2" opacity="0.9"/>
+        <circle cx="24" cy="24" r="4" fill="white" opacity="0.7"/>
+        <rect x="36" y="2" width="8" height="6" rx="2" ry="2" fill="url(#iconGradient)"/>
+        <line x1="44" y1="5" x2="44" y2="8" stroke="url(#iconGradient)" stroke-width="2"/>
+    </g>
+
+    <!-- Arrow pointing to preview -->
+    <g transform="translate(390, 135)">
+        <path d="M0,10 L40,10 L35,5 M40,10 L35,15" fill="none" stroke="url(#iconGradient)" stroke-width="2" opacity="0.7"/>
+    </g>
+
+    <!-- Thumbnail preview mockup -->
+    <g transform="translate(460, 115)">
+        <rect x="0" y="0" width="80" height="50" rx="6" ry="6" fill="#374151" stroke="#60A5FA" stroke-width="1"/>
+        <rect x="4" y="4" width="72" height="42" rx="3" ry="3" fill="#1F2937"/>
+        <!-- Preview content -->
+        <rect x="8" y="8" width="28" height="16" rx="2" ry="2" fill="url(#iconGradient)" opacity="0.6"/>
+        <rect x="40" y="8" width="24" height="3" rx="1" ry="1" fill="#9CA3AF"/>
+        <rect x="40" y="14" width="30" height="3" rx="1" ry="1" fill="#6B7280"/>
+        <rect x="8" y="28" width="60" height="3" rx="1" ry="1" fill="#4B5563"/>
+        <rect x="8" y="34" width="44" height="3" rx="1" ry="1" fill="#374151"/>
+    </g>
+
+    <!-- Title -->
+    <text x="400" y="210" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif"
+          font-size="32" font-weight="800" text-anchor="middle" fill="url(#titleGradient)">
+        Thumbnail Generator
+    </text>
+
+    <!-- Subtitle -->
+    <text x="400" y="240" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif"
+          font-size="16" font-weight="400" text-anchor="middle" fill="#9CA3AF">
+        Instant cute previews~ (｡◕‿◕｡) ♡
+    </text>
+
+    <!-- Brand info - centered -->
+    <g transform="translate(300, 275)">
+        <text x="32" y="16" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif"
+              font-size="18" font-weight="600" fill="url(#titleGradient)">
+            WaifuVault.moe
+        </text>
+    </g>
+
+    <!-- Decorative stars -->
+    <g fill="url(#titleGradient)" opacity="0.7">
+        <polygon points="120,40 122,46 128,46 123,50 125,56 120,52 115,56 117,50 112,46 118,46" />
+        <polygon points="680,80 682,86 688,86 683,90 685,96 680,92 675,96 677,90 672,86 678,86" />
+        <polygon points="160,350 162,356 168,356 163,360 165,366 160,362 155,366 157,360 152,356 158,356" />
+    </g>
+
+    <!-- Floating particles -->
+    <circle cx="180" cy="100" r="1.5" fill="#60A5FA" opacity="0.5"/>
+    <circle cx="620" cy="140" r="1" fill="#A78BFA" opacity="0.6"/>
+    <circle cx="280" cy="320" r="1.5" fill="#F472B6" opacity="0.4"/>
+    <circle cx="550" cy="90" r="1" fill="#40E0D0" opacity="0.5"/>
+    <circle cx="720" cy="300" r="2" fill="#60A5FA" opacity="0.4"/>
+    <circle cx="130" cy="200" r="1" fill="#A78BFA" opacity="0.5"/>
+</svg>
