@@ -17,6 +17,7 @@ import (
 
 type Dao interface {
 	ThumbnailDao
+	FileEntryDao
 }
 type dao struct {
 	db          *gorm.DB

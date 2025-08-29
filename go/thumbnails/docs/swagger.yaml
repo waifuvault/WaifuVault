@@ -45,6 +45,40 @@ paths:
       summary: Upload a file
       tags:
       - thumbnails
+  /generateThumbnail/{fileToken}:
+    get:
+      description: Generates a thumbnail from an existing file using its token
+      parameters:
+      - description: File token to generate thumbnail for
+        in: path
+        name: fileToken
+        required: true
+        type: string
+      - description: set to true if you want to animate the thumbnail (only works
+          with animated gif, webp or heif)
+        in: query
+        name: animate
+        type: boolean
+      produces:
+      - image/webp
+      responses:
+        "200":
+          description: Thumbnail image in WebP format
+          schema:
+            type: string
+        "400":
+          description: Bad request - invalid file token or unsupported file type
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Generate thumbnail from file token
+      tags:
+      - thumbnails
   /generateThumbnails/supported:
     get:
       consumes:

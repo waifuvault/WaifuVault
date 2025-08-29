@@ -7,27 +7,28 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
+	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dto"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/mod"
 )
 
 // BatchProcessor handles processing and saving thumbnails in batches
 type BatchProcessor interface {
 	Process() error
-	thumbnailWorker(wg *sync.WaitGroup, filesChan <-chan mod.FileEntry, resultsChan chan<- mod.Thumbnail)
+	thumbnailWorker(wg *sync.WaitGroup, filesChan <-chan dto.FileEntryDto, resultsChan chan<- mod.Thumbnail)
 	batchProcess(resultsChan <-chan mod.Thumbnail, done chan<- struct{})
 }
 
 type batchProcessor struct {
 	dao         dao.Dao
 	processor   Processor
-	files       []mod.FileEntry
+	files       []dto.FileEntryDto
 	albumID     int
 	workerCount int
 	batchSize   int
 }
 
 // NewBatchProcessor creates a new batch processor
-func NewBatchProcessor(daoService dao.Dao, processor Processor, files []mod.FileEntry, albumID int) BatchProcessor {
+func NewBatchProcessor(daoService dao.Dao, processor Processor, files []dto.FileEntryDto, albumID int) BatchProcessor {
 	return &batchProcessor{
 		dao:         daoService,
 		processor:   processor,
@@ -46,7 +47,7 @@ func (bp *batchProcessor) Process() error {
 	// Ensure the processing flag is removed when done
 	defer albumProcessing.Delete(bp.albumID)
 
-	filesChan := make(chan mod.FileEntry)
+	filesChan := make(chan dto.FileEntryDto)
 	resultsChan := make(chan mod.Thumbnail)
 	batchSaveDone := make(chan struct{})
 
@@ -82,7 +83,7 @@ func (bp *batchProcessor) Process() error {
 }
 
 // thumbnailWorker processes individual files and sends results to the result channel
-func (bp *batchProcessor) thumbnailWorker(wg *sync.WaitGroup, filesChan <-chan mod.FileEntry, resultsChan chan<- mod.Thumbnail) {
+func (bp *batchProcessor) thumbnailWorker(wg *sync.WaitGroup, filesChan <-chan dto.FileEntryDto, resultsChan chan<- mod.Thumbnail) {
 	defer wg.Done()
 
 	for file := range filesChan {
@@ -90,7 +91,7 @@ func (bp *batchProcessor) thumbnailWorker(wg *sync.WaitGroup, filesChan <-chan m
 			continue
 		}
 
-		thumbnailBytes, err := bp.processor.GenerateThumbnail(file)
+		thumbnailBytes, err := bp.processor.GenerateThumbnail(file, false)
 		if err != nil {
 			log.Err(err).Msgf("failed to generate thumbnail for file %s", file.FullFileNameOnSystem)
 			continue
