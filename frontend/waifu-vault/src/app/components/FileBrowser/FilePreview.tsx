@@ -91,7 +91,7 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
     const fileName = "originalFileName" in file ? file.originalFileName : (file as UrlFileMixin).parsedFilename;
     const mediaType = file.mediaType;
     const fileToken = "token" in file ? file.token : file.fileToken;
-    const fileUrl = `${process.env.NEXT_PUBLIC_THUMBNAIL_SERVICE}/api/v1/generateThumbnail/${fileToken}?animate=false`;
+    const fileUrl = `${process.env.NEXT_PUBLIC_THUMBNAIL_SERVICE}/api/v1/generateThumbnail/${fileToken}?animate=true`;
 
     const fileType = getFileType(mediaType, fileName);
 
