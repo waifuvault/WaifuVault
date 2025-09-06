@@ -182,20 +182,24 @@ function BucketAdminContent() {
     }, []);
 
     const handleReorderFiles = useCallback(
-        async (fileId: number, oldPosition: number, newPosition: number) => {
+        async (fileId: number, oldPosition: number, newPosition: number, showSuccessToast: boolean = true) => {
             if (!selectedAlbum) {
                 return;
             }
 
             try {
                 await reorderFiles(selectedAlbum, fileId, oldPosition, newPosition);
-                await fetchBucketData();
+                if (showSuccessToast) {
+                    await fetchBucketData();
+                    showToast("success", "File order updated successfully");
+                }
             } catch (error) {
                 console.error("Failed to reorder files:", error);
+                showToast("error", "Failed to reorder file");
                 throw error;
             }
         },
-        [selectedAlbum, reorderFiles, fetchBucketData],
+        [selectedAlbum, reorderFiles, fetchBucketData, showToast],
     );
 
     const filteredFiles = useMemo((): UrlFileMixin[] => {

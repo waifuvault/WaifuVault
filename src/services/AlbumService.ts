@@ -194,17 +194,53 @@ export class AlbumService implements AfterInit {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
         this.checkPrivateToken(albumToken, album);
-        const file = await this.fileRepo.getEntryById(id);
-        if (!file) {
-            throw new BadRequest(`File with ID ${id} not found`);
+
+        const albumFiles = await this.fileRepo.getEntriesByBucket(albumToken);
+        let sortedFiles = albumFiles.sort(
+            (a: FileUploadModel, b: FileUploadModel) => (a.addedToAlbumOrder || 0) - (b.addedToAlbumOrder || 0),
+        );
+
+        let hasDeduplicationChanges = false;
+        for (let i = 0; i < sortedFiles.length; i++) {
+            const expectedOrder = i + 1;
+            if (sortedFiles[i].addedToAlbumOrder !== expectedOrder) {
+                sortedFiles[i].addedToAlbumOrder = expectedOrder;
+                hasDeduplicationChanges = true;
+            }
         }
-        if (file.albumToken !== albumToken) {
-            throw new BadRequest(`File with ID ${id} not assigned to album`);
+
+        if (hasDeduplicationChanges) {
+            await this.fileRepo.saveEntries(sortedFiles);
+            const updatedFiles = await this.fileRepo.getEntriesByBucket(albumToken);
+            sortedFiles = updatedFiles.sort(
+                (a: FileUploadModel, b: FileUploadModel) => (a.addedToAlbumOrder || 0) - (b.addedToAlbumOrder || 0),
+            );
         }
-        if (file.addedToAlbumOrder === oldPosition) {
-            file.addedToAlbumOrder = newPosition;
+
+        if (
+            oldPosition < 0 ||
+            oldPosition >= sortedFiles.length ||
+            newPosition < 0 ||
+            newPosition >= sortedFiles.length
+        ) {
+            throw new BadRequest(
+                `Invalid positions: old=${oldPosition}, new=${newPosition}, total=${sortedFiles.length}`,
+            );
         }
-        await this.fileRepo.saveEntry(file);
+
+        const fileToMove = sortedFiles[oldPosition];
+        if (fileToMove.id !== id) {
+            throw new BadRequest(`File at position ${oldPosition} does not match ID ${id}`);
+        }
+
+        const targetFile = sortedFiles[newPosition];
+
+        const tempOrder = fileToMove.addedToAlbumOrder;
+        fileToMove.addedToAlbumOrder = targetFile.addedToAlbumOrder;
+        targetFile.addedToAlbumOrder = tempOrder;
+
+        await this.fileRepo.saveEntries([fileToMove, targetFile]);
+
         return true;
     }
 

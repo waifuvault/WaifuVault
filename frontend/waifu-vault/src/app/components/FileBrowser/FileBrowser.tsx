@@ -19,7 +19,12 @@ interface FileBrowserProps {
     onFilesSelected?: (fileIds: number[]) => void;
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
     onRenameFile?: (fileId: number, newName: string) => Promise<void>;
-    onReorderFiles?: (fileId: number, oldPosition: number, newPosition: number) => Promise<void>;
+    onReorderFiles?: (
+        fileId: number,
+        oldPosition: number,
+        newPosition: number,
+        showSuccessToast?: boolean,
+    ) => Promise<void>;
     onDragStart?: (isDraggingToAlbum: boolean) => void;
     onDragEnd?: () => void;
     onLogout?: () => void;
@@ -65,6 +70,7 @@ export function FileBrowser({
     const [renameValue, setRenameValue] = useState("");
     const [draggedOverFile, setDraggedOverFile] = useState<number | null>(null);
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
+
     const fileListRef = useRef<HTMLDivElement>(null);
 
     const filteredFiles = useMemo(() => {
@@ -79,6 +85,14 @@ export function FileBrowser({
 
     const sortedFiles = useMemo(() => {
         return [...filteredFiles].sort((a, b) => {
+            if (albumToken && "addedToAlbumOrder" in a && "addedToAlbumOrder" in b) {
+                const orderA = a.addedToAlbumOrder ?? Infinity;
+                const orderB = b.addedToAlbumOrder ?? Infinity;
+                if (orderA !== orderB) {
+                    return orderA - orderB;
+                }
+            }
+
             let comparison: number;
 
             switch (sortField) {
@@ -103,13 +117,15 @@ export function FileBrowser({
 
             return sortOrder === "asc" ? comparison : -comparison;
         });
-    }, [filteredFiles, sortField, sortOrder]);
+    }, [filteredFiles, sortField, sortOrder, albumToken]);
 
     const handleSelectAll = useCallback(() => {
         const allFileIds = new Set(sortedFiles.map(f => f.id));
         setSelectedFiles(allFileIds);
         onFilesSelected?.(Array.from(allFileIds));
     }, [sortedFiles, onFilesSelected]);
+
+    const previewFiles = sortedFiles;
 
     const handleClearSelection = useCallback(() => {
         setSelectedFiles(new Set());
@@ -312,8 +328,71 @@ export function FileBrowser({
         [selectedFiles, allowReorder, albumToken, sortedFiles, getFileToken, onDragStart],
     );
 
-    // TODO: Implement reordering handlers when reordering feature is implemented
-    // These handlers will be re-added to support drag-and-drop reordering within albums
+    const handleDragOver = useCallback(
+        (e: React.DragEvent, targetFileId: number) => {
+            if (!allowReorder || isDraggingToAlbum) {
+                return;
+            }
+
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+
+            setDraggedOverFile(targetFileId);
+        },
+        [allowReorder, isDraggingToAlbum],
+    );
+
+    const handleDragLeave = useCallback(
+        (e: React.DragEvent) => {
+            if (!allowReorder || isDraggingToAlbum) {
+                return;
+            }
+
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                setDraggedOverFile(null);
+            }
+        },
+        [allowReorder, isDraggingToAlbum],
+    );
+
+    const handleDrop = useCallback(
+        async (e: React.DragEvent, targetFileId: number) => {
+            if (!allowReorder || !onReorderFiles || isDraggingToAlbum) {
+                return;
+            }
+
+            e.preventDefault();
+
+            const draggedFileIds = draggedFiles;
+
+            if (draggedFileIds.length !== 1) {
+                return;
+            }
+            const targetFile = sortedFiles.find(f => f.id === targetFileId);
+            const draggedFile = sortedFiles.find(f => f.id === draggedFileIds[0]);
+
+            if (!targetFile || !draggedFile || draggedFileIds.includes(targetFileId)) {
+                return;
+            }
+
+            const targetIndex = sortedFiles.findIndex(f => f.id === targetFileId);
+            const draggedIndex = sortedFiles.findIndex(f => f.id === draggedFileIds[0]);
+
+            const newPosition = targetIndex;
+
+            if (newPosition === draggedIndex) {
+                return;
+            }
+
+            try {
+                await onReorderFiles(draggedFileIds[0], draggedIndex, newPosition, true);
+            } catch (error) {
+                console.error("Failed to reorder files:", error);
+                console.error("Error details:", error);
+            }
+        },
+        [allowReorder, onReorderFiles, isDraggingToAlbum, draggedFiles, sortedFiles],
+    );
 
     const handleDragEnd = useCallback(() => {
         setDraggedFiles([]);
@@ -598,7 +677,7 @@ export function FileBrowser({
             >
                 {viewMode === "grid" && (
                     <div className={styles.fileGrid}>
-                        {sortedFiles.map(file => {
+                        {previewFiles.map(file => {
                             return (
                                 <div
                                     key={file.id}
@@ -609,8 +688,13 @@ export function FileBrowser({
                                     onContextMenu={e => handleContextMenu(e, file.id)}
                                     draggable={true}
                                     onDragStart={e => handleDragStart(e, file.id)}
-                                    onDragOver={undefined}
-                                    onDrop={undefined}
+                                    onDragOver={
+                                        allowReorder && !isDraggingToAlbum ? e => handleDragOver(e, file.id) : undefined
+                                    }
+                                    onDragLeave={allowReorder && !isDraggingToAlbum ? handleDragLeave : undefined}
+                                    onDrop={
+                                        allowReorder && !isDraggingToAlbum ? e => handleDrop(e, file.id) : undefined
+                                    }
                                     onDragEnd={handleDragEnd}
                                 >
                                     <div className={styles.filePreviewContainer}>
@@ -677,7 +761,7 @@ export function FileBrowser({
                                 <div className={styles.headerCell}>Date</div>
                             </div>
                         )}
-                        {sortedFiles.map(file => {
+                        {previewFiles.map(file => {
                             const fileIconData = getFileIcon(file);
                             return (
                                 <div
@@ -689,8 +773,13 @@ export function FileBrowser({
                                     onContextMenu={e => handleContextMenu(e, file.id)}
                                     draggable={true}
                                     onDragStart={e => handleDragStart(e, file.id)}
-                                    onDragOver={undefined}
-                                    onDrop={undefined}
+                                    onDragOver={
+                                        allowReorder && !isDraggingToAlbum ? e => handleDragOver(e, file.id) : undefined
+                                    }
+                                    onDragLeave={allowReorder && !isDraggingToAlbum ? handleDragLeave : undefined}
+                                    onDrop={
+                                        allowReorder && !isDraggingToAlbum ? e => handleDrop(e, file.id) : undefined
+                                    }
                                     onDragEnd={handleDragEnd}
                                 >
                                     {allowSelection && (

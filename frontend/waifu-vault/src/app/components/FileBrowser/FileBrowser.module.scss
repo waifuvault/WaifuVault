@@ -172,7 +172,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(10px);
     overflow: hidden;
 
@@ -196,6 +196,13 @@
     &.dragging {
         opacity: 0.5;
         transform: rotate(2deg);
+    }
+
+    &.dragOver {
+        background: rgba(103, 126, 234, 0.2);
+        border-color: rgba(103, 126, 234, 0.8);
+        box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.4);
+        transform: scale(1.02);
     }
 }
 
@@ -224,6 +231,13 @@
 
     &.dragging {
         opacity: 0.5;
+    }
+
+    &.dragOver {
+        background: rgba(103, 126, 234, 0.2);
+        border-color: rgba(103, 126, 234, 0.8);
+        box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.4);
+        transform: scale(1.01);
     }
 }
 
@@ -681,10 +695,63 @@
         transform: rotate(2deg);
         cursor: grabbing !important;
     }
+
+    &.reordering {
+        animation: reorder-bounce 0.4s ease-out;
+    }
+
+    &.insertBefore {
+        position: relative;
+        border-top: 8px solid #22c55e;
+        box-shadow: 0 -5px 20px rgba(34, 197, 94, 0.6);
+        animation: pulse-insert 0.8s ease-in-out infinite;
+        transform: translateY(-4px);
+        
+        &::before {
+            content: "↑ Drop Here ↑";
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+    }
+
+    &.insertAfter {
+        position: relative;
+        border-bottom: 8px solid #22c55e;
+        box-shadow: 0 5px 20px rgba(34, 197, 94, 0.6);
+        animation: pulse-insert 0.8s ease-in-out infinite;
+        transform: translateY(4px);
+        
+        &::after {
+            content: "↓ Drop Here ↓";
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+    }
 }
 
 .fileListItem {
     cursor: grab;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:active {
         cursor: grabbing;
@@ -693,6 +760,58 @@
     &.dragging {
         opacity: 0.5;
         cursor: grabbing !important;
+    }
+
+    &.reordering {
+        animation: reorder-bounce 0.4s ease-out;
+    }
+
+    &.insertBefore {
+        position: relative;
+        border-top: 8px solid #22c55e;
+        box-shadow: 0 -5px 20px rgba(34, 197, 94, 0.6);
+        animation: pulse-insert 0.8s ease-in-out infinite;
+        transform: translateY(-4px);
+        
+        &::before {
+            content: "↑ Drop Here ↑";
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+    }
+
+    &.insertAfter {
+        position: relative;
+        border-bottom: 8px solid #22c55e;
+        box-shadow: 0 5px 20px rgba(34, 197, 94, 0.6);
+        animation: pulse-insert 0.8s ease-in-out infinite;
+        transform: translateY(4px);
+        
+        &::after {
+            content: "↓ Drop Here ↓";
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            z-index: 1000;
+        }
     }
 }
 
@@ -712,5 +831,43 @@
 
     &.visible {
         opacity: 1;
+    }
+}
+
+@keyframes pulse-insert {
+    0%,
+    100% {
+        opacity: 0.8;
+        box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+    }
+    50% {
+        opacity: 1;
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.8);
+    }
+}
+
+.insertIndicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 4px;
+    background: #6366f1;
+    border-radius: 2px;
+    z-index: 1000;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.8);
+    animation: pulse-insert 0.8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes reorder-bounce {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
     }
 }

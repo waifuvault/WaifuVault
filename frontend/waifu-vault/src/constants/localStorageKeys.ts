@@ -3,7 +3,11 @@ export const PARTICLES_ENABLED_KEY = "waifuvault-particles-enabled";
 export const ALBUM_SIDEBAR_COLLAPSED_KEY = "waifuvault-albumsidebar-collapsed";
 export const SELECTED_ALBUM_KEY = "waifuvault-selected-album";
 
-type LocalStorageKey = typeof THEME_KEY | typeof PARTICLES_ENABLED_KEY | typeof ALBUM_SIDEBAR_COLLAPSED_KEY | typeof SELECTED_ALBUM_KEY;
+type LocalStorageKey =
+    | typeof THEME_KEY
+    | typeof PARTICLES_ENABLED_KEY
+    | typeof ALBUM_SIDEBAR_COLLAPSED_KEY
+    | typeof SELECTED_ALBUM_KEY;
 
 export const LocalStorage = {
     getBoolean: (key: LocalStorageKey, defaultValue: boolean = false): boolean => {
