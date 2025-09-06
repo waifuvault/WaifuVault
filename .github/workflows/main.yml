@@ -54,8 +54,8 @@ jobs:
         with:
           path: |
             ~/.npm
-            ${{ github.workspace }}/frontend/waifu-vault/.next/cache
             ${{ github.workspace }}/frontend/waifu-vault/node_modules
+            ${{ github.workspace }}/frontend/waifu-vault/.next/cache
           key: ${{ runner.os }}-nextjs-${{ hashFiles('frontend/waifu-vault/package-lock.json') }}-${{ hashFiles('frontend/waifu-vault/**/*.js', 'frontend/waifu-vault/**/*.jsx', 'frontend/waifu-vault/**/*.ts', 'frontend/waifu-vault/**/*.tsx') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('frontend/waifu-vault/package-lock.json') }}-
