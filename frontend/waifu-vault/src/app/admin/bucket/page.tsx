@@ -17,7 +17,7 @@ export default function BucketAdmin() {
     const { isAuthenticated, logout } = useBucketAuth();
     const { backendRestBaseUrl } = useEnvironment();
     const { withLoading } = useLoading();
-    const { createAlbum, deleteAlbum, reorderFiles } = useAlbums();
+    const { createAlbum, deleteAlbum, reorderFiles, assignFilesToAlbum } = useAlbums();
     const { getThemeClass } = useTheme();
 
     const [bucketData, setBucketData] = useState<AdminBucketDto | null>(null);
@@ -118,6 +118,21 @@ export default function BucketAdmin() {
         [deleteAlbum, deleteDialog.albumToken, selectedAlbum, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
+    const handleFilesDropped = useCallback(
+        async (albumToken: string, fileTokens: string[]) => {
+            await withLoading(async () => {
+                try {
+                    await assignFilesToAlbum(albumToken, fileTokens);
+                    await fetchBucketData();
+                } catch (error) {
+                    console.error("Failed to associate files with album:", error);
+                    throw error;
+                }
+            });
+        },
+        [assignFilesToAlbum, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
+    );
+
     const handleDeleteCancel = useCallback(() => {
         setDeleteDialog({ isOpen: false, albumToken: "", albumName: "" });
     }, []);
@@ -209,6 +224,7 @@ export default function BucketAdmin() {
                                     onAlbumSelect={setSelectedAlbum}
                                     onCreateAlbum={handleCreateAlbum}
                                     onDeleteClick={handleDeleteClick}
+                                    onFilesDropped={handleFilesDropped}
                                 />
                                 <div className={styles.fileBrowserWrapper}>
                                     <FileBrowser

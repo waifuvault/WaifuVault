@@ -12,6 +12,7 @@ interface AlbumSidebarProps {
     onAlbumSelect: (albumToken: string | null) => void;
     onCreateAlbum: (name: string) => Promise<void>;
     onDeleteClick: (albumToken: string, albumName: string) => void;
+    onFilesDropped?: (albumToken: string, fileTokens: string[]) => Promise<void>;
     isLoading?: boolean;
 }
 
@@ -21,11 +22,13 @@ export function AlbumSidebar({
     onAlbumSelect,
     onCreateAlbum,
     onDeleteClick,
+    onFilesDropped,
     isLoading = false,
 }: AlbumSidebarProps) {
     const [isCreating, setIsCreating] = useState(false);
     const [newAlbumName, setNewAlbumName] = useState("");
     const [isCollapsed, setIsCollapsed] = useState(() => LocalStorage.getBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, false));
+    const [dragOverAlbum, setDragOverAlbum] = useState<string | null>(null);
 
     useEffect(() => LocalStorage.setBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, isCollapsed), [isCollapsed]);
 
@@ -46,6 +49,34 @@ export function AlbumSidebar({
 
     const handleDeleteClick = (albumToken: string, albumName: string) => {
         onDeleteClick(albumToken, albumName);
+    };
+
+    const handleDragOver = (e: React.DragEvent, albumToken: string) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        setDragOverAlbum(albumToken);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        // Only clear if we're leaving the album item itself, not moving to child elements
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setDragOverAlbum(null);
+        }
+    };
+
+    const handleDrop = async (e: React.DragEvent, albumToken: string) => {
+        e.preventDefault();
+        setDragOverAlbum(null);
+
+        try {
+            const fileTokensData = e.dataTransfer.getData("application/json");
+            if (fileTokensData && onFilesDropped) {
+                const fileTokens = JSON.parse(fileTokensData);
+                await onFilesDropped(albumToken, fileTokens);
+            }
+        } catch (error) {
+            console.error("Failed to drop files on album:", error);
+        }
     };
 
     const selectedCount = selectedAlbum
@@ -102,7 +133,13 @@ export function AlbumSidebar({
                         </Button>
 
                         {albums.map(album => (
-                            <div key={album.token} className={styles.albumItemContainer}>
+                            <div
+                                key={album.token}
+                                className={`${styles.albumItemContainer} ${dragOverAlbum === album.token ? styles.dragOver : ""}`}
+                                onDragOver={e => handleDragOver(e, album.token)}
+                                onDragLeave={handleDragLeave}
+                                onDrop={e => handleDrop(e, album.token)}
+                            >
                                 <Button
                                     variant="ghost"
                                     size="small"

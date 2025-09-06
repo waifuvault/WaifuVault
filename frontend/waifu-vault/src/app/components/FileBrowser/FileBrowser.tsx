@@ -257,11 +257,26 @@ export function FileBrowser({
         ],
     );
 
+    const getFileToken = useCallback((file: UrlFileMixin | AdminFileData): string => {
+        if ("fileToken" in file) {
+            return file.fileToken;
+        }
+        return file.token;
+    }, []);
+
     const handleDragStart = useCallback(
         (event: React.DragEvent, fileId: number) => {
             if (!allowReorder || !albumToken) {
                 const selectedFileIds = selectedFiles.has(fileId) ? Array.from(selectedFiles) : [fileId];
+                const draggedFileTokens = selectedFileIds
+                    .map(id => {
+                        const file = sortedFiles.find(f => f.id === id);
+                        return file ? getFileToken(file) : "";
+                    })
+                    .filter(Boolean);
+
                 setDraggedFiles(selectedFileIds);
+                event.dataTransfer.setData("application/json", JSON.stringify(draggedFileTokens));
                 event.dataTransfer.setData("text/plain", selectedFileIds.join(","));
                 event.dataTransfer.effectAllowed = "move";
                 return;
@@ -272,7 +287,7 @@ export function FileBrowser({
             event.dataTransfer.setData("text/plain", fileId.toString());
             event.dataTransfer.effectAllowed = "move";
         },
-        [selectedFiles, allowReorder, albumToken],
+        [selectedFiles, allowReorder, albumToken, sortedFiles, getFileToken],
     );
 
     const handleDragOver = useCallback(

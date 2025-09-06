@@ -101,6 +101,12 @@
             transform: scale(1);
         }
     }
+
+    &.dragOver {
+        background: rgba(99, 102, 241, 0.2) !important;
+        border: 2px dashed rgba(99, 102, 241, 0.5) !important;
+        transform: scale(1.02);
+    }
 }
 
 .albumItem {
