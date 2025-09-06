@@ -25,6 +25,7 @@ export class AdminBucketDto {
                     url: f.getPublicUrl(),
                     parsedFilename: f.parsedFileName,
                     expiresString: f.expiresIn ? ObjectUtils.timeToHuman(f.expiresIn) : null,
+                    albumToken: f.albumToken,
                 } as UrlFileMixin;
             }) ?? [];
         const albums =

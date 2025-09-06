@@ -2,9 +2,7 @@
 
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { ThemeType } from "@/app/constants/theme";
-
-export const localStoreThemeKey = "waifuvault-theme";
-export const localStoreParticlesKey = "waifuvault-particles-enabled";
+import { LocalStorage, PARTICLES_ENABLED_KEY, THEME_KEY } from "@/constants/localStorageKeys";
 
 export interface Theme {
     description: string;
@@ -87,15 +85,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     const [particlesEnabled, setParticlesEnabledState] = useState<boolean>(true);
 
     useEffect(() => {
-        const savedTheme = localStorage.getItem(localStoreThemeKey) as ThemeType;
+        const savedTheme = LocalStorage.getString(THEME_KEY) as ThemeType;
         if (savedTheme && themes.find(t => t.id === savedTheme)) {
             setCurrentTheme(savedTheme);
         }
 
-        const savedParticles = localStorage.getItem(localStoreParticlesKey);
-        if (savedParticles !== null) {
-            setParticlesEnabledState(savedParticles === "true");
-        }
+        const savedParticles = LocalStorage.getBoolean(PARTICLES_ENABLED_KEY, true);
+        setParticlesEnabledState(savedParticles);
     }, []);
 
     useEffect(() => {
@@ -116,7 +112,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     useEffect(() => {
         document.documentElement.dataset.theme = currentTheme;
-        localStorage.setItem(localStoreThemeKey, currentTheme);
+        LocalStorage.setString(THEME_KEY, currentTheme);
     }, [currentTheme]);
 
     const setTheme = useCallback((theme: ThemeType) => {
@@ -125,7 +121,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     const setParticlesEnabled = useCallback((enabled: boolean) => {
         setParticlesEnabledState(enabled);
-        localStorage.setItem(localStoreParticlesKey, enabled.toString());
+        LocalStorage.setBoolean(PARTICLES_ENABLED_KEY, enabled);
     }, []);
 
     const getThemeClass = useCallback(() => {

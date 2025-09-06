@@ -8,9 +8,10 @@ interface DialogProps {
     title: string;
     children: React.ReactNode;
     maxWidth?: string;
+    className?: string;
 }
 
-export default function Dialog({ isOpen, onClose, title, children, maxWidth = "400px" }: DialogProps) {
+export default function Dialog({ isOpen, onClose, title, children, maxWidth = "400px", className }: DialogProps) {
     const { getThemeClass } = useTheme();
 
     if (!isOpen) {
@@ -22,7 +23,7 @@ export default function Dialog({ isOpen, onClose, title, children, maxWidth = "4
     return (
         <div className={`${styles.overlay} ${styles[themeClass]}`} onClick={onClose}>
             <div
-                className={`${styles.modal} ${styles[themeClass]}`}
+                className={`${styles.modal} ${styles[themeClass]} ${className || ""}`}
                 onClick={e => e.stopPropagation()}
                 style={{ maxWidth }}
             >

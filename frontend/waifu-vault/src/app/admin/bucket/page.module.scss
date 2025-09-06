@@ -62,6 +62,39 @@
     }
 }
 
+.bucketContent {
+    display: flex;
+    gap: 1rem;
+    min-height: 70vh;
+    align-items: flex-start;
+}
+
+.fileBrowserWrapper {
+    flex: 1;
+    min-width: 0;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.albumIndicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(103, 126, 234, 0.2);
+    border: 1px solid rgba(103, 126, 234, 0.3);
+    border-radius: 6px;
+    color: var(--text-primary, #ffffff);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: 0.75rem;
+    margin-bottom: 1rem;
+
+    i {
+        font-size: 1rem;
+        opacity: 0.8;
+    }
+}
+
 .titleSection {
     display: flex;
     flex-direction: column;
@@ -387,6 +420,61 @@
 }
 
 // Responsive design
+.deleteFilesButton {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #ef4444 !important;
+    
+    &:hover:not(:disabled) {
+        background: rgba(239, 68, 68, 0.2) !important;
+        border-color: rgba(239, 68, 68, 0.4) !important;
+    }
+}
+
+.solidDialog {
+    background: rgba(30, 30, 30, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    
+    :global(.header) {
+        background: rgba(40, 40, 40, 0.9) !important;
+        border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    :global(.content) {
+        background: rgba(30, 30, 30, 0.95) !important;
+    }
+}
+
+.solidDialogLight {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    
+    :global(.header) {
+        background: rgba(245, 245, 245, 0.95) !important;
+        border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+        color: #333 !important;
+    }
+    
+    :global(.content) {
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: #333 !important;
+    }
+    
+    :global(.title) {
+        color: #333 !important;
+    }
+    
+    :global(.closeButton) {
+        color: #666 !important;
+        
+        &:hover {
+            background: rgba(0, 0, 0, 0.1) !important;
+            color: #333 !important;
+        }
+    }
+}
+
 @media (max-width: 768px) {
     .headerContent {
         min-width: unset;
@@ -394,6 +482,11 @@
         h1 {
             font-size: 1.5rem;
         }
+    }
+
+    .bucketContent {
+        flex-direction: column;
+        gap: 1rem;
     }
 
     .headerActions {

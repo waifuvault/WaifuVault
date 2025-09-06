@@ -1,19 +1,36 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useBucketAuth } from "@/app/hooks/useBucketAuth";
 import { useEnvironment } from "@/app/hooks/useEnvironment";
 import { useLoading } from "@/app/contexts/LoadingContext";
+import { useAlbums } from "@/app/hooks/useAlbums";
 import { Card, CardBody, CardHeader, FileBrowser, Footer, Header, ParticleBackground } from "@/app/components";
+import { AlbumSidebar } from "@/app/components/AlbumSidebar/AlbumSidebar";
+import Dialog from "@/app/components/Dialog/Dialog";
+import Button from "@/app/components/Button/Button";
+import { useTheme } from "@/app/contexts/ThemeContext";
 import styles from "./page.module.scss";
-import type { AdminBucketDto } from "@/types/AdminTypes";
+import type { AdminBucketDto, UrlFileMixin } from "@/types/AdminTypes";
 
 export default function BucketAdmin() {
     const { isAuthenticated, logout } = useBucketAuth();
     const { backendRestBaseUrl } = useEnvironment();
     const { withLoading } = useLoading();
+    const { createAlbum, deleteAlbum, reorderFiles } = useAlbums();
+    const { getThemeClass } = useTheme();
 
     const [bucketData, setBucketData] = useState<AdminBucketDto | null>(null);
+    const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
+    const [deleteDialog, setDeleteDialog] = useState<{
+        isOpen: boolean;
+        albumToken: string;
+        albumName: string;
+    }>({
+        isOpen: false,
+        albumToken: "",
+        albumName: "",
+    });
 
     const fetchBucketData = useCallback(async () => {
         await withLoading(async () => {
@@ -55,6 +72,96 @@ export default function BucketAdmin() {
         [backendRestBaseUrl, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
+    const handleCreateAlbum = useCallback(
+        async (name: string) => {
+            if (!bucketData?.token) {
+                return;
+            }
+
+            await withLoading(async () => {
+                try {
+                    await createAlbum(bucketData.token, name);
+                    await fetchBucketData();
+                } catch (error) {
+                    console.error("Failed to create album:", error);
+                    throw error;
+                }
+            });
+        },
+        [bucketData?.token, createAlbum, fetchBucketData],
+    );
+
+    const handleDeleteClick = useCallback((albumToken: string, albumName: string) => {
+        setDeleteDialog({
+            isOpen: true,
+            albumToken,
+            albumName,
+        });
+    }, []);
+
+    const handleDeleteConfirm = useCallback(
+        async (deleteFiles: boolean) => {
+            await withLoading(async () => {
+                try {
+                    await deleteAlbum(deleteDialog.albumToken, deleteFiles);
+                    if (selectedAlbum === deleteDialog.albumToken) {
+                        setSelectedAlbum(null);
+                    }
+                    await fetchBucketData();
+                    setDeleteDialog({ isOpen: false, albumToken: "", albumName: "" });
+                } catch (error) {
+                    console.error("Failed to delete album:", error);
+                    throw error;
+                }
+            });
+        },
+        [deleteAlbum, deleteDialog.albumToken, selectedAlbum, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
+    );
+
+    const handleDeleteCancel = useCallback(() => {
+        setDeleteDialog({ isOpen: false, albumToken: "", albumName: "" });
+    }, []);
+
+    const handleReorderFiles = useCallback(
+        async (fileId: number, oldPosition: number, newPosition: number) => {
+            if (!selectedAlbum) {
+                return;
+            }
+
+            try {
+                await reorderFiles(selectedAlbum, fileId, oldPosition, newPosition);
+                await fetchBucketData();
+            } catch (error) {
+                console.error("Failed to reorder files:", error);
+                throw error;
+            }
+        },
+        [selectedAlbum, reorderFiles, fetchBucketData],
+    );
+
+    const filteredFiles = useMemo((): UrlFileMixin[] => {
+        if (!bucketData?.files) {
+            return [];
+        }
+
+        if (selectedAlbum === null) {
+            return bucketData.files;
+        }
+
+        return bucketData.files.filter(file => file.albumToken === selectedAlbum);
+    }, [bucketData?.files, selectedAlbum]);
+
+    const albumsWithCounts = useMemo(() => {
+        if (!bucketData?.albums || !bucketData?.files) {
+            return [];
+        }
+
+        return bucketData.albums.map(album => ({
+            ...album,
+            fileCount: bucketData.files.filter(file => file.albumToken === album.token).length,
+        }));
+    }, [bucketData?.albums, bucketData?.files]);
+
     useEffect(() => {
         if (isAuthenticated) {
             fetchBucketData();
@@ -83,26 +190,83 @@ export default function BucketAdmin() {
                                         </div>
                                     )}
                                 </div>
+                                {selectedAlbum && (
+                                    <div className={styles.albumIndicator}>
+                                        <i className="bi bi-collection"></i>
+                                        <span>
+                                            {albumsWithCounts.find(a => a.token === selectedAlbum)?.name ||
+                                                "Unknown Album"}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </CardHeader>
                         <CardBody>
-                            <FileBrowser
-                                files={bucketData?.files ?? []}
-                                onDeleteFiles={handleDeleteFiles}
-                                onLogout={logout}
-                                showSearch={true}
-                                showSort={true}
-                                showViewToggle={true}
-                                allowSelection={true}
-                                allowDeletion={true}
-                                mode="bucket"
-                                allowReorder={false}
-                            />
+                            <div className={styles.bucketContent}>
+                                <AlbumSidebar
+                                    albums={albumsWithCounts}
+                                    selectedAlbum={selectedAlbum}
+                                    onAlbumSelect={setSelectedAlbum}
+                                    onCreateAlbum={handleCreateAlbum}
+                                    onDeleteClick={handleDeleteClick}
+                                />
+                                <div className={styles.fileBrowserWrapper}>
+                                    <FileBrowser
+                                        files={filteredFiles}
+                                        onDeleteFiles={handleDeleteFiles}
+                                        onReorderFiles={handleReorderFiles}
+                                        onLogout={logout}
+                                        showSearch={true}
+                                        showSort={true}
+                                        showViewToggle={true}
+                                        allowSelection={true}
+                                        allowDeletion={true}
+                                        allowReorder={selectedAlbum !== null}
+                                        albumToken={selectedAlbum || undefined}
+                                        mode="bucket"
+                                    />
+                                </div>
+                            </div>
                         </CardBody>
                     </Card>
                 </div>
             </main>
             <Footer />
+
+            <Dialog
+                isOpen={deleteDialog.isOpen}
+                onClose={handleDeleteCancel}
+                title="Delete Album"
+                maxWidth="450px"
+                className={getThemeClass() === "themeMinimal" ? styles.solidDialogLight : styles.solidDialog}
+            >
+                <div style={{ padding: "1rem 0" }}>
+                    <p style={{ marginBottom: "1.5rem", fontSize: "0.95rem", lineHeight: "1.4" }}>
+                        Are you sure you want to delete the album{" "}
+                        <strong>&ldquo;{deleteDialog.albumName}&rdquo;</strong>?
+                    </p>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                        <Button variant="outline" onClick={() => handleDeleteConfirm(false)}>
+                            <i className="bi bi-collection" style={{ marginRight: "0.5rem" }}></i>
+                            Delete album, keep files
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            onClick={() => handleDeleteConfirm(true)}
+                            className={styles.deleteFilesButton}
+                        >
+                            <i className="bi bi-trash" style={{ marginRight: "0.5rem" }}></i>
+                            Delete album and all files
+                        </Button>
+
+                        <Button variant="secondary" onClick={handleDeleteCancel}>
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Dialog>
         </div>
     );
 }

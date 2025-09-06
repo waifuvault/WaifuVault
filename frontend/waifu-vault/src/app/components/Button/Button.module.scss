@@ -29,6 +29,16 @@ $button-variants: (
             transform: -1px,
         ),
     ),
+    ghost: (
+        bg: transparent,
+        color: var(--text-secondary),
+        border: none,
+        hover: (
+            bg: rgba(255, 255, 255, 0.08),
+            color: var(--text-primary),
+            transform: -1px,
+        ),
+    ),
 );
 
 $button-sizes: (

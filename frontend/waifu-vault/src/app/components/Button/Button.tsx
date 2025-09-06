@@ -5,7 +5,7 @@ import styles from "./Button.module.scss";
 import { useTheme } from "@/app/contexts/ThemeContext";
 
 interface ButtonProps {
-    variant?: "primary" | "secondary" | "outline";
+    variant?: "primary" | "secondary" | "outline" | "ghost";
     size?: "small" | "medium" | "large";
     children: React.ReactNode;
     onClick?: () => void;
@@ -15,6 +15,7 @@ interface ButtonProps {
     disabled?: boolean;
     type?: "button" | "submit" | "reset";
     className?: string;
+    title?: string;
 }
 
 export default function Button({
@@ -28,6 +29,7 @@ export default function Button({
     disabled = false,
     type = "button",
     className = "",
+    title,
 }: ButtonProps) {
     const { getThemeClass } = useTheme();
     const themeClass = getThemeClass();
@@ -39,6 +41,7 @@ export default function Button({
     const commonProps = {
         className: buttonClasses,
         disabled,
+        title,
     };
 
     if (href) {

@@ -16,17 +16,16 @@ export interface UrlFileMixin {
     views: number;
     parsedFilename: string;
     expiresString: string | null;
+    albumToken?: string | null;
 }
 
 export interface AlbumInfo {
-    id: number;
-    name: string;
-    description: string | null;
-    dateCreated: number;
     token: string;
-    views: number;
-    fileCount: number;
-    thumbnail: string | null;
+    publicToken: string | null;
+    name: string;
+    bucket: string;
+    dateCreated: number;
+    fileCount?: number;
 }
 
 export interface AdminBucketDto {

@@ -14,3 +14,4 @@ export { default as ThemeSelector } from "@/app/components/ThemeSelector/ThemeSe
 export { default as ParticleBackground } from "@/app/components/ParticleBackground/ParticleBackground";
 export { default as Card, CardHeader, CardBody } from "@/app/components/Card/Card";
 export { FileBrowser } from "@/app/components/FileBrowser";
+export { AlbumSidebar } from "@/app/components/AlbumSidebar/AlbumSidebar";
