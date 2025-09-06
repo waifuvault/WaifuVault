@@ -50,12 +50,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
             {children}
             <div className="toast-container">
                 {toasts.map((toast, index) => (
-                    <Toast 
-                        key={toast.id} 
-                        {...toast} 
-                        bottom={16 + index * 80} 
-                        onClose={removeToast} 
-                    />
+                    <Toast key={toast.id} {...toast} bottom={16 + index * 80} onClose={removeToast} />
                 ))}
             </div>
         </ToastContext.Provider>
