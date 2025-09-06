@@ -11,6 +11,7 @@ import { ToastProvider, useToast } from "@/app/components/Toast";
 import Dialog from "@/app/components/Dialog/Dialog";
 import Button from "@/app/components/Button/Button";
 import { useTheme } from "@/app/contexts/ThemeContext";
+import { LocalStorage, SELECTED_ALBUM_KEY } from "@/constants/localStorageKeys";
 import styles from "./page.module.scss";
 import type { AdminBucketDto, UrlFileMixin } from "@/types/AdminTypes";
 
@@ -23,7 +24,9 @@ function BucketAdminContent() {
     const { showToast } = useToast();
 
     const [bucketData, setBucketData] = useState<AdminBucketDto | null>(null);
-    const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
+    const [selectedAlbum, setSelectedAlbum] = useState<string | null>(
+        () => LocalStorage.getString(SELECTED_ALBUM_KEY) || null,
+    );
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;
         albumToken: string;
@@ -34,6 +37,15 @@ function BucketAdminContent() {
         albumName: "",
     });
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
+
+    const handleAlbumSelect = useCallback((albumToken: string | null) => {
+        setSelectedAlbum(albumToken);
+        if (albumToken === null) {
+            LocalStorage.remove(SELECTED_ALBUM_KEY);
+        } else {
+            LocalStorage.setString(SELECTED_ALBUM_KEY, albumToken);
+        }
+    }, []);
 
     const fetchBucketData = useCallback(async () => {
         await withLoading(async () => {
@@ -107,7 +119,7 @@ function BucketAdminContent() {
                 try {
                     await deleteAlbum(deleteDialog.albumToken, deleteFiles);
                     if (selectedAlbum === deleteDialog.albumToken) {
-                        setSelectedAlbum(null);
+                        handleAlbumSelect(null);
                     }
                     await fetchBucketData();
                     setDeleteDialog({ isOpen: false, albumToken: "", albumName: "" });
@@ -117,7 +129,7 @@ function BucketAdminContent() {
                 }
             });
         },
-        [deleteAlbum, deleteDialog.albumToken, selectedAlbum, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
+        [deleteAlbum, deleteDialog.albumToken, selectedAlbum, handleAlbumSelect, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
     const albumsWithCounts = useMemo(() => {
@@ -204,6 +216,15 @@ function BucketAdminContent() {
         }
     }, [isAuthenticated, fetchBucketData]);
 
+    useEffect(() => {
+        if (bucketData?.albums && selectedAlbum) {
+            const albumExists = bucketData.albums.some(album => album.token === selectedAlbum);
+            if (!albumExists) {
+                handleAlbumSelect(null);
+            }
+        }
+    }, [bucketData?.albums, selectedAlbum, handleAlbumSelect]);
+
     if (isAuthenticated !== true || !bucketData) {
         return null;
     }
@@ -242,7 +263,7 @@ function BucketAdminContent() {
                                 <AlbumSidebar
                                     albums={albumsWithCounts}
                                     selectedAlbum={selectedAlbum}
-                                    onAlbumSelect={setSelectedAlbum}
+                                    onAlbumSelect={handleAlbumSelect}
                                     onCreateAlbum={handleCreateAlbum}
                                     onDeleteClick={handleDeleteClick}
                                     onFilesDropped={handleFilesDropped}

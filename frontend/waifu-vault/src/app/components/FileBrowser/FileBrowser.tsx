@@ -319,7 +319,7 @@ export function FileBrowser({
         setDraggedFiles([]);
         setDraggedOverFile(null);
         setIsDraggingToAlbum(false);
-        onDragEnd?.(); // Notify parent that drag ended
+        onDragEnd?.();
     }, [onDragEnd]);
 
     const renderFileName = useCallback(
@@ -432,8 +432,8 @@ export function FileBrowser({
 
     const getAlbumName = useCallback(
         (file: UrlFileMixin | AdminFileData): string | null => {
-            if ("album" in file && file.album) {
-                return file.album.name;
+            if ("__album__" in file && file.__album__) {
+                return file.__album__.name;
             }
 
             if ("albumToken" in file && file.albumToken && albums) {

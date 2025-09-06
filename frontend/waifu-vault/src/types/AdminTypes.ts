@@ -17,6 +17,7 @@ export interface UrlFileMixin {
     parsedFilename: string;
     expiresString: string | null;
     albumToken?: string | null;
+    __album__?: AlbumAdminInfo;
 }
 
 export interface AlbumInfo {
@@ -26,6 +27,14 @@ export interface AlbumInfo {
     bucket: string;
     dateCreated: number;
     fileCount?: number;
+}
+
+export interface AlbumAdminInfo {
+    name: string;
+    bucketToken: string;
+    albumToken: string;
+    publicToken: string | null;
+    views: number;
 }
 
 export interface AdminBucketDto {

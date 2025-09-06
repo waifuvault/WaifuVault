@@ -21,7 +21,7 @@ interface ToastProviderProps {
     children: React.ReactNode;
 }
 
-interface ToastState extends Omit<ToastProps, "onClose"> {
+interface ToastState extends Omit<ToastProps, "onClose" | "bottom"> {
     id: string;
 }
 
@@ -33,7 +33,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
     }, []);
 
     const showToast = useCallback((type: ToastType, message: string, title?: string, duration?: number) => {
-        const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
         const newToast: ToastState = {
             id,
             type,
@@ -49,8 +49,13 @@ export function ToastProvider({ children }: ToastProviderProps) {
         <ToastContext.Provider value={{ showToast }}>
             {children}
             <div className="toast-container">
-                {toasts.map(toast => (
-                    <Toast key={toast.id} {...toast} onClose={removeToast} />
+                {toasts.map((toast, index) => (
+                    <Toast 
+                        key={toast.id} 
+                        {...toast} 
+                        bottom={16 + index * 80} 
+                        onClose={removeToast} 
+                    />
                 ))}
             </div>
         </ToastContext.Provider>

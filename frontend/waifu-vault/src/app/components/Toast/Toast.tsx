@@ -11,10 +11,11 @@ export interface ToastProps {
     title?: string;
     message: string;
     duration?: number;
+    bottom: number;
     onClose: (id: string) => void;
 }
 
-export function Toast({ id, type, title, message, duration = 4000, onClose }: ToastProps) {
+export function Toast({ id, type, title, message, duration = 4000, bottom, onClose }: ToastProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [isExiting, setIsExiting] = useState(false);
 
@@ -54,6 +55,7 @@ export function Toast({ id, type, title, message, duration = 4000, onClose }: To
     return (
         <div
             className={`${styles.toast} ${styles[type]} ${isVisible ? styles.visible : ""} ${isExiting ? styles.exiting : ""}`}
+            style={{ bottom: `${bottom}px` }}
         >
             <div className={styles.icon}>{getIcon()}</div>
             <div className={styles.content}>
