@@ -1,0 +1,20 @@
+.particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: transparent;
+}
+
+.particleCanvas {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .particleCanvas {
+        display: none;
+    }
+}

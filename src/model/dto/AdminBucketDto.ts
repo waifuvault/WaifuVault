@@ -5,7 +5,7 @@ import { BucketModel } from "../db/Bucket.model.js";
 import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
 
-type UrlFileMixin = FileUploadModel & { url: string; parsedFilename: string; expiresString: string | null };
+export type UrlFileMixin = FileUploadModel & { url: string; parsedFilename: string; expiresString: string | null };
 
 export class AdminBucketDto {
     @Property()
@@ -25,6 +25,7 @@ export class AdminBucketDto {
                     url: f.getPublicUrl(),
                     parsedFilename: f.parsedFileName,
                     expiresString: f.expiresIn ? ObjectUtils.timeToHuman(f.expiresIn) : null,
+                    albumToken: f.albumToken,
                 } as UrlFileMixin;
             }) ?? [];
         const albums =

@@ -75,7 +75,7 @@ func (s service) GenerateThumbnails(files []dto.FileEntryDto, albumId int) error
 	return bulkBatchProcessor.Process()
 }
 
-func (s *service) GenerateThumbnail(header *multipart.FileHeader, animate bool) ([]byte, error) {
+func (s service) GenerateThumbnail(header *multipart.FileHeader, animate bool) ([]byte, error) {
 	if !s.processor.SupportsMultipartFile(header) {
 		return nil, fmt.Errorf("unsupported file type: %s", header.Header.Get("Content-Type"))
 	}

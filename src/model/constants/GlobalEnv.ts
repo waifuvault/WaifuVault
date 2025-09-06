@@ -37,6 +37,7 @@ export enum GlobalEnv {
     HOME_PAGE_FILE_COUNTER = `${prefix}HOME_PAGE_FILE_COUNTER`,
     ALBUM_FILE_LIMIT = `${prefix}ALBUM_FILE_LIMIT`,
     TRUSTED_UPLOADER_IPS = `${prefix}TRUSTED_UPLOADER_IPS`,
+    FRONT_END_URL = `${prefix}FRONT_END_URL`,
 }
 
 export type GuaranteedString = WithDefault | MandatoryValues;

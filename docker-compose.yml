@@ -26,6 +26,18 @@ services:
     ports:
       - "127.0.0.1:5004:5432"
 
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/waifu-vault/Dockerfile
+    container_name: waifu-vault-frontend
+    restart: always
+    image: waifuvault-frontend
+    ports:
+      - "127.0.0.1:3131:3000"
+    env_file:
+      - ./frontend/waifu-vault/.env
+
   zipFiles:
     build:
       context: .

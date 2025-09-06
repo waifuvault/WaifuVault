@@ -1,0 +1,88 @@
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// Sizes
+.small {
+    padding: 0.125rem 0.375rem;
+    font-size: 0.65rem;
+
+    .icon {
+        font-size: 0.6rem;
+    }
+}
+
+.medium {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+
+    .icon {
+        font-size: 0.75rem;
+    }
+}
+
+.large {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+
+    .icon {
+        font-size: 0.875rem;
+    }
+}
+
+// Theme-aware variants
+.primary {
+    background: var(--bg-secondary);
+    border-color: var(--border-secondary);
+    color: var(--text-accent);
+}
+
+.secondary {
+    background: var(--bg-tertiary);
+    border-color: var(--border-primary);
+    color: var(--text-secondary);
+}
+
+.success {
+    background: rgba(40, 167, 69, 0.15);
+    border-color: rgba(40, 167, 69, 0.25);
+    color: var(--success-color);
+}
+
+.warning {
+    background: rgba(255, 193, 7, 0.15);
+    border-color: rgba(255, 193, 7, 0.25);
+    color: var(--warning-color);
+}
+
+.danger {
+    background: rgba(220, 53, 69, 0.15);
+    border-color: rgba(220, 53, 69, 0.25);
+    color: var(--error-color);
+}
+
+.info {
+    background: var(--bg-secondary);
+    border-color: var(--border-secondary);
+    color: var(--text-accent);
+}

@@ -15,7 +15,7 @@ import "./engine/impl/index.js";
 import * as rest from "./controllers/rest/index.js";
 import "./services/FileCleaner.js";
 import * as views from "./controllers/views/index.js";
-import * as adminViews from "./controllers/secure/index.js";
+import * as adminViews from "./controllers/secure/views/index.js";
 import * as globalMiddleware from "./middleware/global/index.js";
 import "./platformOverrides/index.js";
 import { FileServerController } from "./controllers/serve/FileServerController.js";
@@ -60,7 +60,7 @@ const opts: Partial<TsED.Configuration> = {
     ...config,
     acceptMimes: ["application/json"],
     httpPort: process.env.PORT ?? 8083,
-    httpsPort: ((): number | boolean => {
+    httpsPort: ((): string | number | false => {
         if (process.env.HTTPS === "true") {
             return Number.parseInt(process.env.HTTPS_PORT as string);
         }
@@ -115,7 +115,7 @@ const opts: Partial<TsED.Configuration> = {
         socketIoStatus === "dynamic"
             ? {
                   cors: {
-                      origin: process.env.BASE_URL,
+                      origin: [process.env.BASE_URL!, process.env.FRONT_END_URL!],
                   },
               }
             : undefined,
@@ -130,8 +130,9 @@ const opts: Partial<TsED.Configuration> = {
             },
         }),
         cors({
-            origin: process.env.BASE_URL,
+            origin: [process.env.BASE_URL!, process.env.FRONT_END_URL!],
             exposedHeaders: ["Location", "Content-Disposition"],
+            credentials: true,
         }),
         cookieParser(),
         methodOverride(),
@@ -222,7 +223,8 @@ export class Server implements BeforeRoutesInit {
                         httpOnly: true,
                         maxAge: 86400000,
                         secure: this.https === "true",
-                        sameSite: "strict",
+                        sameSite: "lax",
+                        domain: process.env.NODE_ENV === "production" ? process.env.COOKIE_DOMAIN : undefined,
                     },
                 }),
             );

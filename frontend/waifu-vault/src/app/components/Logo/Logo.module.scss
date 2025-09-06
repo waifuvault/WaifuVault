@@ -1,0 +1,55 @@
+.logoSection {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.logoContainer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.logo {
+    border-radius: 1rem;
+    box-shadow: var(--shadow-primary);
+    border: 2px solid var(--border-primary);
+    transition: all 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: var(--shadow-secondary);
+}
+
+.logoCredit {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.link {
+    color: var(--text-accent);
+    text-decoration: none;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .logoSection {
+        margin: 1.5rem 0;
+    }
+
+    .logo {
+        width: 250px;
+        height: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo {
+        width: 200px;
+        height: 200px;
+    }
+}
