@@ -15,13 +15,13 @@ type SortOrder = "asc" | "desc";
 
 interface FileBrowserProps {
     files: AdminFileData[] | UrlFileMixin[];
-    albums?: { token: string; name: string }[]; // Album lookup for showing badges
+    albums?: { token: string; name: string }[];
     onFilesSelected?: (fileIds: number[]) => void;
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
     onRenameFile?: (fileId: number, newName: string) => Promise<void>;
     onReorderFiles?: (fileId: number, oldPosition: number, newPosition: number) => Promise<void>;
-    onDragStart?: (isDraggingToAlbum: boolean) => void; // Notify parent when drag starts
-    onDragEnd?: () => void; // Notify parent when drag ends
+    onDragStart?: (isDraggingToAlbum: boolean) => void;
+    onDragEnd?: () => void;
     onLogout?: () => void;
     showSearch?: boolean;
     showSort?: boolean;
@@ -64,7 +64,6 @@ export function FileBrowser({
     const [isRenaming, setIsRenaming] = useState<number | null>(null);
     const [renameValue, setRenameValue] = useState("");
     const [draggedOverFile, setDraggedOverFile] = useState<number | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
     const fileListRef = useRef<HTMLDivElement>(null);
 
@@ -128,7 +127,6 @@ export function FileBrowser({
         }
     }, [allowDeletion, selectedFiles, onDeleteFiles]);
 
-    // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.ctrlKey || event.metaKey) {
@@ -284,13 +282,30 @@ export function FileBrowser({
             event.dataTransfer.setData("text/plain", selectedFileIds.join(","));
             event.dataTransfer.effectAllowed = "move";
 
-            // Set state based on view context
+            const dragImage = document.createElement("div");
+            dragImage.style.width = "100px";
+            dragImage.style.height = "60px";
+            dragImage.style.backgroundColor = "rgba(99, 102, 241, 0.8)";
+            dragImage.style.borderRadius = "8px";
+            dragImage.style.display = "flex";
+            dragImage.style.alignItems = "center";
+            dragImage.style.justifyContent = "center";
+            dragImage.style.color = "white";
+            dragImage.style.fontSize = "14px";
+            dragImage.style.fontWeight = "600";
+            dragImage.style.position = "absolute";
+            dragImage.style.top = "-1000px";
+            dragImage.textContent = `${selectedFileIds.length} file${selectedFileIds.length > 1 ? "s" : ""}`;
+            document.body.appendChild(dragImage);
+            event.dataTransfer.setDragImage(dragImage, 50, 30);
+
+            setTimeout(() => document.body.removeChild(dragImage), 0);
+
             const isDraggingToAlbum = !allowReorder || !albumToken;
             if (isDraggingToAlbum) {
                 setIsDraggingToAlbum(true);
                 onDragStart?.(true);
             } else {
-                setIsDragging(true);
                 onDragStart?.(false);
             }
         },
@@ -303,7 +318,6 @@ export function FileBrowser({
     const handleDragEnd = useCallback(() => {
         setDraggedFiles([]);
         setDraggedOverFile(null);
-        setIsDragging(false);
         setIsDraggingToAlbum(false);
         onDragEnd?.(); // Notify parent that drag ended
     }, [onDragEnd]);

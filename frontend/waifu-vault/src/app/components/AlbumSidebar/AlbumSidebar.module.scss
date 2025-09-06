@@ -108,15 +108,21 @@
         transform: scale(1.05);
         box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
         animation: pulse 1s infinite;
+        cursor: copy !important;
 
         .albumItem {
             color: var(--text-primary) !important;
             font-weight: 600 !important;
+            cursor: copy !important;
         }
 
         .count {
             background: var(--text-accent) !important;
             color: var(--bg-primary) !important;
+        }
+
+        * {
+            cursor: copy !important;
         }
     }
 }

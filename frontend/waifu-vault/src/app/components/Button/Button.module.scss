@@ -92,7 +92,6 @@ $button-sizes: (
                     box-shadow: map.get($variant-props, hover-shadow);
                 }
 
-                // Handle complex hover states
                 @if map.has-key($variant-props, hover) {
                     $hover-props: map.get($variant-props, hover);
 
@@ -205,7 +204,6 @@ $button-sizes: (
         box-shadow: config.get-shadow(sm);
     }
 }
-// Special button types
 .button {
     &.loading {
         pointer-events: none;

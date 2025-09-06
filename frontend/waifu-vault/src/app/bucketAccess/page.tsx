@@ -26,7 +26,6 @@ function BucketAccessContent() {
         }
     }, [searchParams]);
 
-    // Also check immediately on mount in case searchParams is available
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const errorParam = urlParams.get("error");

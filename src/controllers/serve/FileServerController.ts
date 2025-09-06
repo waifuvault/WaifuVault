@@ -55,13 +55,10 @@ export class FileServerController {
             res.setHeader("accept-ranges", "bytes");
         }
 
-        // Chunking is applied only if the mime type is allowed, the file is not encrypted,
-        // it's not a one-time download, and a valid Range header is present.
         if (
             this.allowedChunkMimeTypes.some(substr => mime.startsWith(substr)) &&
             !entryWrapper.entry.encrypted &&
             !entryWrapper.entry.settings?.oneTimeDownload &&
-            // if there is no range, we should not chunk data, just send the stream to prevent people from downloading the video
             req.headers.range
         ) {
             await this.chunkData(res, req, mime, entryWrapper);
@@ -87,7 +84,6 @@ export class FileServerController {
 
         const rangeMatch = range.match(/bytes=(\d*)-(\d*)/);
         if (!rangeMatch) {
-            // Malformed range header; fall back to full content delivery.
             res.setHeader("Content-Length", videoSize);
             res.writeHead(StatusCodes.OK, { "Content-Type": contentType });
             const videoStream = await entryWrapper.getStream();
@@ -95,10 +91,8 @@ export class FileServerController {
             return;
         }
         let start = parseInt(rangeMatch[1], 10);
-        // If the end is not provided, use a default chunk size or until the end of the file.
         let end = rangeMatch[2] ? parseInt(rangeMatch[2], 10) : Math.min(start + this.chunkSize, videoSize - 1);
 
-        // Validate start and end bounds
         if (Number.isNaN(start) || start < 0) {
             start = 0;
         }

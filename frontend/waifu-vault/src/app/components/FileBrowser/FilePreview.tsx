@@ -30,7 +30,6 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
 
         const mimeType = mediaType.toLowerCase();
 
-        // Handle by prefix
         if (mimeType.startsWith("image/")) {
             return "image";
         }
@@ -44,7 +43,6 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
             return "text";
         }
 
-        // Handle specific mime types
         switch (mimeType) {
             case "application/pdf":
                 return "pdf";
@@ -281,7 +279,6 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
     );
 }
 
-// Audio waveform component
 function AudioWaveform() {
     const [waveformData, setWaveformData] = useState<number[]>([]);
     const { currentTheme } = useTheme();

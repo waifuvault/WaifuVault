@@ -12,7 +12,7 @@ import {
     LegalSection,
     Logo,
     ParticleBackground,
-    SDKExamples,
+    SDKExamples
 } from "@/app/components";
 import { useStats } from "@/app/hooks/useStats";
 import { useRestrictions } from "@/app/hooks/useRestrictions";
@@ -26,8 +26,6 @@ interface AppConfig {
 const config: AppConfig = {
     HOME_PAGE_FILE_COUNTER: (process.env.NEXT_PUBLIC_HOME_PAGE_FILE_COUNTER as FileCounterMode) ?? "static",
 };
-
-// sexy home page
 
 export default function Home() {
     const { stats } = useStats(config.HOME_PAGE_FILE_COUNTER === "dynamic");

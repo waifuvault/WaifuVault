@@ -64,7 +64,6 @@ function BucketAdminContent() {
                     });
 
                     if (response.ok) {
-                        // Refresh the bucket data
                         fetchBucketData();
                     }
                 } catch (error) {
@@ -134,15 +133,11 @@ function BucketAdminContent() {
 
     const handleFilesDropped = useCallback(
         async (albumToken: string, fileTokens: string[]) => {
-            // Album association should work from both "All Files" and album views
-            // No need to check isDraggingToAlbum - allow it in all cases
-
             await withLoading(async () => {
                 try {
                     await assignFilesToAlbum(albumToken, fileTokens);
                     await fetchBucketData();
 
-                    // Find album name for toast
                     const album = albumsWithCounts.find(a => a.token === albumToken);
                     const albumName = album?.name || "Unknown Album";
                     const fileCount = fileTokens.length;

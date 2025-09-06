@@ -58,7 +58,6 @@ export function AlbumSidebar({
     };
 
     const handleDragLeave = (e: React.DragEvent) => {
-        // Only clear if we're leaving the album item itself, not moving to child elements
         if (!e.currentTarget.contains(e.relatedTarget as Node)) {
             setDragOverAlbum(null);
         }

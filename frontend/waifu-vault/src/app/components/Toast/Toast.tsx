@@ -19,10 +19,8 @@ export function Toast({ id, type, title, message, duration = 4000, onClose }: To
     const [isExiting, setIsExiting] = useState(false);
 
     useEffect(() => {
-        // Trigger entrance animation
         const showTimer = setTimeout(() => setIsVisible(true), 10);
 
-        // Auto dismiss
         const dismissTimer = setTimeout(() => {
             setIsExiting(true);
             setTimeout(() => onClose(id), 300);
