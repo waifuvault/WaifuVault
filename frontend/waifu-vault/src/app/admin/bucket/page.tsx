@@ -7,18 +7,20 @@ import { useLoading } from "@/app/contexts/LoadingContext";
 import { useAlbums } from "@/app/hooks/useAlbums";
 import { Card, CardBody, CardHeader, FileBrowser, Footer, Header, ParticleBackground } from "@/app/components";
 import { AlbumSidebar } from "@/app/components/AlbumSidebar/AlbumSidebar";
+import { ToastProvider, useToast } from "@/app/components/Toast";
 import Dialog from "@/app/components/Dialog/Dialog";
 import Button from "@/app/components/Button/Button";
 import { useTheme } from "@/app/contexts/ThemeContext";
 import styles from "./page.module.scss";
 import type { AdminBucketDto, UrlFileMixin } from "@/types/AdminTypes";
 
-export default function BucketAdmin() {
+function BucketAdminContent() {
     const { isAuthenticated, logout } = useBucketAuth();
     const { backendRestBaseUrl } = useEnvironment();
     const { withLoading } = useLoading();
     const { createAlbum, deleteAlbum, reorderFiles, assignFilesToAlbum } = useAlbums();
     const { getThemeClass } = useTheme();
+    const { showToast } = useToast();
 
     const [bucketData, setBucketData] = useState<AdminBucketDto | null>(null);
     const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
@@ -31,6 +33,7 @@ export default function BucketAdmin() {
         albumToken: "",
         albumName: "",
     });
+    const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
 
     const fetchBucketData = useCallback(async () => {
         await withLoading(async () => {
@@ -88,7 +91,7 @@ export default function BucketAdmin() {
                 }
             });
         },
-        [bucketData?.token, createAlbum, fetchBucketData],
+        [bucketData?.token, createAlbum, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
     const handleDeleteClick = useCallback((albumToken: string, albumName: string) => {
@@ -118,20 +121,54 @@ export default function BucketAdmin() {
         [deleteAlbum, deleteDialog.albumToken, selectedAlbum, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
+    const albumsWithCounts = useMemo(() => {
+        if (!bucketData?.albums || !bucketData?.files) {
+            return [];
+        }
+
+        return bucketData.albums.map(album => ({
+            ...album,
+            fileCount: bucketData.files.filter(file => file.albumToken === album.token).length,
+        }));
+    }, [bucketData?.albums, bucketData?.files]);
+
     const handleFilesDropped = useCallback(
         async (albumToken: string, fileTokens: string[]) => {
+            // Album association should work from both "All Files" and album views
+            // No need to check isDraggingToAlbum - allow it in all cases
+
             await withLoading(async () => {
                 try {
                     await assignFilesToAlbum(albumToken, fileTokens);
                     await fetchBucketData();
+
+                    // Find album name for toast
+                    const album = albumsWithCounts.find(a => a.token === albumToken);
+                    const albumName = album?.name || "Unknown Album";
+                    const fileCount = fileTokens.length;
+
+                    showToast(
+                        "success",
+                        `${fileCount} file${fileCount === 1 ? "" : "s"} associated with ${albumName}`,
+                        "Files Associated",
+                    );
                 } catch (error) {
                     console.error("Failed to associate files with album:", error);
+                    showToast("error", "Failed to associate files with album");
                     throw error;
                 }
             });
         },
-        [assignFilesToAlbum, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
+        [assignFilesToAlbum, fetchBucketData, albumsWithCounts, showToast, isDraggingToAlbum], // eslint-disable-line react-hooks/exhaustive-deps
     );
+
+    const handleDragStart = useCallback((draggingToAlbum: boolean) => {
+        setIsDraggingToAlbum(draggingToAlbum);
+    }, []);
+
+    const handleDragEnd = useCallback(() => {
+        setIsDraggingToAlbum(false);
+    }, []);
 
     const handleDeleteCancel = useCallback(() => {
         setDeleteDialog({ isOpen: false, albumToken: "", albumName: "" });
@@ -165,17 +202,6 @@ export default function BucketAdmin() {
 
         return bucketData.files.filter(file => file.albumToken === selectedAlbum);
     }, [bucketData?.files, selectedAlbum]);
-
-    const albumsWithCounts = useMemo(() => {
-        if (!bucketData?.albums || !bucketData?.files) {
-            return [];
-        }
-
-        return bucketData.albums.map(album => ({
-            ...album,
-            fileCount: bucketData.files.filter(file => file.albumToken === album.token).length,
-        }));
-    }, [bucketData?.albums, bucketData?.files]);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -232,6 +258,8 @@ export default function BucketAdmin() {
                                         albums={albumsWithCounts.map(a => ({ token: a.token, name: a.name }))}
                                         onDeleteFiles={handleDeleteFiles}
                                         onReorderFiles={handleReorderFiles}
+                                        onDragStart={handleDragStart}
+                                        onDragEnd={handleDragEnd}
                                         onLogout={logout}
                                         showSearch={true}
                                         showSort={true}
@@ -285,5 +313,13 @@ export default function BucketAdmin() {
                 </div>
             </Dialog>
         </div>
+    );
+}
+
+export default function BucketAdmin() {
+    return (
+        <ToastProvider>
+            <BucketAdminContent />
+        </ToastProvider>
     );
 }

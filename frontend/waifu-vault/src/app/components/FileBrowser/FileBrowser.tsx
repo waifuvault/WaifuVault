@@ -20,6 +20,8 @@ interface FileBrowserProps {
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
     onRenameFile?: (fileId: number, newName: string) => Promise<void>;
     onReorderFiles?: (fileId: number, oldPosition: number, newPosition: number) => Promise<void>;
+    onDragStart?: (isDraggingToAlbum: boolean) => void; // Notify parent when drag starts
+    onDragEnd?: () => void; // Notify parent when drag ends
     onLogout?: () => void;
     showSearch?: boolean;
     showSort?: boolean;
@@ -39,6 +41,8 @@ export function FileBrowser({
     onDeleteFiles,
     onRenameFile,
     onReorderFiles,
+    onDragStart,
+    onDragEnd,
     onLogout,
     showSearch = true,
     showSort = true,
@@ -61,6 +65,7 @@ export function FileBrowser({
     const [renameValue, setRenameValue] = useState("");
     const [draggedOverFile, setDraggedOverFile] = useState<number | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
     const fileListRef = useRef<HTMLDivElement>(null);
 
     const filteredFiles = useMemo(() => {
@@ -266,79 +271,42 @@ export function FileBrowser({
 
     const handleDragStart = useCallback(
         (event: React.DragEvent, fileId: number) => {
-            if (!allowReorder || !albumToken) {
-                const selectedFileIds = selectedFiles.has(fileId) ? Array.from(selectedFiles) : [fileId];
-                const draggedFileTokens = selectedFileIds
-                    .map(id => {
-                        const file = sortedFiles.find(f => f.id === id);
-                        return file ? getFileToken(file) : "";
-                    })
-                    .filter(Boolean);
+            const selectedFileIds = selectedFiles.has(fileId) ? Array.from(selectedFiles) : [fileId];
+            const draggedFileTokens = selectedFileIds
+                .map(id => {
+                    const file = sortedFiles.find(f => f.id === id);
+                    return file ? getFileToken(file) : "";
+                })
+                .filter(Boolean);
 
-                setDraggedFiles(selectedFileIds);
-                event.dataTransfer.setData("application/json", JSON.stringify(draggedFileTokens));
-                event.dataTransfer.setData("text/plain", selectedFileIds.join(","));
-                event.dataTransfer.effectAllowed = "move";
-                return;
-            }
-
-            setIsDragging(true);
-            setDraggedFiles([fileId]);
-            event.dataTransfer.setData("text/plain", fileId.toString());
+            setDraggedFiles(selectedFileIds);
+            event.dataTransfer.setData("application/json", JSON.stringify(draggedFileTokens));
+            event.dataTransfer.setData("text/plain", selectedFileIds.join(","));
             event.dataTransfer.effectAllowed = "move";
-        },
-        [selectedFiles, allowReorder, albumToken, sortedFiles, getFileToken],
-    );
 
-    const handleDragOver = useCallback(
-        (event: React.DragEvent, targetFileId?: number) => {
-            event.preventDefault();
-            if (allowReorder && albumToken && targetFileId && isDragging) {
-                event.dataTransfer.dropEffect = "move";
-                setDraggedOverFile(targetFileId);
+            // Set state based on view context
+            const isDraggingToAlbum = !allowReorder || !albumToken;
+            if (isDraggingToAlbum) {
+                setIsDraggingToAlbum(true);
+                onDragStart?.(true);
+            } else {
+                setIsDragging(true);
+                onDragStart?.(false);
             }
         },
-        [allowReorder, albumToken, isDragging],
+        [selectedFiles, allowReorder, albumToken, sortedFiles, getFileToken, onDragStart],
     );
 
-    const handleDrop = useCallback(
-        async (event: React.DragEvent, targetFileId?: number) => {
-            event.preventDefault();
-
-            if (allowReorder && albumToken && targetFileId && isDragging && onReorderFiles) {
-                const draggedFileId = parseInt(event.dataTransfer.getData("text/plain"));
-
-                if (draggedFileId !== targetFileId) {
-                    const draggedFile = sortedFiles.find(f => f.id === draggedFileId);
-                    const targetFile = sortedFiles.find(f => f.id === targetFileId);
-
-                    if (draggedFile && targetFile) {
-                        const oldPosition = sortedFiles.findIndex(f => f.id === draggedFileId);
-                        const newPosition = sortedFiles.findIndex(f => f.id === targetFileId);
-
-                        if (oldPosition !== newPosition && oldPosition !== -1 && newPosition !== -1) {
-                            try {
-                                await onReorderFiles(draggedFileId, oldPosition, newPosition);
-                            } catch (error) {
-                                console.error("Failed to reorder files:", error);
-                            }
-                        }
-                    }
-                }
-            }
-
-            setDraggedFiles([]);
-            setDraggedOverFile(null);
-            setIsDragging(false);
-        },
-        [allowReorder, albumToken, isDragging, onReorderFiles, sortedFiles],
-    );
+    // TODO: Implement reordering handlers when reordering feature is implemented
+    // These handlers will be re-added to support drag-and-drop reordering within albums
 
     const handleDragEnd = useCallback(() => {
         setDraggedFiles([]);
         setDraggedOverFile(null);
         setIsDragging(false);
-    }, []);
+        setIsDraggingToAlbum(false);
+        onDragEnd?.(); // Notify parent that drag ended
+    }, [onDragEnd]);
 
     const renderFileName = useCallback(
         (file: { id: number; originalFileName: string }) => {
@@ -474,6 +442,11 @@ export function FileBrowser({
 
     return (
         <div className={styles.fileBrowser}>
+            {/* Drag overlay for screen dimming */}
+            {isDraggingToAlbum && (
+                <div className={`${styles.dragOverlay} ${isDraggingToAlbum ? styles.visible : ""}`} />
+            )}
+
             {/* Enhanced Toolbar */}
             <div className={styles.toolbar}>
                 <div className={styles.toolbarLeft}>
@@ -606,8 +579,8 @@ export function FileBrowser({
                 ref={fileListRef}
                 className={`${styles.fileContainer} ${styles[viewMode]}`}
                 onContextMenu={e => handleContextMenu(e)}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
+                onDragOver={undefined}
+                onDrop={undefined}
             >
                 {viewMode === "grid" && (
                     <div className={styles.fileGrid}>
@@ -620,10 +593,10 @@ export function FileBrowser({
                                     } ${draggedOverFile === file.id ? styles.dragOver : ""}`}
                                     onClick={e => handleFileSelect(file.id, e)}
                                     onContextMenu={e => handleContextMenu(e, file.id)}
-                                    draggable={allowReorder ? allowReorder : true}
+                                    draggable={true}
                                     onDragStart={e => handleDragStart(e, file.id)}
-                                    onDragOver={e => handleDragOver(e, file.id)}
-                                    onDrop={e => handleDrop(e, file.id)}
+                                    onDragOver={undefined}
+                                    onDrop={undefined}
                                     onDragEnd={handleDragEnd}
                                 >
                                     <div className={styles.filePreviewContainer}>
@@ -700,10 +673,10 @@ export function FileBrowser({
                                     } ${draggedOverFile === file.id ? styles.dragOver : ""}`}
                                     onClick={e => handleFileSelect(file.id, e)}
                                     onContextMenu={e => handleContextMenu(e, file.id)}
-                                    draggable={allowReorder ? allowReorder : true}
+                                    draggable={true}
                                     onDragStart={e => handleDragStart(e, file.id)}
-                                    onDragOver={e => handleDragOver(e, file.id)}
-                                    onDrop={e => handleDrop(e, file.id)}
+                                    onDragOver={undefined}
+                                    onDrop={undefined}
                                     onDragEnd={handleDragEnd}
                                 >
                                     {allowSelection && (

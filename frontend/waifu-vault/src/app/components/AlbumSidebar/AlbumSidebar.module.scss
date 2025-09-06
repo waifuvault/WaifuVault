@@ -103,9 +103,21 @@
     }
 
     &.dragOver {
-        background: rgba(99, 102, 241, 0.2) !important;
-        border: 2px dashed rgba(99, 102, 241, 0.5) !important;
-        transform: scale(1.02);
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3)) !important;
+        border: 2px dashed var(--text-accent) !important;
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        animation: pulse 1s infinite;
+
+        .albumItem {
+            color: var(--text-primary) !important;
+            font-weight: 600 !important;
+        }
+
+        .count {
+            background: var(--text-accent) !important;
+            color: var(--bg-primary) !important;
+        }
     }
 }
 
@@ -367,5 +379,15 @@
         min-height: 32px;
         font-size: 0.8125rem;
         gap: 0.625rem;
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
     }
 }

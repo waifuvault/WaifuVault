@@ -658,3 +658,59 @@
     flex-wrap: wrap;
     gap: 0.5rem;
 }
+
+// Drag and Drop Improvements
+.fileContainer.dragging {
+    cursor: grabbing !important;
+
+    * {
+        cursor: grabbing !important;
+        pointer-events: none;
+    }
+}
+
+.fileItem {
+    cursor: grab;
+
+    &:active {
+        cursor: grabbing;
+    }
+
+    &.dragging {
+        opacity: 0.5;
+        transform: rotate(2deg);
+        cursor: grabbing !important;
+    }
+}
+
+.fileListItem {
+    cursor: grab;
+
+    &:active {
+        cursor: grabbing;
+    }
+
+    &.dragging {
+        opacity: 0.5;
+        cursor: grabbing !important;
+    }
+}
+
+// Screen dimming overlay when dragging over albums
+.dragOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    z-index: 999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    &.visible {
+        opacity: 1;
+    }
+}
