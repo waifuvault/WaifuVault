@@ -213,6 +213,7 @@ export default function BucketAdmin() {
                                 <div className={styles.fileBrowserWrapper}>
                                     <FileBrowser
                                         files={filteredFiles}
+                                        albums={albumsWithCounts.map(a => ({ token: a.token, name: a.name }))}
                                         onDeleteFiles={handleDeleteFiles}
                                         onReorderFiles={handleReorderFiles}
                                         onLogout={logout}

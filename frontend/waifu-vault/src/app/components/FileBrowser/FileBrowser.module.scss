@@ -334,12 +334,10 @@
     font-size: 0.85rem;
     font-weight: 500;
     margin-bottom: 0.5rem;
-    word-break: break-word;
     line-height: 1.2;
     overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .fileDetails {
@@ -647,4 +645,16 @@
         font-size: 0.8rem;
         padding: 0.25rem 0.5rem;
     }
+}
+
+.albumPill {
+    margin-top: 0.25rem;
+    max-width: 120px;
+}
+
+.nameWithBadge {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }

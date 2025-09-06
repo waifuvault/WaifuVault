@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button from "../Button/Button";
+import Pill from "../Pill/Pill";
 import { FilePreview } from "./FilePreview";
 import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
 import { useContextMenu } from "../../hooks/useContextMenu";
@@ -14,6 +15,7 @@ type SortOrder = "asc" | "desc";
 
 interface FileBrowserProps {
     files: AdminFileData[] | UrlFileMixin[];
+    albums?: { token: string; name: string }[]; // Album lookup for showing badges
     onFilesSelected?: (fileIds: number[]) => void;
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
     onRenameFile?: (fileId: number, newName: string) => Promise<void>;
@@ -32,6 +34,7 @@ interface FileBrowserProps {
 
 export function FileBrowser({
     files,
+    albums,
     onFilesSelected,
     onDeleteFiles,
     onRenameFile,
@@ -430,6 +433,22 @@ export function FileBrowser({
         return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }, []);
 
+    const getAlbumName = useCallback(
+        (file: UrlFileMixin | AdminFileData): string | null => {
+            if ("album" in file && file.album) {
+                return file.album.name;
+            }
+
+            if ("albumToken" in file && file.albumToken && albums) {
+                const album = albums.find(a => a.token === file.albumToken);
+                return album ? album.name : null;
+            }
+
+            return null;
+        },
+        [albums],
+    );
+
     if (files.length === 0) {
         return (
             <div className={styles.emptyState}>
@@ -613,6 +632,16 @@ export function FileBrowser({
                                             <span className={styles.fileSize}>{formatFileSize(file.fileSize)}</span>
                                             <span className={styles.fileDate}>{formatDate(file.createdAt)}</span>
                                         </div>
+                                        {!albumToken && getAlbumName(file) && (
+                                            <Pill
+                                                variant="info"
+                                                size="medium"
+                                                icon={<i className="bi bi-collection"></i>}
+                                                text={getAlbumName(file)!}
+                                                className={styles.albumPill}
+                                                tooltip={true}
+                                            />
+                                        )}
                                         {file.expires && (
                                             <div className={styles.expiresInfo}>
                                                 Expires:{" "}
@@ -672,7 +701,20 @@ export function FileBrowser({
                                         {fileIconData.icon}
                                     </div>
 
-                                    <div className={styles.fileListName}>{renderFileName(file)}</div>
+                                    <div className={styles.fileListName}>
+                                        <div className={styles.nameWithBadge}>
+                                            {renderFileName(file)}
+                                            {!albumToken && getAlbumName(file) && (
+                                                <Pill
+                                                    variant="info"
+                                                    size="medium"
+                                                    icon={<i className="bi bi-collection"></i>}
+                                                    text={getAlbumName(file)!}
+                                                    tooltip={true}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
 
                                     {viewMode === "detailed" && (
                                         <>
