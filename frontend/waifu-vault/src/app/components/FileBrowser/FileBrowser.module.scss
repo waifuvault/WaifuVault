@@ -706,7 +706,7 @@
         box-shadow: 0 -5px 20px rgba(34, 197, 94, 0.6);
         animation: pulse-insert 0.8s ease-in-out infinite;
         transform: translateY(-4px);
-        
+
         &::before {
             content: "↑ Drop Here ↑";
             position: absolute;
@@ -730,7 +730,7 @@
         box-shadow: 0 5px 20px rgba(34, 197, 94, 0.6);
         animation: pulse-insert 0.8s ease-in-out infinite;
         transform: translateY(4px);
-        
+
         &::after {
             content: "↓ Drop Here ↓";
             position: absolute;
@@ -772,7 +772,7 @@
         box-shadow: 0 -5px 20px rgba(34, 197, 94, 0.6);
         animation: pulse-insert 0.8s ease-in-out infinite;
         transform: translateY(-4px);
-        
+
         &::before {
             content: "↑ Drop Here ↑";
             position: absolute;
@@ -796,7 +796,7 @@
         box-shadow: 0 5px 20px rgba(34, 197, 94, 0.6);
         animation: pulse-insert 0.8s ease-in-out infinite;
         transform: translateY(4px);
-        
+
         &::after {
             content: "↓ Drop Here ↓";
             position: absolute;
