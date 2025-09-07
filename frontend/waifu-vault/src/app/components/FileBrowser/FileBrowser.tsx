@@ -6,6 +6,7 @@ import Pill from "../Pill/Pill";
 import { FilePreview } from "./FilePreview";
 import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
 import { useContextMenu } from "../../hooks/useContextMenu";
+import { Tooltip } from "../Tooltip";
 import styles from "./FileBrowser.module.scss";
 import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
 
@@ -711,9 +712,9 @@ export function FileBrowser({
                                     </div>
 
                                     <div className={styles.fileInfo}>
-                                        <div className={styles.fileName} title={file.originalFileName}>
-                                            {renderFileName(file)}
-                                        </div>
+                                        <Tooltip content={file.originalFileName}>
+                                            <div className={styles.fileName}>{renderFileName(file)}</div>
+                                        </Tooltip>
                                         <div className={styles.fileDetails}>
                                             <span className={styles.fileSize}>{formatFileSize(file.fileSize)}</span>
                                             <span className={styles.fileDate}>{formatDate(file.createdAt)}</span>

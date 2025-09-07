@@ -96,7 +96,9 @@
     transition: all 0.2s ease;
 
     &:hover {
-        .albumActions > * {
+        .albumActions .shareButton,
+        .albumActions .unshareButton,
+        .albumActions .deleteButton {
             opacity: 1;
             transform: scale(1);
         }

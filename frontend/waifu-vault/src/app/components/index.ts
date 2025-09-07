@@ -15,3 +15,4 @@ export { default as ParticleBackground } from "@/app/components/ParticleBackgrou
 export { default as Card, CardHeader, CardBody } from "@/app/components/Card/Card";
 export { FileBrowser } from "@/app/components/FileBrowser";
 export { AlbumSidebar } from "@/app/components/AlbumSidebar/AlbumSidebar";
+export { Tooltip } from "@/app/components/Tooltip";

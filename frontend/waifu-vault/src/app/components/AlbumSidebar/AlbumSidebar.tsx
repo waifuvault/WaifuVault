@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./AlbumSidebar.module.scss";
 import Button from "../Button/Button";
+import { Tooltip } from "../Tooltip";
 import { ALBUM_SIDEBAR_COLLAPSED_KEY, LocalStorage } from "@/constants/localStorageKeys";
 import type { AlbumInfo } from "@/types/AdminTypes";
 
@@ -109,15 +110,16 @@ export function AlbumSidebar({
     return (
         <div className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}>
             <div className={styles.header}>
-                <Button
-                    variant="ghost"
-                    size="small"
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                    title={isCollapsed ? "Expand albums" : "Collapse albums"}
-                    className={styles.toggleButton}
-                >
-                    <i className={`bi ${isCollapsed ? "bi-chevron-right" : "bi-chevron-left"}`}></i>
-                </Button>
+                <Tooltip content={isCollapsed ? "Expand albums" : "Collapse albums"} position="right">
+                    <Button
+                        variant="ghost"
+                        size="small"
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className={styles.toggleButton}
+                    >
+                        <i className={`bi ${isCollapsed ? "bi-chevron-right" : "bi-chevron-left"}`}></i>
+                    </Button>
+                </Tooltip>
 
                 {!isCollapsed && (
                     <>
@@ -177,49 +179,53 @@ export function AlbumSidebar({
                                 <div className={styles.albumActions}>
                                     {album.publicToken ? (
                                         <>
-                                            <Button
-                                                variant="ghost"
-                                                size="small"
-                                                onClick={() => handleCopyUrlClick(album.publicToken!)}
-                                                disabled={isLoading}
-                                                title={`Copy public URL`}
-                                                className={styles.shareButton}
-                                            >
-                                                <i className="bi bi-link-45deg"></i>
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="small"
-                                                onClick={() => handleUnshareClick(album.token)}
-                                                disabled={isLoading}
-                                                title={`Unshare "${album.name}"`}
-                                                className={styles.unshareButton}
-                                            >
-                                                <i className="bi bi-share-fill"></i>
-                                            </Button>
+                                            <Tooltip content="Copy public URL">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="small"
+                                                    onClick={() => handleCopyUrlClick(album.publicToken!)}
+                                                    disabled={isLoading}
+                                                    className={styles.shareButton}
+                                                >
+                                                    <i className="bi bi-link-45deg"></i>
+                                                </Button>
+                                            </Tooltip>
+                                            <Tooltip content={`Unshare "${album.name}"`}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="small"
+                                                    onClick={() => handleUnshareClick(album.token)}
+                                                    disabled={isLoading}
+                                                    className={styles.unshareButton}
+                                                >
+                                                    <i className="bi bi-share-fill"></i>
+                                                </Button>
+                                            </Tooltip>
                                         </>
                                     ) : (
+                                        <Tooltip content={`Share "${album.name}"`}>
+                                            <Button
+                                                variant="ghost"
+                                                size="small"
+                                                onClick={() => handleShareClick(album.token)}
+                                                disabled={isLoading}
+                                                className={styles.shareButton}
+                                            >
+                                                <i className="bi bi-share"></i>
+                                            </Button>
+                                        </Tooltip>
+                                    )}
+                                    <Tooltip content={`Delete "${album.name}"`}>
                                         <Button
                                             variant="ghost"
                                             size="small"
-                                            onClick={() => handleShareClick(album.token)}
+                                            onClick={() => handleDeleteClick(album.token, album.name)}
                                             disabled={isLoading}
-                                            title={`Share "${album.name}"`}
-                                            className={styles.shareButton}
+                                            className={styles.deleteButton}
                                         >
-                                            <i className="bi bi-share"></i>
+                                            <i className="bi bi-x"></i>
                                         </Button>
-                                    )}
-                                    <Button
-                                        variant="ghost"
-                                        size="small"
-                                        onClick={() => handleDeleteClick(album.token, album.name)}
-                                        disabled={isLoading}
-                                        title={`Delete "${album.name}"`}
-                                        className={styles.deleteButton}
-                                    >
-                                        <i className="bi bi-x"></i>
-                                    </Button>
+                                    </Tooltip>
                                 </div>
                             </div>
                         ))}
