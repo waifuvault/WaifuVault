@@ -5,6 +5,7 @@ import { useBucketAuth } from "@/app/hooks/useBucketAuth";
 import { useEnvironment } from "@/app/hooks/useEnvironment";
 import { useLoading } from "@/app/contexts/LoadingContext";
 import { useAlbums } from "@/app/hooks/useAlbums";
+import { useBucket } from "@/app/hooks/useBucket";
 import { Card, CardBody, CardHeader, FileBrowser, Footer, Header, ParticleBackground } from "@/app/components";
 import { AlbumSidebar } from "@/app/components/AlbumSidebar/AlbumSidebar";
 import { ToastProvider, useToast } from "@/app/components/Toast";
@@ -17,9 +18,10 @@ import type { AdminBucketDto, UrlFileMixin } from "@/types/AdminTypes";
 
 function BucketAdminContent() {
     const { isAuthenticated, logout } = useBucketAuth();
-    const { backendRestBaseUrl } = useEnvironment();
+    const { waifuVaultBackend } = useEnvironment();
     const { withLoading } = useLoading();
-    const { createAlbum, deleteAlbum, reorderFiles, assignFilesToAlbum } = useAlbums();
+    const { createAlbum, deleteAlbum, reorderFiles, assignFilesToAlbum, shareAlbum, unshareAlbum } = useAlbums();
+    const { getBucketData, deleteFiles } = useBucket();
     const { getThemeClass } = useTheme();
     const { showToast } = useToast();
 
@@ -50,40 +52,26 @@ function BucketAdminContent() {
     const fetchBucketData = useCallback(async () => {
         await withLoading(async () => {
             try {
-                const bucketRes = await fetch(`${backendRestBaseUrl}/admin/bucket/`, {
-                    credentials: "include",
-                });
-
-                if (bucketRes.ok) {
-                    const data = await bucketRes.json();
-                    setBucketData(data);
-                }
+                const data = await getBucketData();
+                setBucketData(data);
             } catch (error) {
                 console.error("Failed to fetch bucket data:", error);
             }
         });
-    }, [backendRestBaseUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [getBucketData]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleDeleteFiles = useCallback(
         async (fileIds: number[]) => {
             await withLoading(async () => {
                 try {
-                    const response = await fetch(`${backendRestBaseUrl}/admin/bucket/deleteEntries`, {
-                        method: "DELETE",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(fileIds),
-                        credentials: "include",
-                    });
-
-                    if (response.ok) {
-                        fetchBucketData();
-                    }
+                    await deleteFiles(fileIds);
+                    await fetchBucketData();
                 } catch (error) {
                     console.error("Failed to delete files:", error);
                 }
             });
         },
-        [backendRestBaseUrl, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
+        [deleteFiles, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
     const handleCreateAlbum = useCallback(
@@ -181,6 +169,55 @@ function BucketAdminContent() {
         setDeleteDialog({ isOpen: false, albumToken: "", albumName: "" });
     }, []);
 
+    const handleShareAlbum = useCallback(
+        async (albumToken: string) => {
+            await withLoading(async () => {
+                try {
+                    await shareAlbum(albumToken);
+                    await fetchBucketData();
+                    showToast("success", "Album shared successfully");
+                } catch (error) {
+                    console.error("Failed to share album:", error);
+                    showToast("error", "Failed to share album");
+                    throw error;
+                }
+            });
+        },
+        [shareAlbum, fetchBucketData, showToast], // eslint-disable-line react-hooks/exhaustive-deps
+    );
+
+    const handleUnshareAlbum = useCallback(
+        async (albumToken: string) => {
+            await withLoading(async () => {
+                try {
+                    await unshareAlbum(albumToken);
+                    await fetchBucketData();
+                    showToast("success", "Album unshared successfully");
+                } catch (error) {
+                    console.error("Failed to unshare album:", error);
+                    showToast("error", "Failed to unshare album");
+                    throw error;
+                }
+            });
+        },
+        [unshareAlbum, fetchBucketData, showToast], // eslint-disable-line react-hooks/exhaustive-deps
+    );
+
+    const handleCopyPublicUrl = useCallback(
+        (publicToken: string) => {
+            const publicUrl = `${waifuVaultBackend}/album/${publicToken}`;
+            navigator.clipboard
+                .writeText(publicUrl)
+                .then(() => {
+                    showToast("success", "Public URL copied to clipboard");
+                })
+                .catch(() => {
+                    showToast("error", "Failed to copy URL to clipboard");
+                });
+        },
+        [waifuVaultBackend, showToast],
+    );
+
     const handleReorderFiles = useCallback(
         async (fileId: number, oldPosition: number, newPosition: number, showSuccessToast: boolean = true) => {
             if (!selectedAlbum) {
@@ -271,6 +308,9 @@ function BucketAdminContent() {
                                     onCreateAlbum={handleCreateAlbum}
                                     onDeleteClick={handleDeleteClick}
                                     onFilesDropped={handleFilesDropped}
+                                    onShareAlbum={handleShareAlbum}
+                                    onUnshareAlbum={handleUnshareAlbum}
+                                    onCopyPublicUrl={handleCopyPublicUrl}
                                 />
                                 <div className={styles.fileBrowserWrapper}>
                                     <FileBrowser

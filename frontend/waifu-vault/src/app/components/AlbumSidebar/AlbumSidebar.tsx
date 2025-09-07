@@ -13,6 +13,9 @@ interface AlbumSidebarProps {
     onCreateAlbum: (name: string) => Promise<void>;
     onDeleteClick: (albumToken: string, albumName: string) => void;
     onFilesDropped?: (albumToken: string, fileTokens: string[]) => Promise<void>;
+    onShareAlbum?: (albumToken: string) => Promise<void>;
+    onUnshareAlbum?: (albumToken: string) => Promise<void>;
+    onCopyPublicUrl?: (publicToken: string) => void;
     isLoading?: boolean;
 }
 
@@ -23,6 +26,9 @@ export function AlbumSidebar({
     onCreateAlbum,
     onDeleteClick,
     onFilesDropped,
+    onShareAlbum,
+    onUnshareAlbum,
+    onCopyPublicUrl,
     isLoading = false,
 }: AlbumSidebarProps) {
     const [isCreating, setIsCreating] = useState(false);
@@ -49,6 +55,24 @@ export function AlbumSidebar({
 
     const handleDeleteClick = (albumToken: string, albumName: string) => {
         onDeleteClick(albumToken, albumName);
+    };
+
+    const handleShareClick = async (albumToken: string) => {
+        if (onShareAlbum) {
+            await onShareAlbum(albumToken);
+        }
+    };
+
+    const handleUnshareClick = async (albumToken: string) => {
+        if (onUnshareAlbum) {
+            await onUnshareAlbum(albumToken);
+        }
+    };
+
+    const handleCopyUrlClick = (publicToken: string) => {
+        if (onCopyPublicUrl) {
+            onCopyPublicUrl(publicToken);
+        }
     };
 
     const handleDragOver = (e: React.DragEvent, albumToken: string) => {
@@ -150,16 +174,53 @@ export function AlbumSidebar({
                                     <span className={styles.albumName}>{album.name}</span>
                                     <span className={styles.count}>{album.fileCount || 0}</span>
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="small"
-                                    onClick={() => handleDeleteClick(album.token, album.name)}
-                                    disabled={isLoading}
-                                    title={`Delete "${album.name}"`}
-                                    className={styles.deleteButton}
-                                >
-                                    <i className="bi bi-x"></i>
-                                </Button>
+                                <div className={styles.albumActions}>
+                                    {album.publicToken ? (
+                                        <>
+                                            <Button
+                                                variant="ghost"
+                                                size="small"
+                                                onClick={() => handleCopyUrlClick(album.publicToken!)}
+                                                disabled={isLoading}
+                                                title={`Copy public URL`}
+                                                className={styles.shareButton}
+                                            >
+                                                <i className="bi bi-link-45deg"></i>
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="small"
+                                                onClick={() => handleUnshareClick(album.token)}
+                                                disabled={isLoading}
+                                                title={`Unshare "${album.name}"`}
+                                                className={styles.unshareButton}
+                                            >
+                                                <i className="bi bi-share-fill"></i>
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Button
+                                            variant="ghost"
+                                            size="small"
+                                            onClick={() => handleShareClick(album.token)}
+                                            disabled={isLoading}
+                                            title={`Share "${album.name}"`}
+                                            className={styles.shareButton}
+                                        >
+                                            <i className="bi bi-share"></i>
+                                        </Button>
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="small"
+                                        onClick={() => handleDeleteClick(album.token, album.name)}
+                                        disabled={isLoading}
+                                        title={`Delete "${album.name}"`}
+                                        className={styles.deleteButton}
+                                    >
+                                        <i className="bi bi-x"></i>
+                                    </Button>
+                                </div>
                             </div>
                         ))}
                     </div>

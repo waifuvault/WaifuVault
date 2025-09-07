@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useEnvironment } from "./useEnvironment";
+import * as albumApi from "@/app/utils/api/albumApi";
 import type { AlbumInfo, UrlFileMixin } from "@/types/AdminTypes";
 
 export function useAlbums() {
@@ -9,120 +10,56 @@ export function useAlbums() {
 
     const createAlbum = useCallback(
         async (bucketToken: string, name: string): Promise<AlbumInfo> => {
-            const response = await fetch(`${backendRestBaseUrl}/album/${bucketToken}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify({ name }),
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || "Failed to create album");
-            }
-
-            return response.json();
+            return albumApi.createAlbum(backendRestBaseUrl, bucketToken, name);
         },
         [backendRestBaseUrl],
     );
 
     const deleteAlbum = useCallback(
         async (albumToken: string, deleteFiles: boolean = false): Promise<void> => {
-            const response = await fetch(`${backendRestBaseUrl}/album/${albumToken}?deleteFiles=${deleteFiles}`, {
-                method: "DELETE",
-                credentials: "include",
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || "Failed to delete album");
-            }
+            return albumApi.deleteAlbum(backendRestBaseUrl, albumToken, deleteFiles);
         },
         [backendRestBaseUrl],
     );
 
     const getAlbum = useCallback(
         async (albumToken: string): Promise<{ files: UrlFileMixin[]; album: AlbumInfo }> => {
-            const response = await fetch(`${backendRestBaseUrl}/album/${albumToken}`, {
-                method: "GET",
-                credentials: "include",
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || "Failed to get album");
-            }
-
-            const album = await response.json();
-            return {
-                album: {
-                    token: album.token,
-                    publicToken: album.publicToken,
-                    name: album.name,
-                    bucket: album.bucketToken,
-                    dateCreated: album.dateCreated,
-                    fileCount: album.files ? album.files.length : 0,
-                },
-                files: album.files || [],
-            };
+            return albumApi.getAlbum(backendRestBaseUrl, albumToken);
         },
         [backendRestBaseUrl],
     );
 
     const assignFilesToAlbum = useCallback(
         async (albumToken: string, fileTokens: string[]): Promise<void> => {
-            const response = await fetch(`${backendRestBaseUrl}/album/${albumToken}/associate`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify({ fileTokens }),
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || "Failed to assign files to album");
-            }
+            return albumApi.assignFilesToAlbum(backendRestBaseUrl, albumToken, fileTokens);
         },
         [backendRestBaseUrl],
     );
 
     const removeFilesFromAlbum = useCallback(
         async (albumToken: string, fileTokens: string[]): Promise<void> => {
-            const response = await fetch(`${backendRestBaseUrl}/album/${albumToken}/disassociate`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify({ fileTokens }),
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || "Failed to remove files from album");
-            }
+            return albumApi.removeFilesFromAlbum(backendRestBaseUrl, albumToken, fileTokens);
         },
         [backendRestBaseUrl],
     );
 
     const reorderFiles = useCallback(
         async (albumToken: string, fileId: number, oldPosition: number, newPosition: number): Promise<void> => {
-            const response = await fetch(
-                `${backendRestBaseUrl}/album/${albumToken}/swapFileOrder/${fileId}/${oldPosition}/${newPosition}`,
-                {
-                    method: "POST",
-                    credentials: "include",
-                },
-            );
+            return albumApi.reorderFiles(backendRestBaseUrl, albumToken, fileId, oldPosition, newPosition);
+        },
+        [backendRestBaseUrl],
+    );
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || "Failed to reorder files");
-            }
+    const shareAlbum = useCallback(
+        async (albumToken: string): Promise<string> => {
+            return albumApi.shareAlbum(backendRestBaseUrl, albumToken);
+        },
+        [backendRestBaseUrl],
+    );
+
+    const unshareAlbum = useCallback(
+        async (albumToken: string): Promise<boolean> => {
+            return albumApi.unshareAlbum(backendRestBaseUrl, albumToken);
         },
         [backendRestBaseUrl],
     );
@@ -134,5 +71,7 @@ export function useAlbums() {
         assignFilesToAlbum,
         removeFilesFromAlbum,
         reorderFiles,
+        shareAlbum,
+        unshareAlbum,
     };
 }
