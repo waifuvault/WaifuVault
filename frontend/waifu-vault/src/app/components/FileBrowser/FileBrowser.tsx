@@ -262,7 +262,7 @@ export function FileBrowser({
                 }
             }
 
-            showContextMenu(event, contextMenuItems);
+            showContextMenu(event.nativeEvent, contextMenuItems);
         },
         [
             sortedFiles,

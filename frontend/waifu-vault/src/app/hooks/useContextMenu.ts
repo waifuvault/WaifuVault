@@ -18,15 +18,15 @@ export function useContextMenu() {
         items: [],
     });
 
-    const showContextMenu = useCallback((event: React.MouseEvent, items: ContextMenuItem[]) => {
+    const showContextMenu = useCallback((event: MouseEvent, items: ContextMenuItem[]) => {
         event.preventDefault();
         event.stopPropagation();
 
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        const mouseX = event.pageX || event.clientX;
-        const mouseY = event.pageY || event.clientY;
+        const mouseX = event.pageX ?? event.clientX;
+        const mouseY = event.pageY ?? event.clientY;
 
         const menuWidth = 180;
         const menuHeight = Math.min(items.length * 40 + 20, 400);

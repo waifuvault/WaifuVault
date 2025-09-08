@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styles from "./AlbumSidebar.module.scss";
 import Button from "../Button/Button";
 import { Tooltip } from "../Tooltip";
+import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
+import { useContextMenu } from "../../hooks/useContextMenu";
 import { ALBUM_SIDEBAR_COLLAPSED_KEY, LocalStorage } from "@/constants/localStorageKeys";
 import type { AlbumInfo } from "@/types/AdminTypes";
 
@@ -36,6 +38,7 @@ export function AlbumSidebar({
     const [newAlbumName, setNewAlbumName] = useState("");
     const [isCollapsed, setIsCollapsed] = useState(() => LocalStorage.getBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, false));
     const [dragOverAlbum, setDragOverAlbum] = useState<string | null>(null);
+    const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
 
     useEffect(() => LocalStorage.setBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, isCollapsed), [isCollapsed]);
 
@@ -54,27 +57,82 @@ export function AlbumSidebar({
         }
     };
 
-    const handleDeleteClick = (albumToken: string, albumName: string) => {
-        onDeleteClick(albumToken, albumName);
-    };
+    const handleDeleteClick = useCallback(
+        (albumToken: string, albumName: string) => {
+            onDeleteClick(albumToken, albumName);
+        },
+        [onDeleteClick],
+    );
 
-    const handleShareClick = async (albumToken: string) => {
-        if (onShareAlbum) {
-            await onShareAlbum(albumToken);
-        }
-    };
+    const handleShareClick = useCallback(
+        async (albumToken: string) => {
+            if (onShareAlbum) {
+                await onShareAlbum(albumToken);
+            }
+        },
+        [onShareAlbum],
+    );
 
-    const handleUnshareClick = async (albumToken: string) => {
-        if (onUnshareAlbum) {
-            await onUnshareAlbum(albumToken);
-        }
-    };
+    const handleUnshareClick = useCallback(
+        async (albumToken: string) => {
+            if (onUnshareAlbum) {
+                await onUnshareAlbum(albumToken);
+            }
+        },
+        [onUnshareAlbum],
+    );
 
-    const handleCopyUrlClick = (publicToken: string) => {
-        if (onCopyPublicUrl) {
-            onCopyPublicUrl(publicToken);
-        }
-    };
+    const handleCopyUrlClick = useCallback(
+        (publicToken: string) => {
+            if (onCopyPublicUrl) {
+                onCopyPublicUrl(publicToken);
+            }
+        },
+        [onCopyPublicUrl],
+    );
+
+    const handleAlbumContextMenu = useCallback(
+        (event: React.MouseEvent, album: AlbumInfo) => {
+            event.preventDefault();
+
+            const contextMenuItems: ContextMenuItem[] = [];
+
+            if (album.publicToken) {
+                contextMenuItems.push({
+                    id: "copyUrl",
+                    label: "Copy public URL",
+                    icon: <i className="bi bi-link-45deg"></i>,
+                    onClick: () => handleCopyUrlClick(album.publicToken!),
+                });
+
+                contextMenuItems.push({
+                    id: "unshare",
+                    label: "Unshare album",
+                    icon: <i className="bi bi-share-fill"></i>,
+                    onClick: () => handleUnshareClick(album.token),
+                });
+            } else {
+                contextMenuItems.push({
+                    id: "share",
+                    label: "Share album",
+                    icon: <i className="bi bi-share"></i>,
+                    onClick: () => handleShareClick(album.token),
+                });
+            }
+
+            contextMenuItems.push({
+                id: "delete",
+                label: "Delete album",
+                icon: <i className="bi bi-x"></i>,
+                onClick: () => handleDeleteClick(album.token, album.name),
+                variant: "danger" as const,
+                separator: true,
+            });
+
+            showContextMenu(event.nativeEvent, contextMenuItems);
+        },
+        [handleCopyUrlClick, handleUnshareClick, handleShareClick, handleDeleteClick, showContextMenu],
+    );
 
     const handleDragOver = (e: React.DragEvent, albumToken: string) => {
         e.preventDefault();
@@ -164,6 +222,7 @@ export function AlbumSidebar({
                                 onDragOver={e => handleDragOver(e, album.token)}
                                 onDragLeave={handleDragLeave}
                                 onDrop={e => handleDrop(e, album.token)}
+                                onContextMenu={e => handleAlbumContextMenu(e, album)}
                             >
                                 <Button
                                     variant="ghost"
@@ -287,6 +346,14 @@ export function AlbumSidebar({
                     )}
                 </>
             )}
+
+            <ContextMenu
+                visible={contextMenu.visible}
+                x={contextMenu.x}
+                y={contextMenu.y}
+                items={contextMenu.items}
+                onClose={hideContextMenu}
+            />
         </div>
     );
 }
