@@ -1,3 +1,21 @@
+.tooltipWrapper {
+    display: inherit;
+    flex: inherit;
+    min-width: inherit;
+    max-width: inherit;
+    width: inherit;
+    height: inherit;
+    overflow: inherit;
+    text-overflow: inherit;
+    white-space: inherit;
+    align-items: inherit;
+    justify-content: inherit;
+    flex-direction: inherit;
+    flex-grow: inherit;
+    flex-shrink: inherit;
+    flex-basis: inherit;
+}
+
 .tooltip {
     position: absolute;
     z-index: 9999;

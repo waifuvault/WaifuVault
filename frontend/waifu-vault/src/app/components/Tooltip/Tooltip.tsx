@@ -97,19 +97,16 @@ export function Tooltip({
 
     return (
         <>
-            <div
+            <span
                 ref={targetRef}
                 onMouseEnter={showTooltip}
                 onMouseLeave={hideTooltip}
                 onFocus={showTooltip}
                 onBlur={hideTooltip}
-                style={{
-                    display: "inline-block",
-                    lineHeight: 0,
-                }}
+                className={styles.tooltipWrapper}
             >
                 {children}
-            </div>
+            </span>
             {tooltipElement && createPortal(tooltipElement, document.body)}
         </>
     );
