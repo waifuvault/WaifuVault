@@ -232,7 +232,9 @@ export function AlbumSidebar({
                                     className={`${styles.albumItem} ${styles.nested} ${selectedAlbum === album.token ? styles.active : ""}`}
                                 >
                                     <i className="bi bi-collection"></i>
-                                    <span className={styles.albumName}>{album.name}</span>
+                                    <span title={album.name} className={styles.albumName}>
+                                        {album.name}
+                                    </span>
                                     <span className={styles.count}>{album.fileCount || 0}</span>
                                 </Button>
                                 <div className={styles.albumActions}>
