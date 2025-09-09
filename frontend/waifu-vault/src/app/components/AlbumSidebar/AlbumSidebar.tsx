@@ -13,6 +13,7 @@ import {
     LocalStorage,
 } from "@/constants/localStorageKeys";
 import type { AlbumInfo } from "@/types/AdminTypes";
+import { useLoading } from "@/app/contexts/LoadingContext";
 
 interface AlbumSidebarProps {
     albums: AlbumInfo[];
@@ -24,7 +25,6 @@ interface AlbumSidebarProps {
     onShareAlbum?: (albumToken: string) => Promise<void>;
     onUnshareAlbum?: (albumToken: string) => Promise<void>;
     onCopyPublicUrl?: (publicToken: string) => void;
-    isLoading?: boolean;
 }
 
 export function AlbumSidebar({
@@ -37,13 +37,13 @@ export function AlbumSidebar({
     onShareAlbum,
     onUnshareAlbum,
     onCopyPublicUrl,
-    isLoading = false,
 }: AlbumSidebarProps) {
     const [isCreating, setIsCreating] = useState(false);
     const [newAlbumName, setNewAlbumName] = useState("");
     const [isCollapsed, setIsCollapsed] = useState(() => LocalStorage.getBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, false));
     const [dragOverAlbum, setDragOverAlbum] = useState<string | null>(null);
     const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
+    const { isLoading } = useLoading();
     const [sortBy, setSortBy] = useState<"name" | "date">(
         () => LocalStorage.getString(ALBUM_SORT_BY_KEY, "name") as "name" | "date",
     );
