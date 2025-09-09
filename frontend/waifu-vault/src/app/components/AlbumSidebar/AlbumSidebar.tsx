@@ -50,6 +50,7 @@ export function AlbumSidebar({
     const [sortDir, setSortDir] = useState<"asc" | "desc">(
         () => LocalStorage.getString(ALBUM_SORT_DIR_KEY, "asc") as "asc" | "desc",
     );
+    const [search, setSearch] = useState("");
 
     useEffect(() => LocalStorage.setBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, isCollapsed), [isCollapsed]);
     useEffect(() => LocalStorage.setString(ALBUM_SORT_BY_KEY, sortBy), [sortBy]);
@@ -192,6 +193,10 @@ export function AlbumSidebar({
         ],
     );
 
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearch(e.currentTarget.value.toLowerCase());
+    };
+
     const handleDragOver = (e: DragEvent, albumToken: string) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
@@ -259,6 +264,13 @@ export function AlbumSidebar({
             {!isCollapsed && (
                 <>
                     <div className={styles.albumList}>
+                        <input
+                            placeholder="Search albums..."
+                            className={styles.searchInput}
+                            type="text"
+                            id="search"
+                            onChange={handleSearch}
+                        />
                         <Button
                             variant="ghost"
                             size="small"
@@ -273,81 +285,84 @@ export function AlbumSidebar({
                             </span>
                         </Button>
 
-                        {albums.sort(albumSort).map(album => (
-                            <div
-                                key={album.token}
-                                className={`${styles.albumItemContainer} ${dragOverAlbum === album.token ? styles.dragOver : ""}`}
-                                onDragOver={e => handleDragOver(e, album.token)}
-                                onDragLeave={handleDragLeave}
-                                onDrop={e => handleDrop(e, album.token)}
-                                onContextMenu={e => handleAlbumContextMenu(e, album)}
-                            >
-                                <Button
-                                    variant="ghost"
-                                    size="small"
-                                    onClick={() => onAlbumSelect(album.token)}
-                                    disabled={isLoading}
-                                    className={`${styles.albumItem} ${styles.nested} ${selectedAlbum === album.token ? styles.active : ""}`}
+                        {albums
+                            .sort(albumSort)
+                            .filter(a => a.name.toLowerCase().includes(search))
+                            .map(album => (
+                                <div
+                                    key={album.token}
+                                    className={`${styles.albumItemContainer} ${dragOverAlbum === album.token ? styles.dragOver : ""}`}
+                                    onDragOver={e => handleDragOver(e, album.token)}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={e => handleDrop(e, album.token)}
+                                    onContextMenu={e => handleAlbumContextMenu(e, album)}
                                 >
-                                    <i className="bi bi-collection"></i>
-                                    <Tooltip content={album.name} position="right">
-                                        <span className={styles.albumName}>{album.name}</span>
-                                    </Tooltip>
-                                    <span className={styles.count}>{album.fileCount || 0}</span>
-                                </Button>
-                                <div className={styles.albumActions}>
-                                    {album.publicToken ? (
-                                        <>
-                                            <Tooltip content="Copy public URL">
+                                    <Button
+                                        variant="ghost"
+                                        size="small"
+                                        onClick={() => onAlbumSelect(album.token)}
+                                        disabled={isLoading}
+                                        className={`${styles.albumItem} ${styles.nested} ${selectedAlbum === album.token ? styles.active : ""}`}
+                                    >
+                                        <i className="bi bi-collection"></i>
+                                        <Tooltip content={album.name} position="right">
+                                            <span className={styles.albumName}>{album.name}</span>
+                                        </Tooltip>
+                                        <span className={styles.count}>{album.fileCount || 0}</span>
+                                    </Button>
+                                    <div className={styles.albumActions}>
+                                        {album.publicToken ? (
+                                            <>
+                                                <Tooltip content="Copy public URL">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="small"
+                                                        onClick={() => handleCopyUrlClick(album.publicToken!)}
+                                                        disabled={isLoading}
+                                                        className={styles.shareButton}
+                                                    >
+                                                        <i className="bi bi-link-45deg"></i>
+                                                    </Button>
+                                                </Tooltip>
+                                                <Tooltip content={`Unshare "${album.name}"`}>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="small"
+                                                        onClick={() => handleUnshareClick(album.token)}
+                                                        disabled={isLoading}
+                                                        className={styles.unshareButton}
+                                                    >
+                                                        <i className="bi bi-share-fill"></i>
+                                                    </Button>
+                                                </Tooltip>
+                                            </>
+                                        ) : (
+                                            <Tooltip content={`Share "${album.name}"`}>
                                                 <Button
                                                     variant="ghost"
                                                     size="small"
-                                                    onClick={() => handleCopyUrlClick(album.publicToken!)}
+                                                    onClick={() => handleShareClick(album.token)}
                                                     disabled={isLoading}
                                                     className={styles.shareButton}
                                                 >
-                                                    <i className="bi bi-link-45deg"></i>
+                                                    <i className="bi bi-share"></i>
                                                 </Button>
                                             </Tooltip>
-                                            <Tooltip content={`Unshare "${album.name}"`}>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="small"
-                                                    onClick={() => handleUnshareClick(album.token)}
-                                                    disabled={isLoading}
-                                                    className={styles.unshareButton}
-                                                >
-                                                    <i className="bi bi-share-fill"></i>
-                                                </Button>
-                                            </Tooltip>
-                                        </>
-                                    ) : (
-                                        <Tooltip content={`Share "${album.name}"`}>
+                                        )}
+                                        <Tooltip content={`Delete "${album.name}"`}>
                                             <Button
                                                 variant="ghost"
                                                 size="small"
-                                                onClick={() => handleShareClick(album.token)}
+                                                onClick={() => handleDeleteClick(album.token, album.name)}
                                                 disabled={isLoading}
-                                                className={styles.shareButton}
+                                                className={styles.deleteButton}
                                             >
-                                                <i className="bi bi-share"></i>
+                                                <i className="bi bi-x"></i>
                                             </Button>
                                         </Tooltip>
-                                    )}
-                                    <Tooltip content={`Delete "${album.name}"`}>
-                                        <Button
-                                            variant="ghost"
-                                            size="small"
-                                            onClick={() => handleDeleteClick(album.token, album.name)}
-                                            disabled={isLoading}
-                                            className={styles.deleteButton}
-                                        >
-                                            <i className="bi bi-x"></i>
-                                        </Button>
-                                    </Tooltip>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
                     </div>
 
                     {isCreating && (

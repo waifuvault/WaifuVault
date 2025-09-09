@@ -388,6 +388,27 @@
     }
 }
 
+.searchInput {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    padding-right: 2.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+
+    &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    &:focus {
+        outline: none;
+        border-color: rgba(103, 126, 234, 0.5);
+        box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+    }
+}
+
 @media (max-width: 768px) {
     .sidebar {
         width: 100%;
