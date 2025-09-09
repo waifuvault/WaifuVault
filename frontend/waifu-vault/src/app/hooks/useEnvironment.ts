@@ -15,7 +15,7 @@ export function useEnvironment() {
             waifuVaultBackend,
             backendRestBaseUrl,
             apiUrl: `${waifuVaultBackend}/api`,
-            bucketAccessUrl: `${nextAppUrl}/bucketAccess`,
+            bucketAccessUrl: `/bucketAccess`,
             apiDocsUrl: `${waifuVaultBackend}/api-docs`,
         }),
         [nextAppUrl, waifuVaultBackend, uploadUrl, backendRestBaseUrl],

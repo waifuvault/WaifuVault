@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { DragEvent, FormEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./AlbumSidebar.module.scss";
 import Button from "../Button/Button";
 import { Tooltip } from "../Tooltip";
@@ -39,27 +39,25 @@ export function AlbumSidebar({
     const [isCollapsed, setIsCollapsed] = useState(() => LocalStorage.getBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, false));
     const [dragOverAlbum, setDragOverAlbum] = useState<string | null>(null);
     const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
-    const [sortBy, setSortBy] = React.useState<"name" | "date">("name");
-    const [sortDir, setSortDir] = React.useState<"asc" | "desc">("asc");
+    const [sortBy, setSortBy] = useState<"name" | "date">("name");
+    const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
     useEffect(() => LocalStorage.setBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, isCollapsed), [isCollapsed]);
 
-    const albumSort = React.useMemo(() => {
+    const albumSort = useMemo(() => {
         return (a: AlbumInfo, b: AlbumInfo) => {
             if (sortBy === "name") {
-                // alpha
                 return sortDir === "asc"
                     ? a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
                     : b.name.localeCompare(a.name, undefined, { sensitivity: "base" });
             }
-            // date
             const ad = new Date(a.dateCreated).getTime();
             const bd = new Date(b.dateCreated).getTime();
             return sortDir === "asc" ? ad - bd : bd - ad;
         };
     }, [sortBy, sortDir]);
 
-    const handleCreateSubmit = async (e: React.FormEvent) => {
+    const handleCreateSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!newAlbumName.trim()) {
             return;
@@ -108,23 +106,23 @@ export function AlbumSidebar({
         [onCopyPublicUrl],
     );
 
-    const handleSortAscendingClick = React.useCallback(() => {
+    const handleSortAscendingClick = useCallback(() => {
         setSortBy("name");
         setSortDir("asc");
     }, []);
 
-    const handleSortDescendingClick = React.useCallback(() => {
+    const handleSortDescendingClick = useCallback(() => {
         setSortBy("name");
         setSortDir("desc");
     }, []);
 
-    const handleSortDateClick = React.useCallback(() => {
+    const handleSortDateClick = useCallback(() => {
         setSortBy("date");
         setSortDir("asc");
     }, []);
 
     const handleAlbumContextMenu = useCallback(
-        (event: React.MouseEvent, album: AlbumInfo) => {
+        (event: MouseEvent, album: AlbumInfo) => {
             event.preventDefault();
 
             const contextMenuItems: ContextMenuItem[] = [];
@@ -196,19 +194,19 @@ export function AlbumSidebar({
         ],
     );
 
-    const handleDragOver = (e: React.DragEvent, albumToken: string) => {
+    const handleDragOver = (e: DragEvent, albumToken: string) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
         setDragOverAlbum(albumToken);
     };
 
-    const handleDragLeave = (e: React.DragEvent) => {
+    const handleDragLeave = (e: DragEvent) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node)) {
             setDragOverAlbum(null);
         }
     };
 
-    const handleDrop = async (e: React.DragEvent, albumToken: string) => {
+    const handleDrop = async (e: DragEvent, albumToken: string) => {
         e.preventDefault();
         setDragOverAlbum(null);
 

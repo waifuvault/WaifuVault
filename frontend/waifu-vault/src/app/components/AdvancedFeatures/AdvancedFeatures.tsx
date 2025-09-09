@@ -5,6 +5,7 @@ import styles from "./AdvancedFeatures.module.scss";
 import Dialog from "@/app/components/Dialog/Dialog";
 import Button from "@/app/components/Button/Button";
 import { useEnvironment } from "@/app/hooks/useEnvironment";
+import Link from "next/link";
 
 interface FeatureData {
     icon: string;
@@ -231,13 +232,11 @@ export default function AdvancedFeatures() {
                         {selectedFeature.modalContent.content}
                         {selectedFeature.modalContent.hasButton && (
                             <div className={styles.modalActions}>
-                                <Button
-                                    href={selectedFeature.modalContent.buttonLink || bucketAccessUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    {selectedFeature.modalContent.buttonText}
-                                </Button>
+                                <Link href={selectedFeature.modalContent.buttonLink || bucketAccessUrl}>
+                                    <Button target="_blank" rel="noopener noreferrer">
+                                        {selectedFeature.modalContent.buttonText}
+                                    </Button>
+                                </Link>
                             </div>
                         )}
                     </div>
