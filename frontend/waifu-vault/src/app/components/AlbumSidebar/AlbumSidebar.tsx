@@ -106,19 +106,12 @@ export function AlbumSidebar({
         [onCopyPublicUrl],
     );
 
-    const handleSortAscendingClick = useCallback(() => {
-        setSortBy("name");
-        setSortDir("asc");
+    const handleToggleDirection = useCallback(() => {
+        setSortDir(prev => (prev === "asc" ? "desc" : "asc"));
     }, []);
 
-    const handleSortDescendingClick = useCallback(() => {
-        setSortBy("name");
-        setSortDir("desc");
-    }, []);
-
-    const handleSortDateClick = useCallback(() => {
-        setSortBy("date");
-        setSortDir("asc");
+    const handleToggleSortType = useCallback(() => {
+        setSortBy(prev => (prev === "name" ? "date" : "name"));
     }, []);
 
     const handleAlbumContextMenu = useCallback(
@@ -128,24 +121,17 @@ export function AlbumSidebar({
             const contextMenuItems: ContextMenuItem[] = [];
 
             contextMenuItems.push({
-                id: "sortasc",
-                label: "Sort Ascending",
-                icon: <i className="bi bi-arrow-up"></i>,
-                onClick: () => handleSortAscendingClick(),
+                id: "sorttype",
+                label: sortBy === "name" ? "Sort by Created" : "Sort Alphabetically",
+                icon: <i className={`bi ${sortBy === "name" ? "bi-calendar-date" : "bi-sort-alpha-down"}`}></i>,
+                onClick: () => handleToggleSortType(),
             });
 
             contextMenuItems.push({
-                id: "sortdesc",
-                label: "Sort Descending",
-                icon: <i className="bi bi-arrow-down"></i>,
-                onClick: () => handleSortDescendingClick(),
-            });
-
-            contextMenuItems.push({
-                id: "sortdate",
-                label: "Sort Created",
-                icon: <i className="bi bi-calendar-date"></i>,
-                onClick: () => handleSortDateClick(),
+                id: "sortdir",
+                label: sortDir === "asc" ? "Sort Descending" : "Sort Ascending",
+                icon: <i className={`bi ${sortDir === "asc" ? "bi-arrow-down" : "bi-arrow-up"}`}></i>,
+                onClick: () => handleToggleDirection(),
             });
 
             if (album.publicToken) {
@@ -183,9 +169,10 @@ export function AlbumSidebar({
             showContextMenu(event.nativeEvent, contextMenuItems);
         },
         [
-            handleSortAscendingClick,
-            handleSortDescendingClick,
-            handleSortDateClick,
+            sortBy,
+            sortDir,
+            handleToggleSortType,
+            handleToggleDirection,
             handleCopyUrlClick,
             handleUnshareClick,
             handleShareClick,
