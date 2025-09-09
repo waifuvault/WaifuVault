@@ -75,27 +75,6 @@
     max-width: 400px;
 }
 
-.searchInput {
-    width: 100%;
-    padding: 0.5rem 1rem;
-    padding-right: 2.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-
-    &::placeholder {
-        color: rgba(255, 255, 255, 0.5);
-    }
-
-    &:focus {
-        outline: none;
-        border-color: rgba(103, 126, 234, 0.5);
-        box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
-    }
-}
-
 .searchClear {
     position: absolute;
     right: 0.5rem;
@@ -388,22 +367,6 @@
         height: 16px;
         cursor: pointer;
         accent-color: rgba(103, 126, 234, 1);
-    }
-}
-
-.renameInput {
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
-    border: 2px solid rgba(103, 126, 234, 0.8);
-    border-radius: 4px;
-    padding: 0.25rem 0.5rem;
-    font-size: inherit;
-    font-family: inherit;
-    width: 100%;
-
-    &:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.3);
     }
 }
 

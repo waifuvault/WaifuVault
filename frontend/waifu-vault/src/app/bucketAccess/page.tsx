@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./page.module.scss";
-import { Button, Card, CardBody, CardHeader, Footer, Header, ParticleBackground } from "@/app/components";
+import { Button, Card, CardBody, CardHeader, Footer, Header, Input, ParticleBackground } from "@/app/components";
 import { useEnvironment } from "@/app/hooks/useEnvironment";
 import { useBucketAuthContext } from "@/app/contexts/BucketAuthContext";
 import { useLoading } from "@/app/contexts/LoadingContext";
@@ -115,13 +115,12 @@ function BucketAccessContent() {
                                     <label htmlFor="tokenInput" className={styles.label}>
                                         Bucket token
                                     </label>
-                                    <input
+                                    <Input
                                         id="tokenInput"
                                         type="text"
                                         value={token}
                                         onChange={e => setToken(e.target.value)}
                                         placeholder="Bucket token"
-                                        className={styles.input}
                                         required
                                         disabled={isLoading}
                                     />

@@ -288,28 +288,6 @@
     }
 }
 
-.nameInput {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 0.5rem;
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--text-primary, #fff);
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-
-    &:focus {
-        outline: none;
-        border-color: var(--accent-primary, #6366f1);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        background: rgba(255, 255, 255, 0.12);
-    }
-
-    &::placeholder {
-        color: var(--text-muted, #6b7280);
-    }
-}
-
 .actionButtons {
     display: flex;
     gap: 0.5rem;
@@ -385,27 +363,6 @@
     &:hover:not(:disabled) {
         background: rgba(239, 68, 68, 0.2) !important;
         border-color: rgba(239, 68, 68, 0.4) !important;
-    }
-}
-
-.searchInput {
-    width: 100%;
-    padding: 0.5rem 1rem;
-    padding-right: 2.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-
-    &::placeholder {
-        color: rgba(255, 255, 255, 0.5);
-    }
-
-    &:focus {
-        outline: none;
-        border-color: rgba(103, 126, 234, 0.5);
-        box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
     }
 }
 

@@ -6,6 +6,7 @@ import Button from "../Button/Button";
 import { Tooltip } from "../Tooltip";
 import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
 import { useContextMenu } from "../../hooks/useContextMenu";
+import { Input } from "../Input";
 import {
     ALBUM_SIDEBAR_COLLAPSED_KEY,
     ALBUM_SORT_BY_KEY,
@@ -264,11 +265,11 @@ export function AlbumSidebar({
             {!isCollapsed && (
                 <>
                     <div className={styles.albumList}>
-                        <input
+                        <Input
                             placeholder="Search albums..."
-                            className={styles.searchInput}
                             type="text"
                             id="search"
+                            variant="search"
                             onChange={handleSearch}
                         />
                         <Button
@@ -368,12 +369,11 @@ export function AlbumSidebar({
                     {isCreating && (
                         <div className={styles.createForm}>
                             <form onSubmit={handleCreateSubmit}>
-                                <input
+                                <Input
                                     type="text"
                                     value={newAlbumName}
                                     onChange={e => setNewAlbumName(e.target.value)}
                                     placeholder="Enter album name..."
-                                    className={styles.nameInput}
                                     autoFocus
                                     maxLength={50}
                                 />

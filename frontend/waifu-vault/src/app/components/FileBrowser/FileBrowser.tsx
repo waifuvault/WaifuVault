@@ -7,6 +7,7 @@ import { FilePreview } from "./FilePreview";
 import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
 import { useContextMenu } from "../../hooks/useContextMenu";
 import { Tooltip } from "../Tooltip";
+import { Input } from "../Input";
 import styles from "./FileBrowser.module.scss";
 import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
 
@@ -405,7 +406,7 @@ export function FileBrowser({
     const renderFileName = useCallback(
         (file: { id: number; originalFileName: string }) => {
             return isRenaming === file.id ? (
-                <input
+                <Input
                     type="text"
                     value={renameValue}
                     onChange={e => setRenameValue(e.target.value)}
@@ -581,10 +582,11 @@ export function FileBrowser({
                 <div className={styles.toolbarCenter}>
                     {showSearch && (
                         <div className={styles.searchBox}>
-                            <input
+                            <Input
                                 type="text"
                                 placeholder="Search files and types..."
                                 className={styles.searchInput}
+                                variant="search"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                             />
