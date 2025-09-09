@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import styles from "./Dialog.module.scss";
 import { useTheme } from "@/app/contexts/ThemeContext";
 
@@ -20,7 +21,7 @@ export default function Dialog({ isOpen, onClose, title, children, maxWidth = "4
 
     const themeClass = getThemeClass();
 
-    return (
+    const dialogContent = (
         <div className={`${styles.overlay} ${styles[themeClass]}`} onClick={onClose}>
             <div
                 className={`${styles.modal} ${styles[themeClass]} ${className || ""}`}
@@ -38,4 +39,6 @@ export default function Dialog({ isOpen, onClose, title, children, maxWidth = "4
             </div>
         </div>
     );
+
+    return typeof window !== "undefined" ? createPortal(dialogContent, document.body) : null;
 }

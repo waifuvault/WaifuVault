@@ -3,6 +3,7 @@
 import React from "react";
 import styles from "./Button.module.scss";
 import { useTheme } from "@/app/contexts/ThemeContext";
+import Link from "next/link";
 
 interface ButtonProps {
     variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -46,9 +47,9 @@ export default function Button({
 
     if (href) {
         return (
-            <a href={href} target={target} rel={rel} {...commonProps}>
+            <Link href={href} target={target} rel={rel} {...commonProps}>
                 {children}
-            </a>
+            </Link>
         );
     }
 
