@@ -6,7 +6,12 @@ import Button from "../Button/Button";
 import { Tooltip } from "../Tooltip";
 import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
 import { useContextMenu } from "../../hooks/useContextMenu";
-import { ALBUM_SIDEBAR_COLLAPSED_KEY, LocalStorage } from "@/constants/localStorageKeys";
+import {
+    ALBUM_SIDEBAR_COLLAPSED_KEY,
+    ALBUM_SORT_BY_KEY,
+    ALBUM_SORT_DIR_KEY,
+    LocalStorage,
+} from "@/constants/localStorageKeys";
 import type { AlbumInfo } from "@/types/AdminTypes";
 
 interface AlbumSidebarProps {
@@ -39,10 +44,16 @@ export function AlbumSidebar({
     const [isCollapsed, setIsCollapsed] = useState(() => LocalStorage.getBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, false));
     const [dragOverAlbum, setDragOverAlbum] = useState<string | null>(null);
     const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
-    const [sortBy, setSortBy] = useState<"name" | "date">("name");
-    const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+    const [sortBy, setSortBy] = useState<"name" | "date">(
+        () => LocalStorage.getString(ALBUM_SORT_BY_KEY, "name") as "name" | "date",
+    );
+    const [sortDir, setSortDir] = useState<"asc" | "desc">(
+        () => LocalStorage.getString(ALBUM_SORT_DIR_KEY, "asc") as "asc" | "desc",
+    );
 
     useEffect(() => LocalStorage.setBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, isCollapsed), [isCollapsed]);
+    useEffect(() => LocalStorage.setString(ALBUM_SORT_BY_KEY, sortBy), [sortBy]);
+    useEffect(() => LocalStorage.setString(ALBUM_SORT_DIR_KEY, sortDir), [sortDir]);
 
     const albumSort = useMemo(() => {
         return (a: AlbumInfo, b: AlbumInfo) => {
