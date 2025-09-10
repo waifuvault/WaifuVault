@@ -8,7 +8,7 @@ import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
 const thumbnailCache = new Map<string, string>();
 
 interface FilePreviewProps {
-    file: AdminFileData | UrlFileMixin;
+    file: AdminFileData | UrlFileMixin | File;
     size?: "small" | "medium" | "large";
 }
 
@@ -86,12 +86,20 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
         return "unknown";
     }, []);
 
-    const fileName = "originalFileName" in file ? file.originalFileName : (file as UrlFileMixin).parsedFilename;
-    const mediaType = file.mediaType;
-    const fileToken = "token" in file ? file.token : file.fileToken;
-    const fileUrl = `${process.env.NEXT_PUBLIC_THUMBNAIL_SERVICE}/api/v1/generateThumbnail/${fileToken}?animate=true`;
+    const isClientFile = file instanceof File;
+    const fileName = isClientFile
+        ? file.name
+        : "originalFileName" in file
+          ? file.originalFileName
+          : (file as UrlFileMixin).parsedFilename;
+    const mediaType = isClientFile ? file.type : file.mediaType;
+    const fileToken = !isClientFile ? ("token" in file ? file.token : (file as AdminFileData).fileToken) : null;
 
     const fileType = getFileType(mediaType, fileName);
+    const fileUrl =
+        fileToken && (fileType === "image" || fileType === "video")
+            ? `${process.env.NEXT_PUBLIC_THUMBNAIL_SERVICE}/api/v1/generateThumbnail/${fileToken}?animate=true`
+            : null;
 
     useEffect(() => {
         let mounted = true;
@@ -99,44 +107,59 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
         const loadMetadata = async () => {
             try {
                 if (fileType === "image") {
-                    const cacheKey = fileToken;
-                    if (thumbnailCache.has(cacheKey)) {
+                    if (isClientFile) {
+                        const cacheKey = `${(file as File).name}-${(file as File).size}-${(file as File).lastModified}`;
+                        if (thumbnailCache.has(cacheKey)) {
+                            if (mounted) {
+                                setCachedImageUrl(thumbnailCache.get(cacheKey)!);
+                                setIsLoading(false);
+                            }
+                            return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            if (e.target?.result && mounted) {
+                                const blobUrl = e.target.result as string;
+                                thumbnailCache.set(cacheKey, blobUrl);
+                                setCachedImageUrl(blobUrl);
+                                setIsLoading(false);
+                            }
+                        };
+                        reader.onerror = () => {
+                            if (mounted) {
+                                setPreviewError("Failed to generate image preview");
+                                setIsLoading(false);
+                            }
+                        };
+                        reader.readAsDataURL(file as File);
+                    } else {
+                        const cacheKey = fileToken!;
+                        if (thumbnailCache.has(cacheKey)) {
+                            if (mounted) {
+                                setCachedImageUrl(thumbnailCache.get(cacheKey)!);
+                                setIsLoading(false);
+                            }
+                            return;
+                        }
+
+                        const response = await fetch(fileUrl!);
+                        if (!response.ok) {
+                            throw new Error("Failed to fetch thumbnail");
+                        }
+
+                        const blob = await response.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+
+                        thumbnailCache.set(cacheKey, blobUrl);
+
                         if (mounted) {
-                            setCachedImageUrl(thumbnailCache.get(cacheKey)!);
+                            setCachedImageUrl(blobUrl);
                             setIsLoading(false);
                         }
-                        return;
-                    }
-
-                    const response = await fetch(fileUrl);
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch thumbnail");
-                    }
-
-                    const blob = await response.blob();
-                    const blobUrl = URL.createObjectURL(blob);
-
-                    thumbnailCache.set(cacheKey, blobUrl);
-
-                    if (mounted) {
-                        setCachedImageUrl(blobUrl);
-                        setIsLoading(false);
                     }
                 } else if (fileType === "audio") {
-                    const audio = new Audio();
-                    audio.crossOrigin = "anonymous";
-                    audio.onloadedmetadata = () => {
-                        if (mounted) {
-                            setIsLoading(false);
-                        }
-                    };
-                    audio.onerror = () => {
-                        if (mounted) {
-                            setPreviewError("Failed to load audio");
-                            setIsLoading(false);
-                        }
-                    };
-                    audio.src = fileUrl;
+                    setIsLoading(false);
                 } else {
                     setIsLoading(false);
                 }
@@ -154,7 +177,7 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
         return () => {
             mounted = false;
         };
-    }, [fileUrl, fileType, mediaType, fileName, fileToken]);
+    }, [file, isClientFile, fileUrl, fileType, mediaType, fileName, fileToken]);
 
     const handleMouseEnter = () => {
         setIsHovered(true);
@@ -202,7 +225,7 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
                         <img
                             alt={fileName}
                             className={styles.previewImage}
-                            src={cachedImageUrl ?? fileUrl}
+                            src={cachedImageUrl || fileUrl || ""}
                             onError={() => setPreviewError("Failed to load image")}
                         />
                     </div>

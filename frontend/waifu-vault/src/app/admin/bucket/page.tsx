@@ -8,7 +8,9 @@ import { useAlbums } from "@/app/hooks/useAlbums";
 import { useBucket } from "@/app/hooks/useBucket";
 import { Card, CardBody, CardHeader, FileBrowser, Footer, Header, ParticleBackground } from "@/app/components";
 import { AlbumSidebar } from "@/app/components/AlbumSidebar/AlbumSidebar";
+import { FileUploadModal } from "@/app/components/FileUploadModal/FileUploadModal";
 import { ToastProvider, useToast } from "@/app/components/Toast";
+import { UploadFile } from "@/app/types/upload";
 import Dialog from "@/app/components/Dialog/Dialog";
 import Button from "@/app/components/Button/Button";
 import { useTheme } from "@/app/contexts/ThemeContext";
@@ -39,6 +41,13 @@ function BucketAdminContent() {
         albumName: "",
     });
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
+    const [uploadModal, setUploadModal] = useState<{
+        isOpen: boolean;
+        albumToken?: string;
+        albumName?: string;
+    }>({
+        isOpen: false,
+    });
 
     const handleAlbumSelect = useCallback((albumToken: string | null) => {
         setSelectedAlbum(albumToken);
@@ -168,6 +177,46 @@ function BucketAdminContent() {
     const handleDeleteCancel = useCallback(() => {
         setDeleteDialog({ isOpen: false, albumToken: "", albumName: "" });
     }, []);
+
+    const handleUploadClick = useCallback(
+        (albumToken?: string) => {
+            const album = albumToken ? albumsWithCounts.find(a => a.token === albumToken) : null;
+            setUploadModal({
+                isOpen: true,
+                albumToken,
+                albumName: album?.name,
+            });
+        },
+        [albumsWithCounts],
+    );
+
+    const handleUploadClose = useCallback(() => {
+        setUploadModal({ isOpen: false });
+    }, []);
+
+    const handleUploadComplete = useCallback(
+        async (files?: UploadFile[]) => {
+            if (!files) {
+                return;
+            }
+            await fetchBucketData();
+
+            const successfulFiles = files.filter(f => f.status === "completed");
+            const failedFiles = files.filter(f => f.status === "error");
+
+            if (successfulFiles.length > 0) {
+                showToast(
+                    "success",
+                    `${successfulFiles.length} file${successfulFiles.length > 1 ? "s" : ""} uploaded successfully`,
+                );
+            }
+
+            if (failedFiles.length > 0) {
+                showToast("error", `${failedFiles.length} file${failedFiles.length > 1 ? "s" : ""} failed to upload`);
+            }
+        },
+        [fetchBucketData, showToast],
+    );
 
     const handleShareAlbum = useCallback(
         async (albumToken: string) => {
@@ -321,6 +370,7 @@ function BucketAdminContent() {
                                         onDragStart={handleDragStart}
                                         onDragEnd={handleDragEnd}
                                         onLogout={logout}
+                                        onUploadClick={handleUploadClick}
                                         showSearch={true}
                                         showSort={true}
                                         showViewToggle={true}
@@ -372,6 +422,15 @@ function BucketAdminContent() {
                     </div>
                 </div>
             </Dialog>
+
+            <FileUploadModal
+                isOpen={uploadModal.isOpen}
+                onClose={handleUploadClose}
+                bucketToken={bucketData?.token}
+                albumToken={uploadModal.albumToken}
+                albumName={uploadModal.albumName}
+                onUploadComplete={handleUploadComplete}
+            />
         </div>
     );
 }

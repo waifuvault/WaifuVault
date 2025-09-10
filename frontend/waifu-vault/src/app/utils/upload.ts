@@ -7,3 +7,7 @@ export const formatFileSize = (bytes: number): string => {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 };
+
+export const validateExpires = (expires: string): boolean => {
+    return /^$|^\d+[mhd]$/.test(expires);
+};

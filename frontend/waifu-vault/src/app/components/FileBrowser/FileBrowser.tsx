@@ -30,6 +30,7 @@ interface FileBrowserProps {
     onDragStart?: (isDraggingToAlbum: boolean) => void;
     onDragEnd?: () => void;
     onLogout?: () => void;
+    onUploadClick?: (albumToken?: string) => void;
     showSearch?: boolean;
     showSort?: boolean;
     showViewToggle?: boolean;
@@ -51,6 +52,7 @@ export function FileBrowser({
     onDragStart,
     onDragEnd,
     onLogout,
+    onUploadClick,
     showSearch = true,
     showSort = true,
     showViewToggle = true,
@@ -59,6 +61,7 @@ export function FileBrowser({
     allowRename = true,
     allowReorder = false,
     albumToken,
+    mode,
 }: FileBrowserProps) {
     const [selectedFiles, setSelectedFiles] = useState<Set<number>>(new Set());
     const [lastSelectedFile, setLastSelectedFile] = useState<number | null>(null);
@@ -590,17 +593,24 @@ export function FileBrowser({
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                             />
-                            {searchQuery && (
-                                <Button variant="outline" size="small" onClick={() => setSearchQuery("")}>
-                                    <i className="bi bi-x"></i>
-                                </Button>
-                            )}
                         </div>
                     )}
                 </div>
 
                 <div className={styles.toolbarRight}>
                     <div className={styles.fileActions}>
+                        {onUploadClick && mode === "bucket" && (
+                            <Button
+                                variant="primary"
+                                size="small"
+                                onClick={() => onUploadClick(albumToken)}
+                                className={styles.uploadBtn}
+                            >
+                                <i className="bi bi-cloud-upload"></i> Upload Files
+                                {albumToken && " to Album"}
+                            </Button>
+                        )}
+
                         {selectedFiles.size > 0 && (
                             <>
                                 {allowDeletion && (

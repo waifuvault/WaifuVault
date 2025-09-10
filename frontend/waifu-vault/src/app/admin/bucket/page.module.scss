@@ -1,4 +1,3 @@
-// Match your existing page structure
 .container {
     position: relative;
     min-height: 100vh;
@@ -6,8 +5,6 @@
     flex-direction: column;
     overflow-x: hidden;
 }
-
-// Header is now inside containerInner, no need for separate headerSection
 
 .pageMain {
     flex: 1;
@@ -31,7 +28,6 @@
     margin-bottom: 2rem;
 }
 
-// Override the CardHeader to use flex layout instead of centered text
 .bucketCard {
     :global(.cardHeader) {
         display: flex;
@@ -42,7 +38,7 @@
         text-align: center;
         padding: 1.5rem;
         border-bottom: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
-        margin-bottom: 0; // Remove default margin since CardBody has padding
+        margin-bottom: 0;
     }
 }
 
@@ -149,7 +145,7 @@
 .headerActions {
     display: flex;
     gap: 1rem;
-    align-items: flex-start; // Align to top to match content
+    align-items: flex-start;
     flex-shrink: 0;
 }
 
@@ -409,8 +405,6 @@
         cursor: pointer;
     }
 }
-
-// Remove duplicates - styles are defined above
 
 .blockedBadge {
     position: absolute;
