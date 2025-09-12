@@ -22,7 +22,15 @@ function BucketAdminContent() {
     const { isAuthenticated, logout } = useBucketAuth();
     const { waifuVaultBackend } = useEnvironment();
     const { withLoading } = useLoading();
-    const { createAlbum, deleteAlbum, reorderFiles, assignFilesToAlbum, shareAlbum, unshareAlbum } = useAlbums();
+    const {
+        createAlbum,
+        deleteAlbum,
+        reorderFiles,
+        assignFilesToAlbum,
+        removeFilesFromAlbum,
+        shareAlbum,
+        unshareAlbum,
+    } = useAlbums();
     const { getBucketData, deleteFiles } = useBucket();
     const { getThemeClass } = useTheme();
     const { showToast } = useToast();
@@ -31,6 +39,7 @@ function BucketAdminContent() {
     const [selectedAlbum, setSelectedAlbum] = useState<string | null>(
         () => LocalStorage.getString(SELECTED_ALBUM_KEY) || null,
     );
+    const [resetPaginationTrigger, setResetPaginationTrigger] = useState(0);
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;
         albumToken: string;
@@ -56,6 +65,7 @@ function BucketAdminContent() {
         } else {
             LocalStorage.setString(SELECTED_ALBUM_KEY, albumToken);
         }
+        setResetPaginationTrigger(prev => prev + 1);
     }, []);
 
     const fetchBucketData = useCallback(async () => {
@@ -188,6 +198,42 @@ function BucketAdminContent() {
             });
         },
         [albumsWithCounts],
+    );
+
+    const handleRemoveFromAlbum = useCallback(
+        async (fileIds: number[]) => {
+            if (!selectedAlbum || !bucketData?.files) {
+                return;
+            }
+
+            await withLoading(async () => {
+                try {
+                    const filesToRemove = bucketData.files.filter(f => fileIds.includes(f.id));
+                    const fileTokens = filesToRemove.map(f => f.token);
+
+                    await removeFilesFromAlbum(selectedAlbum, fileTokens);
+                    await fetchBucketData();
+
+                    const albumName = albumsWithCounts.find(a => a.token === selectedAlbum)?.name || "Album";
+                    showToast(
+                        "success",
+                        `Removed ${fileIds.length} file${fileIds.length > 1 ? "s" : ""} from ${albumName}`,
+                    );
+                } catch (error) {
+                    console.error("Failed to remove files from album:", error);
+                    showToast("error", "Failed to remove files from album");
+                }
+            });
+        },
+        [
+            selectedAlbum,
+            bucketData?.files,
+            removeFilesFromAlbum,
+            fetchBucketData,
+            albumsWithCounts,
+            showToast,
+            withLoading,
+        ],
     );
 
     const handleUploadClose = useCallback(() => {
@@ -360,6 +406,7 @@ function BucketAdminContent() {
                                     onShareAlbum={handleShareAlbum}
                                     onUnshareAlbum={handleUnshareAlbum}
                                     onCopyPublicUrl={handleCopyPublicUrl}
+                                    currentFilesCount={filteredFiles.length}
                                 />
                                 <div className={styles.fileBrowserWrapper}>
                                     <FileBrowser
@@ -367,6 +414,7 @@ function BucketAdminContent() {
                                         albums={albumsWithCounts.map(a => ({ token: a.token, name: a.name }))}
                                         onDeleteFiles={handleDeleteFiles}
                                         onReorderFiles={handleReorderFiles}
+                                        onRemoveFromAlbum={handleRemoveFromAlbum}
                                         onDragStart={handleDragStart}
                                         onDragEnd={handleDragEnd}
                                         onLogout={logout}
@@ -377,8 +425,10 @@ function BucketAdminContent() {
                                         allowSelection={true}
                                         allowDeletion={true}
                                         allowReorder={selectedAlbum !== null}
+                                        allowRemoveFromAlbum={selectedAlbum !== null}
                                         albumToken={selectedAlbum || undefined}
                                         mode="bucket"
+                                        resetPaginationTrigger={resetPaginationTrigger}
                                     />
                                 </div>
                             </div>

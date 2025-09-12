@@ -1,7 +1,7 @@
 "use client";
 
 import { DragEvent, useEffect, useState } from "react";
-import { FilePreview } from "../FileBrowser/FilePreview";
+import { FilePreview } from "../filePreview/FilePreview";
 import { formatFileSize, validateExpires } from "../../utils/upload";
 import { useRestrictions } from "../../hooks/useRestrictions";
 import { useEnvironment } from "../../hooks/useEnvironment";

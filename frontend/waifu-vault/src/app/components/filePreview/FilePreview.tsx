@@ -10,15 +10,18 @@ const thumbnailCache = new Map<string, string>();
 interface FilePreviewProps {
     file: AdminFileData | UrlFileMixin | File;
     size?: "small" | "medium" | "large";
+    lazy?: boolean;
+    priority?: boolean;
 }
 
 type FilePreviewType = "audio" | "image" | "pdf" | "text" | "unknown" | "video" | "archive" | "document";
 
-export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
+export function FilePreview({ file, size = "medium", lazy = false, priority = false }: FilePreviewProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [isHovered, setIsHovered] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [cachedImageUrl, setCachedImageUrl] = useState<string | null>(null);
+    const [isIntersecting, setIsIntersecting] = useState(!lazy);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const { getThemeClass } = useTheme();
@@ -102,6 +105,28 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
             : null;
 
     useEffect(() => {
+        if (lazy && containerRef.current) {
+            const observer = new IntersectionObserver(
+                ([entry]) => {
+                    if (entry.isIntersecting) {
+                        setIsIntersecting(true);
+                        observer.disconnect();
+                    }
+                },
+                { threshold: 0.1, rootMargin: "50px" },
+            );
+
+            observer.observe(containerRef.current);
+
+            return () => observer.disconnect();
+        }
+    }, [lazy]);
+
+    useEffect(() => {
+        if (!isIntersecting && lazy) {
+            return;
+        }
+
         let mounted = true;
 
         const loadMetadata = async () => {
@@ -177,7 +202,7 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
         return () => {
             mounted = false;
         };
-    }, [file, isClientFile, fileUrl, fileType, mediaType, fileName, fileToken]);
+    }, [file, isClientFile, fileUrl, fileType, mediaType, fileName, fileToken, isIntersecting, lazy]);
 
     const handleMouseEnter = () => {
         setIsHovered(true);
@@ -226,6 +251,7 @@ export function FilePreview({ file, size = "medium" }: FilePreviewProps) {
                             alt={fileName}
                             className={styles.previewImage}
                             src={cachedImageUrl || fileUrl || ""}
+                            loading={lazy && !priority ? "lazy" : "eager"}
                             onError={() => setPreviewError("Failed to load image")}
                         />
                     </div>

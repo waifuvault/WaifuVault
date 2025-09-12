@@ -17,3 +17,4 @@ export { FileBrowser } from "@/app/components/FileBrowser";
 export { AlbumSidebar } from "@/app/components/AlbumSidebar/AlbumSidebar";
 export { Tooltip } from "@/app/components/Tooltip";
 export { Input } from "@/app/components/Input";
+export { FilePreview } from "@/app/components/filePreview";

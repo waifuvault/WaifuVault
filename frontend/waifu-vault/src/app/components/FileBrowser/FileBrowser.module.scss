@@ -833,3 +833,56 @@
         transform: scale(1);
     }
 }
+
+/* Pagination Styles */
+.paginationContainer {
+    margin-top: 2rem;
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.paginationInfo {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+}
+
+.ellipsis {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+    padding: 0 0.25rem;
+    user-select: none;
+}
+
+/* Responsive pagination */
+@media (max-width: 768px) {
+    .paginationContainer {
+        margin-top: 1.5rem;
+        padding: 0.75rem 0;
+    }
+
+    .pagination {
+        gap: 0.25rem;
+
+        button {
+            min-width: 36px;
+            height: 36px;
+        }
+    }
+
+    .paginationInfo {
+        font-size: 0.8rem;
+    }
+}

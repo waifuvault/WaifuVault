@@ -4,6 +4,7 @@ export const ALBUM_SIDEBAR_COLLAPSED_KEY = "waifuvault-albumsidebar-collapsed";
 export const SELECTED_ALBUM_KEY = "waifuvault-selected-album";
 export const ALBUM_SORT_BY_KEY = "waifuvault-album-sort-by";
 export const ALBUM_SORT_DIR_KEY = "waifuvault-album-sort-dir";
+export const PAGINATION_PAGE_KEY = "waifuvault-pagination-page";
 
 type LocalStorageKey =
     | typeof THEME_KEY
@@ -11,7 +12,8 @@ type LocalStorageKey =
     | typeof ALBUM_SIDEBAR_COLLAPSED_KEY
     | typeof SELECTED_ALBUM_KEY
     | typeof ALBUM_SORT_BY_KEY
-    | typeof ALBUM_SORT_DIR_KEY;
+    | typeof ALBUM_SORT_DIR_KEY
+    | typeof PAGINATION_PAGE_KEY;
 
 export const LocalStorage = {
     getBoolean: (key: LocalStorageKey, defaultValue: boolean = false): boolean => {
@@ -35,6 +37,21 @@ export const LocalStorage = {
         } catch {
             return defaultValue;
         }
+    },
+
+    getNumber: (key: LocalStorageKey, defaultValue: number = 0): number => {
+        try {
+            const value = localStorage.getItem(key);
+            return value !== null ? parseInt(value, 10) || defaultValue : defaultValue;
+        } catch {
+            return defaultValue;
+        }
+    },
+
+    setNumber: (key: LocalStorageKey, value: number): void => {
+        try {
+            localStorage.setItem(key, value.toString());
+        } catch {}
     },
 
     setString: (key: LocalStorageKey, value: string): void => {

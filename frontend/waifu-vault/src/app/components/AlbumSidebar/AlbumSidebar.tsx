@@ -26,6 +26,7 @@ interface AlbumSidebarProps {
     onShareAlbum?: (albumToken: string) => Promise<void>;
     onUnshareAlbum?: (albumToken: string) => Promise<void>;
     onCopyPublicUrl?: (publicToken: string) => void;
+    currentFilesCount?: number;
 }
 
 export function AlbumSidebar({
@@ -38,6 +39,7 @@ export function AlbumSidebar({
     onShareAlbum,
     onUnshareAlbum,
     onCopyPublicUrl,
+    currentFilesCount,
 }: AlbumSidebarProps) {
     const [isCreating, setIsCreating] = useState(false);
     const [newAlbumName, setNewAlbumName] = useState("");
@@ -225,9 +227,11 @@ export function AlbumSidebar({
         }
     };
 
-    const selectedCount = selectedAlbum
-        ? albums.find(a => a.token === selectedAlbum)?.fileCount || 0
-        : albums.reduce((sum, a) => sum + (a.fileCount || 0), 0);
+    const selectedCount =
+        currentFilesCount ??
+        (selectedAlbum
+            ? albums.find(a => a.token === selectedAlbum)?.fileCount || 0
+            : albums.reduce((sum, a) => sum + (a.fileCount || 0), 0));
 
     return (
         <div className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}>
@@ -282,7 +286,9 @@ export function AlbumSidebar({
                             <i className="bi bi-files"></i>
                             <span className={styles.albumName}>All Files</span>
                             <span className={styles.count}>
-                                {albums.reduce((sum, a) => sum + (a.fileCount || 0), 0)}
+                                {selectedAlbum === null
+                                    ? selectedCount
+                                    : albums.reduce((sum, a) => sum + (a.fileCount || 0), 0)}
                             </span>
                         </Button>
 

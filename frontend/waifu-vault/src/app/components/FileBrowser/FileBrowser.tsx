@@ -3,13 +3,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button from "../Button/Button";
 import Pill from "../Pill/Pill";
-import { FilePreview } from "./FilePreview";
+import { FilePreview } from "@/app/components";
 import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
 import { useContextMenu } from "../../hooks/useContextMenu";
 import { Tooltip } from "../Tooltip";
 import { Input } from "../Input";
 import styles from "./FileBrowser.module.scss";
 import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
+import { LocalStorage, PAGINATION_PAGE_KEY } from "@/constants/localStorageKeys";
 
 type ViewMode = "grid" | "list" | "detailed";
 type SortField = "name" | "date" | "size" | "type";
@@ -27,6 +28,7 @@ interface FileBrowserProps {
         newPosition: number,
         showSuccessToast?: boolean,
     ) => Promise<void>;
+    onRemoveFromAlbum?: (fileIds: number[]) => Promise<void>;
     onDragStart?: (isDraggingToAlbum: boolean) => void;
     onDragEnd?: () => void;
     onLogout?: () => void;
@@ -38,8 +40,12 @@ interface FileBrowserProps {
     allowDeletion?: boolean;
     allowRename?: boolean;
     allowReorder?: boolean;
+    allowRemoveFromAlbum?: boolean;
     albumToken?: string;
     mode: "bucket" | "admin";
+    itemsPerPage?: number;
+    showPagination?: boolean;
+    resetPaginationTrigger?: number;
 }
 
 export function FileBrowser({
@@ -49,6 +55,7 @@ export function FileBrowser({
     onDeleteFiles,
     onRenameFile,
     onReorderFiles,
+    onRemoveFromAlbum,
     onDragStart,
     onDragEnd,
     onLogout,
@@ -60,8 +67,12 @@ export function FileBrowser({
     allowDeletion = true,
     allowRename = true,
     allowReorder = false,
+    allowRemoveFromAlbum = false,
     albumToken,
     mode,
+    itemsPerPage = 10,
+    showPagination = true,
+    resetPaginationTrigger,
 }: FileBrowserProps) {
     const [selectedFiles, setSelectedFiles] = useState<Set<number>>(new Set());
     const [lastSelectedFile, setLastSelectedFile] = useState<number | null>(null);
@@ -75,6 +86,7 @@ export function FileBrowser({
     const [renameValue, setRenameValue] = useState("");
     const [draggedOverFile, setDraggedOverFile] = useState<number | null>(null);
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
+    const [currentPage, setCurrentPage] = useState(() => LocalStorage.getNumber(PAGINATION_PAGE_KEY, 1));
 
     const fileListRef = useRef<HTMLDivElement>(null);
 
@@ -130,7 +142,32 @@ export function FileBrowser({
         onFilesSelected?.(Array.from(allFileIds));
     }, [sortedFiles, onFilesSelected]);
 
-    const previewFiles = sortedFiles;
+    const totalPages = showPagination ? Math.ceil(sortedFiles.length / itemsPerPage) : 1;
+    const startIndex = showPagination ? (currentPage - 1) * itemsPerPage : 0;
+    const endIndex = showPagination ? startIndex + itemsPerPage : sortedFiles.length;
+    const previewFiles = showPagination ? sortedFiles.slice(startIndex, endIndex) : sortedFiles;
+
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(1);
+            LocalStorage.setNumber(PAGINATION_PAGE_KEY, 1);
+        }
+    }, [totalPages, currentPage]);
+
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page);
+        LocalStorage.setNumber(PAGINATION_PAGE_KEY, page);
+        fileListRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, []);
+
+    useEffect(() => {
+        LocalStorage.setNumber(PAGINATION_PAGE_KEY, currentPage);
+    }, [currentPage]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+        LocalStorage.setNumber(PAGINATION_PAGE_KEY, 1);
+    }, [files.length, searchQuery, resetPaginationTrigger]);
 
     const handleClearSelection = useCallback(() => {
         setSelectedFiles(new Set());
@@ -217,6 +254,9 @@ export function FileBrowser({
 
     const handleContextMenu = useCallback(
         (event: React.MouseEvent, fileId?: number) => {
+            event.preventDefault();
+            event.stopPropagation();
+
             const file = fileId ? sortedFiles.find(f => f.id === fileId) : null;
 
             const contextMenuItems: ContextMenuItem[] = [];
@@ -235,6 +275,26 @@ export function FileBrowser({
                         label: "Rename",
                         icon: <i className="bi bi-pencil"></i>,
                         onClick: () => handleRenameStart(file.id, file.fileName || file.originalFileName),
+                    });
+                }
+
+                if (allowRemoveFromAlbum) {
+                    contextMenuItems.push({
+                        id: "removeFromAlbum",
+                        label: "Remove from Album",
+                        icon: <i className="bi bi-dash-square"></i>,
+                        onClick: () => {
+                            const filesToRemove = selectedFiles.has(file.id) ? Array.from(selectedFiles) : [file.id];
+
+                            if (
+                                confirm(
+                                    `Are you sure you want to remove ${filesToRemove.length} file(s) from this album?`,
+                                )
+                            ) {
+                                onRemoveFromAlbum?.(filesToRemove);
+                                setSelectedFiles(new Set());
+                            }
+                        },
                     });
                 }
 
@@ -272,12 +332,14 @@ export function FileBrowser({
             sortedFiles,
             allowRename,
             allowDeletion,
-            selectedFiles.size,
+            allowRemoveFromAlbum,
+            selectedFiles,
             handleRenameStart,
             handleDeleteSelected,
             handleSelectAll,
             handleClearSelection,
             showContextMenu,
+            onRemoveFromAlbum,
         ],
     );
 
@@ -690,7 +752,7 @@ export function FileBrowser({
             >
                 {viewMode === "grid" && (
                     <div className={styles.fileGrid}>
-                        {previewFiles.map(file => {
+                        {previewFiles.map((file, index) => {
                             return (
                                 <div
                                     key={file.id}
@@ -711,7 +773,12 @@ export function FileBrowser({
                                     onDragEnd={handleDragEnd}
                                 >
                                     <div className={styles.filePreviewContainer}>
-                                        <FilePreview file={file} size="large" />
+                                        <FilePreview
+                                            file={file}
+                                            size="large"
+                                            lazy={showPagination}
+                                            priority={index < 8}
+                                        />
                                         <div className={styles.fileOverlay}>
                                             <Button
                                                 size="small"
@@ -843,6 +910,67 @@ export function FileBrowser({
                 items={contextMenu.items}
                 onClose={hideContextMenu}
             />
+
+            {showPagination && totalPages > 1 && (
+                <div className={styles.paginationContainer}>
+                    <div className={styles.pagination}>
+                        <Button
+                            variant="outline"
+                            size="small"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            <i className="bi bi-chevron-left"></i>
+                        </Button>
+
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            let page: number;
+                            if (totalPages <= 5) {
+                                page = i + 1;
+                            } else if (currentPage <= 3) {
+                                page = i + 1;
+                            } else if (currentPage >= totalPages - 2) {
+                                page = totalPages - 4 + i;
+                            } else {
+                                page = currentPage - 2 + i;
+                            }
+
+                            return (
+                                <Button
+                                    key={page}
+                                    variant={currentPage === page ? "primary" : "outline"}
+                                    size="small"
+                                    onClick={() => handlePageChange(page)}
+                                >
+                                    {page}
+                                </Button>
+                            );
+                        })}
+
+                        {totalPages > 5 && currentPage < totalPages - 2 && (
+                            <>
+                                <span className={styles.ellipsis}>...</span>
+                                <Button variant="outline" size="small" onClick={() => handlePageChange(totalPages)}>
+                                    {totalPages}
+                                </Button>
+                            </>
+                        )}
+
+                        <Button
+                            variant="outline"
+                            size="small"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            <i className="bi bi-chevron-right"></i>
+                        </Button>
+                    </div>
+
+                    <div className={styles.paginationInfo}>
+                        Showing {startIndex + 1}-{Math.min(endIndex, sortedFiles.length)} of {sortedFiles.length} files
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

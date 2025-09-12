@@ -1,7 +1,7 @@
 import React, { DragEvent, useRef, useState } from "react";
 import styles from "./AdvancedDropZone.module.css";
 import { formatFileSize } from "../../utils/upload";
-import { FilePreview } from "../FileBrowser/FilePreview";
+import { FilePreview } from "../filePreview/FilePreview";
 import { isTerminal, ThemeType } from "@/app/constants/theme";
 import { useTheme } from "@/app/contexts/ThemeContext";
 
