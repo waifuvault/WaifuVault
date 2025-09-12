@@ -923,6 +923,15 @@ export function FileBrowser({
                             <i className="bi bi-chevron-left"></i>
                         </Button>
 
+                        {currentPage > 5 && (
+                            <>
+                                <Button variant="outline" size="small" onClick={() => handlePageChange(1)}>
+                                    {1}
+                                </Button>
+                                <span className={styles.ellipsis}>...</span>
+                            </>
+                        )}
+
                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                             let page: number;
                             if (totalPages <= 5) {
