@@ -39,7 +39,6 @@ function BucketAdminContent() {
     const [selectedAlbum, setSelectedAlbum] = useState<string | null>(
         () => LocalStorage.getString(SELECTED_ALBUM_KEY) || null,
     );
-    const [resetPaginationTrigger, setResetPaginationTrigger] = useState(0);
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;
         albumToken: string;
@@ -65,7 +64,6 @@ function BucketAdminContent() {
         } else {
             LocalStorage.setString(SELECTED_ALBUM_KEY, albumToken);
         }
-        setResetPaginationTrigger(prev => prev + 1);
     }, []);
 
     const fetchBucketData = useCallback(async () => {
@@ -428,7 +426,6 @@ function BucketAdminContent() {
                                         allowRemoveFromAlbum={selectedAlbum !== null}
                                         albumToken={selectedAlbum || undefined}
                                         mode="bucket"
-                                        resetPaginationTrigger={resetPaginationTrigger}
                                     />
                                 </div>
                             </div>

@@ -10,7 +10,7 @@ import { Tooltip } from "../Tooltip";
 import { Input } from "../Input";
 import styles from "./FileBrowser.module.scss";
 import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
-import { LocalStorage, PAGINATION_PAGE_KEY } from "@/constants/localStorageKeys";
+import { getPaginationKey, LocalStorage } from "@/constants/localStorageKeys";
 
 type ViewMode = "grid" | "list" | "detailed";
 type SortField = "name" | "date" | "size" | "type";
@@ -45,7 +45,6 @@ interface FileBrowserProps {
     mode: "bucket" | "admin";
     itemsPerPage?: number;
     showPagination?: boolean;
-    resetPaginationTrigger?: number;
 }
 
 export function FileBrowser({
@@ -72,7 +71,6 @@ export function FileBrowser({
     mode,
     itemsPerPage = 10,
     showPagination = true,
-    resetPaginationTrigger,
 }: FileBrowserProps) {
     const [selectedFiles, setSelectedFiles] = useState<Set<number>>(new Set());
     const [lastSelectedFile, setLastSelectedFile] = useState<number | null>(null);
@@ -86,7 +84,7 @@ export function FileBrowser({
     const [renameValue, setRenameValue] = useState("");
     const [draggedOverFile, setDraggedOverFile] = useState<number | null>(null);
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
-    const [currentPage, setCurrentPage] = useState(() => LocalStorage.getNumber(PAGINATION_PAGE_KEY, 1));
+    const [currentPage, setCurrentPage] = useState(1);
 
     const fileListRef = useRef<HTMLDivElement>(null);
 
@@ -150,24 +148,55 @@ export function FileBrowser({
     useEffect(() => {
         if (currentPage > totalPages && totalPages > 0) {
             setCurrentPage(1);
-            LocalStorage.setNumber(PAGINATION_PAGE_KEY, 1);
+            const pageKey = getPaginationKey(albumToken);
+            LocalStorage.setNumberDynamic(pageKey, 1);
         }
-    }, [totalPages, currentPage]);
+    }, [totalPages, currentPage, albumToken]);
 
-    const handlePageChange = useCallback((page: number) => {
-        setCurrentPage(page);
-        LocalStorage.setNumber(PAGINATION_PAGE_KEY, page);
-        fileListRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, []);
+    const handlePageChange = useCallback(
+        (page: number) => {
+            setCurrentPage(page);
+            const pageKey = getPaginationKey(albumToken);
+            LocalStorage.setNumberDynamic(pageKey, page);
+            fileListRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        },
+        [albumToken],
+    );
+
+    const isInitialMount = useRef(true);
+    const previousFilesLength = useRef(files.length);
+    const previousSearchQuery = useRef(searchQuery);
+    const previousAlbumToken = useRef(albumToken);
 
     useEffect(() => {
-        LocalStorage.setNumber(PAGINATION_PAGE_KEY, currentPage);
-    }, [currentPage]);
+        const pageKey = getPaginationKey(albumToken);
+        const savedPage = LocalStorage.getNumberDynamic(pageKey, 1);
+        setCurrentPage(savedPage);
+    }, [albumToken]);
 
     useEffect(() => {
-        setCurrentPage(1);
-        LocalStorage.setNumber(PAGINATION_PAGE_KEY, 1);
-    }, [files.length, searchQuery, resetPaginationTrigger]);
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            previousFilesLength.current = files.length;
+            previousSearchQuery.current = searchQuery;
+            previousAlbumToken.current = albumToken;
+            return;
+        }
+
+        const albumChanged = previousAlbumToken.current !== albumToken;
+        const filesChanged = previousFilesLength.current !== files.length;
+        const searchChanged = previousSearchQuery.current !== searchQuery;
+
+        if ((filesChanged || searchChanged) && !albumChanged) {
+            setCurrentPage(1);
+            const pageKey = getPaginationKey(albumToken);
+            LocalStorage.setNumberDynamic(pageKey, 1);
+        }
+
+        previousFilesLength.current = files.length;
+        previousSearchQuery.current = searchQuery;
+        previousAlbumToken.current = albumToken;
+    }, [files.length, searchQuery, albumToken]);
 
     const handleClearSelection = useCallback(() => {
         setSelectedFiles(new Set());

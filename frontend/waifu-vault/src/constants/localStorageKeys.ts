@@ -4,7 +4,7 @@ export const ALBUM_SIDEBAR_COLLAPSED_KEY = "waifuvault-albumsidebar-collapsed";
 export const SELECTED_ALBUM_KEY = "waifuvault-selected-album";
 export const ALBUM_SORT_BY_KEY = "waifuvault-album-sort-by";
 export const ALBUM_SORT_DIR_KEY = "waifuvault-album-sort-dir";
-export const PAGINATION_PAGE_KEY = "waifuvault-pagination-page";
+export const PAGINATION_PAGE_PREFIX = "waifuvault-pagination-page";
 
 type LocalStorageKey =
     | typeof THEME_KEY
@@ -13,7 +13,7 @@ type LocalStorageKey =
     | typeof SELECTED_ALBUM_KEY
     | typeof ALBUM_SORT_BY_KEY
     | typeof ALBUM_SORT_DIR_KEY
-    | typeof PAGINATION_PAGE_KEY;
+    | typeof PAGINATION_PAGE_PREFIX;
 
 export const LocalStorage = {
     getBoolean: (key: LocalStorageKey, defaultValue: boolean = false): boolean => {
@@ -42,7 +42,7 @@ export const LocalStorage = {
     getNumber: (key: LocalStorageKey, defaultValue: number = 0): number => {
         try {
             const value = localStorage.getItem(key);
-            return value !== null ? parseInt(value, 10) || defaultValue : defaultValue;
+            return value !== null ? Number.parseInt(value, 10) || defaultValue : defaultValue;
         } catch {
             return defaultValue;
         }
@@ -65,4 +65,23 @@ export const LocalStorage = {
             localStorage.removeItem(key);
         } catch {}
     },
+
+    getNumberDynamic: (key: string, defaultValue: number = 0): number => {
+        try {
+            const value = localStorage.getItem(key);
+            return value !== null ? Number.parseInt(value, 10) || defaultValue : defaultValue;
+        } catch {
+            return defaultValue;
+        }
+    },
+
+    setNumberDynamic: (key: string, value: number): void => {
+        try {
+            localStorage.setItem(key, value.toString());
+        } catch {}
+    },
+};
+
+export const getPaginationKey = (albumToken: string | null | undefined): string => {
+    return `${PAGINATION_PAGE_PREFIX}-${albumToken || "all"}`;
 };
