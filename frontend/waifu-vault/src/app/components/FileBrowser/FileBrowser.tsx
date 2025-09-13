@@ -10,7 +10,7 @@ import { Tooltip } from "../Tooltip";
 import { Input } from "../Input";
 import styles from "./FileBrowser.module.scss";
 import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
-import { getPaginationKey, LocalStorage } from "@/constants/localStorageKeys";
+import { getPaginationKey, getPaginationSizeKey, LocalStorage } from "@/constants/localStorageKeys";
 
 type ViewMode = "grid" | "list" | "detailed";
 type SortField = "name" | "date" | "size" | "type";
@@ -85,6 +85,7 @@ export function FileBrowser({
     const [draggedOverFile, setDraggedOverFile] = useState<number | null>(null);
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [currentItemsPerPage, setCurrentItemsPerPage] = useState(itemsPerPage);
 
     const fileListRef = useRef<HTMLDivElement>(null);
 
@@ -140,9 +141,9 @@ export function FileBrowser({
         onFilesSelected?.(Array.from(allFileIds));
     }, [sortedFiles, onFilesSelected]);
 
-    const totalPages = showPagination ? Math.ceil(sortedFiles.length / itemsPerPage) : 1;
-    const startIndex = showPagination ? (currentPage - 1) * itemsPerPage : 0;
-    const endIndex = showPagination ? startIndex + itemsPerPage : sortedFiles.length;
+    const totalPages = showPagination ? Math.ceil(sortedFiles.length / currentItemsPerPage) : 1;
+    const startIndex = showPagination ? (currentPage - 1) * currentItemsPerPage : 0;
+    const endIndex = showPagination ? startIndex + currentItemsPerPage : sortedFiles.length;
     const previewFiles = showPagination ? sortedFiles.slice(startIndex, endIndex) : sortedFiles;
 
     useEffect(() => {
@@ -163,16 +164,28 @@ export function FileBrowser({
         [albumToken],
     );
 
+    const handlePageSizeChange = useCallback(
+        (size: number) => {
+            setCurrentItemsPerPage(size);
+            const pageKey = getPaginationSizeKey(albumToken);
+            LocalStorage.setNumberDynamic(pageKey, size);
+        },
+        [albumToken],
+    );
+
     const isInitialMount = useRef(true);
     const previousFilesLength = useRef(files.length);
     const previousSearchQuery = useRef(searchQuery);
     const previousAlbumToken = useRef(albumToken);
 
     useEffect(() => {
+        const pageSizeKey = getPaginationSizeKey(albumToken);
+        const savedSize = LocalStorage.getNumberDynamic(pageSizeKey, itemsPerPage);
+        setCurrentItemsPerPage(savedSize);
         const pageKey = getPaginationKey(albumToken);
         const savedPage = LocalStorage.getNumberDynamic(pageKey, 1);
         setCurrentPage(savedPage);
-    }, [albumToken]);
+    }, [albumToken, itemsPerPage]);
 
     useEffect(() => {
         if (isInitialMount.current) {
@@ -767,6 +780,28 @@ export function FileBrowser({
                             onClick={() => handleSort("type")}
                         >
                             Type {sortField === "type" && (sortOrder === "asc" ? "↑" : "↓")}
+                        </Button>
+                        <Button
+                            variant={currentItemsPerPage === itemsPerPage ? "primary" : "outline"}
+                            size="small"
+                            onClick={() => handlePageSizeChange(itemsPerPage)}
+                            className={styles.pageSize}
+                        >
+                            {itemsPerPage}
+                        </Button>
+                        <Button
+                            variant={currentItemsPerPage === itemsPerPage * 5 ? "primary" : "outline"}
+                            size="small"
+                            onClick={() => handlePageSizeChange(itemsPerPage * 5)}
+                        >
+                            {itemsPerPage * 5}
+                        </Button>
+                        <Button
+                            variant={currentItemsPerPage === itemsPerPage * 10 ? "primary" : "outline"}
+                            size="small"
+                            onClick={() => handlePageSizeChange(itemsPerPage * 10)}
+                        >
+                            {itemsPerPage * 10}
                         </Button>
                     </div>
                 </div>
