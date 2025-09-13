@@ -5,6 +5,7 @@ import React from "react";
 import { ThemeProvider } from "@/app/contexts/ThemeContext";
 import { LoadingProvider } from "@/app/contexts/LoadingContext";
 import { BucketAuthProvider } from "@/app/contexts/BucketAuthContext";
+import { ToastProvider } from "@/app/components/Toast";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Head from "next/head.js";
 
@@ -70,7 +71,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body>
                 <LoadingProvider>
                     <BucketAuthProvider>
-                        <ThemeProvider>{children}</ThemeProvider>
+                        <ThemeProvider>
+                            <ToastProvider>{children}</ToastProvider>
+                        </ThemeProvider>
                     </BucketAuthProvider>
                 </LoadingProvider>
             </body>

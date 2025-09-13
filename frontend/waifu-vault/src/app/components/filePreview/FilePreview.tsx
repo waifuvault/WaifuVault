@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTheme } from "@/app/contexts/ThemeContext";
+import { useErrorHandler } from "@/app/hooks/useErrorHandler";
 import styles from "./FilePreview.module.scss";
 import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
 
@@ -25,6 +26,7 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
 
     const containerRef = useRef<HTMLDivElement>(null);
     const { getThemeClass } = useTheme();
+    const { handleError } = useErrorHandler();
 
     const getFileType = useCallback((mediaType: string | null, fileName: string): FilePreviewType => {
         if (!mediaType) {
@@ -189,7 +191,7 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
                     setIsLoading(false);
                 }
             } catch (error) {
-                console.error("Error loading metadata:", error);
+                handleError(error, { defaultMessage: "Failed to load file preview" });
                 if (mounted) {
                     setPreviewError("Failed to generate preview");
                     setIsLoading(false);
@@ -202,6 +204,7 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
         return () => {
             mounted = false;
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [file, isClientFile, fileUrl, fileType, mediaType, fileName, fileToken, isIntersecting, lazy]);
 
     const handleMouseEnter = () => {

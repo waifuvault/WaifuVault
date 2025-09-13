@@ -6,6 +6,7 @@ import Button from "../Button/Button";
 import { Tooltip } from "../Tooltip";
 import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
 import { useContextMenu } from "../../hooks/useContextMenu";
+import { useErrorHandler } from "../../hooks/useErrorHandler";
 import { Input } from "../Input";
 import {
     ALBUM_SIDEBAR_COLLAPSED_KEY,
@@ -46,6 +47,7 @@ export function AlbumSidebar({
     const [isCollapsed, setIsCollapsed] = useState(() => LocalStorage.getBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, false));
     const [dragOverAlbum, setDragOverAlbum] = useState<string | null>(null);
     const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
+    const { handleError } = useErrorHandler();
     const { isLoading } = useLoading();
     const [sortBy, setSortBy] = useState<"name" | "date">(
         () => LocalStorage.getString(ALBUM_SORT_BY_KEY, "name") as "name" | "date",
@@ -83,7 +85,7 @@ export function AlbumSidebar({
             setNewAlbumName("");
             setIsCreating(false);
         } catch (error) {
-            console.error("Failed to create album:", error);
+            handleError(error, { defaultMessage: "Failed to create album" });
         }
     };
 
@@ -223,7 +225,7 @@ export function AlbumSidebar({
                 await onFilesDropped(albumToken, fileTokens);
             }
         } catch (error) {
-            console.error("Failed to drop files on album:", error);
+            handleError(error, { defaultMessage: "Failed to drop files on album" });
         }
     };
 

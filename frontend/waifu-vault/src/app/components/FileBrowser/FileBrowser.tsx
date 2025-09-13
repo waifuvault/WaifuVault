@@ -6,6 +6,7 @@ import Pill from "../Pill/Pill";
 import { FilePreview } from "@/app/components";
 import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
 import { useContextMenu } from "../../hooks/useContextMenu";
+import { useErrorHandler } from "../../hooks/useErrorHandler";
 import { Tooltip } from "../Tooltip";
 import { Input } from "../Input";
 import styles from "./FileBrowser.module.scss";
@@ -79,6 +80,7 @@ export function FileBrowser({
     const [sortField, setSortField] = useState<SortField>("name");
     const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
     const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
+    const { handleError } = useErrorHandler();
     const [draggedFiles, setDraggedFiles] = useState<number[]>([]);
     const [isRenaming, setIsRenaming] = useState<number | null>(null);
     const [renameValue, setRenameValue] = useState("");
@@ -496,10 +498,10 @@ export function FileBrowser({
             try {
                 await onReorderFiles(draggedFileIds[0], draggedIndex, newPosition, true);
             } catch (error) {
-                console.error("Failed to reorder files:", error);
-                console.error("Error details:", error);
+                handleError(error, { defaultMessage: "Failed to reorder files" });
             }
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [allowReorder, onReorderFiles, isDraggingToAlbum, draggedFiles, sortedFiles],
     );
 

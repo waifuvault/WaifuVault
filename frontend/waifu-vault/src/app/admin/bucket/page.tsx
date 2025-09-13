@@ -6,10 +6,11 @@ import { useEnvironment } from "@/app/hooks/useEnvironment";
 import { useLoading } from "@/app/contexts/LoadingContext";
 import { useAlbums } from "@/app/hooks/useAlbums";
 import { useBucket } from "@/app/hooks/useBucket";
+import { useErrorHandler } from "@/app/hooks/useErrorHandler";
 import { Card, CardBody, CardHeader, FileBrowser, Footer, Header, ParticleBackground } from "@/app/components";
 import { AlbumSidebar } from "@/app/components/AlbumSidebar/AlbumSidebar";
 import { FileUploadModal } from "@/app/components/FileUploadModal/FileUploadModal";
-import { ToastProvider, useToast } from "@/app/components/Toast";
+import { useToast } from "@/app/components/Toast";
 import { UploadFile } from "@/app/types/upload";
 import Dialog from "@/app/components/Dialog/Dialog";
 import Button from "@/app/components/Button/Button";
@@ -34,6 +35,7 @@ function BucketAdminContent() {
     const { getBucketData, deleteFiles } = useBucket();
     const { getThemeClass } = useTheme();
     const { showToast } = useToast();
+    const { handleError } = useErrorHandler();
 
     const [bucketData, setBucketData] = useState<AdminBucketDto | null>(null);
     const [selectedAlbum, setSelectedAlbum] = useState<string | null>(
@@ -72,7 +74,7 @@ function BucketAdminContent() {
                 const data = await getBucketData();
                 setBucketData(data);
             } catch (error) {
-                console.error("Failed to fetch bucket data:", error);
+                handleError(error, { defaultMessage: "Failed to load bucket data" });
             }
         });
     }, [getBucketData]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -84,7 +86,7 @@ function BucketAdminContent() {
                     await deleteFiles(fileIds);
                     await fetchBucketData();
                 } catch (error) {
-                    console.error("Failed to delete files:", error);
+                    handleError(error, { defaultMessage: "Failed to delete files" });
                 }
             });
         },
@@ -102,8 +104,7 @@ function BucketAdminContent() {
                     await createAlbum(bucketData.token, name);
                     await fetchBucketData();
                 } catch (error) {
-                    console.error("Failed to create album:", error);
-                    throw error;
+                    handleError(error, { defaultMessage: "Failed to create album" });
                 }
             });
         },
@@ -129,8 +130,7 @@ function BucketAdminContent() {
                     await fetchBucketData();
                     setDeleteDialog({ isOpen: false, albumToken: "", albumName: "" });
                 } catch (error) {
-                    console.error("Failed to delete album:", error);
-                    throw error;
+                    handleError(error, { defaultMessage: "Failed to delete album" });
                 }
             });
         },
@@ -165,8 +165,9 @@ function BucketAdminContent() {
                         "Files Associated",
                     );
                 } catch (error) {
-                    console.error("Failed to associate files with album:", error);
-                    showToast("error", "Failed to associate files with album");
+                    handleError(error, {
+                        defaultMessage: "Failed to associate files with album",
+                    });
                     throw error;
                 }
             });
@@ -218,11 +219,13 @@ function BucketAdminContent() {
                         `Removed ${fileIds.length} file${fileIds.length > 1 ? "s" : ""} from ${albumName}`,
                     );
                 } catch (error) {
-                    console.error("Failed to remove files from album:", error);
-                    showToast("error", "Failed to remove files from album");
+                    handleError(error, {
+                        defaultMessage: "Failed to remove files from album",
+                    });
                 }
             });
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [
             selectedAlbum,
             bucketData?.files,
@@ -270,9 +273,7 @@ function BucketAdminContent() {
                     await fetchBucketData();
                     showToast("success", "Album shared successfully");
                 } catch (error) {
-                    console.error("Failed to share album:", error);
-                    showToast("error", "Failed to share album");
-                    throw error;
+                    handleError(error, { defaultMessage: "Failed to share album" });
                 }
             });
         },
@@ -287,9 +288,7 @@ function BucketAdminContent() {
                     await fetchBucketData();
                     showToast("success", "Album unshared successfully");
                 } catch (error) {
-                    console.error("Failed to unshare album:", error);
-                    showToast("error", "Failed to unshare album");
-                    throw error;
+                    handleError(error, { defaultMessage: "Failed to unshare album" });
                 }
             });
         },
@@ -324,11 +323,10 @@ function BucketAdminContent() {
                     showToast("success", "File order updated successfully");
                 }
             } catch (error) {
-                console.error("Failed to reorder files:", error);
-                showToast("error", "Failed to reorder file");
-                throw error;
+                handleError(error, { defaultMessage: "Failed to reorder file" });
             }
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [selectedAlbum, reorderFiles, fetchBucketData, showToast],
     );
 
@@ -483,9 +481,5 @@ function BucketAdminContent() {
 }
 
 export default function BucketAdmin() {
-    return (
-        <ToastProvider>
-            <BucketAdminContent />
-        </ToastProvider>
-    );
+    return <BucketAdminContent />;
 }

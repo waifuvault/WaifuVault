@@ -1,10 +1,11 @@
 "use client";
 
-import { DragEvent, useEffect, useState } from "react";
-import { FilePreview } from "../filePreview/FilePreview";
+import React, { DragEvent, useEffect, useState } from "react";
+import { FilePreview } from "@/app/components";
 import { formatFileSize, validateExpires } from "../../utils/upload";
 import { useRestrictions } from "../../hooks/useRestrictions";
 import { useEnvironment } from "../../hooks/useEnvironment";
+import { useErrorHandler } from "../../hooks/useErrorHandler";
 import * as uploadApi from "../../utils/api/uploadApi";
 import AdvancedDropZone from "../AdvancedDropZone/AdvancedDropZone";
 import Button from "../Button/Button";
@@ -25,6 +26,7 @@ let fileCounter = 0;
 export const FileUpload = ({ bucketToken, onUploadComplete, shouldReset }: FileUploadProps) => {
     const { restrictions, bannedTypes, isLoading: restrictionsLoading } = useRestrictions();
     const { backendRestBaseUrl } = useEnvironment();
+    const { handleError } = useErrorHandler();
     const [isDragging, setIsDragging] = useState(false);
     const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
     const [isUploading, setIsUploading] = useState(false);
@@ -188,7 +190,7 @@ export const FileUpload = ({ bucketToken, onUploadComplete, shouldReset }: FileU
                 response,
             };
         } catch (error) {
-            console.error(`Upload failed for ${uploadFile.file.name}:`, error);
+            handleError(error, { defaultMessage: `Upload failed for ${uploadFile.file.name}` });
             return {
                 ...uploadFile,
                 status: "error",
@@ -222,7 +224,7 @@ export const FileUpload = ({ bucketToken, onUploadComplete, shouldReset }: FileU
 
             onUploadComplete?.(results);
         } catch (error) {
-            console.error("Upload error:", error);
+            handleError(error, { defaultMessage: "Upload process failed" });
         } finally {
             setIsUploading(false);
         }
