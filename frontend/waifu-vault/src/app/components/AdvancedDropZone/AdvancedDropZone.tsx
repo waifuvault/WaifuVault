@@ -11,6 +11,7 @@ let fileCounter = 0;
 interface AdvancedDropZoneProps {
     isDragging: boolean;
     maxFileSize: number;
+    disabled?: boolean;
     onDragEnter: (e: DragEvent) => void;
     onDragLeave: (e: DragEvent) => void;
     onDragOver: (e: DragEvent) => void;
@@ -28,6 +29,7 @@ interface DraggedFile {
 export default function AdvancedDropZone({
     isDragging,
     maxFileSize,
+    disabled = false,
     onDragEnter,
     onDragLeave,
     onDragOver,
@@ -63,6 +65,10 @@ export default function AdvancedDropZone({
     };
 
     const handleClick = (e: React.MouseEvent) => {
+        if (disabled) {
+            return;
+        }
+
         if (dropzoneRef.current) {
             const rect = dropzoneRef.current.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -80,6 +86,10 @@ export default function AdvancedDropZone({
     };
 
     const handleDragEnter = (e: DragEvent) => {
+        if (disabled) {
+            return;
+        }
+
         onDragEnter(e);
 
         const files = Array.from(e.dataTransfer.files || []);
@@ -112,6 +122,10 @@ export default function AdvancedDropZone({
     };
 
     const handleDrop = (e: DragEvent) => {
+        if (disabled) {
+            return;
+        }
+
         onDrop(e);
         setShowPreviews(false);
         setDraggedFiles([]);
@@ -175,6 +189,23 @@ export default function AdvancedDropZone({
     };
 
     const getThemeMessage = () => {
+        if (disabled) {
+            switch (theme) {
+                case ThemeType.STEAMPUNK:
+                    return "Steam Conveyance Temporarily Disabled";
+                case ThemeType.CYBERPUNK:
+                    return "UPLOAD.EXE ACCESS DENIED";
+                case ThemeType.GREEN_PHOSPHOR:
+                case ThemeType.ORANGE_PHOSPHOR:
+                    return "$ upload limit reached";
+                case ThemeType.MINIMAL:
+                    return "Upload limit reached";
+                case ThemeType.DEFAULT:
+                default:
+                    return "Upload Limit Reached";
+            }
+        }
+
         switch (theme) {
             case ThemeType.STEAMPUNK:
                 return "Steam-Powered File Conveyance";

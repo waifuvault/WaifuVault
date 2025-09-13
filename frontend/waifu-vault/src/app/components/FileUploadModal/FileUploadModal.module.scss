@@ -278,6 +278,31 @@
     color: #007bff;
 }
 
+/* Theme-specific progress bar colors */
+.themeCyberpunk .fileCountProgress {
+    background: linear-gradient(90deg, #00ffff, #008b8b) !important;
+}
+
+.themeTerminal .fileCountProgress {
+    background: linear-gradient(90deg, #00ff00, #008000) !important;
+}
+
+.themeOrangeterminal .fileCountProgress {
+    background: linear-gradient(90deg, #ffa500, #ff8c00) !important;
+}
+
+.themeMinimal .fileCountProgress {
+    background: linear-gradient(90deg, #007bff, #0056b3) !important;
+}
+
+.themeAnime .fileCountProgress {
+    background: linear-gradient(90deg, #667eea, #764ba2) !important;
+}
+
+.themeSteampunk .fileCountProgress {
+    background: linear-gradient(90deg, #cd7f32, #b8860b) !important;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .modal {
@@ -312,5 +337,56 @@
     .overlay,
     .modal {
         animation: none !important;
+    }
+}
+
+/* Album File Count Display */
+.albumFileCount {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 6px;
+}
+
+.fileCountInfo {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+
+    .limitReached {
+        color: var(--error-color);
+        font-weight: 600;
+    }
+}
+
+.fileCountProgressBar {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border-secondary);
+}
+
+.fileCountProgress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-primary, #3b82f6), var(--accent-secondary, #1d4ed8));
+    border-radius: 3px;
+    transition:
+        width 0.3s ease,
+        background-color 0.3s ease;
+    min-width: 2px;
+
+    /* Change color based on how close to limit */
+    &[style*="width: 8"],
+    &[style*="width: 9"] {
+        background: linear-gradient(90deg, #fbbf24, #f59e0b); /* Warning yellow */
+    }
+
+    &[style*="width: 100%"] {
+        background: linear-gradient(90deg, #ef4444, #dc2626); /* Error red */
     }
 }

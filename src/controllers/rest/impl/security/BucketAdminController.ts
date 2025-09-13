@@ -2,7 +2,7 @@ import { AbstractAdminController } from "./AbstractAdminController.js";
 import { Controller, Inject } from "@tsed/di";
 import { Delete, Get, Hidden } from "@tsed/schema";
 import { PlatformResponse, Res } from "@tsed/platform-http";
-import { BodyParams, QueryParams } from "@tsed/platform-params";
+import { BodyParams, PathParams, QueryParams } from "@tsed/platform-params";
 import { UseBefore } from "@tsed/platform-middlewares";
 import type {
     DatatableColumn,
@@ -17,6 +17,8 @@ import { BucketService } from "../../../../services/BucketService.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 import { StatsModel } from "../../../../model/dto/StatsDto.js";
 import { AdminBucketDto } from "../../../../model/dto/AdminBucketDto.js";
+import BucketType from "../../../../model/constants/BucketType";
+import { NotFound } from "@tsed/exceptions";
 
 @Hidden()
 @Controller("/admin/bucket")
@@ -88,5 +90,14 @@ export class BucketAdminController extends AbstractAdminController implements IA
     @Get("/statsData")
     public override getStatsData(): Promise<StatsModel> {
         return super.getStatsData();
+    }
+
+    @Get("/getBucketType/:token")
+    public async getBucketType(@PathParams("token") token: string): Promise<BucketType> {
+        const bucketType = await this.bucketAdminService.getBucketType(token);
+        if (!bucketType) {
+            throw new NotFound("Bucket not found");
+        }
+        return bucketType;
     }
 }

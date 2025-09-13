@@ -18,6 +18,7 @@ import { useTheme } from "@/app/contexts/ThemeContext";
 import { LocalStorage, SELECTED_ALBUM_KEY } from "@/constants/localStorageKeys";
 import styles from "./page.module.scss";
 import type { AdminBucketDto, UrlFileMixin } from "@/types/AdminTypes";
+import type { BucketType } from "@/app/utils/api/bucketApi";
 
 function BucketAdminContent() {
     const { isAuthenticated, logout } = useBucketAuth();
@@ -32,12 +33,13 @@ function BucketAdminContent() {
         shareAlbum,
         unshareAlbum,
     } = useAlbums();
-    const { getBucketData, deleteFiles } = useBucket();
+    const { getBucketData, deleteFiles, getBucketType } = useBucket();
     const { getThemeClass } = useTheme();
     const { showToast } = useToast();
     const { handleError } = useErrorHandler();
 
     const [bucketData, setBucketData] = useState<AdminBucketDto | null>(null);
+    const [bucketType, setBucketType] = useState<BucketType | null>(null);
     const [selectedAlbum, setSelectedAlbum] = useState<string | null>(
         () => LocalStorage.getString(SELECTED_ALBUM_KEY) || null,
     );
@@ -73,11 +75,19 @@ function BucketAdminContent() {
             try {
                 const data = await getBucketData();
                 setBucketData(data);
+
+                try {
+                    const type = await getBucketType(data.token);
+                    setBucketType(type);
+                } catch (error) {
+                    console.warn("Failed to fetch bucket type:", error);
+                    setBucketType("NORMAL");
+                }
             } catch (error) {
                 handleError(error, { defaultMessage: "Failed to load bucket data" });
             }
         });
-    }, [getBucketData]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [getBucketData, getBucketType]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleDeleteFiles = useCallback(
         async (fileIds: number[]) => {
@@ -474,6 +484,8 @@ function BucketAdminContent() {
                 bucketToken={bucketData?.token}
                 albumToken={uploadModal.albumToken}
                 albumName={uploadModal.albumName}
+                currentAlbumFileCount={uploadModal.albumToken ? filteredFiles.length : 0}
+                bucketType={bucketType || undefined}
                 onUploadComplete={handleUploadComplete}
             />
         </div>

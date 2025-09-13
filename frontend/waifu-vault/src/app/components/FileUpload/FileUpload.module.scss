@@ -400,3 +400,54 @@
         font-size: 0.9rem;
     }
 }
+
+.fileCountContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.fileCountInfo {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+
+    .existingFiles {
+        color: var(--text-tertiary);
+        font-size: 0.8rem;
+    }
+
+    .limitReached {
+        color: var(--error-color);
+        font-weight: 600;
+    }
+}
+
+.fileCountProgressBar {
+    width: 200px;
+    height: 6px;
+    background-color: var(--border-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.fileCountProgress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: 3px;
+    transition:
+        width 0.3s ease,
+        background-color 0.3s ease;
+
+    /* Change color based on how close to limit */
+    &[style*="width: 8"],
+    &[style*="width: 9"] {
+        background: linear-gradient(90deg, #fbbf24, #f59e0b); /* Warning yellow */
+    }
+
+    &[style*="width: 100%"] {
+        background: linear-gradient(90deg, #ef4444, #dc2626); /* Error red */
+    }
+}

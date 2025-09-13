@@ -638,8 +638,45 @@ export function FileBrowser({
 
     if (files.length === 0) {
         return (
-            <div className={styles.emptyState}>
-                <p>No files available.</p>
+            <div className={styles.fileBrowser}>
+                <div className={styles.toolbar}>
+                    <div className={styles.toolbarLeft}></div>
+                    <div className={styles.toolbarCenter}></div>
+                    <div className={styles.toolbarRight}>
+                        <div className={styles.fileActions}>
+                            {onUploadClick && mode === "bucket" && (
+                                <Button
+                                    variant="primary"
+                                    size="small"
+                                    onClick={() => onUploadClick(albumToken)}
+                                    className={styles.uploadBtn}
+                                >
+                                    <i className="bi bi-cloud-upload"></i> Upload Files
+                                    {albumToken && " to Album"}
+                                </Button>
+                            )}
+                            {onLogout && (
+                                <Button
+                                    variant="secondary"
+                                    size="small"
+                                    onClick={onLogout}
+                                    className={styles.logoutBtn}
+                                >
+                                    Logout
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                <div className={styles.emptyState}>
+                    <p>No files available.</p>
+                    {onUploadClick && mode === "bucket" && (
+                        <p>
+                            Click the &ldquo;Upload Files&rdquo; button above to add files
+                            {albumToken ? " to this album" : ""}.
+                        </p>
+                    )}
+                </div>
             </div>
         );
     }

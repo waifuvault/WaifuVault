@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useEnvironment } from "./useEnvironment";
+import type { BucketType } from "@/app/utils/api/bucketApi";
 import * as bucketApi from "@/app/utils/api/bucketApi";
 import type { AdminBucketDto } from "@/types/AdminTypes";
 
@@ -19,8 +20,16 @@ export function useBucket() {
         [backendRestBaseUrl],
     );
 
+    const getBucketType = useCallback(
+        async (bucketToken: string): Promise<BucketType> => {
+            return bucketApi.getBucketType(backendRestBaseUrl, bucketToken);
+        },
+        [backendRestBaseUrl],
+    );
+
     return {
         getBucketData,
         deleteFiles,
+        getBucketType,
     };
 }

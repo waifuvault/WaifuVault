@@ -11,11 +11,14 @@ import AdvancedDropZone from "../AdvancedDropZone/AdvancedDropZone";
 import Button from "../Button/Button";
 import { Input } from "../Input/Input";
 import { UploadFile } from "../../types/upload";
+import { BucketType } from "../../utils/api/bucketApi";
 import styles from "./FileUpload.module.scss";
 
 interface FileUploadProps {
     bucketToken?: string;
     albumToken?: string;
+    currentAlbumFileCount?: number;
+    bucketType?: BucketType;
     onUploadComplete?: (files: UploadFile[]) => void;
     onUploadProgress?: (progress: number) => void;
     shouldReset?: boolean;
@@ -23,7 +26,14 @@ interface FileUploadProps {
 
 let fileCounter = 0;
 
-export const FileUpload = ({ bucketToken, onUploadComplete, shouldReset }: FileUploadProps) => {
+export const FileUpload = ({
+    bucketToken,
+    albumToken,
+    currentAlbumFileCount = 0,
+    bucketType,
+    onUploadComplete,
+    shouldReset,
+}: FileUploadProps) => {
     const { restrictions, bannedTypes, isLoading: restrictionsLoading } = useRestrictions();
     const { backendRestBaseUrl } = useEnvironment();
     const { handleError } = useErrorHandler();
@@ -58,6 +68,23 @@ export const FileUpload = ({ bucketToken, onUploadComplete, shouldReset }: FileU
 
     const processFiles = (files: FileList | File[]) => {
         const fileArray = Array.from(files);
+
+        if (albumToken && bucketType !== "PREMIUM") {
+            const totalFiles = currentAlbumFileCount + uploadFiles.length + fileArray.length;
+            if (totalFiles > restrictions.maxAlbumSize) {
+                const remainingSlots = restrictions.maxAlbumSize - currentAlbumFileCount - uploadFiles.length;
+                const filesInAlbum =
+                    currentAlbumFileCount > 0 ? ` (album currently has ${currentAlbumFileCount} files)` : "";
+                handleError(
+                    new Error(
+                        `Album file limit exceeded. You can only upload ${Math.max(0, remainingSlots)} more files (maximum ${restrictions.maxAlbumSize} files per album)${filesInAlbum}.`,
+                    ),
+                    { rethrow: false },
+                );
+                return;
+            }
+        }
+
         const processedFiles: UploadFile[] = fileArray.map((file, index) => {
             const validation = validateFile(file);
             return {
@@ -232,6 +259,11 @@ export const FileUpload = ({ bucketToken, onUploadComplete, shouldReset }: FileU
 
     const uploadableFiles = uploadFiles.filter(f => f.isValid && (f.status === "pending" || f.status === "error"));
     const hasValidationErrors = expiresError !== null;
+    const isAtFileLimit = Boolean(
+        albumToken &&
+            bucketType !== "PREMIUM" &&
+            currentAlbumFileCount + uploadFiles.length >= restrictions.maxAlbumSize,
+    );
 
     if (restrictionsLoading) {
         return (
@@ -249,6 +281,7 @@ export const FileUpload = ({ bucketToken, onUploadComplete, shouldReset }: FileU
             <AdvancedDropZone
                 isDragging={isDragging}
                 maxFileSize={restrictions.maxFileSize}
+                disabled={isAtFileLimit}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
@@ -259,7 +292,9 @@ export const FileUpload = ({ bucketToken, onUploadComplete, shouldReset }: FileU
             {uploadFiles.length > 0 && (
                 <div className={styles.uploadSection}>
                     <div className={styles.uploadHeader}>
-                        <h4>Upload Queue</h4>
+                        <div className={styles.headerInfo}>
+                            <h4>Upload Queue</h4>
+                        </div>
                         <div className={styles.uploadActions}>
                             <Button
                                 variant="primary"

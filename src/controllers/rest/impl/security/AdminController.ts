@@ -3,7 +3,7 @@ import { Controller, Inject } from "@tsed/di";
 import { UserAdminService } from "../../../../services/UserAdminService.js";
 import { Delete, Get, Hidden, Post, Required } from "@tsed/schema";
 import { PlatformResponse, Res } from "@tsed/platform-http";
-import { PathParams, QueryParams } from "@tsed/platform-params";
+import { BodyParams, QueryParams } from "@tsed/platform-params";
 import type {
     AdminDataTaleEntryModel,
     DatatableColumn,
@@ -11,7 +11,6 @@ import type {
     DatatableSearch,
     IpBlockedAwareFileEntry,
 } from "../../../../utils/typeings.js";
-import { BodyParams } from "@tsed/platform-params";
 import { StatusCodes } from "http-status-codes";
 import { Authorize } from "@tsed/passport";
 import { IAdminController } from "../../IAdminController.js";
@@ -19,7 +18,6 @@ import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 import { IpBlackListModel } from "../../../../model/db/IpBlackList.model.js";
 import { StatsModel } from "../../../../model/dto/StatsDto.js";
 import BucketType from "../../../../model/constants/BucketType.js";
-import { NotFound } from "@tsed/exceptions";
 
 @Hidden()
 @Authorize("loginAuthProvider")
@@ -60,15 +58,6 @@ export class AdminController extends AbstractAdminController implements IAdminCo
             recordsFiltered: records,
             data: data,
         };
-    }
-
-    @Get("/getBucketType/:token")
-    public async getBucketType(@PathParams("token") token: string): Promise<BucketType> {
-        const bucketType = await this.userAdminService.getBucketType(token);
-        if (!bucketType) {
-            throw new NotFound("Bucket not found");
-        }
-        return bucketType;
     }
 
     @Post("/setBucketType")

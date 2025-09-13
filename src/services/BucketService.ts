@@ -5,6 +5,7 @@ import { Logger } from "@tsed/logger";
 import type { PlatformContext } from "@tsed/platform-http";
 import { FileService } from "./FileService.js";
 import { BucketSessionService } from "./BucketSessionService.js";
+import BucketType from "../model/constants/BucketType";
 
 @Service()
 export class BucketService {
@@ -20,6 +21,10 @@ export class BucketService {
 
     public createBucket(): Promise<BucketModel> {
         return this.bucketRepo.createBucket();
+    }
+
+    public getBucketType(token: string): Promise<BucketType | null> {
+        return this.bucketRepo.getBucketType(token);
     }
 
     public async getBucket(

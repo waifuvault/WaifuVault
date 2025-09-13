@@ -5,7 +5,9 @@ import { createPortal } from "react-dom";
 import { FileUpload } from "../FileUpload/FileUpload";
 import { useFileUpload } from "../../hooks/useFileUpload";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useRestrictions } from "../../hooks/useRestrictions";
 import { UploadFile } from "../../types/upload";
+import { BucketType } from "../../utils/api/bucketApi";
 import styles from "./FileUploadModal.module.scss";
 
 interface FileUploadModalProps {
@@ -14,6 +16,8 @@ interface FileUploadModalProps {
     bucketToken?: string;
     albumToken?: string;
     albumName?: string;
+    currentAlbumFileCount?: number;
+    bucketType?: BucketType;
     onUploadComplete?: (files?: UploadFile[]) => void;
 }
 
@@ -23,9 +27,12 @@ export const FileUploadModal = ({
     bucketToken,
     albumToken,
     albumName,
+    currentAlbumFileCount,
+    bucketType,
     onUploadComplete,
 }: FileUploadModalProps) => {
     const { getThemeClass } = useTheme();
+    const { restrictions } = useRestrictions();
     const [resetTrigger, setResetTrigger] = useState(false);
 
     const { handleUploadComplete, isAssociatingToAlbum } = useFileUpload({
@@ -78,10 +85,37 @@ export const FileUploadModal = ({
                                 for files to upload.
                             </p>
                             {albumToken && (
-                                <p>
-                                    Files uploaded here will be automatically added to the selected album after upload
-                                    completes.
-                                </p>
+                                <>
+                                    <p>
+                                        Files uploaded here will be automatically added to the selected album after
+                                        upload completes.
+                                    </p>
+                                    <div className={styles.albumFileCount}>
+                                        <div className={styles.fileCountInfo}>
+                                            {bucketType === "PREMIUM" ? (
+                                                `${currentAlbumFileCount || 0} files in album (unlimited)`
+                                            ) : (
+                                                <>
+                                                    {currentAlbumFileCount || 0} / {restrictions.maxAlbumSize} files in
+                                                    album
+                                                    {(currentAlbumFileCount || 0) >= restrictions.maxAlbumSize && (
+                                                        <span className={styles.limitReached}> (limit reached)</span>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                        {bucketType !== "PREMIUM" && (
+                                            <div className={styles.fileCountProgressBar}>
+                                                <div
+                                                    className={styles.fileCountProgress}
+                                                    style={{
+                                                        width: `${Math.min(100, ((currentAlbumFileCount || 0) / (restrictions.maxAlbumSize || 1)) * 100)}%`,
+                                                    }}
+                                                ></div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
                             )}
                         </div>
                     </div>
@@ -89,6 +123,8 @@ export const FileUploadModal = ({
                     <FileUpload
                         bucketToken={bucketToken}
                         albumToken={albumToken}
+                        currentAlbumFileCount={currentAlbumFileCount}
+                        bucketType={bucketType}
                         onUploadComplete={handleUploadComplete}
                         shouldReset={resetTrigger}
                     />

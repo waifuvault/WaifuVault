@@ -48,6 +48,17 @@ export class ResourceService {
                             retArr.push(this.getRestriction(restrictionType, parsedValue));
                         }
                     }
+                    break;
+                }
+                case RestrictionType.MAX_ALBUM_SIZE: {
+                    const settingValue = this.settingsService.getSetting(GlobalEnv.ALBUM_FILE_LIMIT);
+                    if (settingValue) {
+                        const parsedValue = Number.parseInt(settingValue);
+                        if (parsedValue > 0) {
+                            retArr.push(this.getRestriction(restrictionType, parsedValue));
+                        }
+                    }
+                    break;
                 }
             }
         }

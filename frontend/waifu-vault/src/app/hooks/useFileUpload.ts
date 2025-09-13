@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useEnvironment } from "./useEnvironment";
+import { useErrorHandler } from "./useErrorHandler";
 import { UploadFile } from "../types/upload";
 import * as uploadApi from "../utils/api/uploadApi";
 
@@ -14,39 +15,52 @@ interface UseFileUploadOptions {
 
 export const useFileUpload = (options: UseFileUploadOptions = {}) => {
     const { backendRestBaseUrl } = useEnvironment();
+    const { handleError } = useErrorHandler();
     const [isAssociatingToAlbum, setIsAssociatingToAlbum] = useState(false);
 
-    const addFilesToAlbum = async (albumToken: string, fileTokens: string[]) => {
-        if (fileTokens.length === 0) {
-            return;
-        }
-
-        setIsAssociatingToAlbum(true);
-        try {
-            await uploadApi.associateFilesToAlbum(backendRestBaseUrl, albumToken, fileTokens);
-            options.onAlbumAssociation?.(albumToken, fileTokens);
-        } catch (error) {
-            console.error("Failed to associate files to album:", error);
-            throw error;
-        } finally {
-            setIsAssociatingToAlbum(false);
-        }
-    };
-
-    const handleUploadComplete = async (files: UploadFile[]) => {
-        const completedFiles = files.filter(f => f.status === "completed" && f.response?.token);
-
-        if (options.albumToken && completedFiles.length > 0) {
-            try {
-                const fileTokens = completedFiles.map(f => f.response?.token).filter(Boolean) as string[];
-                await addFilesToAlbum(options.albumToken, fileTokens);
-            } catch (error) {
-                console.error("Failed to add files to album:", error);
+    const addFilesToAlbum = useCallback(
+        async (albumToken: string, fileTokens: string[]) => {
+            if (fileTokens.length === 0) {
+                return;
             }
-        }
 
-        options.onUploadComplete?.(files);
-    };
+            setIsAssociatingToAlbum(true);
+            try {
+                await uploadApi.associateFilesToAlbum(backendRestBaseUrl, albumToken, fileTokens);
+                options.onAlbumAssociation?.(albumToken, fileTokens);
+            } catch (error) {
+                handleError(error, {
+                    defaultMessage: "Failed to associate files with album",
+                    showToast: false,
+                    rethrow: true,
+                });
+            } finally {
+                setIsAssociatingToAlbum(false);
+            }
+        },
+        [backendRestBaseUrl, handleError, options],
+    );
+
+    const handleUploadComplete = useCallback(
+        async (files: UploadFile[]) => {
+            const completedFiles = files.filter(f => f.status === "completed" && f.response?.token);
+
+            if (options.albumToken && completedFiles.length > 0) {
+                try {
+                    const fileTokens = completedFiles.map(f => f.response?.token).filter(Boolean) as string[];
+                    await addFilesToAlbum(options.albumToken, fileTokens);
+                } catch (error) {
+                    handleError(error, {
+                        defaultMessage: "Failed to add files to album after upload",
+                        rethrow: false,
+                    });
+                }
+            }
+
+            options.onUploadComplete?.(files);
+        },
+        [addFilesToAlbum, handleError, options],
+    );
 
     return {
         isAssociatingToAlbum,
