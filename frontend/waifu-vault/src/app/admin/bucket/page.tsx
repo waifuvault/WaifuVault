@@ -382,6 +382,15 @@ function BucketAdminContent() {
                             <div className={styles.headerContent}>
                                 <div className={styles.titleSection}>
                                     <h1>Bucket Manager</h1>
+                                    {bucketType === "PREMIUM" && (
+                                        <>
+                                            <div className={styles.premiumBadge}>Premium Bucket</div>
+                                            <div className={styles.premiumDescription}>
+                                                This is a PREMIUM bucket, which means you get unlimited expiry and
+                                                unlimited files in albums.
+                                            </div>
+                                        </>
+                                    )}
                                     {bucketData && (
                                         <div className={styles.bucketToken}>
                                             <span className={styles.tokenLabel}>Token:</span>

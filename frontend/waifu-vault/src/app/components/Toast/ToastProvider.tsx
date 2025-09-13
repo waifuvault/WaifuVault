@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, { createContext, PropsWithChildren, useCallback, useContext, useState } from "react";
 import { Toast, type ToastProps, type ToastType } from "./Toast";
 
 interface ToastContextType {
@@ -17,15 +17,11 @@ export function useToast() {
     return context;
 }
 
-interface ToastProviderProps {
-    children: React.ReactNode;
-}
-
 interface ToastState extends Omit<ToastProps, "onClose" | "bottom"> {
     id: string;
 }
 
-export function ToastProvider({ children }: ToastProviderProps) {
+export function ToastProvider({ children }: PropsWithChildren) {
     const [toasts, setToasts] = useState<ToastState[]>([]);
 
     const removeToast = useCallback((id: string) => {

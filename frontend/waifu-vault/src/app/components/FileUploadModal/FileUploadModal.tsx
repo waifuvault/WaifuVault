@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { FileUpload } from "../FileUpload/FileUpload";
 import { useFileUpload } from "../../hooks/useFileUpload";
@@ -33,7 +32,6 @@ export const FileUploadModal = ({
 }: FileUploadModalProps) => {
     const { getThemeClass } = useTheme();
     const { restrictions } = useRestrictions();
-    const [resetTrigger, setResetTrigger] = useState(false);
 
     const { handleUploadComplete, isAssociatingToAlbum } = useFileUpload({
         bucketToken,
@@ -42,20 +40,6 @@ export const FileUploadModal = ({
             onUploadComplete?.(files);
         },
     });
-
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden";
-            setResetTrigger(false);
-        } else {
-            document.body.style.overflow = "";
-            setResetTrigger(true);
-        }
-
-        return () => {
-            document.body.style.overflow = "";
-        };
-    }, [isOpen]);
 
     if (!isOpen) {
         return null;
@@ -126,7 +110,7 @@ export const FileUploadModal = ({
                         currentAlbumFileCount={currentAlbumFileCount}
                         bucketType={bucketType}
                         onUploadComplete={handleUploadComplete}
-                        shouldReset={resetTrigger}
+                        shouldReset={!isOpen}
                     />
 
                     {isAssociatingToAlbum && (

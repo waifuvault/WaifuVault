@@ -282,6 +282,7 @@ export const FileUpload = ({
                 isDragging={isDragging}
                 maxFileSize={restrictions.maxFileSize}
                 disabled={isAtFileLimit}
+                bucketType={bucketType}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
@@ -292,9 +293,7 @@ export const FileUpload = ({
             {uploadFiles.length > 0 && (
                 <div className={styles.uploadSection}>
                     <div className={styles.uploadHeader}>
-                        <div className={styles.headerInfo}>
-                            <h4>Upload Queue</h4>
-                        </div>
+                        <h4>Upload Queue</h4>
                         <div className={styles.uploadActions}>
                             <Button
                                 variant="primary"

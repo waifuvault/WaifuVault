@@ -469,6 +469,69 @@
     }
 }
 
+/* Premium Bucket Badge */
+.premiumBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(103, 126, 234, 0.15);
+    border: 1px solid rgba(103, 126, 234, 0.3);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    backdrop-filter: blur(10px);
+    animation: premiumPulse 3s ease-in-out infinite;
+
+    &::before {
+        content: "★";
+        color: rgba(103, 126, 234, 0.8);
+        font-size: 0.9em;
+        animation: premiumStar 2s ease-in-out infinite;
+    }
+}
+
+.premiumDescription {
+    color: var(--text-secondary, rgba(255, 255, 255, 0.8));
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    padding: 0 1rem;
+    max-width: 400px;
+}
+
+@keyframes premiumPulse {
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(103, 126, 234, 0.2);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(103, 126, 234, 0.3);
+    }
+}
+
+@keyframes premiumStar {
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+    50% {
+        transform: scale(1.1) rotate(180deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .premiumBadge,
+    .premiumBadge::before {
+        animation: none !important;
+    }
+}
+
 @media (max-width: 768px) {
     .headerContent {
         min-width: unset;

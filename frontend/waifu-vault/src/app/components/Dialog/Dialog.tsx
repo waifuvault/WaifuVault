@@ -1,4 +1,4 @@
-import React from "react";
+import React, { PropsWithChildren } from "react";
 import { createPortal } from "react-dom";
 import styles from "./Dialog.module.scss";
 import { useTheme } from "@/app/contexts/ThemeContext";
@@ -7,12 +7,18 @@ interface DialogProps {
     isOpen: boolean;
     onClose: () => void;
     title: string;
-    children: React.ReactNode;
     maxWidth?: string;
     className?: string;
 }
 
-export default function Dialog({ isOpen, onClose, title, children, maxWidth = "400px", className }: DialogProps) {
+export default function Dialog({
+    isOpen,
+    onClose,
+    title,
+    children,
+    maxWidth = "400px",
+    className,
+}: PropsWithChildren<DialogProps>) {
     const { getThemeClass } = useTheme();
 
     if (!isOpen) {

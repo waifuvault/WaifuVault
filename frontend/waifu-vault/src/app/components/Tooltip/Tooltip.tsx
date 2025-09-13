@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./Tooltip.module.scss";
 
 interface TooltipProps {
     content: string;
-    children: React.ReactNode;
     position?: "top" | "bottom" | "left" | "right";
     delay?: number;
     disabled?: boolean;
@@ -20,7 +19,7 @@ export function Tooltip({
     delay = 500,
     disabled = false,
     className = "",
-}: TooltipProps) {
+}: PropsWithChildren<TooltipProps>) {
     const [isVisible, setIsVisible] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);

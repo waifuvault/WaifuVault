@@ -4,6 +4,7 @@ import { formatFileSize } from "../../utils/upload";
 import { FilePreview } from "../filePreview/FilePreview";
 import { isTerminal, ThemeType } from "@/app/constants/theme";
 import { useTheme } from "@/app/contexts/ThemeContext";
+import { BucketType } from "@/app/utils/api/bucketApi";
 
 let rippleCounter = 0;
 let fileCounter = 0;
@@ -12,6 +13,7 @@ interface AdvancedDropZoneProps {
     isDragging: boolean;
     maxFileSize: number;
     disabled?: boolean;
+    bucketType?: BucketType;
     onDragEnter: (e: DragEvent) => void;
     onDragLeave: (e: DragEvent) => void;
     onDragOver: (e: DragEvent) => void;
@@ -30,6 +32,7 @@ export default function AdvancedDropZone({
     isDragging,
     maxFileSize,
     disabled = false,
+    bucketType,
     onDragEnter,
     onDragLeave,
     onDragOver,
@@ -335,13 +338,15 @@ export default function AdvancedDropZone({
                         <span className={styles.hint}>
                             Multiple files supported • Max {formatFileSize(maxFileSize)} per file
                         </span>
-                        <span className={styles.permanentHint}>
-                            <strong>
-                                {theme === ThemeType.STEAMPUNK
-                                    ? "Copper-grade storage - files preserved indefinitely"
-                                    : "Permanent storage - files never expire"}
-                            </strong>
-                        </span>
+                        {bucketType === "PREMIUM" && (
+                            <span className={styles.permanentHint}>
+                                <strong>
+                                    {theme === ThemeType.STEAMPUNK
+                                        ? "Copper-grade storage - files preserved indefinitely"
+                                        : "Permanent storage - files never expire"}
+                                </strong>
+                            </span>
+                        )}
                     </div>
 
                     {theme === ThemeType.CYBERPUNK && (

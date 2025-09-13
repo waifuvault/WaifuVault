@@ -11,6 +11,8 @@
     z-index: 1000;
     backdrop-filter: blur(10px);
     animation: fadeIn 0.3s ease-out;
+    overscroll-behavior: contain;
+    overflow: hidden;
 }
 
 .modal {
