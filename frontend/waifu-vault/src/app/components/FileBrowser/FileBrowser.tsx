@@ -149,12 +149,21 @@ export function FileBrowser({
     const previewFiles = showPagination ? sortedFiles.slice(startIndex, endIndex) : sortedFiles;
 
     useEffect(() => {
-        if (currentPage > totalPages && totalPages > 0) {
+        const pageSizeKey = getPaginationSizeKey(albumToken);
+        const savedSize = LocalStorage.getNumberDynamic(pageSizeKey, itemsPerPage);
+        setCurrentItemsPerPage(savedSize);
+
+        const pageKey = getPaginationKey(albumToken);
+        const savedPage = LocalStorage.getNumberDynamic(pageKey, 1);
+        setCurrentPage(savedPage);
+
+        const actualTotalPages = showPagination ? Math.ceil(sortedFiles.length / savedSize) : 1;
+
+        if (savedPage > actualTotalPages && actualTotalPages > 0) {
             setCurrentPage(1);
-            const pageKey = getPaginationKey(albumToken);
             LocalStorage.setNumberDynamic(pageKey, 1);
         }
-    }, [totalPages, currentPage, albumToken]);
+    }, [currentPage, albumToken, itemsPerPage, showPagination, sortedFiles]);
 
     const handlePageChange = useCallback(
         (page: number) => {
@@ -179,15 +188,6 @@ export function FileBrowser({
     const previousFilesLength = useRef(files.length);
     const previousSearchQuery = useRef(searchQuery);
     const previousAlbumToken = useRef(albumToken);
-
-    useEffect(() => {
-        const pageSizeKey = getPaginationSizeKey(albumToken);
-        const savedSize = LocalStorage.getNumberDynamic(pageSizeKey, itemsPerPage);
-        setCurrentItemsPerPage(savedSize);
-        const pageKey = getPaginationKey(albumToken);
-        const savedPage = LocalStorage.getNumberDynamic(pageKey, 1);
-        setCurrentPage(savedPage);
-    }, [albumToken, itemsPerPage]);
 
     useEffect(() => {
         if (isInitialMount.current) {
