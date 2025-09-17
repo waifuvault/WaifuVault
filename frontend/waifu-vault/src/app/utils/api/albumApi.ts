@@ -1,5 +1,26 @@
 import type { AlbumInfo, UrlFileMixin } from "@/types/AdminTypes";
 
+export interface WaifuPublicFileMetadata {
+    thumbnail: string | null;
+    mediaType: string | null;
+    isVideo: boolean;
+}
+
+export interface WaifuPublicFile {
+    id: number;
+    url: string;
+    name: string;
+    size: number;
+    protected: boolean;
+    metadata: WaifuPublicFileMetadata;
+}
+
+export interface PublicAlbumData {
+    name: string;
+    files: WaifuPublicFile[];
+    downloadTooBig?: boolean;
+}
+
 export async function createAlbum(backendRestBaseUrl: string, bucketToken: string, name: string): Promise<AlbumInfo> {
     const response = await fetch(`${backendRestBaseUrl}/album/${bucketToken}`, {
         method: "POST",
@@ -157,4 +178,24 @@ export async function unshareAlbum(backendRestBaseUrl: string, albumToken: strin
 
     const result = await response.json();
     return result.success;
+}
+
+export async function getPublicAlbum(backendRestBaseUrl: string, publicToken: string): Promise<PublicAlbumData> {
+    const response = await fetch(`${backendRestBaseUrl}/album/public/${publicToken}`);
+
+    if (!response.ok) {
+        throw new Error("Album not found or private");
+    }
+
+    return response.json();
+}
+
+export async function downloadPublicAlbum(backendRestBaseUrl: string, publicToken: string): Promise<Blob> {
+    const response = await fetch(`${backendRestBaseUrl}/album/${publicToken}/download`);
+
+    if (!response.ok) {
+        throw new Error("Failed to download album");
+    }
+
+    return response.blob();
 }

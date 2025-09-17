@@ -11,6 +11,7 @@ import { Tooltip } from "../Tooltip";
 import { Input } from "../Input";
 import styles from "./FileBrowser.module.scss";
 import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
+import type { WaifuPublicFile } from "@/app/utils/api/albumApi";
 import { getPaginationKey, getPaginationSizeKey, LocalStorage } from "@/constants/localStorageKeys";
 
 type ViewMode = "grid" | "list" | "detailed";
@@ -18,7 +19,7 @@ type SortField = "name" | "date" | "size" | "type";
 type SortOrder = "asc" | "desc";
 
 interface FileBrowserProps {
-    files: AdminFileData[] | UrlFileMixin[];
+    files: AdminFileData[] | UrlFileMixin[] | WaifuPublicFile[];
     albums?: { token: string; name: string }[];
     onFilesSelected?: (fileIds: number[]) => void;
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
@@ -91,15 +92,43 @@ export function FileBrowser({
 
     const fileListRef = useRef<HTMLDivElement>(null);
 
+    const getFileName = useCallback((file: AdminFileData | UrlFileMixin | WaifuPublicFile): string => {
+        if ("originalFileName" in file) {
+            return file.originalFileName;
+        }
+        return file.name;
+    }, []);
+
+    const getFileSize = useCallback((file: AdminFileData | UrlFileMixin | WaifuPublicFile): number => {
+        if ("fileSize" in file) {
+            return file.fileSize;
+        }
+        return file.size;
+    }, []);
+
+    const getFileCreatedAt = useCallback((file: AdminFileData | UrlFileMixin | WaifuPublicFile): Date | string => {
+        if ("createdAt" in file) {
+            return file.createdAt;
+        }
+        return new Date(); // WaifuPublicFile doesn't have createdAt, use current date as fallback
+    }, []);
+
+    const getFileExtension = useCallback((file: AdminFileData | UrlFileMixin | WaifuPublicFile): string => {
+        if ("fileExtension" in file) {
+            return file.fileExtension || "";
+        }
+        // Extract extension from filename
+        const fileName = "originalFileName" in file ? file.originalFileName : (file as WaifuPublicFile).name;
+        return (fileName as string).split(".").pop() || "";
+    }, []);
+
     const filteredFiles = useMemo(() => {
         return files.filter(file => {
             const searchLower = searchQuery.toLowerCase();
-            return (
-                file.originalFileName.toLowerCase().includes(searchLower) ??
-                file.originalFileName?.includes(searchLower)
-            );
+            const fileName = getFileName(file);
+            return fileName.toLowerCase().includes(searchLower);
         });
-    }, [files, searchQuery]);
+    }, [files, searchQuery, getFileName]);
 
     const sortedFiles = useMemo(() => {
         return [...filteredFiles].sort((a, b) => {
@@ -115,27 +144,29 @@ export function FileBrowser({
 
             switch (sortField) {
                 case "date":
-                    const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
-                    const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
-                    comparison = dateA.getTime() - dateB.getTime();
+                    const dateA = getFileCreatedAt(a);
+                    const dateB = getFileCreatedAt(b);
+                    const timeA = dateA instanceof Date ? dateA.getTime() : new Date(dateA).getTime();
+                    const timeB = dateB instanceof Date ? dateB.getTime() : new Date(dateB).getTime();
+                    comparison = timeA - timeB;
                     break;
                 case "size":
-                    comparison = (a.fileSize || 0) - (b.fileSize || 0);
+                    comparison = getFileSize(a) - getFileSize(b);
                     break;
                 case "type":
-                    const aFileExtension = a?.fileExtension?.toLowerCase() ?? "";
-                    const bFileExtension = b?.fileExtension?.toLowerCase() ?? "";
+                    const aFileExtension = getFileExtension(a).toLowerCase();
+                    const bFileExtension = getFileExtension(b).toLowerCase();
                     comparison = aFileExtension.localeCompare(bFileExtension);
                     break;
                 case "name":
                 default:
-                    comparison = a.originalFileName.localeCompare(b.originalFileName);
+                    comparison = getFileName(a).localeCompare(getFileName(b));
                     break;
             }
 
             return sortOrder === "asc" ? comparison : -comparison;
         });
-    }, [filteredFiles, sortField, sortOrder, albumToken]);
+    }, [filteredFiles, sortField, sortOrder, albumToken, getFileName, getFileSize, getFileCreatedAt, getFileExtension]);
 
     const handleSelectAll = useCallback(() => {
         const allFileIds = new Set(sortedFiles.map(f => f.id));
@@ -318,7 +349,11 @@ export function FileBrowser({
                         id: "rename",
                         label: "Rename",
                         icon: <i className="bi bi-pencil"></i>,
-                        onClick: () => handleRenameStart(file.id, file.fileName || file.originalFileName),
+                        onClick: () =>
+                            handleRenameStart(
+                                file.id,
+                                "fileName" in file ? file.fileName || getFileName(file) : getFileName(file),
+                            ),
                     });
                 }
 
@@ -384,6 +419,7 @@ export function FileBrowser({
             handleClearSelection,
             showContextMenu,
             onRemoveFromAlbum,
+            getFileName,
         ],
     );
 
@@ -400,7 +436,7 @@ export function FileBrowser({
             const draggedFileTokens = selectedFileIds
                 .map(id => {
                     const file = sortedFiles.find(f => f.id === id);
-                    return file ? getFileToken(file) : "";
+                    return file && "fileToken" in file ? getFileToken(file) : "";
                 })
                 .filter(Boolean);
 
@@ -513,7 +549,7 @@ export function FileBrowser({
     }, [onDragEnd]);
 
     const renderFileName = useCallback(
-        (file: { id: number; originalFileName: string }) => {
+        (file: AdminFileData | UrlFileMixin | WaifuPublicFile) => {
             return isRenaming === file.id ? (
                 <Input
                     type="text"
@@ -533,10 +569,10 @@ export function FileBrowser({
                     autoFocus
                 />
             ) : (
-                file.originalFileName
+                getFileName(file)
             );
         },
-        [isRenaming, renameValue, handleRenameComplete],
+        [isRenaming, renameValue, handleRenameComplete, getFileName],
     );
 
     const renderFileCheckbox = useCallback(
@@ -563,8 +599,8 @@ export function FileBrowser({
         [selectedFiles, onFilesSelected],
     );
 
-    const getFileIcon = useCallback((file: AdminFileData | UrlFileMixin) => {
-        const mediaType = file.mediaType?.toLowerCase() || "";
+    const getFileIcon = useCallback((file: AdminFileData | UrlFileMixin | WaifuPublicFile) => {
+        const mediaType = ("mediaType" in file ? file.mediaType : file.metadata?.mediaType)?.toLowerCase() || "";
 
         if (mediaType.startsWith("image/")) {
             return { icon: <i className="bi bi-image"></i>, color: "#4CAF50" };
@@ -621,7 +657,7 @@ export function FileBrowser({
     }, []);
 
     const getAlbumName = useCallback(
-        (file: UrlFileMixin | AdminFileData): string | null => {
+        (file: UrlFileMixin | AdminFileData | WaifuPublicFile): string | null => {
             if ("__album__" in file && file.__album__) {
                 return file.__album__.name;
             }
@@ -894,12 +930,14 @@ export function FileBrowser({
                                     </div>
 
                                     <div className={styles.fileInfo}>
-                                        <Tooltip content={file.originalFileName}>
+                                        <Tooltip content={getFileName(file)}>
                                             <div className={styles.fileName}>{renderFileName(file)}</div>
                                         </Tooltip>
                                         <div className={styles.fileDetails}>
-                                            <span className={styles.fileSize}>{formatFileSize(file.fileSize)}</span>
-                                            <span className={styles.fileDate}>{formatDate(file.createdAt)}</span>
+                                            <span className={styles.fileSize}>{formatFileSize(getFileSize(file))}</span>
+                                            <span className={styles.fileDate}>
+                                                {formatDate(getFileCreatedAt(file))}
+                                            </span>
                                         </div>
                                         {!albumToken && getAlbumName(file) && (
                                             <Pill
@@ -911,7 +949,7 @@ export function FileBrowser({
                                                 tooltip={true}
                                             />
                                         )}
-                                        {file.expires && (
+                                        {"expires" in file && file.expires && (
                                             <div className={styles.expiresInfo}>
                                                 Expires:{" "}
                                                 {formatDate(
@@ -992,11 +1030,15 @@ export function FileBrowser({
 
                                     {viewMode === "detailed" && (
                                         <>
-                                            <div className={styles.fileListSize}>{formatFileSize(file.fileSize)}</div>
-                                            <div className={styles.fileListType}>
-                                                {file.originalFileName.split(".").pop()?.toUpperCase() || "FILE"}
+                                            <div className={styles.fileListSize}>
+                                                {formatFileSize(getFileSize(file))}
                                             </div>
-                                            <div className={styles.fileListDate}>{formatDate(file.createdAt)}</div>
+                                            <div className={styles.fileListType}>
+                                                {getFileName(file).split(".").pop()?.toUpperCase() || "FILE"}
+                                            </div>
+                                            <div className={styles.fileListDate}>
+                                                {formatDate(getFileCreatedAt(file))}
+                                            </div>
                                         </>
                                     )}
                                 </div>

@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useEnvironment } from "./useEnvironment";
+import type { PublicAlbumData } from "@/app/utils/api/albumApi";
 import * as albumApi from "@/app/utils/api/albumApi";
 import type { AlbumInfo, UrlFileMixin } from "@/types/AdminTypes";
 
@@ -64,6 +65,20 @@ export function useAlbums() {
         [backendRestBaseUrl],
     );
 
+    const getPublicAlbum = useCallback(
+        async (publicToken: string): Promise<PublicAlbumData> => {
+            return albumApi.getPublicAlbum(backendRestBaseUrl, publicToken);
+        },
+        [backendRestBaseUrl],
+    );
+
+    const downloadPublicAlbum = useCallback(
+        async (publicToken: string): Promise<Blob> => {
+            return albumApi.downloadPublicAlbum(backendRestBaseUrl, publicToken);
+        },
+        [backendRestBaseUrl],
+    );
+
     return {
         createAlbum,
         deleteAlbum,
@@ -73,5 +88,7 @@ export function useAlbums() {
         reorderFiles,
         shareAlbum,
         unshareAlbum,
+        getPublicAlbum,
+        downloadPublicAlbum,
     };
 }

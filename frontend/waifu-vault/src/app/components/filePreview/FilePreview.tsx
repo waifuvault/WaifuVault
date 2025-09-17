@@ -5,11 +5,12 @@ import { useTheme } from "@/app/contexts/ThemeContext";
 import { useErrorHandler } from "@/app/hooks/useErrorHandler";
 import styles from "./FilePreview.module.scss";
 import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
+import type { WaifuPublicFile } from "@/app/utils/api/albumApi";
 
 const thumbnailCache = new Map<string, string>();
 
 interface FilePreviewProps {
-    file: AdminFileData | UrlFileMixin | File;
+    file: AdminFileData | UrlFileMixin | WaifuPublicFile | File;
     size?: "small" | "medium" | "large";
     lazy?: boolean;
     priority?: boolean;
@@ -96,15 +97,29 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
         ? file.name
         : "originalFileName" in file
           ? file.originalFileName
-          : (file as UrlFileMixin).parsedFilename;
-    const mediaType = isClientFile ? file.type : file.mediaType;
-    const fileToken = !isClientFile ? ("token" in file ? file.token : (file as AdminFileData).fileToken) : null;
+          : "name" in file
+            ? file.name
+            : (file as UrlFileMixin).parsedFilename;
+    const mediaType = isClientFile
+        ? file.type
+        : "mediaType" in file
+          ? file.mediaType
+          : (file as WaifuPublicFile).metadata?.mediaType;
+    const fileToken = !isClientFile
+        ? "token" in file
+            ? file.token
+            : "fileToken" in file
+              ? (file as AdminFileData).fileToken
+              : null
+        : null;
 
     const fileType = getFileType(mediaType, fileName);
     const fileUrl =
         fileToken && (fileType === "image" || fileType === "video")
             ? `${process.env.NEXT_PUBLIC_THUMBNAIL_SERVICE}/api/v1/generateThumbnail/${fileToken}?animate=true`
-            : null;
+            : !isClientFile && "metadata" in file && file.metadata?.thumbnail
+              ? file.metadata.thumbnail
+              : null;
 
     useEffect(() => {
         if (lazy && containerRef.current) {
