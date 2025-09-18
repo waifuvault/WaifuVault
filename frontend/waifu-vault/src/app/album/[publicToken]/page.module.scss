@@ -51,8 +51,12 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Error State */
@@ -141,7 +145,7 @@
     font-weight: 500;
 
     &::before {
-        content: '📁';
+        content: "📁";
         margin-right: 0.5rem;
     }
 }

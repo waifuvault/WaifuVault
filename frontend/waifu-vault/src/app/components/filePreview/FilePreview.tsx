@@ -4,21 +4,21 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTheme } from "@/app/contexts/ThemeContext";
 import { useErrorHandler } from "@/app/hooks/useErrorHandler";
 import styles from "./FilePreview.module.scss";
-import type { AdminFileData, UrlFileMixin } from "@/types/AdminTypes";
-import type { WaifuPublicFile } from "@/app/utils/api/albumApi";
+import { FileWrapper, type WrappableFile } from "@/app/types/FileWrapper";
 
 const thumbnailCache = new Map<string, string>();
 
 interface FilePreviewProps {
-    file: AdminFileData | UrlFileMixin | WaifuPublicFile | File;
+    file: WrappableFile | FileWrapper;
     size?: "small" | "medium" | "large";
     lazy?: boolean;
     priority?: boolean;
+    publicToken?: string;
 }
 
 type FilePreviewType = "audio" | "image" | "pdf" | "text" | "unknown" | "video" | "archive" | "document";
 
-export function FilePreview({ file, size = "medium", lazy = false, priority = false }: FilePreviewProps) {
+export function FilePreview({ file, size = "medium", lazy = false, priority = false, publicToken }: FilePreviewProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [isHovered, setIsHovered] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
@@ -28,6 +28,8 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
     const containerRef = useRef<HTMLDivElement>(null);
     const { getThemeClass } = useTheme();
     const { handleError } = useErrorHandler();
+
+    const wrappedFile = file instanceof FileWrapper ? file : new FileWrapper(file);
 
     const getFileType = useCallback((mediaType: string | null, fileName: string): FilePreviewType => {
         if (!mediaType) {
@@ -92,34 +94,13 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
         return "unknown";
     }, []);
 
-    const isClientFile = file instanceof File;
-    const fileName = isClientFile
-        ? file.name
-        : "originalFileName" in file
-          ? file.originalFileName
-          : "name" in file
-            ? file.name
-            : (file as UrlFileMixin).parsedFilename;
-    const mediaType = isClientFile
-        ? file.type
-        : "mediaType" in file
-          ? file.mediaType
-          : (file as WaifuPublicFile).metadata?.mediaType;
-    const fileToken = !isClientFile
-        ? "token" in file
-            ? file.token
-            : "fileToken" in file
-              ? (file as AdminFileData).fileToken
-              : null
-        : null;
+    const isClientFile = wrappedFile.isClientFile;
+    const fileName = wrappedFile.fileName;
+    const mediaType = wrappedFile.mediaType;
+    const fileToken = wrappedFile.fileToken;
 
     const fileType = getFileType(mediaType, fileName);
-    const fileUrl =
-        fileToken && (fileType === "image" || fileType === "video")
-            ? `${process.env.NEXT_PUBLIC_THUMBNAIL_SERVICE}/api/v1/generateThumbnail/${fileToken}?animate=true`
-            : !isClientFile && "metadata" in file && file.metadata?.thumbnail
-              ? file.metadata.thumbnail
-              : null;
+    const fileUrl = wrappedFile.getFileUrl(fileType, publicToken);
 
     useEffect(() => {
         if (lazy && containerRef.current) {
@@ -150,7 +131,8 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
             try {
                 if (fileType === "image") {
                     if (isClientFile) {
-                        const cacheKey = `${(file as File).name}-${(file as File).size}-${(file as File).lastModified}`;
+                        const clientFile = wrappedFile.raw as File;
+                        const cacheKey = `${clientFile.name}-${clientFile.size}-${clientFile.lastModified}`;
                         if (thumbnailCache.has(cacheKey)) {
                             if (mounted) {
                                 setCachedImageUrl(thumbnailCache.get(cacheKey)!);
@@ -174,9 +156,9 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
                                 setIsLoading(false);
                             }
                         };
-                        reader.readAsDataURL(file as File);
+                        reader.readAsDataURL(clientFile);
                     } else {
-                        const cacheKey = fileToken!;
+                        const cacheKey = fileToken || `${wrappedFile.id}-${publicToken}`;
                         if (thumbnailCache.has(cacheKey)) {
                             if (mounted) {
                                 setCachedImageUrl(thumbnailCache.get(cacheKey)!);
@@ -220,7 +202,7 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
             mounted = false;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [file, isClientFile, fileUrl, fileType, mediaType, fileName, fileToken, isIntersecting, lazy]);
+    }, [wrappedFile, isClientFile, fileUrl, fileType, mediaType, fileName, fileToken, isIntersecting, lazy]);
 
     const handleMouseEnter = () => {
         setIsHovered(true);

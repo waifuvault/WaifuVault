@@ -12,6 +12,7 @@ import { AlbumSidebar } from "@/app/components/AlbumSidebar/AlbumSidebar";
 import { FileUploadModal } from "@/app/components/FileUploadModal/FileUploadModal";
 import { useToast } from "@/app/components/Toast";
 import { UploadFile } from "@/app/types/upload";
+import { FileWrapper } from "@/app/types/FileWrapper";
 import Dialog from "@/app/components/Dialog/Dialog";
 import Button from "@/app/components/Button/Button";
 import { useTheme } from "@/app/contexts/ThemeContext";
@@ -425,7 +426,7 @@ function BucketAdminContent() {
                                 />
                                 <div className={styles.fileBrowserWrapper}>
                                     <FileBrowser
-                                        files={filteredFiles}
+                                        files={FileWrapper.wrapFiles(filteredFiles)}
                                         albums={albumsWithCounts.map(a => ({ token: a.token, name: a.name }))}
                                         onDeleteFiles={handleDeleteFiles}
                                         onReorderFiles={handleReorderFiles}
