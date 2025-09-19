@@ -6,6 +6,7 @@ export const ALBUM_SORT_BY_KEY = "waifuvault-album-sort-by";
 export const ALBUM_SORT_DIR_KEY = "waifuvault-album-sort-dir";
 export const PAGINATION_PAGE_PREFIX = "waifuvault-pagination-page";
 export const PAGINATION_SIZE_PREFIX = "waifuvault-pagination-size";
+export const PINNED_ALBUMS_KEY = "waifuvault-pinned-albums";
 
 type LocalStorageKey =
     | typeof THEME_KEY
@@ -15,7 +16,8 @@ type LocalStorageKey =
     | typeof ALBUM_SORT_BY_KEY
     | typeof ALBUM_SORT_DIR_KEY
     | typeof PAGINATION_PAGE_PREFIX
-    | typeof PAGINATION_SIZE_PREFIX;
+    | typeof PAGINATION_SIZE_PREFIX
+    | typeof PINNED_ALBUMS_KEY;
 
 export const LocalStorage = {
     getBoolean: (key: LocalStorageKey, defaultValue: boolean = false): boolean => {

@@ -13,6 +13,7 @@ import {
     ALBUM_SORT_BY_KEY,
     ALBUM_SORT_DIR_KEY,
     LocalStorage,
+    PINNED_ALBUMS_KEY,
 } from "@/constants/localStorageKeys";
 import type { AlbumInfo } from "@/types/AdminTypes";
 import { useLoading } from "@/app/contexts/LoadingContext";
@@ -56,10 +57,12 @@ export function AlbumSidebar({
         () => LocalStorage.getString(ALBUM_SORT_DIR_KEY, "asc") as "asc" | "desc",
     );
     const [search, setSearch] = useState("");
+    const [pins, setPins] = useState<string[]>([]);
 
     useEffect(() => LocalStorage.setBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, isCollapsed), [isCollapsed]);
     useEffect(() => LocalStorage.setString(ALBUM_SORT_BY_KEY, sortBy), [sortBy]);
     useEffect(() => LocalStorage.setString(ALBUM_SORT_DIR_KEY, sortDir), [sortDir]);
+    useEffect(() => setPins(JSON.parse(LocalStorage.getString(PINNED_ALBUMS_KEY, "[]"))), [setPins]);
 
     const albumSort = useMemo(() => {
         return (a: AlbumInfo, b: AlbumInfo) => {
@@ -73,6 +76,14 @@ export function AlbumSidebar({
             return sortDir === "asc" ? ad - bd : bd - ad;
         };
     }, [sortBy, sortDir]);
+
+    const pinSort = useMemo(() => {
+        return (a: AlbumInfo, b: AlbumInfo) => {
+            const amod = pins.includes(a.token) ? 1 : 0;
+            const bmod = pins.includes(b.token) ? 1 : 0;
+            return bmod - amod;
+        };
+    }, [pins]);
 
     const handleCreateSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -131,6 +142,29 @@ export function AlbumSidebar({
         setSortBy(prev => (prev === "name" ? "date" : "name"));
     }, []);
 
+    const handlePinClick = useCallback(
+        async (albumToken: string) => {
+            const newPins = [...pins];
+            newPins.push(albumToken);
+            setPins(newPins);
+            LocalStorage.setString(PINNED_ALBUMS_KEY, JSON.stringify(newPins));
+        },
+        [pins, setPins],
+    );
+
+    const handleUnpinClick = useCallback(
+        async (albumToken: string) => {
+            const newPins = [...pins];
+            const removeIdx = newPins.indexOf(albumToken);
+            if (removeIdx !== -1) {
+                newPins.splice(removeIdx, 1);
+            }
+            setPins(newPins);
+            LocalStorage.setString(PINNED_ALBUMS_KEY, JSON.stringify(newPins));
+        },
+        [pins, setPins],
+    );
+
     const handleAlbumContextMenu = useCallback(
         (event: MouseEvent, album: AlbumInfo) => {
             event.preventDefault();
@@ -174,6 +208,22 @@ export function AlbumSidebar({
                 });
             }
 
+            if (pins.includes(album.token)) {
+                contextMenuItems.push({
+                    id: "unpin",
+                    label: "Unpin album",
+                    icon: <i className="bi bi-pin-angle-fill"></i>,
+                    onClick: () => handleUnpinClick(album.token),
+                });
+            } else {
+                contextMenuItems.push({
+                    id: "pin",
+                    label: "Pin album",
+                    icon: <i className="bi bi-pin-angle"></i>,
+                    onClick: () => handlePinClick(album.token),
+                });
+            }
+
             contextMenuItems.push({
                 id: "delete",
                 label: "Delete album",
@@ -188,12 +238,15 @@ export function AlbumSidebar({
         [
             sortBy,
             sortDir,
+            pins,
             handleToggleSortType,
             handleToggleDirection,
             handleCopyUrlClick,
             handleUnshareClick,
             handleShareClick,
             handleDeleteClick,
+            handlePinClick,
+            handleUnpinClick,
             showContextMenu,
         ],
     );
@@ -296,6 +349,7 @@ export function AlbumSidebar({
 
                         {albums
                             .sort(albumSort)
+                            .sort(pinSort)
                             .filter(a => a.name.toLowerCase().includes(search))
                             .map(album => (
                                 <div
@@ -315,6 +369,7 @@ export function AlbumSidebar({
                                     >
                                         <i className="bi bi-collection"></i>
                                         <Tooltip content={album.name} position="right">
+                                            {pins.includes(album.token) ? <i className="bi bi-pin-angle-fill"></i> : ""}
                                             <span className={styles.albumName}>{album.name}</span>
                                         </Tooltip>
                                         <span className={styles.count}>{album.fileCount || 0}</span>
