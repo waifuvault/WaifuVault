@@ -1,16 +1,10 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Button from "../Button/Button";
-import Pill from "../Pill/Pill";
-import { FilePreview } from "@/app/components";
-import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
-import { useContextMenu } from "../../hooks/useContextMenu";
-import { useErrorHandler } from "../../hooks/useErrorHandler";
-import { Tooltip } from "../Tooltip";
-import { Input } from "../Input";
+import { Button, ContextMenu, type ContextMenuItem, FilePreview, Input, Pill, Tooltip } from "@/app/components";
+import { useContextMenu, useErrorHandler } from "@/app/hooks";
 import styles from "./FileBrowser.module.scss";
-import { FileWrapper } from "@/app/types/FileWrapper";
+import { FileWrapper } from "@/app/types";
 import { getPaginationKey, getPaginationSizeKey, LocalStorage } from "@/constants/localStorageKeys";
 
 type ViewMode = "grid" | "list" | "detailed";

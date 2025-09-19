@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from "react";
 import { createPortal } from "react-dom";
 import styles from "./Dialog.module.scss";
-import { useTheme } from "@/app/contexts/ThemeContext";
+import { useTheme } from "@/app/contexts";
 
 interface DialogProps {
     isOpen: boolean;

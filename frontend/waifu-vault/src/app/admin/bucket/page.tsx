@@ -1,25 +1,26 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useBucketAuth } from "@/app/hooks/useBucketAuth";
-import { useEnvironment } from "@/app/hooks/useEnvironment";
-import { useLoading } from "@/app/contexts/LoadingContext";
-import { useAlbums } from "@/app/hooks/useAlbums";
-import { useBucket } from "@/app/hooks/useBucket";
-import { useErrorHandler } from "@/app/hooks/useErrorHandler";
-import { Card, CardBody, CardHeader, FileBrowser, Footer, Header, ParticleBackground } from "@/app/components";
-import { AlbumSidebar } from "@/app/components/AlbumSidebar/AlbumSidebar";
-import { FileUploadModal } from "@/app/components/FileUploadModal/FileUploadModal";
+import { useAlbums, useBucket, useBucketAuth, useEnvironment, useErrorHandler } from "@/app/hooks";
+import { useLoading, useTheme } from "@/app/contexts";
+import {
+    AlbumSidebar,
+    Button,
+    Card,
+    CardBody,
+    CardHeader,
+    Dialog,
+    FileBrowser,
+    FileUploadModal,
+    Footer,
+    Header,
+    ParticleBackground,
+} from "@/app/components";
 import { useToast } from "@/app/components/Toast";
-import { UploadFile } from "@/app/types/upload";
-import { FileWrapper } from "@/app/types/FileWrapper";
-import Dialog from "@/app/components/Dialog/Dialog";
-import Button from "@/app/components/Button/Button";
-import { useTheme } from "@/app/contexts/ThemeContext";
+import type { AdminBucketDto, BucketType, UrlFileMixin } from "@/app/types";
+import { FileWrapper, type UploadFile } from "@/app/types";
 import { LocalStorage, SELECTED_ALBUM_KEY } from "@/constants/localStorageKeys";
 import styles from "./page.module.scss";
-import type { AdminBucketDto, UrlFileMixin } from "@/types/AdminTypes";
-import type { BucketType } from "@/app/utils/api/bucketApi";
 
 function BucketAdminContent() {
     const { isAuthenticated, logout } = useBucketAuth();

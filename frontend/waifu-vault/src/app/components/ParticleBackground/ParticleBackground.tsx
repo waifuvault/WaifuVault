@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./ParticleBackground.module.scss";
 import { ThemeType } from "@/app/constants/theme";
-import { useTheme } from "@/app/contexts/ThemeContext";
+import { useTheme } from "@/app/contexts";
 
 interface Particle {
     x: number;

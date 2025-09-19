@@ -2,12 +2,8 @@
 
 import React, { DragEvent, FormEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./AlbumSidebar.module.scss";
-import Button from "../Button/Button";
-import { Tooltip } from "../Tooltip";
-import { ContextMenu, type ContextMenuItem } from "../ContextMenu";
-import { useContextMenu } from "../../hooks/useContextMenu";
-import { useErrorHandler } from "../../hooks/useErrorHandler";
-import { Input } from "../Input";
+import { Button, ContextMenu, type ContextMenuItem, Input, Tooltip } from "@/app/components";
+import { useContextMenu, useErrorHandler } from "@/app/hooks";
 import {
     ALBUM_SIDEBAR_COLLAPSED_KEY,
     ALBUM_SORT_BY_KEY,
@@ -15,8 +11,8 @@ import {
     LocalStorage,
     PINNED_ALBUMS_KEY,
 } from "@/constants/localStorageKeys";
-import type { AlbumInfo } from "@/types/AdminTypes";
-import { useLoading } from "@/app/contexts/LoadingContext";
+import type { AlbumInfo } from "@/app/types";
+import { useLoading } from "@/app/contexts";
 
 interface AlbumSidebarProps {
     albums: AlbumInfo[];
@@ -62,7 +58,7 @@ export function AlbumSidebar({
     useEffect(() => LocalStorage.setBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, isCollapsed), [isCollapsed]);
     useEffect(() => LocalStorage.setString(ALBUM_SORT_BY_KEY, sortBy), [sortBy]);
     useEffect(() => LocalStorage.setString(ALBUM_SORT_DIR_KEY, sortDir), [sortDir]);
-    useEffect(() => setPins(JSON.parse(LocalStorage.getString(PINNED_ALBUMS_KEY, "[]"))), [setPins]);
+    useEffect(() => setPins(LocalStorage.getJson<string[]>(PINNED_ALBUMS_KEY, [])), []);
 
     const albumSort = useMemo(() => {
         return (a: AlbumInfo, b: AlbumInfo) => {
@@ -144,25 +140,31 @@ export function AlbumSidebar({
 
     const handlePinClick = useCallback(
         async (albumToken: string) => {
-            const newPins = [...pins];
-            newPins.push(albumToken);
-            setPins(newPins);
-            LocalStorage.setString(PINNED_ALBUMS_KEY, JSON.stringify(newPins));
+            if (pins.includes(albumToken)) {
+                return;
+            }
+            try {
+                const newPins = [...pins, albumToken];
+                setPins(newPins);
+                LocalStorage.setJson(PINNED_ALBUMS_KEY, newPins);
+            } catch (error) {
+                handleError(error, { defaultMessage: "Failed to pin album" });
+            }
         },
-        [pins, setPins],
+        [pins, setPins, handleError],
     );
 
     const handleUnpinClick = useCallback(
         async (albumToken: string) => {
-            const newPins = [...pins];
-            const removeIdx = newPins.indexOf(albumToken);
-            if (removeIdx !== -1) {
-                newPins.splice(removeIdx, 1);
+            try {
+                const newPins = pins.filter(pin => pin !== albumToken);
+                setPins(newPins);
+                LocalStorage.setJson(PINNED_ALBUMS_KEY, newPins);
+            } catch (error) {
+                handleError(error, { defaultMessage: "Failed to unpin album" });
             }
-            setPins(newPins);
-            LocalStorage.setString(PINNED_ALBUMS_KEY, JSON.stringify(newPins));
         },
-        [pins, setPins],
+        [pins, setPins, handleError],
     );
 
     const handleAlbumContextMenu = useCallback(

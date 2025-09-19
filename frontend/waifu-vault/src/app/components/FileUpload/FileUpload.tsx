@@ -1,17 +1,10 @@
 "use client";
 
 import React, { DragEvent, useEffect, useState } from "react";
-import { FilePreview } from "@/app/components";
-import { formatFileSize, validateExpires } from "../../utils/upload";
-import { useRestrictions } from "../../hooks/useRestrictions";
-import { useEnvironment } from "../../hooks/useEnvironment";
-import { useErrorHandler } from "../../hooks/useErrorHandler";
-import * as uploadApi from "../../utils/api/uploadApi";
-import AdvancedDropZone from "../AdvancedDropZone/AdvancedDropZone";
-import Button from "../Button/Button";
-import { Input } from "../Input/Input";
-import { UploadFile } from "../../types/upload";
-import { BucketType } from "../../utils/api/bucketApi";
+import { AdvancedDropZone, Button, FilePreview, Input } from "@/app/components";
+import { formatFileSize, uploadApi, validateExpires } from "@/app/utils";
+import { useEnvironment, useErrorHandler, useRestrictions } from "@/app/hooks";
+import { type BucketType, type UploadFile } from "@/app/types";
 import styles from "./FileUpload.module.scss";
 
 interface FileUploadProps {

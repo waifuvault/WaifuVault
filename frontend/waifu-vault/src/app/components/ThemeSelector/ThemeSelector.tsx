@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./ThemeSelector.module.scss";
-import { useTheme } from "@/app/contexts/ThemeContext";
+import { useTheme } from "@/app/contexts";
 import { ThemeType } from "@/app/constants/theme";
 import { LocalStorage, THEME_KEY } from "@/constants/localStorageKeys";
 

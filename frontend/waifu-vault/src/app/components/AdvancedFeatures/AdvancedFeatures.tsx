@@ -2,9 +2,8 @@
 
 import React, { useState } from "react";
 import styles from "./AdvancedFeatures.module.scss";
-import Dialog from "@/app/components/Dialog/Dialog";
-import Button from "@/app/components/Button/Button";
-import { useEnvironment } from "@/app/hooks/useEnvironment";
+import { Button, Dialog } from "@/app/components";
+import { useEnvironment } from "@/app/hooks";
 
 interface FeatureData {
     icon: string;

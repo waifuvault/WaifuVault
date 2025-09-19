@@ -1,10 +1,10 @@
 import React, { DragEvent, useRef, useState } from "react";
 import styles from "./AdvancedDropZone.module.css";
-import { formatFileSize } from "../../utils/upload";
-import { FilePreview } from "../filePreview/FilePreview";
+import { formatFileSize } from "@/app/utils";
+import { FilePreview } from "@/app/components";
 import { isTerminal, ThemeType } from "@/app/constants/theme";
-import { useTheme } from "@/app/contexts/ThemeContext";
-import { BucketType } from "@/app/utils/api/bucketApi";
+import { useTheme } from "@/app/contexts";
+import { type BucketType } from "@/app/types";
 
 let rippleCounter = 0;
 let fileCounter = 0;

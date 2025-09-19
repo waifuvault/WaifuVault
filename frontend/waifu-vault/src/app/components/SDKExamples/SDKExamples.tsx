@@ -2,9 +2,9 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./SDKExamples.module.scss";
-import Button from "@/app/components/Button/Button";
-import { useEnvironment } from "@/app/hooks/useEnvironment";
-import { useTheme } from "@/app/contexts/ThemeContext";
+import { Button } from "@/app/components";
+import { useEnvironment } from "@/app/hooks";
+import { useTheme } from "@/app/contexts";
 import hljs from "highlight.js/lib/core";
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";

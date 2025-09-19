@@ -2,13 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useErrorHandler } from "../../hooks/useErrorHandler";
-import { useAlbums } from "../../hooks/useAlbums";
-import { FileBrowser, Footer, Header, ParticleBackground } from "@/app/components";
-import Button from "../../components/Button/Button";
-import Card, { CardBody, CardHeader } from "../../components/Card/Card";
-import type { PublicAlbumData } from "../../utils/api/albumApi";
-import { FileWrapper } from "../../types/FileWrapper";
+import { useAlbums, useErrorHandler } from "@/app/hooks";
+import {
+    Button,
+    Card,
+    CardBody,
+    CardHeader,
+    FileBrowser,
+    Footer,
+    Header,
+    ParticleBackground,
+    Pill,
+} from "@/app/components";
+import type { PublicAlbumData } from "@/app/utils";
+import { FileWrapper } from "@/app/types";
 import styles from "./page.module.scss";
 
 export default function PublicAlbumPage() {
@@ -157,7 +164,15 @@ export default function PublicAlbumPage() {
                     <Card className={styles.albumCard}>
                         <CardHeader>
                             <div className={styles.albumHeader}>
-                                <h1 className={styles.albumTitle}>{albumData.name}</h1>
+                                <div className={styles.albumTitleSection}>
+                                    <h1 className={styles.albumTitle}>{albumData.name}</h1>
+                                    <Pill
+                                        text={`${albumData.files.length} file${albumData.files.length !== 1 ? "s" : ""}`}
+                                        variant="info"
+                                        size="small"
+                                        icon={<i className="bi bi-files"></i>}
+                                    />
+                                </div>
                                 <div className={styles.albumControls}>
                                     {selectedFiles.length > 0 && (
                                         <Button
@@ -197,11 +212,6 @@ export default function PublicAlbumPage() {
                                         )}
                                     </Button>
                                 </div>
-                            </div>
-                            <div className={styles.albumInfo}>
-                                <span className={styles.fileCount}>
-                                    {albumData.files.length} file{albumData.files.length !== 1 ? "s" : ""}
-                                </span>
                             </div>
                         </CardHeader>
                         <CardBody>

@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import styles from "./Restrictions.module.scss";
-import { useRestrictions } from "@/app/hooks/useRestrictions";
-import { getTimeLeftBySize, timeToHuman } from "@/app/utils/retention";
+import { useRestrictions } from "@/app/hooks";
+import { getTimeLeftBySize, timeToHuman } from "@/app/utils";
 
 export default function Restrictions() {
     const { maxFileSizeFormatted, restrictions, isLoading, error } = useRestrictions();

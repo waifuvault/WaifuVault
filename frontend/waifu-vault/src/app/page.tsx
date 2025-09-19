@@ -14,8 +14,7 @@ import {
     ParticleBackground,
     SDKExamples,
 } from "@/app/components";
-import { useStats } from "@/app/hooks/useStats";
-import { useRestrictions } from "@/app/hooks/useRestrictions";
+import { useRestrictions, useStats } from "@/app/hooks";
 
 type FileCounterMode = "dynamic" | "static" | "disabled";
 

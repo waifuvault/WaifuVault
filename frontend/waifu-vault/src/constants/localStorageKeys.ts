@@ -84,6 +84,21 @@ export const LocalStorage = {
             localStorage.setItem(key, value.toString());
         } catch {}
     },
+
+    getJson: <T>(key: LocalStorageKey, defaultValue: T): T => {
+        try {
+            const value = localStorage.getItem(key);
+            return value !== null ? JSON.parse(value) : defaultValue;
+        } catch {
+            return defaultValue;
+        }
+    },
+
+    setJson: <T>(key: LocalStorageKey, value: T): void => {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch {}
+    },
 };
 
 export const getPaginationKey = (albumToken: string | null | undefined): string => {

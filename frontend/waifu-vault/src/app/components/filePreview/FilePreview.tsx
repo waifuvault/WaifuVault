@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useTheme } from "@/app/contexts/ThemeContext";
-import { useErrorHandler } from "@/app/hooks/useErrorHandler";
+import { useTheme } from "@/app/contexts";
+import { useErrorHandler } from "@/app/hooks";
 import styles from "./FilePreview.module.scss";
-import { FileWrapper, type WrappableFile } from "@/app/types/FileWrapper";
+import { FileWrapper, type WrappableFile } from "@/app/types";
 
 const thumbnailCache = new Map<string, string>();
 

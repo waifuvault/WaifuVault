@@ -2,7 +2,7 @@
 
 import React, { ComponentPropsWithoutRef } from "react";
 import styles from "./Button.module.scss";
-import { useTheme } from "@/app/contexts/ThemeContext";
+import { useTheme } from "@/app/contexts";
 import Link from "next/link";
 
 interface CommonButtonProps {

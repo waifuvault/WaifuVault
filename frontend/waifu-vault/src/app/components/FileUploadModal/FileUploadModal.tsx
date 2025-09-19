@@ -1,12 +1,10 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { FileUpload } from "../FileUpload/FileUpload";
-import { useFileUpload } from "../../hooks/useFileUpload";
-import { useTheme } from "../../contexts/ThemeContext";
-import { useRestrictions } from "../../hooks/useRestrictions";
-import { UploadFile } from "../../types/upload";
-import { BucketType } from "../../utils/api/bucketApi";
+import { FileUpload } from "@/app/components";
+import { useFileUpload, useRestrictions } from "@/app/hooks";
+import { useTheme } from "@/app/contexts";
+import { type BucketType, type UploadFile } from "@/app/types";
 import styles from "./FileUploadModal.module.scss";
 
 interface FileUploadModalProps {

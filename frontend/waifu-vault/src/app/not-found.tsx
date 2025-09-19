@@ -3,7 +3,7 @@
 import React from "react";
 import styles from "./not-found.module.scss";
 import { Button, ParticleBackground } from "@/app/components";
-import { useEnvironment } from "@/app/hooks/useEnvironment";
+import { useEnvironment } from "@/app/hooks";
 import Image from "next/image";
 
 export default function NotFound() {
