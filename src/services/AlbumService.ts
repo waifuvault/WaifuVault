@@ -19,8 +19,8 @@ import { ThumbnailService } from "./microServices/thumbnails/thumbnailService.js
 import BucketType from "../model/constants/BucketType.js";
 import { SettingsService } from "./SettingsService.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
-import { PublicAlbumMetadata } from "../utils/typeings";
-import { PublicAlbumDto } from "../model/dto/PublicAlbumDto";
+import { PublicAlbumMetadata } from "../utils/typeings.js";
+import { PublicAlbumDto } from "../model/dto/PublicAlbumDto.js";
 
 @Service()
 export class AlbumService implements AfterInit {

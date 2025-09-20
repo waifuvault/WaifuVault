@@ -6,7 +6,7 @@ import { AlbumDto } from "../../../../model/dto/AlbumDto.js";
 import type { PlatformContext } from "@tsed/platform-http";
 import { InternalServerError } from "@tsed/exceptions";
 import { PublicAlbumDto } from "../../../../model/dto/PublicAlbumDto.js";
-import { AlbumService } from "../../../../services/AlbumService";
+import { AlbumService } from "../../../../services/AlbumService.js";
 
 @Injectable({
     scope: ProviderScope.SINGLETON,
