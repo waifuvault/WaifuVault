@@ -656,6 +656,14 @@
         cursor: grabbing;
     }
 
+    &.noReorder {
+        cursor: pointer;
+
+        &:active {
+            cursor: pointer;
+        }
+    }
+
     &.dragging {
         opacity: 0.5;
         transform: rotate(2deg);
@@ -721,6 +729,14 @@
 
     &:active {
         cursor: grabbing;
+    }
+
+    &.noReorder {
+        cursor: pointer;
+
+        &:active {
+            cursor: pointer;
+        }
     }
 
     &.dragging {

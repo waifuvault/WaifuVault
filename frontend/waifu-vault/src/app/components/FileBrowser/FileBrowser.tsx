@@ -38,7 +38,7 @@ interface FileBrowserProps {
     allowRemoveFromAlbum?: boolean;
     albumToken?: string;
     publicToken?: string;
-    mode: "bucket" | "admin";
+    mode: "bucket" | "admin" | "public";
     itemsPerPage?: number;
     showPagination?: boolean;
 }
@@ -840,7 +840,7 @@ export function FileBrowser({
                                     key={file.id}
                                     className={`${styles.fileItem} ${selectedFiles.has(file.id) ? styles.selected : ""} ${
                                         draggedFiles.includes(file.id) ? styles.dragging : ""
-                                    } ${draggedOverFile === file.id ? styles.dragOver : ""}`}
+                                    } ${draggedOverFile === file.id ? styles.dragOver : ""} ${mode === "public" ? styles.noReorder : ""}`}
                                     onClick={e => handleFileSelect(file.id, e)}
                                     onContextMenu={e => handleContextMenu(e, file.id)}
                                     draggable={true}
@@ -931,7 +931,7 @@ export function FileBrowser({
                                     key={file.id}
                                     className={`${styles.fileListItem} ${selectedFiles.has(file.id) ? styles.selected : ""} ${
                                         draggedFiles.includes(file.id) ? styles.dragging : ""
-                                    } ${draggedOverFile === file.id ? styles.dragOver : ""}`}
+                                    } ${draggedOverFile === file.id ? styles.dragOver : ""} ${mode === "public" ? styles.noReorder : ""}`}
                                     onClick={e => handleFileSelect(file.id, e)}
                                     onContextMenu={e => handleContextMenu(e, file.id)}
                                     draggable={true}

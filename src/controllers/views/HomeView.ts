@@ -7,11 +7,9 @@ import { CaptchaManager } from "../../manager/CaptchaManager.js";
 import type { Request, Response } from "express";
 import { BucketSessionService } from "../../services/BucketSessionService.js";
 import { AlbumService } from "../../services/AlbumService.js";
-import { PublicAlbumDto } from "../../model/dto/PublicAlbumDto.js";
 import { NotFound } from "@tsed/exceptions";
 import { SettingsService } from "../../services/SettingsService.js";
 import { BaseViewController } from "./BaseViewController.js";
-import { GlobalEnv } from "../../model/constants/GlobalEnv.js";
 
 @Controller("/")
 @Hidden()
@@ -62,16 +60,8 @@ export class HomeView extends BaseViewController {
         if (!albumExists) {
             throw new NotFound("Album does not exist");
         }
-        const album = await this.albumService.getAlbum(publicToken);
-        const dto = PublicAlbumDto.fromModel(album);
-        const thumbs = dto.files.filter(f => f.metadata.thumbnail).map(x => x.metadata.thumbnail ?? "");
-        const chosenThumb = thumbs.length > 0 ? Math.floor(Math.random() * thumbs.length) : 0;
-        const albumThumb =
-            thumbs.length > 0
-                ? thumbs[chosenThumb]
-                : `${this.settingsService.getSetting(GlobalEnv.BASE_URL) ?? ""}/assets/custom/images/albumNoImage.png`;
-        const albumName = album.name;
-        const albumTooBigToDownload = this.albumService.isAlbumTooBigToDownload(album);
+        const { albumThumb, albumTooBigToDownload, albumName } =
+            await this.albumService.getPublicAlbumMetadata(publicToken);
         return super.mergeWithEnvs({
             publicToken,
             albumThumb,

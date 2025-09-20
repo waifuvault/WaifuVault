@@ -18,7 +18,9 @@ export interface WaifuPublicFile {
 export interface PublicAlbumData {
     name: string;
     files: WaifuPublicFile[];
-    downloadTooBig?: boolean;
+    totalSize: number;
+    albumTooBigToDownload: boolean;
+    albumThumb: string;
 }
 
 export async function createAlbum(backendRestBaseUrl: string, bucketToken: string, name: string): Promise<AlbumInfo> {
@@ -190,8 +192,18 @@ export async function getPublicAlbum(backendRestBaseUrl: string, publicToken: st
     return response.json();
 }
 
-export async function downloadPublicAlbum(backendRestBaseUrl: string, publicToken: string): Promise<Blob> {
-    const response = await fetch(`${backendRestBaseUrl}/album/${publicToken}/download`);
+export async function downloadPublicAlbum(
+    backendRestBaseUrl: string,
+    publicToken: string,
+    fileIds?: number[],
+): Promise<Blob> {
+    const response = await fetch(`${backendRestBaseUrl}/album/download/${publicToken}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(fileIds || []),
+    });
 
     if (!response.ok) {
         throw new Error("Failed to download album");

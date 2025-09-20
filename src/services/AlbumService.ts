@@ -1,7 +1,7 @@
 import { Inject, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
-import { BadRequest, NotFound } from "@tsed/exceptions";
+import { BadRequest, InternalServerError, NotFound } from "@tsed/exceptions";
 import { AlbumModel } from "../model/db/Album.model.js";
 import { Builder } from "builder-pattern";
 import { FileRepo } from "../db/repo/FileRepo.js";
@@ -19,6 +19,8 @@ import { ThumbnailService } from "./microServices/thumbnails/thumbnailService.js
 import BucketType from "../model/constants/BucketType.js";
 import { SettingsService } from "./SettingsService.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
+import { PublicAlbumMetadata } from "../utils/typeings";
+import { PublicAlbumDto } from "../model/dto/PublicAlbumDto";
 
 @Service()
 export class AlbumService implements AfterInit {
@@ -38,7 +40,7 @@ export class AlbumService implements AfterInit {
         @Inject() private logger: Logger,
         @Inject() private zipFilesService: ZipFilesService,
         @Inject() private thumbnailService: ThumbnailService,
-        settingsService: SettingsService,
+        @Inject() private settingsService: SettingsService,
     ) {
         this.zipMaxFileSize = Number.parseInt(settingsService.getSetting(GlobalEnv.ZIP_MAX_SIZE_MB));
         if (Number.isNaN(this.zipMaxFileSize)) {
@@ -387,14 +389,49 @@ export class AlbumService implements AfterInit {
 
         const zipLocation = await this.zipFilesService.zipFiles(filesToZip, album.name);
 
+        if (!(await FileUtils.fileExists(zipLocation))) {
+            this.logger.error(`Zip file ${zipLocation} failed to be created`);
+            throw new InternalServerError(`Zip file ${zipLocation} failed to be created`);
+        }
+
         return [fs.createReadStream(zipLocation), album.name, zipLocation];
+    }
+
+    public async getPublicAlbumMetadata(publicToken: string): Promise<PublicAlbumMetadata> {
+        const album = await this.albumRepo.getAlbum(publicToken);
+        if (!album) {
+            throw new NotFound("Album not found");
+        }
+        this.checkPublicToken(publicToken, album);
+
+        const fileDtos = PublicAlbumDto.filesToDto(album);
+        const thumbs = fileDtos.filter(f => f.metadata.thumbnail).map(x => x.metadata.thumbnail ?? "");
+        const chosenThumb = thumbs.length > 0 ? Math.floor(Math.random() * thumbs.length) : 0;
+        const albumThumb =
+            thumbs.length > 0
+                ? thumbs[chosenThumb]
+                : `${this.settingsService.getSetting(GlobalEnv.BASE_URL) ?? ""}/assets/custom/images/albumNoImage.png`;
+        const albumTooBigToDownload = this.isAlbumTooBigToDownload(album);
+        return {
+            albumThumb,
+            totalSize: this.getTotalFilesSize(album),
+            albumTooBigToDownload,
+            albumName: album.name,
+        };
     }
 
     public isAlbumTooBigToDownload(album: AlbumModel): boolean {
         if (album.files && this.zipMaxFileSize > 0) {
-            return album.files.reduce((acc, file) => acc + file.fileSize, 0) > this.zipMaxFileSize * 1024 * 1024;
+            return this.getTotalFilesSize(album) > this.zipMaxFileSize * 1024 * 1024;
         }
         return false;
+    }
+
+    public getTotalFilesSize(album: AlbumModel): number {
+        if (album.files) {
+            return album.files.reduce((acc, file) => acc + file.fileSize, 0);
+        }
+        return 0;
     }
 
     private checkPrivateToken(token: string, album: AlbumModel): void {

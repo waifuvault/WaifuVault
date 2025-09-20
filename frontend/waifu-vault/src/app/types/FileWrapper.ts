@@ -170,7 +170,6 @@ export class FileWrapper {
      */
     get thumbnail(): string | null {
         if ("metadata" in this._file && this._file.metadata?.thumbnail) {
-            console.log(this._file.metadata.thumbnail);
             return this._file.metadata.thumbnail;
         }
         return null;

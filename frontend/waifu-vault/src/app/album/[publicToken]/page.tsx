@@ -3,17 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useAlbums, useErrorHandler } from "@/app/hooks";
-import {
-    Button,
-    Card,
-    CardBody,
-    CardHeader,
-    FileBrowser,
-    Footer,
-    Header,
-    ParticleBackground,
-    Pill,
-} from "@/app/components";
+import { Button, Card, CardBody, CardHeader, FileBrowser, Footer, Header, ParticleBackground } from "@/app/components";
 import type { PublicAlbumData } from "@/app/utils";
 import { FileWrapper } from "@/app/types";
 import styles from "./page.module.scss";
@@ -53,22 +43,7 @@ export default function PublicAlbumPage() {
 
         setDownloadingSelected(true);
         try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACKEND_REST_BASE_URL}/album/download/${publicToken}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(selectedFiles),
-                },
-            );
-
-            if (!response.ok) {
-                throw new Error("Failed to download selected files");
-            }
-
-            const blob = await response.blob();
+            const blob = await downloadPublicAlbum(publicToken, selectedFiles);
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.style.display = "none";
@@ -86,7 +61,7 @@ export default function PublicAlbumPage() {
     };
 
     const handleDownloadAlbum = async () => {
-        if (!albumData || albumData.downloadTooBig) {
+        if (!albumData || albumData.albumTooBigToDownload) {
             return;
         }
 
@@ -166,12 +141,10 @@ export default function PublicAlbumPage() {
                             <div className={styles.albumHeader}>
                                 <div className={styles.albumTitleSection}>
                                     <h1 className={styles.albumTitle}>{albumData.name}</h1>
-                                    <Pill
-                                        text={`${albumData.files.length} file${albumData.files.length !== 1 ? "s" : ""}`}
-                                        variant="info"
-                                        size="small"
-                                        icon={<i className="bi bi-files"></i>}
-                                    />
+                                    <span className={styles.fileCountBadge}>
+                                        <i className="bi bi-files"></i>
+                                        {`${albumData.files.length} file${albumData.files.length !== 1 ? "s" : ""}`}
+                                    </span>
                                 </div>
                                 <div className={styles.albumControls}>
                                     {selectedFiles.length > 0 && (
@@ -197,13 +170,13 @@ export default function PublicAlbumPage() {
                                         variant="primary"
                                         size="medium"
                                         onClick={handleDownloadAlbum}
-                                        disabled={albumData.downloadTooBig || downloading}
+                                        disabled={albumData.albumTooBigToDownload || downloading}
                                     >
                                         {downloading ? (
                                             <>
-                                                <i className="bi bi-arrow-clockwise spin"></i> Downloading...
+                                                <i className="bi bi-arrow-clockwise spin"></i> Generating zip...
                                             </>
-                                        ) : albumData.downloadTooBig ? (
+                                        ) : albumData.albumTooBigToDownload ? (
                                             "Album too large to download"
                                         ) : (
                                             <>
@@ -217,7 +190,7 @@ export default function PublicAlbumPage() {
                         <CardBody>
                             <FileBrowser
                                 files={FileWrapper.wrapFiles(albumData.files)}
-                                mode="admin"
+                                mode="public"
                                 showSearch={true}
                                 showSort={true}
                                 showViewToggle={true}

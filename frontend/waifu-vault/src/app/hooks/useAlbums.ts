@@ -73,8 +73,8 @@ export function useAlbums() {
     );
 
     const downloadPublicAlbum = useCallback(
-        async (publicToken: string): Promise<Blob> => {
-            return albumApi.downloadPublicAlbum(backendRestBaseUrl, publicToken);
+        async (publicToken: string, fileIds?: number[]): Promise<Blob> => {
+            return albumApi.downloadPublicAlbum(backendRestBaseUrl, publicToken, fileIds);
         },
         [backendRestBaseUrl],
     );
