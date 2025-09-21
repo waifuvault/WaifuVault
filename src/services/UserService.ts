@@ -27,6 +27,10 @@ export class UserService implements AfterInit {
         return userObject;
     }
 
+    public isLoggedIn(): boolean {
+        return this.getLoggedInUser() !== null;
+    }
+
     public getLoggedInUser(): CustomUserInfoModel | null {
         return this.$ctx?.request?.request?.user ?? null;
     }

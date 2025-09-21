@@ -24,6 +24,7 @@ export class AuthenticationController extends BaseRestController {
     public constructor(
         @Inject() private usersService: UserService,
         @Inject() private bucketSessionService: BucketSessionService,
+        @Inject() private userService: UserService,
     ) {
         super();
     }
@@ -60,6 +61,16 @@ export class AuthenticationController extends BaseRestController {
     @Returns(StatusCodes.UNAUTHORIZED)
     public bucketStatus(@Res() res: PlatformResponse): PlatformResponse {
         if (!this.bucketSessionService.hasActiveSession()) {
+            return this.doError(res, "Not authenticated", StatusCodes.UNAUTHORIZED);
+        }
+        return this.doSuccess(res, "Authenticated");
+    }
+
+    @Get("/login_status")
+    @Returns(StatusCodes.OK, SuccessModel)
+    @Returns(StatusCodes.UNAUTHORIZED)
+    public isLoggedIn(@Res() res: PlatformResponse): PlatformResponse {
+        if (!this.userService.isLoggedIn()) {
             return this.doError(res, "Not authenticated", StatusCodes.UNAUTHORIZED);
         }
         return this.doSuccess(res, "Authenticated");
