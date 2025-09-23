@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { ContextMenuItem } from "../components/ContextMenu";
+import type { ContextMenuItem } from "@/app/components";
 
 interface ContextMenuState {
     visible: boolean;
