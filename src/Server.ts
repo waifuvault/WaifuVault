@@ -58,6 +58,13 @@ import { SettingsService } from "./services/SettingsService.js";
 
 const socketIoStatus = process.env.HOME_PAGE_FILE_COUNTER ? process.env.HOME_PAGE_FILE_COUNTER : "dynamic";
 
+function isPublicPath(path: string): boolean {
+    return (
+        path.startsWith("/f") ||
+        (path.startsWith("/rest") && !path.startsWith("/rest/admin") && !path.startsWith("/rest/auth"))
+    );
+}
+
 const opts: Partial<TsED.Configuration> = {
     ...config,
     acceptMimes: ["application/json"],
@@ -123,7 +130,7 @@ const opts: Partial<TsED.Configuration> = {
             : undefined,
     middlewares: [
         (req: Request, res: Response, next: NextFunction): void => {
-            if (req.path?.startsWith("/f") || req.path?.startsWith("/rest")) {
+            if (isPublicPath(req.path)) {
                 return next();
             }
             helmet({
@@ -137,21 +144,17 @@ const opts: Partial<TsED.Configuration> = {
             })(req, res, next);
         },
         cors((req: CorsRequest, callback: (err: Error | null, options?: e.CorsOptions) => void) => {
-            let corsOptions;
-            const path = (req as Request).path;
-            if (path.startsWith("/rest") || path.startsWith("/f")) {
-                corsOptions = {
-                    origin: "*",
-                    methods: "*",
-                    allowedHeaders: "*",
-                    exposedHeaders: "*",
-                };
-            } else {
-                corsOptions = {
-                    origin: process.env.BASE_URL,
-                    exposedHeaders: ["Location", "Content-Disposition"],
-                };
-            }
+            const corsOptions = isPublicPath((req as Request).path)
+                ? {
+                      origin: "*",
+                      methods: "*",
+                      allowedHeaders: "*",
+                      exposedHeaders: "*",
+                  }
+                : {
+                      origin: process.env.BASE_URL,
+                      exposedHeaders: ["Location", "Content-Disposition"],
+                  };
 
             callback(null, corsOptions);
         }),
