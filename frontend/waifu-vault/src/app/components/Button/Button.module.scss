@@ -39,6 +39,12 @@ $button-variants: (
             transform: -1px,
         ),
     ),
+    danger: (
+        bg: linear-gradient(135deg, #dc3545 0%, #c82333 100%),
+        color: white,
+        hover-transform: -2px,
+        hover-shadow: 0 4px 12px rgba(220, 53, 69, 0.4),
+    ),
 );
 
 $button-sizes: (

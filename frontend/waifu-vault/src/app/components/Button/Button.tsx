@@ -6,7 +6,7 @@ import { useTheme } from "@/app/contexts";
 import Link from "next/link";
 
 interface CommonButtonProps {
-    variant?: "primary" | "secondary" | "outline" | "ghost";
+    variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
     size?: "small" | "medium" | "large";
 }
 

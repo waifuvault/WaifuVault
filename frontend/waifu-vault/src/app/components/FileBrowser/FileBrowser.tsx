@@ -28,6 +28,8 @@ interface FileBrowserProps {
     onDragEnd?: () => void;
     onLogout?: () => void;
     onUploadClick?: (albumToken?: string) => void;
+    onBanIp?: (ip: string) => void;
+    onBanSelectedIps?: () => void;
     showSearch?: boolean;
     showSort?: boolean;
     showViewToggle?: boolean;
@@ -55,6 +57,8 @@ export function FileBrowser({
     onDragEnd,
     onLogout,
     onUploadClick,
+    onBanIp,
+    onBanSelectedIps,
     showSearch = true,
     showSort = true,
     showViewToggle = true,
@@ -317,6 +321,16 @@ export function FileBrowser({
                     });
                 }
 
+                if (mode === "admin" && onBanIp && file.ip) {
+                    contextMenuItems.push({
+                        id: "banIp",
+                        label: "Ban IP",
+                        icon: <i className="bi bi-shield-x"></i>,
+                        onClick: () => onBanIp(file.ip!),
+                        variant: "danger" as const,
+                    });
+                }
+
                 if (allowRemoveFromAlbum) {
                     contextMenuItems.push({
                         id: "removeFromAlbum",
@@ -379,6 +393,8 @@ export function FileBrowser({
             handleClearSelection,
             showContextMenu,
             onRemoveFromAlbum,
+            mode,
+            onBanIp,
         ],
     );
 
@@ -735,6 +751,16 @@ export function FileBrowser({
 
                         {selectedFiles.size > 0 && (
                             <>
+                                {mode === "admin" && onBanSelectedIps && (
+                                    <Button
+                                        variant="outline"
+                                        size="small"
+                                        onClick={onBanSelectedIps}
+                                        className={styles.banIpBtn}
+                                    >
+                                        <i className="bi bi-shield-x"></i> Ban IPs ({selectedFiles.size})
+                                    </Button>
+                                )}
                                 {allowDeletion && (
                                     <Button
                                         variant="outline"
@@ -834,83 +860,79 @@ export function FileBrowser({
             >
                 {viewMode === "grid" && (
                     <div className={styles.fileGrid}>
-                        {previewFiles.map((file, index) => {
-                            return (
-                                <div
-                                    key={file.id}
-                                    className={`${styles.fileItem} ${selectedFiles.has(file.id) ? styles.selected : ""} ${
-                                        draggedFiles.includes(file.id) ? styles.dragging : ""
-                                    } ${draggedOverFile === file.id ? styles.dragOver : ""} ${mode === "public" ? styles.noReorder : ""}`}
-                                    onClick={e => handleFileSelect(file.id, e)}
-                                    onContextMenu={e => handleContextMenu(e, file.id)}
-                                    draggable={true}
-                                    onDragStart={e => handleDragStart(e, file.id)}
-                                    onDragOver={
-                                        allowReorder && !isDraggingToAlbum ? e => handleDragOver(e, file.id) : undefined
-                                    }
-                                    onDragLeave={allowReorder && !isDraggingToAlbum ? handleDragLeave : undefined}
-                                    onDrop={
-                                        allowReorder && !isDraggingToAlbum ? e => handleDrop(e, file.id) : undefined
-                                    }
-                                    onDragEnd={handleDragEnd}
-                                >
-                                    <div className={styles.filePreviewContainer}>
-                                        <FilePreview
-                                            file={file}
-                                            size="large"
-                                            lazy={showPagination}
-                                            priority={index < 8}
-                                            publicToken={publicToken}
+                        {previewFiles.map((file, index) => (
+                            <div
+                                key={`grid-${file.id}`}
+                                className={`${styles.fileItem} ${selectedFiles.has(file.id) ? styles.selected : ""} ${
+                                    draggedFiles.includes(file.id) ? styles.dragging : ""
+                                } ${draggedOverFile === file.id ? styles.dragOver : ""} ${mode === "public" ? styles.noReorder : ""}`}
+                                onClick={e => handleFileSelect(file.id, e)}
+                                onContextMenu={e => handleContextMenu(e, file.id)}
+                                draggable={true}
+                                onDragStart={e => handleDragStart(e, file.id)}
+                                onDragOver={
+                                    allowReorder && !isDraggingToAlbum ? e => handleDragOver(e, file.id) : undefined
+                                }
+                                onDragLeave={allowReorder && !isDraggingToAlbum ? handleDragLeave : undefined}
+                                onDrop={allowReorder && !isDraggingToAlbum ? e => handleDrop(e, file.id) : undefined}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <div className={styles.filePreviewContainer}>
+                                    <FilePreview
+                                        file={file}
+                                        size="large"
+                                        lazy={showPagination}
+                                        priority={index < 8}
+                                        publicToken={publicToken}
+                                    />
+                                    <div className={styles.fileOverlay}>
+                                        <Button
+                                            size="small"
+                                            variant="primary"
+                                            onClick={() => window.open(file.url, "_blank")}
+                                        >
+                                            View
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div className={styles.fileInfo}>
+                                    <Tooltip content={file.fileName}>
+                                        <div className={styles.fileName}>{renderFileName(file)}</div>
+                                    </Tooltip>
+                                    <div className={styles.fileDetails}>
+                                        <span className={styles.fileSize}>{formatFileSize(file.fileSize)}</span>
+                                        <span className={styles.fileDate}>{formatDate(file.createdAt)}</span>
+                                    </div>
+                                    {!albumToken && getAlbumName(file) && (
+                                        <Pill
+                                            variant="info"
+                                            size="medium"
+                                            icon={<i className="bi bi-collection"></i>}
+                                            text={getAlbumName(file)!}
+                                            className={styles.albumPill}
+                                            tooltip={true}
                                         />
-                                        <div className={styles.fileOverlay}>
-                                            <Button
-                                                size="small"
-                                                variant="primary"
-                                                onClick={() => window.open(file.url, "_blank")}
-                                            >
-                                                View
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    <div className={styles.fileInfo}>
-                                        <Tooltip content={file.fileName}>
-                                            <div className={styles.fileName}>{renderFileName(file)}</div>
-                                        </Tooltip>
-                                        <div className={styles.fileDetails}>
-                                            <span className={styles.fileSize}>{formatFileSize(file.fileSize)}</span>
-                                            <span className={styles.fileDate}>{formatDate(file.createdAt)}</span>
-                                        </div>
-                                        {!albumToken && getAlbumName(file) && (
-                                            <Pill
-                                                variant="info"
-                                                size="medium"
-                                                icon={<i className="bi bi-collection"></i>}
-                                                text={getAlbumName(file)!}
-                                                className={styles.albumPill}
-                                                tooltip={true}
-                                            />
-                                        )}
-                                        {file.expires && (
-                                            <div className={styles.expiresInfo}>
-                                                Expires:{" "}
-                                                {formatDate(
-                                                    typeof file.expires === "number"
-                                                        ? new Date(file.expires)
-                                                        : file.expires,
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {allowSelection && (
-                                        <div className={styles.selectCheckbox} onClick={e => e.stopPropagation()}>
-                                            {renderFileCheckbox(file.id)}
+                                    )}
+                                    {file.expires && (
+                                        <div className={styles.expiresInfo}>
+                                            Expires:{" "}
+                                            {formatDate(
+                                                typeof file.expires === "number"
+                                                    ? new Date(file.expires)
+                                                    : file.expires,
+                                            )}
                                         </div>
                                     )}
                                 </div>
-                            );
-                        })}
+
+                                {allowSelection && (
+                                    <div className={styles.selectCheckbox} onClick={e => e.stopPropagation()}>
+                                        {renderFileCheckbox(file.id)}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 )}
 
@@ -918,17 +940,20 @@ export function FileBrowser({
                     <div className={styles.fileList}>
                         {viewMode === "detailed" && (
                             <div className={styles.listHeader}>
-                                <div className={styles.headerCell}>Name</div>
+                                {allowSelection && <div className={styles.headerCellCheckbox}></div>}
+                                <div className={styles.headerCellIcon}></div>
+                                <div className={styles.headerCellName}>Name</div>
                                 <div className={styles.headerCell}>Size</div>
                                 <div className={styles.headerCell}>Type</div>
                                 <div className={styles.headerCell}>Date</div>
+                                <div className={styles.headerCellActions}>Actions</div>
                             </div>
                         )}
                         {previewFiles.map(file => {
                             const fileIconData = getFileIcon(file);
                             return (
                                 <div
-                                    key={file.id}
+                                    key={`list-${file.id}`}
                                     className={`${styles.fileListItem} ${selectedFiles.has(file.id) ? styles.selected : ""} ${
                                         draggedFiles.includes(file.id) ? styles.dragging : ""
                                     } ${draggedOverFile === file.id ? styles.dragOver : ""} ${mode === "public" ? styles.noReorder : ""}`}
@@ -977,7 +1002,34 @@ export function FileBrowser({
                                                 {file.fileName.split(".").pop()?.toUpperCase() || "FILE"}
                                             </div>
                                             <div className={styles.fileListDate}>{formatDate(file.createdAt)}</div>
+                                            <div className={styles.fileListActions}>
+                                                <Button
+                                                    size="small"
+                                                    variant="outline"
+                                                    onClick={(e: React.MouseEvent) => {
+                                                        e.stopPropagation();
+                                                        window.open(file.url, "_blank");
+                                                    }}
+                                                >
+                                                    <i className="bi bi-box-arrow-up-right"></i>
+                                                </Button>
+                                            </div>
                                         </>
+                                    )}
+
+                                    {viewMode === "list" && (
+                                        <div className={styles.fileListActions}>
+                                            <Button
+                                                size="small"
+                                                variant="ghost"
+                                                onClick={(e: React.MouseEvent) => {
+                                                    e.stopPropagation();
+                                                    window.open(file.url, "_blank");
+                                                }}
+                                            >
+                                                <i className="bi bi-box-arrow-up-right"></i>
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
                             );

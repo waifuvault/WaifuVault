@@ -107,7 +107,7 @@ export class FileWrapper {
         if (this._file instanceof File) {
             return URL.createObjectURL(this._file);
         }
-        return this._file.url;
+        return this._file.url ?? "";
     }
 
     /**
@@ -119,9 +119,6 @@ export class FileWrapper {
         }
         if ("token" in this._file) {
             return this._file.token;
-        }
-        if ("fileToken" in this._file) {
-            return this._file.fileToken;
         }
         return null;
     }
@@ -245,6 +242,19 @@ export class FileWrapper {
     get addedToAlbumOrder(): number | null {
         if ("addedToAlbumOrder" in this._file) {
             return this._file.addedToAlbumOrder ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * Get the IP address if available (admin files only)
+     */
+    get ip(): string | null {
+        if (this._file instanceof File || "metadata" in this._file) {
+            return null;
+        }
+        if ("ip" in this._file) {
+            return this._file.ip;
         }
         return null;
     }

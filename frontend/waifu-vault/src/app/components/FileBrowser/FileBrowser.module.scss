@@ -240,11 +240,26 @@
 
 .headerCell {
     flex: 1;
+}
 
-    &:first-child {
-        flex: 2;
-        padding-left: 3rem; // Account for icon space
-    }
+.headerCellCheckbox {
+    flex: 0 0 auto;
+    width: 16px;
+}
+
+.headerCellIcon {
+    flex: 0 0 auto;
+    width: 2rem;
+}
+
+.headerCellName {
+    flex: 2;
+}
+
+.headerCellActions {
+    flex: 0 0 auto;
+    width: 80px;
+    text-align: center;
 }
 
 .fileListIcon {
@@ -269,6 +284,13 @@
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.7);
     white-space: nowrap;
+}
+
+.fileListActions {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 0.5rem;
+    padding-left: 0.5rem;
 }
 
 .fileListCheckbox {

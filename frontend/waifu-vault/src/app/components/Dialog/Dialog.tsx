@@ -8,6 +8,7 @@ interface DialogProps {
     onClose: () => void;
     title: string;
     maxWidth?: string;
+    size?: "small" | "medium" | "large";
     className?: string;
 }
 
@@ -16,7 +17,8 @@ export default function Dialog({
     onClose,
     title,
     children,
-    maxWidth = "400px",
+    maxWidth,
+    size = "medium",
     className,
 }: PropsWithChildren<DialogProps>) {
     const { getThemeClass } = useTheme();
@@ -26,13 +28,14 @@ export default function Dialog({
     }
 
     const themeClass = getThemeClass();
+    const sizeClass = styles[size];
 
     const dialogContent = (
         <div className={`${styles.overlay} ${styles[themeClass]}`} onClick={onClose}>
             <div
-                className={`${styles.modal} ${styles[themeClass]} ${className || ""}`}
+                className={`${styles.modal} ${styles[themeClass]} ${sizeClass} ${className || ""}`}
                 onClick={e => e.stopPropagation()}
-                style={{ maxWidth }}
+                style={maxWidth ? { maxWidth } : undefined}
             >
                 <div className={styles.header}>
                     <h3 className={styles.title}>{title}</h3>

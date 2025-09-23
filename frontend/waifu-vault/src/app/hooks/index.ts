@@ -1,3 +1,4 @@
+export { useAdmin } from "./useAdmin";
 export { useAdminAuth } from "./useAdminAuth";
 export { useAlbums } from "./useAlbums";
 export { useBucket } from "./useBucket";

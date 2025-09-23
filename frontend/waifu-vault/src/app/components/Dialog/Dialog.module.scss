@@ -14,7 +14,7 @@
 }
 
 .modal {
-    background: var(--bg-secondary);
+    background: var(--bg-secondary, rgba(30, 30, 46, 0.95));
     border: 1px solid var(--border-primary);
     border-radius: 16px;
     width: 90%;
@@ -23,6 +23,19 @@
     box-shadow: var(--shadow-primary);
     animation: modalSlideIn 0.3s ease-out;
     position: relative;
+    backdrop-filter: blur(10px);
+
+    &.small {
+        max-width: 400px;
+    }
+
+    &.medium {
+        max-width: 600px;
+    }
+
+    &.large {
+        max-width: 800px;
+    }
 }
 
 @keyframes fadeIn {
