@@ -31,7 +31,9 @@ import methodOverride from "method-override";
 import { isGhAction, isProduction } from "./config/envs/index.js";
 import helmet from "helmet";
 import process from "process";
-import cors from "cors";
+import e from "cors";
+import cors, { CorsRequest } from "cors";
+import type { NextFunction, Request, Response } from "express";
 import { REDIS_CONNECTION, SQLITE_DATA_SOURCE } from "./model/di/tokens.js";
 import { DataSource } from "typeorm";
 import compression from "compression";
@@ -120,18 +122,38 @@ const opts: Partial<TsED.Configuration> = {
               }
             : undefined,
     middlewares: [
-        helmet({
-            contentSecurityPolicy: false,
-            crossOriginResourcePolicy: {
-                policy: "cross-origin",
-            },
-            crossOriginEmbedderPolicy: {
-                policy: "credentialless",
-            },
-        }),
-        cors({
-            origin: process.env.BASE_URL,
-            exposedHeaders: ["Location", "Content-Disposition"],
+        (req: Request, res: Response, next: NextFunction): void => {
+            if (req.path?.startsWith("/f") || req.path?.startsWith("/rest")) {
+                return next();
+            }
+            helmet({
+                contentSecurityPolicy: false,
+                crossOriginResourcePolicy: {
+                    policy: "cross-origin",
+                },
+                crossOriginEmbedderPolicy: {
+                    policy: "credentialless",
+                },
+            })(req, res, next);
+        },
+        cors((req: CorsRequest, callback: (err: Error | null, options?: e.CorsOptions) => void) => {
+            let corsOptions;
+            const path = (req as Request).path;
+            if (path.startsWith("/rest") || path.startsWith("/f")) {
+                corsOptions = {
+                    origin: "*",
+                    methods: "*",
+                    allowedHeaders: "*",
+                    exposedHeaders: "*",
+                };
+            } else {
+                corsOptions = {
+                    origin: process.env.BASE_URL,
+                    exposedHeaders: ["Location", "Content-Disposition"],
+                };
+            }
+
+            callback(null, corsOptions);
         }),
         cookieParser(),
         methodOverride(),
