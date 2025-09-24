@@ -213,7 +213,7 @@ function AdminPageContent() {
                 isOpen={banIpDialogOpen}
                 onClose={() => {
                     setBanIpDialogOpen(false);
-                    setSelectedIpToBan(null);
+                    setSelectedIpsToBan([]);
                     setDeleteAssociatedFiles(false);
                 }}
                 title="Ban IP Address"
