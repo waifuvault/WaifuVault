@@ -14,11 +14,10 @@ export class IpBlackListDao extends AbstractTypeOrmDao<IpBlackListModel> {
         return this.getRepository(transaction).save(entry);
     }
 
-    public async isIpBlocked(ip: string, transaction?: EntityManager): Promise<boolean> {
-        const count = await this.getRepository(transaction).countBy({
+    public isIpBlocked(ip: string, transaction?: EntityManager): Promise<boolean> {
+        return this.getRepository(transaction).existsBy({
             ip,
         });
-        return count === 1;
     }
 
     public async removeBlockedIps(ips: string[], transaction?: EntityManager): Promise<boolean> {

@@ -30,6 +30,7 @@ interface FileBrowserProps {
     onUploadClick?: (albumToken?: string) => void;
     onBanIp?: (ip: string) => void;
     onBanSelectedIps?: () => void;
+    onShowDetails?: (file: FileWrapper) => void;
     showSearch?: boolean;
     showSort?: boolean;
     showViewToggle?: boolean;
@@ -59,6 +60,7 @@ export function FileBrowser({
     onUploadClick,
     onBanIp,
     onBanSelectedIps,
+    onShowDetails,
     showSearch = true,
     showSort = true,
     showViewToggle = true,
@@ -312,6 +314,15 @@ export function FileBrowser({
                     onClick: () => window.open(file.url, "_blank"),
                 });
 
+                if (mode === "admin" && onShowDetails) {
+                    contextMenuItems.push({
+                        id: "showDetails",
+                        label: "Show Details",
+                        icon: <i className="bi bi-info-circle"></i>,
+                        onClick: () => onShowDetails(file),
+                    });
+                }
+
                 if (allowRename) {
                     contextMenuItems.push({
                         id: "rename",
@@ -395,6 +406,7 @@ export function FileBrowser({
             onRemoveFromAlbum,
             mode,
             onBanIp,
+            onShowDetails,
         ],
     );
 

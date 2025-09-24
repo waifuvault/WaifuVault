@@ -1,0 +1,1 @@
+export { FileDetailsDialog } from "./FileDetailsDialog";

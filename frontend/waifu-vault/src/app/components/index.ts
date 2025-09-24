@@ -24,4 +24,5 @@ export { ContextMenu, type ContextMenuItem } from "@/app/components/ContextMenu/
 export { Tooltip } from "@/app/components/Tooltip";
 export { Input } from "@/app/components/Input";
 export { FilePreview } from "@/app/components/filePreview";
+export { FileDetailsDialog } from "@/app/components/FileDetailsDialog";
 export { BlockedIpsTable } from "@/app/components/BlockedIpsTable";

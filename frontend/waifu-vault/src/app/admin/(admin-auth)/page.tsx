@@ -12,6 +12,7 @@ import {
     CardHeader,
     Dialog,
     FileBrowser,
+    FileDetailsDialog,
     Footer,
     Header,
     ParticleBackground,
@@ -34,6 +35,8 @@ function AdminPageContent() {
     const [selectedIpsToBan, setSelectedIpsToBan] = useState<string[]>([]);
     const [deleteAssociatedFiles, setDeleteAssociatedFiles] = useState(false);
     const [selectedFileIds, setSelectedFileIds] = useState<number[]>([]);
+    const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+    const [selectedFileForDetails, setSelectedFileForDetails] = useState<FileWrapper | null>(null);
 
     const fetchAdminData = useCallback(async () => {
         await withLoading(async () => {
@@ -126,6 +129,11 @@ function AdminPageContent() {
         });
     }, [selectedIpsToBan, deleteAssociatedFiles, blockIp, fetchAdminData, withLoading, handleError, showToast]);
 
+    const handleShowDetails = useCallback((file: FileWrapper) => {
+        setSelectedFileForDetails(file);
+        setDetailsDialogOpen(true);
+    }, []);
+
     const mappedFiles = useMemo(() => {
         return adminFiles.map(file => ({
             id: file.id,
@@ -180,6 +188,7 @@ function AdminPageContent() {
                                     onLogout={logout}
                                     onBanIp={handleBanIpClick}
                                     onBanSelectedIps={handleBanSelectedIps}
+                                    onShowDetails={handleShowDetails}
                                     onFilesSelected={setSelectedFileIds}
                                     showSearch={true}
                                     showSort={true}
@@ -256,6 +265,15 @@ function AdminPageContent() {
                     </div>
                 </div>
             </Dialog>
+
+            <FileDetailsDialog
+                isOpen={detailsDialogOpen}
+                onClose={() => {
+                    setDetailsDialogOpen(false);
+                    setSelectedFileForDetails(null);
+                }}
+                file={selectedFileForDetails}
+            />
         </div>
     );
 }

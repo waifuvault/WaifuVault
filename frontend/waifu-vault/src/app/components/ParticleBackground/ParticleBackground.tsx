@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./ParticleBackground.module.scss";
 import { ThemeType } from "@/app/constants/theme";
 import { useTheme } from "@/app/contexts";
@@ -26,7 +26,7 @@ interface ParticleBackgroundProps {
     intensity?: "low" | "medium" | "high";
 }
 
-export default function ParticleBackground({
+function ParticleBackground({
     isDragging = false,
     isUploading = false,
     intensity = "medium",
@@ -82,7 +82,7 @@ export default function ParticleBackground({
         }
     };
 
-    const config = getThemeConfig(theme);
+    const config = useMemo(() => getThemeConfig(theme), [theme]);
 
     const getParticleCount = useCallback(() => {
         const base = {
@@ -486,7 +486,7 @@ export default function ParticleBackground({
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        if (!canvas) {
+        if (!canvas || !particlesEnabled) {
             return;
         }
 
@@ -502,7 +502,25 @@ export default function ParticleBackground({
                 cancelAnimationFrame(animationRef.current);
             }
         };
-    }, [dimensions, theme, isDragging, isUploading, intensity, getParticleCount, createParticle, animate]);
+    }, [
+        dimensions,
+        theme,
+        isDragging,
+        isUploading,
+        intensity,
+        particlesEnabled,
+        getParticleCount,
+        createParticle,
+        animate,
+    ]);
+
+    useEffect(() => {
+        return () => {
+            if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current);
+            }
+        };
+    }, []);
 
     if (!particlesEnabled) {
         return null;
@@ -519,3 +537,5 @@ export default function ParticleBackground({
         />
     );
 }
+
+export default memo(ParticleBackground);

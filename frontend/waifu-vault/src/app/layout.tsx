@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.scss";
 import "./styles/themes.scss";
 import React from "react";
-import { LoadingProvider, ThemeProvider } from "@/app/contexts";
+import { IpBlockProvider, LoadingProvider, ThemeProvider } from "@/app/contexts";
 import { ToastProvider } from "@/app/components/Toast";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Head from "next/head.js";
@@ -69,7 +69,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body>
                 <LoadingProvider>
                     <ThemeProvider>
-                        <ToastProvider>{children}</ToastProvider>
+                        <ToastProvider>
+                            <IpBlockProvider>{children}</IpBlockProvider>
+                        </ToastProvider>
                     </ThemeProvider>
                 </LoadingProvider>
             </body>

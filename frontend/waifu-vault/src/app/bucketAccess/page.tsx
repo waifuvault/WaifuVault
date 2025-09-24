@@ -4,17 +4,25 @@ import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./page.module.scss";
 import { Button, Card, CardBody, CardHeader, Footer, Header, Input, ParticleBackground } from "@/app/components";
-import { useEnvironment } from "@/app/hooks";
+import { useBucketAuth, useEnvironment } from "@/app/hooks";
 import { useBucketAuthContext, useLoading } from "@/app/contexts";
 
 function BucketAccessContent() {
     const [token, setToken] = useState("");
     const [error, setError] = useState("");
     const { backendRestBaseUrl } = useEnvironment();
+    const { isAuthenticated } = useBucketAuth();
     const { setIsAuthenticated } = useBucketAuthContext();
     const { withLoading, isLoading } = useLoading();
     const router = useRouter();
     const searchParams = useSearchParams();
+
+    useEffect(() => {
+        if (isAuthenticated === true) {
+            router.replace("/admin/bucket");
+            return;
+        }
+    }, [isAuthenticated, router]);
 
     useEffect(() => {
         const errorParam = searchParams.get("error");
