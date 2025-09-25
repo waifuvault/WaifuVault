@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAdmin, useAdminAuth, useErrorHandler } from "@/app/hooks";
-import type { BlockedIp } from "@/app/hooks/useAdmin";
+import type { BlockedIp } from "@/app/utils/api/adminApi";
 import { useLoading } from "@/app/contexts";
 import {
     BlockedIpsTable,
@@ -25,7 +25,7 @@ import styles from "./page.module.scss";
 function AdminPageContent() {
     const { isAuthenticated, logout } = useAdminAuth();
     const { withLoading } = useLoading();
-    const { getAllEntries, deleteFiles, getBlockedIps, unblockIps, blockIp } = useAdmin();
+    const { getAllEntries, deleteFiles, getBlockedIps, unblockIps, blockIp, setBucketType } = useAdmin();
     const { handleError } = useErrorHandler();
     const { showToast } = useToast();
 
@@ -37,6 +37,8 @@ function AdminPageContent() {
     const [selectedFileIds, setSelectedFileIds] = useState<number[]>([]);
     const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
     const [selectedFileForDetails, setSelectedFileForDetails] = useState<FileWrapper | null>(null);
+    const [upgradeBucketDialogOpen, setUpgradeBucketDialogOpen] = useState(false);
+    const [selectedBucketToken, setSelectedBucketToken] = useState<string | null>(null);
 
     const fetchAdminData = useCallback(async () => {
         await withLoading(async () => {
@@ -134,6 +136,42 @@ function AdminPageContent() {
         setDetailsDialogOpen(true);
     }, []);
 
+    const handleUpgradeBucketClick = useCallback(() => {
+        setUpgradeBucketDialogOpen(true);
+    }, []);
+
+    const handleUpgradeBucketConfirm = useCallback(async () => {
+        if (!selectedBucketToken) {
+            showToast("error", "Please select a bucket to upgrade");
+            return;
+        }
+
+        await withLoading(async () => {
+            try {
+                await setBucketType(selectedBucketToken, "PREMIUM");
+                await fetchAdminData();
+                showToast("success", "Bucket upgraded to premium successfully");
+                setUpgradeBucketDialogOpen(false);
+                setSelectedBucketToken(null);
+            } catch (error) {
+                handleError(error, { defaultMessage: "Failed to upgrade bucket" });
+            }
+        });
+    }, [selectedBucketToken, setBucketType, fetchAdminData, withLoading, handleError, showToast]);
+
+    const uniqueBuckets = useMemo(() => {
+        const bucketMap = new Map<string, number>();
+        adminFiles.forEach(file => {
+            if (file.bucket) {
+                bucketMap.set(file.bucket, (bucketMap.get(file.bucket) ?? 0) + 1);
+            }
+        });
+        return Array.from(bucketMap.entries()).map(([token, fileCount]) => ({
+            token,
+            fileCount,
+        }));
+    }, [adminFiles]);
+
     const mappedFiles = useMemo(() => {
         return adminFiles.map(file => ({
             id: file.id,
@@ -178,6 +216,9 @@ function AdminPageContent() {
                         <CardHeader>
                             <div className={styles.headerContent}>
                                 <h1>Admin Dashboard</h1>
+                                <Button variant="primary" size="small" onClick={handleUpgradeBucketClick}>
+                                    Upgrade Bucket
+                                </Button>
                             </div>
                         </CardHeader>
                         <CardBody>
@@ -274,6 +315,56 @@ function AdminPageContent() {
                 }}
                 file={selectedFileForDetails}
             />
+
+            <Dialog
+                isOpen={upgradeBucketDialogOpen}
+                onClose={() => {
+                    setUpgradeBucketDialogOpen(false);
+                    setSelectedBucketToken(null);
+                }}
+                title="Upgrade Bucket to Premium"
+                size="medium"
+            >
+                <div className={styles.dialogContent}>
+                    <p>Select the bucket you want to set as premium:</p>
+
+                    {uniqueBuckets.length === 0 ? (
+                        <p>No buckets found</p>
+                    ) : (
+                        <div className={styles.bucketList}>
+                            {uniqueBuckets.map(bucket => (
+                                <label key={bucket.token} className={styles.bucketOption}>
+                                    <input
+                                        type="radio"
+                                        name="bucketSelection"
+                                        value={bucket.token}
+                                        checked={selectedBucketToken === bucket.token}
+                                        onChange={e => setSelectedBucketToken(e.target.value)}
+                                    />
+                                    <span>
+                                        {bucket.token} ({bucket.fileCount} file{bucket.fileCount !== 1 ? "s" : ""})
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className={styles.dialogActions}>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setUpgradeBucketDialogOpen(false);
+                                setSelectedBucketToken(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button variant="primary" onClick={handleUpgradeBucketConfirm} disabled={!selectedBucketToken}>
+                            Upgrade
+                        </Button>
+                    </div>
+                </div>
+            </Dialog>
         </div>
     );
 }

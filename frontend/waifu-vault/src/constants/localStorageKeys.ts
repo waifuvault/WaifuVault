@@ -6,6 +6,7 @@ export const ALBUM_SORT_BY_KEY = "waifuvault-album-sort-by";
 export const ALBUM_SORT_DIR_KEY = "waifuvault-album-sort-dir";
 export const PAGINATION_PAGE_PREFIX = "waifuvault-pagination-page";
 export const PAGINATION_SIZE_PREFIX = "waifuvault-pagination-size";
+export const VIEW_MODE_PREFIX = "waifuvault-view-mode";
 export const PINNED_ALBUMS_KEY = "waifuvault-pinned-albums";
 
 type LocalStorageKey =
@@ -17,6 +18,7 @@ type LocalStorageKey =
     | typeof ALBUM_SORT_DIR_KEY
     | typeof PAGINATION_PAGE_PREFIX
     | typeof PAGINATION_SIZE_PREFIX
+    | typeof VIEW_MODE_PREFIX
     | typeof PINNED_ALBUMS_KEY;
 
 export const LocalStorage = {
@@ -85,6 +87,20 @@ export const LocalStorage = {
         } catch {}
     },
 
+    getStringDynamic: (key: string, defaultValue: string = ""): string => {
+        try {
+            return localStorage.getItem(key) || defaultValue;
+        } catch {
+            return defaultValue;
+        }
+    },
+
+    setStringDynamic: (key: string, value: string): void => {
+        try {
+            localStorage.setItem(key, value);
+        } catch {}
+    },
+
     getJson: <T>(key: LocalStorageKey, defaultValue: T): T => {
         try {
             const value = localStorage.getItem(key);
@@ -107,4 +123,8 @@ export const getPaginationKey = (albumToken: string | null | undefined): string 
 
 export const getPaginationSizeKey = (albumToken: string | null | undefined): string => {
     return `${PAGINATION_SIZE_PREFIX}-${albumToken || "all"}`;
+};
+
+export const getViewModeKey = (albumToken: string | null | undefined): string => {
+    return `${VIEW_MODE_PREFIX}-${albumToken || "all"}`;
 };

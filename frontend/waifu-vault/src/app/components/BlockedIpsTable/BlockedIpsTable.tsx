@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import type { BlockedIp } from "@/app/hooks/useAdmin";
+import type { BlockedIp } from "@/app/utils/api/adminApi";
 import styles from "./BlockedIpsTable.module.scss";
 
 interface BlockedIpsTableProps {

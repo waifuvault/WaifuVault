@@ -157,7 +157,6 @@ export default function PublicAlbumClient({ albumData, publicToken }: PublicAlbu
                                 showViewToggle={true}
                                 allowSelection={true}
                                 allowDeletion={false}
-                                allowRename={false}
                                 allowReorder={false}
                                 allowRemoveFromAlbum={false}
                                 showPagination={true}

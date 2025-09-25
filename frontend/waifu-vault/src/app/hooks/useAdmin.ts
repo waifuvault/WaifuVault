@@ -1,98 +1,46 @@
+"use client";
+
 import { useCallback } from "react";
 import { useEnvironment } from "./useEnvironment";
 import type { AdminFileData } from "@/types/AdminTypes";
-
-export interface BlockedIp {
-    id: number;
-    ip: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+import type { BlockedIp } from "@/app/utils/api/adminApi";
+import * as adminApi from "@/app/utils/api/adminApi";
 
 export function useAdmin() {
     const { waifuVaultBackend } = useEnvironment();
 
     const getAllEntries = useCallback(async (): Promise<AdminFileData[]> => {
-        const response = await fetch(`${waifuVaultBackend}/rest/admin/allEntries`, {
-            method: "GET",
-            credentials: "include",
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch admin entries: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        if (Array.isArray(result)) {
-            return result.flatMap(item => item.data ?? []);
-        }
-        return result.data ?? [];
+        return adminApi.getAllEntries(waifuVaultBackend);
     }, [waifuVaultBackend]);
 
     const deleteFiles = useCallback(
         async (fileIds: number[]): Promise<void> => {
-            const response = await fetch(`${waifuVaultBackend}/rest/admin/deleteEntries`, {
-                method: "DELETE",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(fileIds),
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to delete files: ${response.statusText}`);
-            }
+            return adminApi.deleteFiles(waifuVaultBackend, fileIds);
         },
         [waifuVaultBackend],
     );
 
     const getBlockedIps = useCallback(async (): Promise<BlockedIp[]> => {
-        const response = await fetch(`${waifuVaultBackend}/rest/admin/blockedIps`, {
-            method: "GET",
-            credentials: "include",
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch blocked IPs: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data;
+        return adminApi.getBlockedIps(waifuVaultBackend);
     }, [waifuVaultBackend]);
 
     const unblockIps = useCallback(
         async (ips: string[]): Promise<void> => {
-            const response = await fetch(`${waifuVaultBackend}/rest/admin/unblockIps`, {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(ips),
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to unblock IPs: ${response.statusText}`);
-            }
+            return adminApi.unblockIps(waifuVaultBackend, ips);
         },
         [waifuVaultBackend],
     );
 
     const blockIp = useCallback(
         async (ip: string, deleteFiles: boolean): Promise<void> => {
-            const response = await fetch(`${waifuVaultBackend}/rest/admin/blockIp`, {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ ip, deleteFiles }),
-            });
+            return adminApi.blockIp(waifuVaultBackend, ip, deleteFiles);
+        },
+        [waifuVaultBackend],
+    );
 
-            if (!response.ok) {
-                throw new Error(`Failed to block IP: ${response.statusText}`);
-            }
+    const setBucketType = useCallback(
+        async (token: string, bucketType: string): Promise<void> => {
+            return adminApi.setBucketType(waifuVaultBackend, token, bucketType);
         },
         [waifuVaultBackend],
     );
@@ -103,5 +51,6 @@ export function useAdmin() {
         getBlockedIps,
         unblockIps,
         blockIp,
+        setBucketType,
     };
 }

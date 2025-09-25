@@ -5,18 +5,17 @@ import { Button, ContextMenu, type ContextMenuItem, FilePreview, Input, Pill, To
 import { useContextMenu, useErrorHandler } from "@/app/hooks";
 import styles from "./FileBrowser.module.scss";
 import { FileWrapper } from "@/app/types";
-import { getPaginationKey, getPaginationSizeKey, LocalStorage } from "@/constants/localStorageKeys";
+import { getPaginationKey, getPaginationSizeKey, getViewModeKey, LocalStorage } from "@/constants/localStorageKeys";
 
-type ViewMode = "grid" | "list" | "detailed";
 type SortField = "name" | "date" | "size" | "type";
 type SortOrder = "asc" | "desc";
+type ViewMode = "grid" | "list" | "detailed";
 
 interface FileBrowserProps {
     files: FileWrapper[];
     albums?: { token: string; name: string }[];
     onFilesSelected?: (fileIds: number[]) => void;
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
-    onRenameFile?: (fileId: number, newName: string) => Promise<void>;
     onReorderFiles?: (
         fileId: number,
         oldPosition: number,
@@ -36,7 +35,6 @@ interface FileBrowserProps {
     showViewToggle?: boolean;
     allowSelection?: boolean;
     allowDeletion?: boolean;
-    allowRename?: boolean;
     allowReorder?: boolean;
     allowRemoveFromAlbum?: boolean;
     albumToken?: string;
@@ -51,7 +49,6 @@ export function FileBrowser({
     albums,
     onFilesSelected,
     onDeleteFiles,
-    onRenameFile,
     onReorderFiles,
     onRemoveFromAlbum,
     onDragStart,
@@ -66,7 +63,6 @@ export function FileBrowser({
     showViewToggle = true,
     allowSelection = true,
     allowDeletion = true,
-    allowRename = true,
     allowReorder = false,
     allowRemoveFromAlbum = false,
     albumToken,
@@ -84,8 +80,6 @@ export function FileBrowser({
     const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
     const { handleError } = useErrorHandler();
     const [draggedFiles, setDraggedFiles] = useState<number[]>([]);
-    const [isRenaming, setIsRenaming] = useState<number | null>(null);
-    const [renameValue, setRenameValue] = useState("");
     const [draggedOverFile, setDraggedOverFile] = useState<number | null>(null);
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -166,6 +160,14 @@ export function FileBrowser({
         }
     }, [currentPage, albumToken, itemsPerPage, showPagination, sortedFiles]);
 
+    useEffect(() => {
+        const viewModeKey = getViewModeKey(albumToken);
+        const savedViewMode = LocalStorage.getStringDynamic(viewModeKey, "grid");
+        if (savedViewMode === "grid" || savedViewMode === "list" || savedViewMode === "detailed") {
+            setViewMode(savedViewMode);
+        }
+    }, [albumToken]);
+
     const handlePageChange = useCallback(
         (page: number) => {
             setCurrentPage(page);
@@ -181,6 +183,15 @@ export function FileBrowser({
             setCurrentItemsPerPage(size);
             const pageKey = getPaginationSizeKey(albumToken);
             LocalStorage.setNumberDynamic(pageKey, size);
+        },
+        [albumToken],
+    );
+
+    const handleViewModeChange = useCallback(
+        (mode: ViewMode) => {
+            setViewMode(mode);
+            const viewModeKey = getViewModeKey(albumToken);
+            LocalStorage.setStringDynamic(viewModeKey, mode);
         },
         [albumToken],
     );
@@ -284,19 +295,6 @@ export function FileBrowser({
         [selectedFiles, lastSelectedFile, sortedFiles, allowSelection, onFilesSelected],
     );
 
-    const handleRenameStart = useCallback((fileId: number, currentName: string) => {
-        setIsRenaming(fileId);
-        setRenameValue(currentName);
-    }, []);
-
-    const handleRenameComplete = useCallback(async () => {
-        if (isRenaming && onRenameFile && renameValue.trim()) {
-            await onRenameFile(isRenaming, renameValue.trim());
-        }
-        setIsRenaming(null);
-        setRenameValue("");
-    }, [isRenaming, onRenameFile, renameValue]);
-
     const handleContextMenu = useCallback(
         (event: React.MouseEvent, fileId?: number) => {
             event.preventDefault();
@@ -320,15 +318,6 @@ export function FileBrowser({
                         label: "Show Details",
                         icon: <i className="bi bi-info-circle"></i>,
                         onClick: () => onShowDetails(file),
-                    });
-                }
-
-                if (allowRename) {
-                    contextMenuItems.push({
-                        id: "rename",
-                        label: "Rename",
-                        icon: <i className="bi bi-pencil"></i>,
-                        onClick: () => handleRenameStart(file.id, file.renameableName),
                     });
                 }
 
@@ -394,11 +383,9 @@ export function FileBrowser({
         },
         [
             sortedFiles,
-            allowRename,
             allowDeletion,
             allowRemoveFromAlbum,
             selectedFiles,
-            handleRenameStart,
             handleDeleteSelected,
             handleSelectAll,
             handleClearSelection,
@@ -528,32 +515,9 @@ export function FileBrowser({
         onDragEnd?.();
     }, [onDragEnd]);
 
-    const renderFileName = useCallback(
-        (file: FileWrapper) => {
-            return isRenaming === file.id ? (
-                <Input
-                    type="text"
-                    value={renameValue}
-                    onChange={e => setRenameValue(e.target.value)}
-                    onBlur={handleRenameComplete}
-                    onKeyDown={e => {
-                        if (e.key === "Enter") {
-                            handleRenameComplete();
-                        }
-                        if (e.key === "Escape") {
-                            setIsRenaming(null);
-                            setRenameValue("");
-                        }
-                    }}
-                    className={styles.renameInput}
-                    autoFocus
-                />
-            ) : (
-                file.fileName
-            );
-        },
-        [isRenaming, renameValue, handleRenameComplete],
-    );
+    const renderFileName = useCallback((file: FileWrapper) => {
+        return file.fileName;
+    }, []);
 
     const renderFileCheckbox = useCallback(
         (fileId: number) => {
@@ -703,21 +667,21 @@ export function FileBrowser({
                             <Button
                                 variant={viewMode === "grid" ? "primary" : "outline"}
                                 size="small"
-                                onClick={() => setViewMode("grid")}
+                                onClick={() => handleViewModeChange("grid")}
                             >
                                 <i className="bi bi-grid-3x3"></i> Grid
                             </Button>
                             <Button
                                 variant={viewMode === "list" ? "primary" : "outline"}
                                 size="small"
-                                onClick={() => setViewMode("list")}
+                                onClick={() => handleViewModeChange("list")}
                             >
                                 <i className="bi bi-list"></i> List
                             </Button>
                             <Button
                                 variant={viewMode === "detailed" ? "primary" : "outline"}
                                 size="small"
-                                onClick={() => setViewMode("detailed")}
+                                onClick={() => handleViewModeChange("detailed")}
                             >
                                 <i className="bi bi-table"></i> Table
                             </Button>
