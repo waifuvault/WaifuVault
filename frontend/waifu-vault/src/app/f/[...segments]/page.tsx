@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useEnvironment } from "@/app/hooks";
+import { useEnvironment, useErrorHandler } from "@/app/hooks";
 import { Button, Card, CardBody, CardHeader, Footer, Header, Input, ParticleBackground } from "@/app/components";
 import styles from "./page.module.scss";
 
@@ -15,6 +15,7 @@ interface DownloadProgress {
 export default function FileAccess() {
     const params = useParams();
     const { waifuVaultBackend } = useEnvironment();
+    const { handleError } = useErrorHandler();
     const [needsPassword, setNeedsPassword] = useState<boolean | null>(null);
     const [isEncrypted, setIsEncrypted] = useState(false);
     const [password, setPassword] = useState("");
@@ -41,13 +42,21 @@ export default function FileAccess() {
                 const html = await fullResponse.text();
                 setIsEncrypted(html.includes("Encrypted file"));
             } else {
-                setError("File not found or access denied");
+                const errorMsg = handleError(new Error("File not found or access denied"), {
+                    showToast: false,
+                    rethrow: false,
+                });
+                setError(errorMsg);
             }
         } catch (err) {
-            console.error("Error checking file access:", err);
-            setError("Unable to access file");
+            const errorMsg = handleError(err, {
+                defaultMessage: "Unable to access file",
+                showToast: false,
+                rethrow: false,
+            });
+            setError(errorMsg);
         }
-    }, [fileUrl]);
+    }, [fileUrl, handleError]);
 
     useEffect(() => {
         checkIfPasswordNeeded();
@@ -71,12 +80,20 @@ export default function FileAccess() {
             });
 
             if (response.status === 403) {
-                setError("Password is incorrect");
+                const errorMsg = handleError(new Error("Password is incorrect"), {
+                    showToast: false,
+                    rethrow: false,
+                });
+                setError(errorMsg);
                 return;
             }
 
             if (!response.ok) {
-                setError("Failed to download file");
+                const errorMsg = handleError(new Error("Failed to download file"), {
+                    showToast: false,
+                    rethrow: false,
+                });
+                setError(errorMsg);
                 return;
             }
 
@@ -137,8 +154,12 @@ export default function FileAccess() {
                 window.open(url, "_blank")?.focus();
             }
         } catch (err) {
-            console.error("Download error:", err);
-            setError("Download failed");
+            const errorMsg = handleError(err, {
+                defaultMessage: "Download failed",
+                showToast: false,
+                rethrow: false,
+            });
+            setError(errorMsg);
         } finally {
             setIsDownloading(false);
             setDownloadProgress(null);
