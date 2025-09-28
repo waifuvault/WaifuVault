@@ -1,11 +1,27 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button, ContextMenu, type ContextMenuItem, FilePreview, Input, Pill, Tooltip } from "@/app/components";
+import {
+    Button,
+    ContextMenu,
+    type ContextMenuItem,
+    FilePreview,
+    FileUploadModal,
+    Input,
+    Pill,
+    Tooltip,
+} from "@/app/components";
 import { useContextMenu, useErrorHandler } from "@/app/hooks";
 import styles from "./FileBrowser.module.scss";
-import { FileWrapper } from "@/app/types";
-import { getPaginationKey, getPaginationSizeKey, getViewModeKey, LocalStorage } from "@/constants/localStorageKeys";
+import { type BucketType, FileWrapper, type UploadFile } from "@/app/types";
+import {
+    getPaginationKey,
+    getPaginationSizeKey,
+    getSortFieldKey,
+    getSortOrderKey,
+    getViewModeKey,
+    LocalStorage,
+} from "@/constants/localStorageKeys";
 
 type SortField = "name" | "date" | "size" | "type";
 type SortOrder = "asc" | "desc";
@@ -26,7 +42,7 @@ interface FileBrowserProps {
     onDragStart?: (isDraggingToAlbum: boolean) => void;
     onDragEnd?: () => void;
     onLogout?: () => void;
-    onUploadClick?: (albumToken?: string) => void;
+    onUploadComplete?: (files?: UploadFile[]) => Promise<void>;
     onBanIp?: (ip: string) => void;
     onBanSelectedIps?: () => void;
     onShowDetails?: (file: FileWrapper) => void;
@@ -37,8 +53,11 @@ interface FileBrowserProps {
     allowDeletion?: boolean;
     allowReorder?: boolean;
     allowRemoveFromAlbum?: boolean;
+    allowUpload?: boolean;
     albumToken?: string;
     publicToken?: string;
+    bucketToken?: string;
+    bucketType?: BucketType;
     mode: "bucket" | "admin" | "public";
     itemsPerPage?: number;
     showPagination?: boolean;
@@ -54,7 +73,7 @@ export function FileBrowser({
     onDragStart,
     onDragEnd,
     onLogout,
-    onUploadClick,
+    onUploadComplete,
     onBanIp,
     onBanSelectedIps,
     onShowDetails,
@@ -65,8 +84,11 @@ export function FileBrowser({
     allowDeletion = true,
     allowReorder = false,
     allowRemoveFromAlbum = false,
+    allowUpload = false,
     albumToken,
     publicToken,
+    bucketToken,
+    bucketType,
     mode,
     itemsPerPage = 10,
     showPagination = true,
@@ -84,6 +106,13 @@ export function FileBrowser({
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [currentItemsPerPage, setCurrentItemsPerPage] = useState(itemsPerPage);
+    const [uploadModal, setUploadModal] = useState<{
+        isOpen: boolean;
+        albumToken?: string;
+        albumName?: string;
+    }>({
+        isOpen: false,
+    });
 
     const fileListRef = useRef<HTMLDivElement>(null);
 
@@ -168,6 +197,27 @@ export function FileBrowser({
         }
     }, [albumToken]);
 
+    useEffect(() => {
+        const sortFieldKey = getSortFieldKey(albumToken);
+        const sortOrderKey = getSortOrderKey(albumToken);
+
+        const savedSortField = LocalStorage.getStringDynamic(sortFieldKey, "name");
+        const savedSortOrder = LocalStorage.getStringDynamic(sortOrderKey, "asc");
+
+        if (
+            savedSortField === "name" ||
+            savedSortField === "date" ||
+            savedSortField === "size" ||
+            savedSortField === "type"
+        ) {
+            setSortField(savedSortField);
+        }
+
+        if (savedSortOrder === "asc" || savedSortOrder === "desc") {
+            setSortOrder(savedSortOrder);
+        }
+    }, [albumToken]);
+
     const handlePageChange = useCallback(
         (page: number) => {
             setCurrentPage(page);
@@ -194,6 +244,49 @@ export function FileBrowser({
             LocalStorage.setStringDynamic(viewModeKey, mode);
         },
         [albumToken],
+    );
+
+    const handleSortFieldChange = useCallback(
+        (field: SortField) => {
+            setSortField(field);
+            const sortFieldKey = getSortFieldKey(albumToken);
+            LocalStorage.setStringDynamic(sortFieldKey, field);
+        },
+        [albumToken],
+    );
+
+    const handleSortOrderChange = useCallback(
+        (order: SortOrder) => {
+            setSortOrder(order);
+            const sortOrderKey = getSortOrderKey(albumToken);
+            LocalStorage.setStringDynamic(sortOrderKey, order);
+        },
+        [albumToken],
+    );
+
+    const handleUploadClick = useCallback(
+        (targetAlbumToken?: string) => {
+            const album = targetAlbumToken ? albums?.find(a => a.token === targetAlbumToken) : null;
+            setUploadModal({
+                isOpen: true,
+                albumToken: targetAlbumToken,
+                albumName: album?.name,
+            });
+        },
+        [albums],
+    );
+
+    const handleUploadClose = useCallback(() => {
+        setUploadModal({ isOpen: false });
+    }, []);
+
+    const handleUploadCompleteInternal = useCallback(
+        async (files?: UploadFile[]) => {
+            if (onUploadComplete) {
+                await onUploadComplete(files);
+            }
+        },
+        [onUploadComplete],
     );
 
     const isInitialMount = useRef(true);
@@ -570,13 +663,13 @@ export function FileBrowser({
     const handleSort = useCallback(
         (field: SortField) => {
             if (sortField === field) {
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                handleSortOrderChange(sortOrder === "asc" ? "desc" : "asc");
             } else {
-                setSortField(field);
-                setSortOrder("asc");
+                handleSortFieldChange(field);
+                handleSortOrderChange("asc");
             }
         },
-        [sortField, sortOrder],
+        [sortField, sortOrder, handleSortFieldChange, handleSortOrderChange],
     );
 
     const formatFileSize = useCallback((bytes?: number) => {
@@ -615,11 +708,11 @@ export function FileBrowser({
                     <div className={styles.toolbarCenter}></div>
                     <div className={styles.toolbarRight}>
                         <div className={styles.fileActions}>
-                            {onUploadClick && mode === "bucket" && (
+                            {allowUpload && (
                                 <Button
                                     variant="primary"
                                     size="small"
-                                    onClick={() => onUploadClick(albumToken)}
+                                    onClick={() => handleUploadClick(albumToken)}
                                     className={styles.uploadBtn}
                                 >
                                     <i className="bi bi-cloud-upload"></i> Upload Files
@@ -641,7 +734,7 @@ export function FileBrowser({
                 </div>
                 <div className={styles.emptyState}>
                     <p>No files available.</p>
-                    {onUploadClick && mode === "bucket" && (
+                    {allowUpload && (
                         <p>
                             Click the &ldquo;Upload Files&rdquo; button above to add files
                             {albumToken ? " to this album" : ""}.
@@ -713,11 +806,11 @@ export function FileBrowser({
 
                 <div className={styles.toolbarRight}>
                     <div className={styles.fileActions}>
-                        {onUploadClick && mode === "bucket" && (
+                        {allowUpload && (
                             <Button
                                 variant="primary"
                                 size="small"
-                                onClick={() => onUploadClick(albumToken)}
+                                onClick={() => handleUploadClick(albumToken)}
                                 className={styles.uploadBtn}
                             >
                                 <i className="bi bi-cloud-upload"></i> Upload Files
@@ -1090,6 +1183,19 @@ export function FileBrowser({
                         Showing {startIndex + 1}-{Math.min(endIndex, sortedFiles.length)} of {sortedFiles.length} files
                     </div>
                 </div>
+            )}
+
+            {allowUpload && (
+                <FileUploadModal
+                    isOpen={uploadModal.isOpen}
+                    onClose={handleUploadClose}
+                    bucketToken={bucketToken}
+                    albumToken={uploadModal.albumToken}
+                    albumName={uploadModal.albumName}
+                    currentAlbumFileCount={uploadModal.albumToken ? filteredFiles.length : 0}
+                    bucketType={bucketType}
+                    onUploadComplete={handleUploadCompleteInternal}
+                />
             )}
         </div>
     );

@@ -7,6 +7,8 @@ export const ALBUM_SORT_DIR_KEY = "waifuvault-album-sort-dir";
 export const PAGINATION_PAGE_PREFIX = "waifuvault-pagination-page";
 export const PAGINATION_SIZE_PREFIX = "waifuvault-pagination-size";
 export const VIEW_MODE_PREFIX = "waifuvault-view-mode";
+export const SORT_FIELD_PREFIX = "waifuvault-sort-field";
+export const SORT_ORDER_PREFIX = "waifuvault-sort-order";
 export const PINNED_ALBUMS_KEY = "waifuvault-pinned-albums";
 
 type LocalStorageKey =
@@ -19,6 +21,8 @@ type LocalStorageKey =
     | typeof PAGINATION_PAGE_PREFIX
     | typeof PAGINATION_SIZE_PREFIX
     | typeof VIEW_MODE_PREFIX
+    | typeof SORT_FIELD_PREFIX
+    | typeof SORT_ORDER_PREFIX
     | typeof PINNED_ALBUMS_KEY;
 
 export const LocalStorage = {
@@ -127,4 +131,12 @@ export const getPaginationSizeKey = (albumToken: string | null | undefined): str
 
 export const getViewModeKey = (albumToken: string | null | undefined): string => {
     return `${VIEW_MODE_PREFIX}-${albumToken || "all"}`;
+};
+
+export const getSortFieldKey = (albumToken: string | null | undefined): string => {
+    return `${SORT_FIELD_PREFIX}-${albumToken || "all"}`;
+};
+
+export const getSortOrderKey = (albumToken: string | null | undefined): string => {
+    return `${SORT_ORDER_PREFIX}-${albumToken || "all"}`;
 };

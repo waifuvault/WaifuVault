@@ -159,6 +159,11 @@ function AdminPageContent() {
         });
     }, [selectedBucketToken, setBucketType, fetchAdminData, withLoading, handleError, showToast]);
 
+    const handleUploadComplete = useCallback(async () => {
+        await fetchAdminData();
+        showToast("success", "Files uploaded successfully");
+    }, [fetchAdminData, showToast]);
+
     const uniqueBuckets = useMemo(() => {
         const bucketMap = new Map<string, number>();
         adminFiles.forEach(file => {
@@ -231,6 +236,7 @@ function AdminPageContent() {
                                     onBanSelectedIps={handleBanSelectedIps}
                                     onShowDetails={handleShowDetails}
                                     onFilesSelected={setSelectedFileIds}
+                                    onUploadComplete={handleUploadComplete}
                                     showSearch={true}
                                     showSort={true}
                                     showViewToggle={true}
@@ -238,6 +244,7 @@ function AdminPageContent() {
                                     allowDeletion={true}
                                     allowReorder={false}
                                     allowRemoveFromAlbum={false}
+                                    allowUpload={true}
                                     albums={[]}
                                     mode="admin"
                                 />

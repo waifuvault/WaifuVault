@@ -11,7 +11,6 @@ import {
     CardHeader,
     Dialog,
     FileBrowser,
-    FileUploadModal,
     Footer,
     Header,
     ParticleBackground,
@@ -55,13 +54,6 @@ function BucketAdminContent() {
         albumName: "",
     });
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
-    const [uploadModal, setUploadModal] = useState<{
-        isOpen: boolean;
-        albumToken?: string;
-        albumName?: string;
-    }>({
-        isOpen: false,
-    });
 
     const handleAlbumSelect = useCallback((albumToken: string | null) => {
         setSelectedAlbum(albumToken);
@@ -199,18 +191,6 @@ function BucketAdminContent() {
         setDeleteDialog({ isOpen: false, albumToken: "", albumName: "" });
     }, []);
 
-    const handleUploadClick = useCallback(
-        (albumToken?: string) => {
-            const album = albumToken ? albumsWithCounts.find(a => a.token === albumToken) : null;
-            setUploadModal({
-                isOpen: true,
-                albumToken,
-                albumName: album?.name,
-            });
-        },
-        [albumsWithCounts],
-    );
-
     const handleRemoveFromAlbum = useCallback(
         async (fileIds: number[]) => {
             if (!selectedAlbum || !bucketData?.files) {
@@ -248,10 +228,6 @@ function BucketAdminContent() {
             withLoading,
         ],
     );
-
-    const handleUploadClose = useCallback(() => {
-        setUploadModal({ isOpen: false });
-    }, []);
 
     const handleUploadComplete = useCallback(
         async (files?: UploadFile[]) => {
@@ -435,7 +411,10 @@ function BucketAdminContent() {
                                         onDragStart={handleDragStart}
                                         onDragEnd={handleDragEnd}
                                         onLogout={logout}
-                                        onUploadClick={handleUploadClick}
+                                        onUploadComplete={handleUploadComplete}
+                                        allowUpload={true}
+                                        bucketToken={bucketData?.token}
+                                        bucketType={bucketType || undefined}
                                         showSearch={true}
                                         showSort={true}
                                         showViewToggle={true}
@@ -488,17 +467,6 @@ function BucketAdminContent() {
                     </div>
                 </div>
             </Dialog>
-
-            <FileUploadModal
-                isOpen={uploadModal.isOpen}
-                onClose={handleUploadClose}
-                bucketToken={bucketData?.token}
-                albumToken={uploadModal.albumToken}
-                albumName={uploadModal.albumName}
-                currentAlbumFileCount={uploadModal.albumToken ? filteredFiles.length : 0}
-                bucketType={bucketType || undefined}
-                onUploadComplete={handleUploadComplete}
-            />
         </div>
     );
 }
