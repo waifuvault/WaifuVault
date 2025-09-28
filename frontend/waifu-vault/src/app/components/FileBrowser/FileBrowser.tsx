@@ -693,6 +693,33 @@ export function FileBrowser({
         return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }, []);
 
+    const formatExpires = useCallback(
+        (expires: Date | string | number | null): string => {
+            if (!expires || expires === null || expires === undefined || expires === "" || expires === "null") {
+                return "Never";
+            }
+
+            if (
+                typeof expires === "string" &&
+                (expires.includes("days") || expires.includes("hours") || expires.includes("minutes"))
+            ) {
+                return `In ${expires}`;
+            }
+
+            try {
+                const dateObj =
+                    typeof expires === "string" || typeof expires === "number" ? new Date(expires) : expires;
+                if (isNaN(dateObj.getTime())) {
+                    return "Invalid Date";
+                }
+                return formatDate(dateObj);
+            } catch {
+                return "Invalid Date";
+            }
+        },
+        [formatDate],
+    );
+
     const getAlbumName = useCallback(
         (file: FileWrapper): string | null => {
             return file.getAlbumName(albums);
@@ -984,14 +1011,7 @@ export function FileBrowser({
                                         />
                                     )}
                                     {file.expires && (
-                                        <div className={styles.expiresInfo}>
-                                            Expires:{" "}
-                                            {formatDate(
-                                                typeof file.expires === "number"
-                                                    ? new Date(file.expires)
-                                                    : file.expires,
-                                            )}
-                                        </div>
+                                        <div className={styles.expiresInfo}>Expires: {formatExpires(file.expires)}</div>
                                     )}
                                 </div>
 

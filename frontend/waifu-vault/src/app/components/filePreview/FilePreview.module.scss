@@ -130,6 +130,51 @@
     opacity: 1;
 }
 
+.imagePlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+
+    i {
+        font-size: 3rem;
+        opacity: 0.5;
+    }
+}
+
+/* Protected File Preview */
+.protectedContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 193, 7, 0.1);
+    border: 2px solid rgba(255, 193, 7, 0.3);
+    border-radius: 8px;
+
+    .protectedIcon {
+        font-size: 2rem;
+        color: var(--warning-color, #ffc107);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+}
+
+.filePreviewSmall .protectedContainer .protectedIcon {
+    font-size: 1.2rem;
+}
+
+.filePreviewMedium .protectedContainer .protectedIcon {
+    font-size: 1.8rem;
+}
+
+.filePreviewLarge .protectedContainer .protectedIcon {
+    font-size: 2.5rem;
+}
+
 /* Video Preview */
 .videoContainer {
     width: 100%;

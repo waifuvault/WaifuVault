@@ -117,6 +117,9 @@ export class FileWrapper {
         if (this._file instanceof File || "metadata" in this._file) {
             return null;
         }
+        if ("fileToken" in this._file) {
+            return this._file.fileToken;
+        }
         if ("token" in this._file) {
             return this._file.token;
         }
@@ -227,12 +230,21 @@ export class FileWrapper {
     }
 
     /**
-     * Check if file is protected
+     * Check if file is password protected
      */
     get isProtected(): boolean {
+        if (this._file instanceof File) {
+            return false;
+        }
+
         if ("protected" in this._file) {
             return this._file.protected;
         }
+
+        if ("fileProtectionLevel" in this._file) {
+            return this._file.fileProtectionLevel === "Password" || this._file.fileProtectionLevel === "Encrypted";
+        }
+
         return false;
     }
 

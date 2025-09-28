@@ -129,6 +129,12 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
 
         const loadMetadata = async () => {
             try {
+                // Skip thumbnail generation for password-protected files
+                if (wrappedFile.isProtected) {
+                    setIsLoading(false);
+                    return;
+                }
+
                 if (fileType === "image") {
                     if (isClientFile) {
                         const clientFile = wrappedFile.raw as File;
@@ -158,6 +164,13 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
                         };
                         reader.readAsDataURL(clientFile);
                     } else {
+                        if (!fileUrl) {
+                            if (mounted) {
+                                setIsLoading(false);
+                            }
+                            return;
+                        }
+
                         const cacheKey = fileToken || `${wrappedFile.id}-${publicToken}`;
                         if (thumbnailCache.has(cacheKey)) {
                             if (mounted) {
@@ -167,7 +180,7 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
                             return;
                         }
 
-                        const response = await fetch(fileUrl!);
+                        const response = await fetch(fileUrl);
                         if (!response.ok) {
                             throw new Error("Failed to fetch thumbnail");
                         }
@@ -239,21 +252,36 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
     }
 
     const renderPreviewContent = () => {
+        if (wrappedFile.isProtected) {
+            return (
+                <div className={styles.protectedContainer}>
+                    <i className={`bi bi-lock-fill ${styles.protectedIcon}`}></i>
+                </div>
+            );
+        }
+
         switch (fileType) {
             case "audio":
                 return <AudioWaveform />;
 
             case "image":
+                const imageSrc = cachedImageUrl || fileUrl;
                 return (
                     <div className={styles.imageContainer}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                            alt={fileName}
-                            className={styles.previewImage}
-                            src={cachedImageUrl || fileUrl || ""}
-                            loading={lazy && !priority ? "lazy" : "eager"}
-                            onError={() => setPreviewError("Failed to load image")}
-                        />
+                        {imageSrc ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                                alt={fileName}
+                                className={styles.previewImage}
+                                src={imageSrc}
+                                loading={lazy && !priority ? "lazy" : "eager"}
+                                onError={() => setPreviewError("Failed to load image")}
+                            />
+                        ) : (
+                            <div className={styles.imagePlaceholder}>
+                                <i className="bi bi-image"></i>
+                            </div>
+                        )}
                     </div>
                 );
 

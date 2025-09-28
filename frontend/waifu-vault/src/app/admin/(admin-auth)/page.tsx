@@ -180,6 +180,7 @@ function AdminPageContent() {
     const mappedFiles = useMemo(() => {
         return adminFiles.map(file => ({
             id: file.id,
+            addedToAlbumOrder: file.addedToAlbumOrder,
             fileName: file.fileName ?? "",
             fileExtension: file.fileExtension,
             originalFileName: file.originalFileName ?? "",
@@ -192,11 +193,10 @@ function AdminPageContent() {
             oneTimeDownload: file.oneTimeDownload,
             mediaType: file.mediaType,
             bucket: file.bucket,
-            token: file.fileToken,
+            fileToken: file.fileToken,
+            fileProtectionLevel: file.fileProtectionLevel,
             views: file.views,
-            parsedFilename: file.originalFileName ?? "",
-            expiresString: file.expires ?? null,
-            albumToken: file.album?.token ?? null,
+            album: file.album,
         }));
     }, [adminFiles]);
 

@@ -1,3 +1,5 @@
+export type ProtectionLevel = "None" | "Password" | "Encrypted";
+
 export interface UrlFileMixin {
     id: number;
     fileName: string;
@@ -18,6 +20,9 @@ export interface UrlFileMixin {
     expiresString: string | null;
     albumToken?: string | null;
     __album__?: AlbumAdminInfo;
+    encrypted?: boolean;
+    settings?: { hideFilename?: boolean; oneTimeDownload?: boolean } | null;
+    fileProtectionLevel: ProtectionLevel;
 }
 
 export interface AlbumInfo {
