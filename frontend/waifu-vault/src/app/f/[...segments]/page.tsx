@@ -156,9 +156,11 @@ export default function FileAccess() {
         return (
             <div className={styles.container}>
                 <ParticleBackground intensity="medium" />
+                <div className={styles.headerSection}>
+                    <Header />
+                </div>
                 <main className={styles.pageMain}>
                     <div className={styles.containerInner}>
-                        <Header />
                         <Card className={styles.accessCard}>
                             <CardBody>
                                 <div className={styles.loading}>
@@ -177,9 +179,11 @@ export default function FileAccess() {
         return (
             <div className={styles.container}>
                 <ParticleBackground intensity="medium" />
+                <div className={styles.headerSection}>
+                    <Header />
+                </div>
                 <main className={styles.pageMain}>
                     <div className={styles.containerInner}>
-                        <Header />
                         <Card className={styles.accessCard}>
                             <CardHeader>
                                 <h1>File Access Error</h1>
@@ -200,9 +204,11 @@ export default function FileAccess() {
     return (
         <div className={styles.container}>
             <ParticleBackground intensity="medium" />
+            <div className={styles.headerSection}>
+                <Header />
+            </div>
             <main className={styles.pageMain}>
                 <div className={styles.containerInner}>
-                    <Header />
                     <Card className={styles.accessCard}>
                         <CardHeader>
                             <h1>{isEncrypted ? "Encrypted file" : "Password-protected file"}</h1>
@@ -219,7 +225,7 @@ export default function FileAccess() {
                                         type="password"
                                         value={password}
                                         onChange={e => setPassword(e.target.value)}
-                                        onKeyPress={handleKeyPress}
+                                        onKeyDown={handleKeyPress}
                                         placeholder="Password"
                                         required
                                         disabled={isDownloading}
