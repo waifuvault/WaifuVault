@@ -130,7 +130,13 @@ export class FileServerController {
         const resourceIsProtected = await this.isFilePasswordProtected(resource);
         if (resourceIsProtected && !password) {
             const isEncrypted = await this.fileService.isFileEncrypted(resource);
-            throw new FileProtectedException("This file requires `x-password` to be set and correct", isEncrypted);
+            const resourceUrl = await this.fileService.getFileUrl(resource);
+
+            throw new FileProtectedException(
+                "This file requires `x-password` to be set and correct",
+                isEncrypted,
+                resourceUrl ?? "",
+            );
         }
         return resourceIsProtected;
     }

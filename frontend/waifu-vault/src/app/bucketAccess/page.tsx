@@ -13,7 +13,7 @@ import {
     Footer,
     Header,
     Input,
-    ParticleBackground,
+    ParticleBackground
 } from "@/app/components";
 import { useBucketAuth, useCaptcha, useEnvironment } from "@/app/hooks";
 import { useBucketAuthContext, useLoading } from "@/app/contexts";
@@ -108,7 +108,7 @@ function BucketAccessContent() {
                 }
             }
 
-            const response = await fetch(`${backendRestBaseUrl}/auth/authenticate_bucket_frontend`, {
+            const response = await fetch(`${backendRestBaseUrl}/auth/authenticate_bucket`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -102,6 +102,14 @@ export class FileService {
         return !!entry.settings?.password;
     }
 
+    public async getFileUrl(resource: string): Promise<string | null> {
+        const entry = await this.repo.getEntryByFileName(resource);
+        if (entry) {
+            return entry.getPublicUrl();
+        }
+        return null;
+    }
+
     public async getFileInfo(token: string): Promise<FileUploadModel> {
         const foundEntries = await this.repo.getEntries([token]);
         if (foundEntries.length !== 1) {

@@ -39,8 +39,8 @@ export default function FileAccess() {
             } else if (response.status === 403) {
                 setNeedsPassword(true);
                 const fullResponse = await fetch(fileUrl);
-                const html = await fullResponse.text();
-                setIsEncrypted(html.includes("Encrypted file"));
+                const json = await fullResponse.json();
+                setIsEncrypted(json.encrypted);
             } else {
                 const errorMsg = handleError(new Error("File not found or access denied"), {
                     showToast: false,

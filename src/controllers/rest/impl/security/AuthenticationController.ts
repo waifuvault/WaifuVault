@@ -38,36 +38,19 @@ export class AuthenticationController extends BaseRestController {
     @Post("/authenticate_bucket")
     @UseBefore(CaptchaMiddleWare)
     @UseBefore(AuthenticateBucket)
-    @Returns(StatusCodes.MOVED_TEMPORARILY)
-    @Returns(StatusCodes.UNAUTHORIZED)
-    public authenticateBucket(@Res() res: Response): void {
-        let bucketUrl = "/admin/bucket";
-        if (this.frontEndUrl) {
-            bucketUrl = this.frontEndUrl + "/admin/bucket";
-        }
-        res.redirect(bucketUrl);
-    }
-
-    @Post("/authenticate_bucket_frontend")
-    @UseBefore(CaptchaMiddleWare)
-    @UseBefore(AuthenticateBucket)
     @Returns(StatusCodes.OK, SuccessModel)
     @Returns(StatusCodes.UNAUTHORIZED)
-    public authenticateBucketFrontend(@Res() res: PlatformResponse): PlatformResponse {
+    public authenticateBucket(@Res() res: PlatformResponse): PlatformResponse {
         return this.doSuccess(res, "Authentication successful");
     }
 
     @Post("/login")
     @UseBefore(CaptchaMiddleWare)
     @Authenticate("loginAuthProvider", { failWithError: true })
-    @Returns(StatusCodes.MOVED_TEMPORARILY)
+    @Returns(StatusCodes.OK, SuccessModel)
     @Returns(StatusCodes.UNAUTHORIZED)
-    public login(@Res() res: Response): void {
-        let loginUrl = "/admin";
-        if (this.frontEndUrl) {
-            loginUrl = this.frontEndUrl + "/admin";
-        }
-        res.redirect(loginUrl);
+    public login(@Res() res: PlatformResponse): PlatformResponse {
+        return this.doSuccess(res, "Authentication successful");
     }
 
     @Get("/bucket_status")
