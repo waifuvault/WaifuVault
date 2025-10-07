@@ -15,18 +15,24 @@ import type { Request, Response } from "express";
 import { AuthenticateBucket } from "../../../../middleware/endpoint/AuthenticateBucket.js";
 import { BucketSessionService } from "../../../../services/BucketSessionService.js";
 import { SuccessModel } from "../../../../model/rest/SuccessModel.js";
+import { GlobalEnv } from "../../../../model/constants/GlobalEnv.js";
+import { SettingsService } from "../../../../services/SettingsService.js";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
 @Hidden()
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class AuthenticationController extends BaseRestController {
+    private readonly frontEndUrl: string | null;
+
     public constructor(
         @Inject() private usersService: UserService,
         @Inject() private bucketSessionService: BucketSessionService,
         @Inject() private userService: UserService,
+        @Inject() settingsService: SettingsService,
     ) {
         super();
+        this.frontEndUrl = settingsService.getSetting(GlobalEnv.FRONT_END_URL);
     }
 
     @Post("/authenticate_bucket")
@@ -35,7 +41,11 @@ export class AuthenticationController extends BaseRestController {
     @Returns(StatusCodes.MOVED_TEMPORARILY)
     @Returns(StatusCodes.UNAUTHORIZED)
     public authenticateBucket(@Res() res: Response): void {
-        res.redirect("/admin/bucket");
+        let bucketUrl = "/admin/bucket";
+        if (this.frontEndUrl) {
+            bucketUrl = this.frontEndUrl + "/admin/bucket";
+        }
+        res.redirect(bucketUrl);
     }
 
     @Post("/authenticate_bucket_frontend")
@@ -53,7 +63,11 @@ export class AuthenticationController extends BaseRestController {
     @Returns(StatusCodes.MOVED_TEMPORARILY)
     @Returns(StatusCodes.UNAUTHORIZED)
     public login(@Res() res: Response): void {
-        res.redirect("/admin");
+        let loginUrl = "/admin";
+        if (this.frontEndUrl) {
+            loginUrl = this.frontEndUrl + "/admin";
+        }
+        res.redirect(loginUrl);
     }
 
     @Get("/bucket_status")
@@ -82,7 +96,7 @@ export class AuthenticationController extends BaseRestController {
         if (this.bucketSessionService.hasActiveSession()) {
             this.bucketSessionService.destroySession();
         }
-        res.redirect("/bucketAccess");
+        res.redirect(this.frontEndUrl ?? "/bucketAccess");
     }
 
     @Get("/logout")
@@ -93,7 +107,7 @@ export class AuthenticationController extends BaseRestController {
                 if (err) {
                     reject(err);
                 }
-                res.redirect("/");
+                res.redirect(this.frontEndUrl ?? "/");
                 resolve();
             });
         });
