@@ -104,6 +104,11 @@ const opts: Partial<TsED.Configuration> = {
                 root: `${path.dirname(fileURLToPath(import.meta.url))}/public/robots.txt`,
             },
         ],
+        "/assets": [
+            {
+                root: `${path.dirname(fileURLToPath(import.meta.url))}/public/assets`,
+            },
+        ],
     },
     socketIO:
         socketIoStatus === "dynamic"
