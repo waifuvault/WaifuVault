@@ -1,7 +1,7 @@
 import { Inject, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
-import { BadRequest, NotFound } from "@tsed/exceptions";
+import { BadRequest, InternalServerError, NotFound } from "@tsed/exceptions";
 import { AlbumModel } from "../model/db/Album.model.js";
 import { Builder } from "builder-pattern";
 import { FileRepo } from "../db/repo/FileRepo.js";
@@ -19,6 +19,8 @@ import { ThumbnailService } from "./microServices/thumbnails/thumbnailService.js
 import BucketType from "../model/constants/BucketType.js";
 import { SettingsService } from "./SettingsService.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
+import { PublicAlbumMetadata } from "../utils/typeings.js";
+import { PublicAlbumDto } from "../model/dto/PublicAlbumDto.js";
 
 @Service()
 export class AlbumService implements AfterInit {
@@ -38,7 +40,7 @@ export class AlbumService implements AfterInit {
         @Inject() private logger: Logger,
         @Inject() private zipFilesService: ZipFilesService,
         @Inject() private thumbnailService: ThumbnailService,
-        settingsService: SettingsService,
+        @Inject() private settingsService: SettingsService,
     ) {
         this.zipMaxFileSize = Number.parseInt(settingsService.getSetting(GlobalEnv.ZIP_MAX_SIZE_MB));
         if (Number.isNaN(this.zipMaxFileSize)) {
@@ -194,17 +196,53 @@ export class AlbumService implements AfterInit {
             throw new BadRequest(`Album with token ${albumToken} not found`);
         }
         this.checkPrivateToken(albumToken, album);
-        const file = await this.fileRepo.getEntryById(id);
-        if (!file) {
-            throw new BadRequest(`File with ID ${id} not found`);
+
+        const albumFiles = await this.fileRepo.getEntriesByBucket(albumToken);
+        let sortedFiles = albumFiles.sort(
+            (a: FileUploadModel, b: FileUploadModel) => (a.addedToAlbumOrder || 0) - (b.addedToAlbumOrder || 0),
+        );
+
+        let hasDeduplicationChanges = false;
+        for (let i = 0; i < sortedFiles.length; i++) {
+            const expectedOrder = i + 1;
+            if (sortedFiles[i].addedToAlbumOrder !== expectedOrder) {
+                sortedFiles[i].addedToAlbumOrder = expectedOrder;
+                hasDeduplicationChanges = true;
+            }
         }
-        if (file.albumToken !== albumToken) {
-            throw new BadRequest(`File with ID ${id} not assigned to album`);
+
+        if (hasDeduplicationChanges) {
+            await this.fileRepo.saveEntries(sortedFiles);
+            const updatedFiles = await this.fileRepo.getEntriesByBucket(albumToken);
+            sortedFiles = updatedFiles.sort(
+                (a: FileUploadModel, b: FileUploadModel) => (a.addedToAlbumOrder || 0) - (b.addedToAlbumOrder || 0),
+            );
         }
-        if (file.addedToAlbumOrder === oldPosition) {
-            file.addedToAlbumOrder = newPosition;
+
+        if (
+            oldPosition < 0 ||
+            oldPosition >= sortedFiles.length ||
+            newPosition < 0 ||
+            newPosition >= sortedFiles.length
+        ) {
+            throw new BadRequest(
+                `Invalid positions: old=${oldPosition}, new=${newPosition}, total=${sortedFiles.length}`,
+            );
         }
-        await this.fileRepo.saveEntry(file);
+
+        const fileToMove = sortedFiles[oldPosition];
+        if (fileToMove.id !== id) {
+            throw new BadRequest(`File at position ${oldPosition} does not match ID ${id}`);
+        }
+
+        const targetFile = sortedFiles[newPosition];
+
+        const tempOrder = fileToMove.addedToAlbumOrder;
+        fileToMove.addedToAlbumOrder = targetFile.addedToAlbumOrder;
+        targetFile.addedToAlbumOrder = tempOrder;
+
+        await this.fileRepo.saveEntries([fileToMove, targetFile]);
+
         return true;
     }
 
@@ -351,14 +389,49 @@ export class AlbumService implements AfterInit {
 
         const zipLocation = await this.zipFilesService.zipFiles(filesToZip, album.name);
 
+        if (!(await FileUtils.fileExists(zipLocation))) {
+            this.logger.error(`Zip file ${zipLocation} failed to be created`);
+            throw new InternalServerError(`Zip file ${zipLocation} failed to be created`);
+        }
+
         return [fs.createReadStream(zipLocation), album.name, zipLocation];
+    }
+
+    public async getPublicAlbumMetadata(publicToken: string): Promise<PublicAlbumMetadata> {
+        const album = await this.albumRepo.getAlbum(publicToken);
+        if (!album) {
+            throw new NotFound("Album not found");
+        }
+        this.checkPublicToken(publicToken, album);
+
+        const fileDtos = PublicAlbumDto.filesToDto(album);
+        const thumbs = fileDtos.filter(f => f.metadata.thumbnail).map(x => x.metadata.thumbnail ?? "");
+        const chosenThumb = thumbs.length > 0 ? Math.floor(Math.random() * thumbs.length) : 0;
+        const albumThumb =
+            thumbs.length > 0
+                ? thumbs[chosenThumb]
+                : `${this.settingsService.getSetting(GlobalEnv.BASE_URL) ?? ""}/assets/custom/images/albumNoImage.png`;
+        const albumTooBigToDownload = this.isAlbumTooBigToDownload(album);
+        return {
+            albumThumb,
+            totalSize: this.getTotalFilesSize(album),
+            albumTooBigToDownload,
+            albumName: album.name,
+        };
     }
 
     public isAlbumTooBigToDownload(album: AlbumModel): boolean {
         if (album.files && this.zipMaxFileSize > 0) {
-            return album.files.reduce((acc, file) => acc + file.fileSize, 0) > this.zipMaxFileSize * 1024 * 1024;
+            return this.getTotalFilesSize(album) > this.zipMaxFileSize * 1024 * 1024;
         }
         return false;
+    }
+
+    public getTotalFilesSize(album: AlbumModel): number {
+        if (album.files) {
+            return album.files.reduce((acc, file) => acc + file.fileSize, 0);
+        }
+        return 0;
     }
 
     private checkPrivateToken(token: string, album: AlbumModel): void {

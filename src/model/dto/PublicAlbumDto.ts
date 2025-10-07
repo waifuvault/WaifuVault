@@ -6,6 +6,7 @@ import { FileUtils } from "../../utils/Utils.js";
 import { constant } from "@tsed/di";
 import { FileUploadModel } from "../db/FileUpload.model.js";
 import { GlobalEnv } from "../constants/GlobalEnv.js";
+import { PublicAlbumMetadata } from "../../utils/typeings";
 
 @Name("WaifuPublicFileMetadata")
 @Description("Metadata about a public file in an album")
@@ -76,8 +77,35 @@ export class PublicAlbumDto {
     @CollectionOf(WaifuPublicFile)
     public files: WaifuPublicFile[];
 
-    public static fromModel(model: AlbumModel): PublicAlbumDto {
-        const fileDtos = model.files
+    @Property()
+    @Description("The total size of all files in this album in bytes")
+    @Name("totalSize")
+    public totalSize: number;
+
+    @Property()
+    @Description("if the album is too big to download")
+    @Name("albumTooBigToDownload")
+    public albumTooBigToDownload: boolean;
+
+    @Property()
+    @Description("The album thumbnail")
+    @Name("albumThumb")
+    public albumThumb: string;
+
+    public static fromModel(model: AlbumModel, metadata: PublicAlbumMetadata): PublicAlbumDto {
+        const fileDtos = this.filesToDto(model);
+
+        return Builder(PublicAlbumDto)
+            .name(model.name)
+            .files(fileDtos)
+            .albumTooBigToDownload(metadata.albumTooBigToDownload)
+            .totalSize(metadata.totalSize)
+            .albumThumb(metadata.albumThumb)
+            .build();
+    }
+
+    public static filesToDto(model: AlbumModel): WaifuPublicFile[] {
+        return model.files
             ? model.files.map(f => {
                   const { url, options } = WaifuFile.fromModel(f, true);
                   const metadata = Builder(WaifuPublicFileMetadata)
@@ -95,7 +123,6 @@ export class PublicAlbumDto {
                       .build();
               })
             : [];
-        return Builder(PublicAlbumDto).name(model.name).files(fileDtos).build();
     }
 
     private static getThumbnail(album: AlbumModel, file: FileUploadModel): string | null {

@@ -1,0 +1,1 @@
+export { BlockedIpsTable } from "./BlockedIpsTable";

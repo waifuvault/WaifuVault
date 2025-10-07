@@ -15,35 +15,62 @@ import type { Request, Response } from "express";
 import { AuthenticateBucket } from "../../../../middleware/endpoint/AuthenticateBucket.js";
 import { BucketSessionService } from "../../../../services/BucketSessionService.js";
 import { SuccessModel } from "../../../../model/rest/SuccessModel.js";
+import { GlobalEnv } from "../../../../model/constants/GlobalEnv.js";
+import { SettingsService } from "../../../../services/SettingsService.js";
 
 @Controller("/auth")
 @Scope(ProviderScope.SINGLETON)
 @Hidden()
 @(Returns(StatusCodes.FORBIDDEN, DefaultRenderException).Description("If your IP has been blocked"))
 export class AuthenticationController extends BaseRestController {
+    private readonly frontEndUrl: string | null;
+
     public constructor(
         @Inject() private usersService: UserService,
         @Inject() private bucketSessionService: BucketSessionService,
+        @Inject() private userService: UserService,
+        @Inject() settingsService: SettingsService,
     ) {
         super();
+        this.frontEndUrl = settingsService.getSetting(GlobalEnv.FRONT_END_URL);
     }
 
     @Post("/authenticate_bucket")
     @UseBefore(CaptchaMiddleWare)
     @UseBefore(AuthenticateBucket)
-    @Returns(StatusCodes.MOVED_TEMPORARILY)
+    @Returns(StatusCodes.OK, SuccessModel)
     @Returns(StatusCodes.UNAUTHORIZED)
-    public authenticateBucket(@Res() res: Response): void {
-        res.redirect("/admin/bucket");
+    public authenticateBucket(@Res() res: PlatformResponse): PlatformResponse {
+        return this.doSuccess(res, "Authentication successful");
     }
 
     @Post("/login")
     @UseBefore(CaptchaMiddleWare)
     @Authenticate("loginAuthProvider", { failWithError: true })
-    @Returns(StatusCodes.MOVED_TEMPORARILY)
+    @Returns(StatusCodes.OK, SuccessModel)
     @Returns(StatusCodes.UNAUTHORIZED)
-    public login(@Res() res: Response): void {
-        res.redirect("/admin");
+    public login(@Res() res: PlatformResponse): PlatformResponse {
+        return this.doSuccess(res, "Authentication successful");
+    }
+
+    @Get("/bucket_status")
+    @Returns(StatusCodes.OK, SuccessModel)
+    @Returns(StatusCodes.UNAUTHORIZED)
+    public bucketStatus(@Res() res: PlatformResponse): PlatformResponse {
+        if (!this.bucketSessionService.hasActiveSession()) {
+            return this.doError(res, "Not authenticated", StatusCodes.UNAUTHORIZED);
+        }
+        return this.doSuccess(res, "Authenticated");
+    }
+
+    @Get("/login_status")
+    @Returns(StatusCodes.OK, SuccessModel)
+    @Returns(StatusCodes.UNAUTHORIZED)
+    public isLoggedIn(@Res() res: PlatformResponse): PlatformResponse {
+        if (!this.userService.isLoggedIn()) {
+            return this.doError(res, "Not authenticated", StatusCodes.UNAUTHORIZED);
+        }
+        return this.doSuccess(res, "Authenticated");
     }
 
     @Get("/close_bucket")
@@ -52,7 +79,7 @@ export class AuthenticationController extends BaseRestController {
         if (this.bucketSessionService.hasActiveSession()) {
             this.bucketSessionService.destroySession();
         }
-        res.redirect("/bucketAccess");
+        res.redirect(this.frontEndUrl ?? "/bucketAccess");
     }
 
     @Get("/logout")
@@ -63,7 +90,7 @@ export class AuthenticationController extends BaseRestController {
                 if (err) {
                     reject(err);
                 }
-                res.redirect("/");
+                res.redirect(this.frontEndUrl ?? "/");
                 resolve();
             });
         });

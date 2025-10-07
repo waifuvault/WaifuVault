@@ -1,0 +1,61 @@
+@use "styles/variables" as vars;
+
+:root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #1e1e2e;
+    --bg-tertiary: #313244;
+    --text-primary: #cdd6f4;
+    --text-secondary: #a6adc8;
+    --text-accent: #89b4fa;
+    --border-primary: #45475a;
+    --border-secondary: #313244;
+    --gradient-primary: linear-gradient(135deg, #89b4fa 0%, #b4befe 100%);
+    --gradient-bg: linear-gradient(135deg, #1e1e2e 0%, #313244 100%);
+    --success-color: #a6e3a1;
+    --error-color: #f38ba8;
+    --warning-color: #fab387;
+    --shadow-primary: 0 8px 32px rgba(137, 180, 250, 0.2);
+    --shadow-secondary: 0 4px 16px rgba(137, 180, 250, 0.4);
+}
+
+html,
+body {
+    padding: 0;
+    margin: 0;
+    font-family: vars.$font-inter;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font-family: inherit;
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+    width: 8px;
+
+    &-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    &-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    }
+}

@@ -88,7 +88,6 @@ export class AdminFileData {
             fileEntryBuilder.expires(ObjectUtils.timeToHuman(expiresIn));
         }
 
-        // at this point, all albums should be loaded by the relation query
         const album = await entry.album;
         if (album) {
             fileEntryBuilder.album(AlbumInfo.fromModel(album));

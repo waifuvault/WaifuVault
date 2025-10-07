@@ -7,6 +7,7 @@ import { SettingsDao } from "../db/dao/SettingsDao.js";
 import { BucketService } from "./BucketService.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
+import BucketType from "../model/constants/BucketType";
 
 /**
  * This is an admin service that will work when a bucket is open
@@ -31,10 +32,11 @@ export class BucketAdminService extends AbstractAdminService {
     }
 
     public override async getAllEntries(): Promise<FileUploadModel[]> {
-        const allEntries = await this.repo.getAllEntries();
         const bucket = await this.bucketService.getBucket();
-        const finalEntries = bucket ? (bucket.files ?? []) : allEntries;
-        return finalEntries.filter(e => !e.hasExpired);
+        if (!bucket) {
+            return [];
+        }
+        return bucket.files?.filter(e => !e.hasExpired) ?? [];
     }
 
     public override getPagedEntries(
@@ -46,5 +48,9 @@ export class BucketAdminService extends AbstractAdminService {
         search?: string,
     ): Promise<FileUploadModel[]> {
         return this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search, bucket);
+    }
+
+    public getBucketType(token: string): Promise<BucketType | null> {
+        return this.bucketService.getBucketType(token);
     }
 }

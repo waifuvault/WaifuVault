@@ -1,0 +1,219 @@
+.card {
+    background: var(--card-bg, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.card:hover {
+    border-color: var(--primary-color, #667eea);
+    box-shadow: 0 12px 48px rgba(102, 126, 234, 0.15);
+}
+
+.elevated {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+}
+
+.elevated:hover {
+    box-shadow: 0 16px 64px rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
+}
+
+.flat {
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+.cardHeader {
+    padding: 1.5rem 1.5rem 0;
+    text-align: center;
+    border-bottom: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+    margin-bottom: 1.5rem;
+}
+
+.cardHeader h1 {
+    color: var(--text-primary, #ffffff);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.cardBody {
+    padding: 0 1.5rem 1.5rem;
+}
+
+/* Theme-specific styles */
+
+/* Anime theme */
+[data-theme="anime"] .card {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+}
+
+[data-theme="anime"] .card:hover {
+    border-color: rgba(102, 126, 234, 0.6);
+    box-shadow: 0 12px 48px rgba(102, 126, 234, 0.3);
+}
+
+[data-theme="anime"] .cardHeader {
+    border-bottom-color: rgba(102, 126, 234, 0.2);
+}
+
+/* Cyberpunk theme */
+[data-theme="cyberpunk"] .card {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    box-shadow:
+        0 8px 32px rgba(0, 255, 255, 0.1),
+        inset 0 1px 0 rgba(0, 255, 255, 0.2);
+}
+
+[data-theme="cyberpunk"] .card:hover {
+    border-color: rgba(0, 255, 255, 0.6);
+    box-shadow:
+        0 12px 48px rgba(0, 255, 255, 0.2),
+        inset 0 1px 0 rgba(0, 255, 255, 0.3);
+}
+
+[data-theme="cyberpunk"] .cardHeader {
+    border-bottom-color: rgba(0, 255, 255, 0.2);
+}
+
+[data-theme="cyberpunk"] .cardHeader h1 {
+    color: #00ffff;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* Terminal theme */
+[data-theme="terminal"] .card {
+    background: rgba(0, 255, 0, 0.05);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    box-shadow:
+        0 8px 32px rgba(0, 255, 0, 0.1),
+        inset 0 1px 0 rgba(0, 255, 0, 0.1);
+}
+
+[data-theme="terminal"] .card:hover {
+    border-color: rgba(0, 255, 0, 0.6);
+    box-shadow:
+        0 12px 48px rgba(0, 255, 0, 0.15),
+        inset 0 1px 0 rgba(0, 255, 0, 0.2);
+}
+
+[data-theme="terminal"] .cardHeader {
+    border-bottom-color: rgba(0, 255, 0, 0.2);
+}
+
+[data-theme="terminal"] .cardHeader h1 {
+    color: #00ff00;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+/* Orange Terminal theme */
+[data-theme="orangeterminal"] .card {
+    background: rgba(255, 165, 0, 0.05);
+    border: 1px solid rgba(255, 165, 0, 0.3);
+    box-shadow:
+        0 8px 32px rgba(255, 165, 0, 0.1),
+        inset 0 1px 0 rgba(255, 165, 0, 0.1);
+}
+
+[data-theme="orangeterminal"] .card:hover {
+    border-color: rgba(255, 165, 0, 0.6);
+    box-shadow:
+        0 12px 48px rgba(255, 165, 0, 0.15),
+        inset 0 1px 0 rgba(255, 165, 0, 0.2);
+}
+
+[data-theme="orangeterminal"] .cardHeader {
+    border-bottom-color: rgba(255, 165, 0, 0.2);
+}
+
+[data-theme="orangeterminal"] .cardHeader h1 {
+    color: #ffa500;
+    text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+}
+
+/* Steampunk theme */
+[data-theme="steampunk"] .card {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.1) 0%, rgba(218, 165, 32, 0.05) 100%);
+    border: 1px solid rgba(205, 127, 50, 0.3);
+    box-shadow:
+        0 8px 32px rgba(139, 69, 19, 0.3),
+        inset 0 1px 0 rgba(205, 127, 50, 0.2);
+    position: relative;
+}
+
+[data-theme="steampunk"] .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 20% 80%, rgba(205, 127, 50, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(218, 165, 32, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+[data-theme="steampunk"] .card:hover {
+    border-color: rgba(205, 127, 50, 0.6);
+    box-shadow:
+        0 12px 48px rgba(139, 69, 19, 0.4),
+        inset 0 1px 0 rgba(205, 127, 50, 0.3);
+}
+
+[data-theme="steampunk"] .cardHeader {
+    border-bottom-color: rgba(205, 127, 50, 0.2);
+}
+
+[data-theme="steampunk"] .cardHeader h1 {
+    color: #daa520;
+    text-shadow: 0 2px 8px rgba(205, 127, 50, 0.6);
+}
+
+/* Minimal theme */
+[data-theme="minimal"] .card {
+    background: var(--bg-primary, #ffffff);
+    border: 1px solid var(--border-primary, #e0e0e0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    backdrop-filter: none;
+}
+
+[data-theme="minimal"] .card:hover {
+    border-color: var(--border-secondary, #d0d0d0);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="minimal"] .cardHeader {
+    border-bottom-color: var(--border-primary, #e0e0e0);
+}
+
+[data-theme="minimal"] .cardHeader h1 {
+    color: var(--text-primary, #333333);
+    text-shadow: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cardHeader {
+        padding: 1rem 1rem 0;
+    }
+
+    .cardHeader h1 {
+        font-size: 1.3rem;
+    }
+
+    .cardBody {
+        padding: 0 1rem 1rem;
+    }
+}

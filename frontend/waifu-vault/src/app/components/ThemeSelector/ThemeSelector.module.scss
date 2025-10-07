@@ -1,0 +1,575 @@
+.themeSelector {
+    position: relative;
+    z-index: 10000;
+}
+
+.themeButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    font-size: 0.9rem;
+}
+
+/* Minimal theme specific button styles */
+[data-theme="minimal"] .themeButton {
+    background: rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: var(--text-primary);
+}
+
+[data-theme="minimal"] .themeButton:hover {
+    background: rgba(0, 0, 0, 0.12);
+    border-color: rgba(0, 0, 0, 0.25);
+    transform: translateY(-1px);
+}
+
+.themeButton:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.themeIcon {
+    font-size: 1.1rem;
+}
+
+.themeText {
+    font-weight: 500;
+    color: var(--theme-text, #ffffff);
+}
+
+.chevron {
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+    margin-left: 0.25rem;
+}
+
+.chevronUp {
+    transform: rotate(180deg);
+}
+
+.chevronDown {
+    transform: rotate(0deg);
+}
+
+.popup {
+    position: fixed;
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    min-width: 320px;
+    max-width: 400px;
+    animation: popupAppear 0.2s ease;
+    z-index: 99999;
+}
+
+@keyframes popupAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.popupHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.popupHeader h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.closeButton:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.themeGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+.themeOption {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+
+.themeOption:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.themeOptionActive {
+    background: rgba(102, 126, 234, 0.2);
+    border-color: rgba(102, 126, 234, 0.5);
+}
+
+.themeOptionActive:hover {
+    background: rgba(102, 126, 234, 0.25);
+}
+
+.themePreview {
+    position: relative;
+    width: 60px;
+    height: 45px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.themePreviewIcon {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 0.8rem;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.themePreviewBg {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.previewContent {
+    position: absolute;
+    inset: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.previewHeader {
+    height: 8px;
+    border-radius: 2px;
+    opacity: 0.8;
+}
+
+.previewBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 2px 0;
+}
+
+.previewLine {
+    height: 2px;
+    border-radius: 1px;
+    opacity: 0.6;
+}
+
+.previewLine:first-child {
+    width: 80%;
+}
+
+.previewLine:last-child {
+    width: 60%;
+}
+
+.previewButton {
+    height: 6px;
+    width: 40%;
+    border-radius: 2px;
+    margin-top: auto;
+    opacity: 0.7;
+}
+
+/* Theme-specific preview styles */
+.previewanime {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.previewanime .previewHeader,
+.previewanime .previewLine,
+.previewanime .previewButton {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.previewcyberpunk {
+    background: linear-gradient(135deg, #0f0f0f 0%, #1a0a2e 100%);
+    border: 1px solid #00ffff;
+}
+
+.previewcyberpunk .previewHeader,
+.previewcyberpunk .previewLine,
+.previewcyberpunk .previewButton {
+    background: #00ffff;
+    box-shadow: 0 0 4px #00ffff;
+}
+
+.preterminal {
+    background: #000000;
+    border: 1px solid #00ff00;
+}
+
+.preterminal .previewHeader,
+.preterminal .previewLine,
+.preterminal .previewButton {
+    background: #00ff00;
+}
+
+.previewminimal {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+}
+
+.previewminimal .previewHeader,
+.previewminimal .previewLine,
+.previewminimal .previewButton {
+    background: #333333;
+}
+
+.previewterminal {
+    background: #000000;
+    border: 1px solid #00ff00;
+}
+
+.previewterminal .previewHeader,
+.previewterminal .previewLine,
+.previewterminal .previewButton {
+    background: #00ff00;
+}
+
+.previeworangeterminal {
+    background: #000000;
+    border: 1px solid #ffa500;
+}
+
+.previeworangeterminal .previewHeader,
+.previeworangeterminal .previewLine,
+.previeworangeterminal .previewButton {
+    background: #ffa500;
+}
+
+.previewsteampunk {
+    background: linear-gradient(135deg, #1a1310 0%, #2d1b14 100%);
+    border: 1px solid #cd7f32;
+    position: relative;
+}
+
+.previewsteampunk::before {
+    content: "⚙";
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 8px;
+    color: #daa520;
+    animation: gearSpinPreview 4s linear infinite;
+}
+
+@keyframes gearSpinPreview {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.previewsteampunk .previewHeader,
+.previewsteampunk .previewLine,
+.previewsteampunk .previewButton {
+    background: #cd7f32;
+    box-shadow: 0 0 2px rgba(205, 127, 50, 0.5);
+}
+
+.themeInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.themeInfo h4 {
+    margin: 0 0 0.25rem 0;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.themeInfo p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+.activeIndicator {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(102, 126, 234, 0.9);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .popup {
+        right: -1rem;
+        left: -1rem;
+        min-width: auto;
+        max-width: none;
+    }
+
+    .themeOption {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .themePreview {
+        width: 50px;
+        height: 38px;
+    }
+
+    .themeInfo h4 {
+        font-size: 0.9rem;
+    }
+
+    .themeInfo p {
+        font-size: 0.75rem;
+    }
+
+    .themeButton {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.8rem;
+    }
+
+    .themeSeparator,
+    .themeName {
+        display: none;
+    }
+
+    .themeLabel {
+        display: inline;
+    }
+
+    .popup {
+        position: fixed;
+        top: auto;
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        max-width: none;
+        min-width: auto;
+        padding: 1.25rem;
+        border-radius: 16px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .popupHeader {
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .popupHeader h3 {
+        font-size: 1.05rem;
+    }
+
+    .themeGrid {
+        gap: 0.5rem;
+    }
+
+    .themeOption {
+        padding: 0.875rem;
+        gap: 0.75rem;
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .themePreview {
+        width: 45px;
+        height: 34px;
+        flex-shrink: 0;
+    }
+
+    .themePreviewIcon {
+        width: 14px;
+        height: 14px;
+        font-size: 0.7rem;
+    }
+
+    .themeInfo {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .themeInfo h4 {
+        font-size: 0.85rem;
+        margin-bottom: 0.125rem;
+    }
+
+    .themeInfo p {
+        font-size: 0.7rem;
+        line-height: 1.2;
+    }
+
+    .activeIndicator {
+        top: 0.5rem;
+        right: 0.5rem;
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .popup {
+        left: 0.75rem;
+        right: 0.75rem;
+        bottom: 0.75rem;
+        padding: 1rem;
+        max-height: 75vh;
+    }
+
+    .themeButton {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.8rem;
+    }
+
+    .themeText {
+        display: none;
+    }
+
+    .themeOption {
+        padding: 0.75rem;
+        gap: 0.625rem;
+    }
+
+    .themePreview {
+        width: 40px;
+        height: 30px;
+    }
+
+    .themeInfo h4 {
+        font-size: 0.8rem;
+    }
+
+    .themeInfo p {
+        font-size: 0.68rem;
+    }
+}
+
+.particleToggle {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-secondary);
+    margin-bottom: 1rem;
+}
+
+.toggleLabel {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.toggleInput {
+    display: none;
+}
+
+.toggleSlider {
+    position: relative;
+    width: 48px;
+    height: 24px;
+    background: var(--bg-secondary);
+    border-radius: 24px;
+    transition: background 0.3s ease;
+    border: 1px solid var(--border-secondary);
+}
+
+.toggleSlider::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: var(--text-secondary);
+    border-radius: 50%;
+    transition:
+        transform 0.3s ease,
+        background 0.3s ease;
+}
+
+.toggleInput:checked + .toggleSlider {
+    background: var(--text-accent);
+    border-color: var(--text-accent);
+}
+
+.toggleInput:checked + .toggleSlider::before {
+    transform: translateX(24px);
+    background: white;
+}
+
+.toggleText {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}

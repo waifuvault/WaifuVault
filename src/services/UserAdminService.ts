@@ -57,10 +57,6 @@ export class UserAdminService extends AbstractAdminService {
         return this.ipBlackListRepo.removeBlockedIps(ips);
     }
 
-    public getBucketType(token: string): Promise<BucketType | null> {
-        return this.bucketRepo.getBucketType(token);
-    }
-
     public setBucketType(token: string, bucketType: BucketType): Promise<boolean> {
         return this.bucketRepo.setBucketType(token, bucketType);
     }

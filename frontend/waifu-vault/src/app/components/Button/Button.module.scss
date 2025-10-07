@@ -1,0 +1,276 @@
+@use "sass:map";
+@use "../../styles/theme-config" as config;
+@use "../../styles/mixins" as mix;
+$button-variants: (
+    primary: (
+        bg: var(--gradient-primary),
+        color: white,
+        hover-transform: -2px,
+        hover-shadow: var(--shadow-secondary),
+    ),
+    secondary: (
+        bg: var(--bg-tertiary),
+        color: var(--text-secondary),
+        border: 1px solid var(--border-secondary),
+        hover: (
+            bg: var(--bg-secondary),
+            color: var(--text-primary),
+            border-color: var(--border-primary),
+            transform: -1px,
+        ),
+    ),
+    outline: (
+        bg: transparent,
+        color: var(--text-accent),
+        border: 2px solid var(--text-accent),
+        hover: (
+            bg: var(--text-accent),
+            color: white,
+            transform: -1px,
+        ),
+    ),
+    ghost: (
+        bg: transparent,
+        color: var(--text-secondary),
+        border: none,
+        hover: (
+            bg: rgba(255, 255, 255, 0.08),
+            color: var(--text-primary),
+            transform: -1px,
+        ),
+    ),
+    danger: (
+        bg: linear-gradient(135deg, #dc3545 0%, #c82333 100%),
+        color: white,
+        hover-transform: -2px,
+        hover-shadow: 0 4px 12px rgba(220, 53, 69, 0.4),
+    ),
+);
+
+$button-sizes: (
+    small: (
+        padding: config.get-spacing(sm) config.get-spacing(md),
+        font-size: 0.875rem,
+    ),
+    medium: (
+        padding: config.get-spacing(md) config.get-spacing(lg),
+        font-size: 1rem,
+    ),
+    large: (
+        padding: config.get-spacing(lg) config.get-spacing(xl),
+        font-size: 1.1rem,
+    ),
+);
+.button {
+    @include mix.button-base;
+    border-radius: config.get-radius(md);
+    @include mix.focus-ring();
+    @each $size-name, $size-props in $button-sizes {
+        &.#{$size-name} {
+            padding: map.get($size-props, padding);
+            font-size: map.get($size-props, font-size);
+            @media (max-width: 768px) {
+                @if $size-name == large {
+                    padding: config.get-spacing(md) config.get-spacing(lg);
+                    font-size: 1rem;
+                } @else if $size-name == medium {
+                    padding: config.get-spacing(sm) config.get-spacing(md);
+                    font-size: 0.95rem;
+                }
+            }
+        }
+    }
+    @each $variant-name, $variant-props in $button-variants {
+        &.#{$variant-name} {
+            background: map.get($variant-props, bg);
+            color: map.get($variant-props, color);
+
+            @if map.has-key($variant-props, border) {
+                border: map.get($variant-props, border);
+            }
+
+            &:hover:not(:disabled) {
+                @if map.has-key($variant-props, hover-transform) {
+                    transform: translateY(map.get($variant-props, hover-transform));
+                }
+
+                @if map.has-key($variant-props, hover-shadow) {
+                    box-shadow: map.get($variant-props, hover-shadow);
+                }
+
+                @if map.has-key($variant-props, hover) {
+                    $hover-props: map.get($variant-props, hover);
+
+                    @each $prop, $value in $hover-props {
+                        @if $prop == transform {
+                            transform: translateY($value);
+                        } @else {
+                            #{$prop}: $value;
+                        }
+                    }
+                }
+                filter: brightness(1.05);
+            }
+            &:active:not(:disabled) {
+                transform: translateY(0);
+                transition-duration: config.get-duration(fast);
+            }
+        }
+    }
+}
+
+// Theme-specific styling
+.themeCyberpunk {
+    &.primary,
+    &.secondary,
+    &.outline {
+        box-shadow: 0 0 10px currentColor;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: -100%;
+            width: 100%;
+            height: calc(100% + 4px);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left config.get-duration(slower) ease;
+        }
+
+        &:hover::before {
+            left: 100%;
+        }
+    }
+}
+
+.themeTerminal,
+.themeOrangeterminal {
+    font-family: config.get-font(mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+    &.primary {
+        position: relative;
+
+        &::after {
+            content: ">";
+            position: absolute;
+            left: config.get-spacing(sm);
+            animation: terminal-blink 1s infinite;
+        }
+    }
+}
+
+.themeSteampunk {
+    border-radius: config.get-radius(lg);
+    position: relative;
+    font-family: config.get-font(serif);
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        background: linear-gradient(45deg, #cd7f32, #b8860b);
+        border-radius: inherit;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity config.get-duration(normal) ease;
+    }
+
+    &:hover::before {
+        opacity: 0.3;
+    }
+
+    &.large {
+        &::after {
+            content: "⚙";
+            margin-left: config.get-spacing(xs);
+            @include mix.animation(gear-spin, slower);
+        }
+    }
+}
+
+.themeMinimal {
+    border-radius: config.get-radius(sm);
+    box-shadow: none;
+
+    &.primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+
+    &.outline {
+        &:hover:not(:disabled) {
+            color: var(--text-primary) !important;
+        }
+    }
+
+    &:hover {
+        box-shadow: config.get-shadow(sm);
+    }
+}
+.button {
+    &.loading {
+        pointer-events: none;
+        opacity: 0.7;
+
+        &::before {
+            content: "";
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin config.get-duration(normal) linear infinite;
+            margin-right: config.get-spacing(xs);
+        }
+    }
+    &.icon-only {
+        padding: config.get-spacing(sm);
+        aspect-ratio: 1;
+
+        &.small {
+            padding: config.get-spacing(xs);
+        }
+        &.large {
+            padding: config.get-spacing(md);
+        }
+    }
+    &:not(:last-child) {
+        .button-group & {
+            border-radius: 0;
+            border-right-width: 0;
+
+            &:first-child {
+                border-top-left-radius: config.get-radius(md);
+                border-bottom-left-radius: config.get-radius(md);
+            }
+
+            &:last-child {
+                border-top-right-radius: config.get-radius(md);
+                border-bottom-right-radius: config.get-radius(md);
+                border-right-width: 1px;
+            }
+        }
+    }
+}
+
+// Animations
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes terminal-blink {
+    0%,
+    50% {
+        opacity: 1;
+    }
+    51%,
+    100% {
+        opacity: 0;
+    }
+}

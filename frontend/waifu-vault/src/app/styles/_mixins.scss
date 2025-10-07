@@ -1,0 +1,250 @@
+@use "sass:map";
+@use "theme-config" as config;
+
+// Advanced Button System with loops and calculations
+@mixin button-base {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: config.get-spacing(sm);
+    border: none;
+    font-family: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    transition: all config.get-duration(normal) ease;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+}
+
+// Generate button sizes using SASS loops
+$button-sizes: (
+    sm: (
+        padding: config.get-spacing(sm) config.get-spacing(md),
+        font-size: 0.875rem,
+    ),
+    md: (
+        padding: config.get-spacing(md) config.get-spacing(lg),
+        font-size: 1rem,
+    ),
+    lg: (
+        padding: config.get-spacing(lg) config.get-spacing(xl),
+        font-size: 1.1rem,
+    ),
+);
+
+@each $size-name, $properties in $button-sizes {
+    .button-#{$size-name} {
+        padding: map.get($properties, padding);
+        font-size: map.get($properties, font-size);
+    }
+}
+
+// Button variants with calculations
+@mixin button-variant($bg-color, $text-color: white, $hover-transform: -2px) {
+    background: $bg-color;
+    color: $text-color;
+    border-radius: config.get-radius(md);
+
+    &:hover:not(:disabled) {
+        transform: translateY($hover-transform);
+        box-shadow: config.get-shadow(md);
+        filter: brightness(1.1);
+    }
+}
+
+// Advanced card system
+@mixin card($padding: md, $radius: lg, $shadow: sm, $border: true) {
+    background: var(--bg-secondary);
+    padding: config.get-spacing($padding);
+    border-radius: config.get-radius($radius);
+    box-shadow: config.get-shadow($shadow);
+    transition: all config.get-duration(normal) ease;
+
+    @if $border {
+        border: 1px solid var(--border-secondary);
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: config.get-shadow(lg);
+        border-color: var(--border-primary);
+    }
+}
+
+// Gradient text with fallback
+@mixin gradient-text($gradient, $fallback-color: var(--text-primary)) {
+    background: $gradient;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
+    // Fallback for browsers that don't support background-clip
+    @supports not (-webkit-background-clip: text) {
+        color: $fallback-color;
+    }
+}
+
+// Advanced glow effect with intensity levels
+@mixin glow($color, $intensity: md) {
+    $glow-sizes: (
+        sm: 5px,
+        md: 10px,
+        lg: 20px,
+        xl: 30px,
+    );
+
+    $size: map.get($glow-sizes, $intensity);
+    text-shadow: 0 0 $size $color;
+}
+
+// Flex utilities with SASS
+@mixin flex($direction: row, $justify: center, $align: center, $gap: md) {
+    display: flex;
+    flex-direction: $direction;
+    justify-content: $justify;
+    align-items: $align;
+    gap: config.get-spacing($gap);
+}
+
+// Grid system with automatic columns
+@mixin grid($min-width: 300px, $gap: lg) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax($min-width, 1fr));
+    gap: config.get-spacing($gap);
+}
+
+// Typography scale using calculations
+$type-scale: 1.25; // Major third
+@function type-size($level) {
+    @return 1rem * pow($type-scale, $level);
+}
+
+@mixin typography($level: 0, $weight: 400, $line-height: 1.5) {
+    font-size: type-size($level);
+    font-weight: $weight;
+    line-height: $line-height;
+    color: var(--text-primary);
+}
+
+// Generate typography classes
+@for $i from -2 through 6 {
+    .text-#{$i} {
+        @include typography($i);
+    }
+}
+
+// Advanced animation system
+@mixin animation($name, $duration: normal, $timing: ease-in-out, $iteration: infinite) {
+    animation: $name config.get-duration($duration) $timing $iteration;
+}
+
+// Hover effects with SASS calculations
+@mixin hover-lift($distance: 4px, $shadow: md) {
+    transition: all config.get-duration(normal) ease;
+
+    &:hover {
+        transform: translateY(-$distance);
+        box-shadow: config.get-shadow($shadow);
+    }
+}
+
+// Theme-specific effects using conditionals
+@mixin theme-effects($theme-name) {
+    @if $theme-name == cyberpunk {
+        &.glow-effect {
+            box-shadow: 0 0 10px currentColor;
+            animation: cyberpunk-pulse 2s ease-in-out infinite alternate;
+        }
+    }
+
+    @if $theme-name == terminal {
+        font-family: config.get-font(mono);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    @if $theme-name == steampunk {
+        font-family: config.get-font(serif);
+        position: relative;
+
+        &::before {
+            content: "⚙";
+            position: absolute;
+            left: -2rem;
+            animation: gear-spin 4s linear infinite;
+        }
+    }
+}
+
+// Responsive breakpoint mixin (duplicate from config to make it available here)
+@mixin respond-to($breakpoint) {
+    @if map.has-key(config.$breakpoints, $breakpoint) {
+        @media (max-width: map.get(config.$breakpoints, $breakpoint)) {
+            @content;
+        }
+    }
+}
+
+// Responsive utilities
+@mixin hide-on($breakpoint) {
+    @include respond-to($breakpoint) {
+        display: none;
+    }
+}
+
+@mixin show-on($breakpoint) {
+    display: none;
+
+    @include respond-to($breakpoint) {
+        display: block;
+    }
+}
+
+// Advanced scrollbar styling
+@mixin custom-scrollbar($width: 8px, $track-color: rgba(255, 255, 255, 0.1), $thumb-color: rgba(255, 255, 255, 0.3)) {
+    &::-webkit-scrollbar {
+        width: $width;
+
+        &-track {
+            background: $track-color;
+        }
+
+        &-thumb {
+            background: $thumb-color;
+            border-radius: calc(#{$width} / 2);
+
+            &:hover {
+                background: lighten($thumb-color, 10%);
+            }
+        }
+    }
+}
+
+// Focus states with theme awareness
+@mixin focus-ring($color: var(--text-accent), $width: 2px, $offset: 2px) {
+    &:focus-visible {
+        outline: $width solid $color;
+        outline-offset: $offset;
+        border-radius: config.get-radius(sm);
+    }
+}
+
+// Truncate text with ellipsis
+@mixin truncate($lines: 1) {
+    @if $lines == 1 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    } @else {
+        display: -webkit-box;
+        -webkit-line-clamp: $lines;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}

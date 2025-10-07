@@ -1,0 +1,232 @@
+.restrictions {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-color: var(--error-color);
+    border-width: 2px;
+}
+
+.restrictionsContent {
+    max-width: 100%;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.restrictionsList {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.restrictionItem {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.restrictionItem:hover {
+    background: var(--bg-secondary);
+    border-color: var(--border-primary);
+}
+
+.retentionInfo {
+    margin: 2rem 0;
+}
+
+.retentionInfo p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.fileCalculator {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    border: 1px solid var(--border-secondary);
+    box-shadow: var(--shadow-primary);
+    transition: all 0.3s ease;
+}
+
+.fileCalculator:hover {
+    border-color: var(--border-primary);
+    box-shadow: var(--shadow-secondary);
+}
+
+.fileInputWrapper {
+    position: relative;
+}
+
+.fileInputHidden {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.fileInputLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border: 2px dashed var(--text-accent);
+    border-radius: 12px;
+    background: rgba(137, 180, 250, 0.05);
+    color: var(--text-accent);
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.fileInputLabel::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(137, 180, 250, 0.1), transparent);
+    transform: rotate(45deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+}
+
+.fileInputLabel:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+    background: rgba(137, 180, 250, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(137, 180, 250, 0.2);
+}
+
+.fileInputLabel:hover::before {
+    opacity: 1;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+.fileInputLabel i {
+    font-size: 1.1rem;
+}
+
+.calculatorResults {
+    margin-top: 1rem;
+}
+
+.result {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+.result.success {
+    background: var(--text-accent);
+    color: var(--bg-primary);
+    border: 1px solid var(--text-accent);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.result.success::before {
+    content: "✓";
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.result.success {
+    padding-left: 3rem;
+}
+
+.result.error {
+    background: var(--error-color);
+    color: white;
+    border: 1px solid var(--error-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.result.error::before {
+    content: "⚠";
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.result.error {
+    padding-left: 3rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .restrictions {
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .description {
+        font-size: 1rem;
+    }
+
+    .restrictionsList {
+        margin: 1.5rem 0;
+    }
+
+    .restrictionItem {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .fileCalculator {
+        padding: 1rem;
+    }
+}

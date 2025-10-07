@@ -1,0 +1,239 @@
+.bespokeSDKs {
+    margin-bottom: 2rem;
+}
+
+.sdkWrapper {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 1rem;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.sdkWrapper::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-bg);
+    opacity: 0.1;
+    z-index: 0;
+}
+
+.sdkWrapper > * {
+    position: relative;
+    z-index: 1;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.sdkGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.sdkCard {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.sdkCard::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--text-accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+}
+
+.sdkCard:hover {
+    border-color: var(--border-primary);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-primary);
+}
+
+.sdkCard:hover::before {
+    opacity: 0.05;
+}
+
+.sdkCard > * {
+    position: relative;
+    z-index: 1;
+}
+
+.sdkIcon {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80px;
+}
+
+.sdkContent {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sdkTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.sdkDescription {
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.rustSDKWrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.rustSDKCard {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    max-width: 400px;
+    width: 100%;
+}
+
+.rustSDKCard::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--text-accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+}
+
+.rustSDKCard:hover {
+    border-color: var(--border-primary);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-primary);
+}
+
+.rustSDKCard:hover::before {
+    opacity: 0.05;
+}
+
+.rustSDKCard > * {
+    position: relative;
+    z-index: 1;
+}
+
+.rustButton {
+    width: auto;
+    min-width: 120px;
+}
+
+/* Mobile responsive */
+@media (max-width: 1200px) {
+    .sdkGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .sdkWrapper {
+        padding: 2rem 1.5rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .sdkGrid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .sdkCard {
+        padding: 1rem;
+    }
+
+    .rustSDKCard {
+        padding: 1rem;
+        max-width: none;
+    }
+
+    .sdkIcon {
+        height: 60px;
+    }
+}
+
+/* Theme-specific styling */
+[data-theme="cyberpunk"] .sdkWrapper {
+    border-color: var(--border-primary);
+    box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
+}
+
+[data-theme="cyberpunk"] .sdkCard,
+[data-theme="cyberpunk"] .rustSDKCard {
+    border-color: var(--border-secondary);
+    box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.05);
+}
+
+[data-theme="cyberpunk"] .sdkCard:hover,
+[data-theme="cyberpunk"] .rustSDKCard:hover {
+    box-shadow: 0 0 20px var(--text-accent);
+}
+
+[data-theme="terminal"] .title,
+[data-theme="orangeterminal"] .title {
+    font-family: "Courier New", "Monaco", "Menlo", monospace;
+}
+
+[data-theme="steampunk"] .title {
+    font-family: "Crimson Text", "Times New Roman", serif;
+}
+
+[data-theme="steampunk"] .sdkWrapper {
+    border-color: var(--border-primary);
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+}

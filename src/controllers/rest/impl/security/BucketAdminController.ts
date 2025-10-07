@@ -2,7 +2,7 @@ import { AbstractAdminController } from "./AbstractAdminController.js";
 import { Controller, Inject } from "@tsed/di";
 import { Delete, Get, Hidden } from "@tsed/schema";
 import { PlatformResponse, Res } from "@tsed/platform-http";
-import { QueryParams } from "@tsed/platform-params";
+import { BodyParams, PathParams, QueryParams } from "@tsed/platform-params";
 import { UseBefore } from "@tsed/platform-middlewares";
 import type {
     DatatableColumn,
@@ -11,13 +11,14 @@ import type {
     IpBlockedAwareFileEntry,
 } from "../../../../utils/typeings.js";
 import { AuthoriseBucket } from "../../../../middleware/endpoint/AuthoriseBucket.js";
-import { BodyParams } from "@tsed/platform-params";
 import { IAdminController } from "../../IAdminController.js";
 import { BucketAdminService } from "../../../../services/BucketAdminService.js";
 import { BucketService } from "../../../../services/BucketService.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
-import { BucketModel } from "../../../../model/db/Bucket.model.js";
 import { StatsModel } from "../../../../model/dto/StatsDto.js";
+import { AdminBucketDto } from "../../../../model/dto/AdminBucketDto.js";
+import BucketType from "../../../../model/constants/BucketType";
+import { NotFound } from "@tsed/exceptions";
 
 @Hidden()
 @Controller("/admin/bucket")
@@ -74,8 +75,8 @@ export class BucketAdminController extends AbstractAdminController implements IA
     }
 
     @Get("/")
-    public getAdminBucket(): Promise<BucketModel | null> {
-        return this.bucketService.getBucket();
+    public getAdminBucket(): Promise<AdminBucketDto | null> {
+        return this.bucketService.getBucket() as Promise<AdminBucketDto | null>;
     }
 
     @Delete("/deleteEntries")
@@ -89,5 +90,14 @@ export class BucketAdminController extends AbstractAdminController implements IA
     @Get("/statsData")
     public override getStatsData(): Promise<StatsModel> {
         return super.getStatsData();
+    }
+
+    @Get("/getBucketType/:token")
+    public async getBucketType(@PathParams("token") token: string): Promise<BucketType> {
+        const bucketType = await this.bucketAdminService.getBucketType(token);
+        if (!bucketType) {
+            throw new NotFound("Bucket not found");
+        }
+        return bucketType;
     }
 }

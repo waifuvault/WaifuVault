@@ -112,3 +112,10 @@ export type MicroServiceResponse = {
     success: boolean;
     message: string;
 };
+
+export type PublicAlbumMetadata = {
+    totalSize: number;
+    albumThumb: string;
+    albumTooBigToDownload: boolean;
+    albumName: string;
+};
