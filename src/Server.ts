@@ -14,8 +14,6 @@ import "./filters/index.js";
 import "./engine/impl/index.js";
 import * as rest from "./controllers/rest/index.js";
 import "./services/FileCleaner.js";
-import * as views from "./controllers/views/index.js";
-import * as adminViews from "./controllers/secure/views/index.js";
 import * as globalMiddleware from "./middleware/global/index.js";
 import "./platformOverrides/index.js";
 import { FileServerController } from "./controllers/serve/FileServerController.js";
@@ -40,7 +38,6 @@ import compression from "compression";
 import multer from "multer";
 import path from "node:path";
 import rateLimit from "express-rate-limit";
-import { LRUCache } from "lru-cache";
 import { filesDir, FileUtils, NetworkUtils } from "./utils/Utils.js";
 import { fileURLToPath } from "node:url";
 import { ExpressRateLimitTypeOrmStore } from "typeorm-rate-limit-store";
@@ -55,6 +52,7 @@ import { RedisStore } from "connect-redis";
 import { uuid } from "./utils/uuidUtils.js";
 import { GlobalEnv } from "./model/constants/GlobalEnv.js";
 import { SettingsService } from "./services/SettingsService.js";
+import { StatusCodes } from "http-status-codes";
 
 const socketIoStatus = process.env.HOME_PAGE_FILE_COUNTER ? process.env.HOME_PAGE_FILE_COUNTER : "dynamic";
 
@@ -98,22 +96,9 @@ const opts: Partial<TsED.Configuration> = {
     },
     mount: {
         "/rest": [...Object.values(rest)],
-        "/": [...Object.values(views)],
         "/f": [FileServerController],
-        "/admin": [...Object.values(adminViews)],
     },
     statics: {
-        "/assets": [
-            {
-                root: `${path.dirname(fileURLToPath(import.meta.url))}/public/assets`,
-            },
-        ],
-        "/favicon.ico": [
-            {
-                // for safari...
-                root: `${path.dirname(fileURLToPath(import.meta.url))}/public/assets/custom/images/favicon.ico`,
-            },
-        ],
         "/robots.txt": [
             {
                 root: `${path.dirname(fileURLToPath(import.meta.url))}/public/robots.txt`,
@@ -168,19 +153,6 @@ const opts: Partial<TsED.Configuration> = {
         compression(),
         ...Object.values(globalMiddleware),
     ],
-    views: {
-        root: `${path.dirname(fileURLToPath(import.meta.url))}/public`,
-        viewEngine: "ejs",
-        extensions: {
-            ejs: "ejs",
-        },
-        options: {
-            ejs: {
-                rmWhitespace: false,
-                cache: isProduction ? LRUCache : null,
-            },
-        },
-    },
     scalar: [
         {
             path: "/api-docs-beta",
@@ -214,6 +186,8 @@ export class Server implements BeforeRoutesInit {
 
     private readonly redisUrl: string | null;
 
+    private readonly frontEndUrl: string | null;
+
     public constructor(
         @Inject() private app: PlatformApplication,
         @Inject(SQLITE_DATA_SOURCE) private ds: DataSource,
@@ -226,6 +200,7 @@ export class Server implements BeforeRoutesInit {
         this.rateLimitMs = settingsService.getSetting(GlobalEnv.RATE_LIMIT_MS);
         this.rateLimit = settingsService.getSetting(GlobalEnv.RATE_LIMIT);
         this.redisUrl = settingsService.getSetting(GlobalEnv.REDIS_URI);
+        this.frontEndUrl = settingsService.getSetting(GlobalEnv.FRONT_END_URL);
     }
 
     public $beforeRoutesInit(): void {
@@ -254,6 +229,7 @@ export class Server implements BeforeRoutesInit {
                 }),
             );
         }
+
         if (this.rateLimit) {
             const howManyRequests = Number.parseInt(this.rateLimit);
             if (Number.isNaN(howManyRequests)) {
@@ -286,8 +262,17 @@ export class Server implements BeforeRoutesInit {
                 }),
             );
         }
+
         if (this.redisUrl) {
             this.logger.info(`Connected IO to redis at ${this.redisUrl}`);
+        }
+
+        if (this.frontEndUrl) {
+            this.app.addRoute("GET", "/", [
+                (_req: Request, res: Response): void => {
+                    res.redirect(StatusCodes.PERMANENT_REDIRECT, this.frontEndUrl!);
+                },
+            ]);
         }
     }
 
