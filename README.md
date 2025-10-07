@@ -78,7 +78,9 @@ Optional Settings
 | VIRUSTOTAL_KEY              | The API Key to use for calls to virustotal                                                                                                                                                                                                                                                            |
 | VIRUSTOTAL_REPUTATION_LIMIT | This is a value from 0 (requires almost no malicious reports) to 9 (will pass with 90% malicious reports) to decide if the file should be deleted                                                                                                                                                     |
 | DANGEROUS_MIME_TYPES        | A comma seperated list of mime types that will be subjected to file reputation check                                                                                                                                                                                                                  |
-| FILE_REPUTATION_CRON        | This allows you to set a custom cron schedule to check recent uploads                                                                                                                                                                                                                                 | 
+| FILE_REPUTATION_CRON        | This allows you to set a custom cron schedule to check recent uploads                                                                                                                                                                                                                                 |
+| FRONT_END_URL               | The URL for the Next.js frontend application. Used for protected file URLs and authentication redirects                                                                                                                                                                                                |
+| COOKIE_DOMAIN               | The domain to use for session cookies. Should match your deployment domain                                                                                                                                                                                                                            | 
 
 The available `CAPTCHA_SERVICE` values are:
 
@@ -110,8 +112,37 @@ For this you will need a virustotal API key and to set the following in the .env
 | VIRUSTOTAL_KEY              | The API Key to use for calls to virustotal                                                                                                        |
 | VIRUSTOTAL_REPUTATION_LIMIT | This is a value from 0 (requires almost no malicious reports) to 9 (will pass with 90% malicious reports) to decide if the file should be deleted |
 | DANGEROUS_MIME_TYPES        | A comma seperated list of mime types that will be subjected to file reputation check                                                              |
-| FILE_REPUTATION_CRON        | This allows you to set a custom cron schedule to check recent uploads                                                                             | 
+| FILE_REPUTATION_CRON        | This allows you to set a custom cron schedule to check recent uploads                                                                             |
 
+### Frontend Setup
+
+The Next.js frontend is located in the `frontend/waifu-vault` directory and requires its own `.env` file for configuration.
+
+Create a `.env` file in `frontend/waifu-vault/` with the following settings:
+
+```env
+NEXT_PUBLIC_BASE_URL=http://127.0.0.1:8280
+NEXT_PUBLIC_WAIFUVAULT_BACKEND=http://127.0.0.1:8081
+NEXT_PUBLIC_HOME_PAGE_FILE_COUNTER=dynamic
+NODE_ENV=development
+NEXT_PUBLIC_UPLOADER_URL=http://localhost:3000
+NEXT_PUBLIC_ALLOWED_DEV_ORIGINS=127.0.0.1
+NEXT_PUBLIC_THUMBNAIL_SERVICE=http://127.0.0.1:5006
+```
+
+Frontend Environment Variables:
+
+| Setting                             | Description                                                                                   |
+|-------------------------------------|-----------------------------------------------------------------------------------------------|
+| NEXT_PUBLIC_BASE_URL                | The URL where the Next.js frontend is hosted                                                  |
+| NEXT_PUBLIC_WAIFUVAULT_BACKEND      | The URL where the backend API is hosted                                                       |
+| NEXT_PUBLIC_HOME_PAGE_FILE_COUNTER  | Controls the file counter display (static, dynamic, or off)                                   |
+| NODE_ENV                            | The Node environment (development or production)                                              |
+| NEXT_PUBLIC_UPLOADER_URL            | The URL for the uploader service                                                              |
+| NEXT_PUBLIC_ALLOWED_DEV_ORIGINS     | Comma-separated list of allowed origins for development                                       |
+| NEXT_PUBLIC_THUMBNAIL_SERVICE       | The URL for the thumbnail generation service                                                  |
+
+> **Note:** For production deployments, adjust these URLs to match your production environment.
 
 ### Build and Run commands
 
