@@ -5,6 +5,7 @@ export * from "./BaseRestController.js";
 export * from "./IAdminController.js";
 export * from "./impl/AlbumController.js";
 export * from "./impl/BucketController.js";
+export * from "./impl/ConfigController.js";
 export * from "./impl/FileUploadController.js";
 export * from "./impl/HealthCheckController.js";
 export * from "./impl/ResourceController.js";

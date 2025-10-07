@@ -1,19 +1,35 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./page.module.scss";
-import { Button, Card, CardBody, CardHeader, Footer, Header, Input, ParticleBackground } from "@/app/components";
-import { useBucketAuth, useEnvironment } from "@/app/hooks";
+import type { CaptchaHandle } from "@/app/components";
+import {
+    Button,
+    Captcha,
+    Card,
+    CardBody,
+    CardHeader,
+    Footer,
+    Header,
+    Input,
+    ParticleBackground,
+} from "@/app/components";
+import { useBucketAuth, useCaptcha, useEnvironment } from "@/app/hooks";
 import { useBucketAuthContext, useLoading } from "@/app/contexts";
+import { getCaptchaBodyKey } from "@/app/utils/captchaUtils";
 
 function BucketAccessContent() {
     const [token, setToken] = useState("");
     const [error, setError] = useState("");
+    const [captchaVerified, setCaptchaVerified] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const captchaRef = useRef<CaptchaHandle>(null);
     const { backendRestBaseUrl } = useEnvironment();
     const { isAuthenticated } = useBucketAuth();
     const { setIsAuthenticated } = useBucketAuthContext();
     const { withLoading, isLoading } = useLoading();
+    const { captchaType, siteKey, isEnabled: isCaptchaEnabled } = useCaptcha();
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -43,6 +59,21 @@ function BucketAccessContent() {
         }
     }, []);
 
+    const handleCaptchaVerify = (token: string) => {
+        setCaptchaVerified(true);
+        setCaptchaToken(token);
+    };
+
+    const handleCaptchaExpire = () => {
+        setCaptchaVerified(false);
+        setCaptchaToken(null);
+    };
+
+    const handleCaptchaReset = () => {
+        setCaptchaVerified(false);
+        setCaptchaToken(null);
+    };
+
     const handleCreateBucket = async () => {
         await withLoading(async () => {
             try {
@@ -68,12 +99,21 @@ function BucketAccessContent() {
         setError("");
 
         try {
+            const requestBody: Record<string, string> = { token };
+
+            if (isCaptchaEnabled && captchaToken && captchaType) {
+                const captchaKey = getCaptchaBodyKey(captchaType);
+                if (captchaKey) {
+                    requestBody[captchaKey] = captchaToken;
+                }
+            }
+
             const response = await fetch(`${backendRestBaseUrl}/auth/authenticate_bucket_frontend`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ token }),
+                body: JSON.stringify(requestBody),
                 credentials: "include",
             });
 
@@ -85,10 +125,12 @@ function BucketAccessContent() {
                     return { message: "Authentication failed" };
                 });
                 setError(errorData.message || "Authentication failed");
+                captchaRef.current?.reset();
             }
         } catch (err) {
             console.log("Network error:", err);
             setError("Network error. Please try again.");
+            captchaRef.current?.reset();
         }
     };
 
@@ -132,12 +174,24 @@ function BucketAccessContent() {
                                         disabled={isLoading}
                                     />
                                 </div>
+                                {isCaptchaEnabled && captchaType && siteKey && (
+                                    <div className={styles.captchaGroup}>
+                                        <Captcha
+                                            ref={captchaRef}
+                                            captchaType={captchaType}
+                                            siteKey={siteKey}
+                                            onVerify={handleCaptchaVerify}
+                                            onExpire={handleCaptchaExpire}
+                                            onReset={handleCaptchaReset}
+                                        />
+                                    </div>
+                                )}
                                 <div className={styles.buttonGroup}>
                                     <Button
                                         type="submit"
                                         variant="primary"
                                         size="large"
-                                        disabled={isLoading || !token.trim()}
+                                        disabled={isLoading || !token.trim() || (isCaptchaEnabled && !captchaVerified)}
                                         className={styles.submitButton}
                                     >
                                         {isLoading ? "Authenticating..." : "Gain Access"}

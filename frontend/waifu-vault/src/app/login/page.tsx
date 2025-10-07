@@ -1,20 +1,36 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./page.module.scss";
-import { Button, Card, CardBody, CardHeader, Footer, Header, Input, ParticleBackground } from "@/app/components";
-import { useAdminAuth, useEnvironment } from "@/app/hooks";
+import type { CaptchaHandle } from "@/app/components";
+import {
+    Button,
+    Captcha,
+    Card,
+    CardBody,
+    CardHeader,
+    Footer,
+    Header,
+    Input,
+    ParticleBackground,
+} from "@/app/components";
+import { useAdminAuth, useCaptcha, useEnvironment } from "@/app/hooks";
 import { useAdminAuthContext, useLoading } from "@/app/contexts";
+import { getCaptchaBodyKey } from "@/app/utils/captchaUtils";
 
 function AdminLoginContent() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [captchaVerified, setCaptchaVerified] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const captchaRef = useRef<CaptchaHandle>(null);
     const { backendRestBaseUrl } = useEnvironment();
     const { withLoading, isLoading } = useLoading();
     const { isAuthenticated } = useAdminAuth();
     const { setIsAuthenticated } = useAdminAuthContext();
+    const { captchaType, siteKey, isEnabled: isCaptchaEnabled } = useCaptcha();
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -34,6 +50,21 @@ function AdminLoginContent() {
         }
     }, [searchParams]);
 
+    const handleCaptchaVerify = (token: string) => {
+        setCaptchaVerified(true);
+        setCaptchaToken(token);
+    };
+
+    const handleCaptchaExpire = () => {
+        setCaptchaVerified(false);
+        setCaptchaToken(null);
+    };
+
+    const handleCaptchaReset = () => {
+        setCaptchaVerified(false);
+        setCaptchaToken(null);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email.trim() || !password.trim()) {
@@ -44,12 +75,21 @@ function AdminLoginContent() {
 
         await withLoading(async () => {
             try {
+                const requestBody: Record<string, string> = { email, password };
+
+                if (isCaptchaEnabled && captchaToken && captchaType) {
+                    const captchaKey = getCaptchaBodyKey(captchaType);
+                    if (captchaKey) {
+                        requestBody[captchaKey] = captchaToken;
+                    }
+                }
+
                 const response = await fetch(`${backendRestBaseUrl}/auth/login`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ email, password }),
+                    body: JSON.stringify(requestBody),
                     credentials: "include",
                 });
 
@@ -60,11 +100,13 @@ function AdminLoginContent() {
                     const errorData = await response.json().catch(() => {
                         return { message: "Authentication failed" };
                     });
-                    setError(errorData.message || "Authentication failed");
+                    setError(errorData.message ?? "Authentication failed");
+                    captchaRef.current?.reset();
                 }
             } catch (err) {
                 console.log("Network error:", err);
                 setError("Network error. Please try again.");
+                captchaRef.current?.reset();
             }
         });
     };
@@ -111,12 +153,29 @@ function AdminLoginContent() {
                                         disabled={isLoading}
                                     />
                                 </div>
+                                {isCaptchaEnabled && captchaType && siteKey && (
+                                    <div className={styles.captchaGroup}>
+                                        <Captcha
+                                            ref={captchaRef}
+                                            captchaType={captchaType}
+                                            siteKey={siteKey}
+                                            onVerify={handleCaptchaVerify}
+                                            onExpire={handleCaptchaExpire}
+                                            onReset={handleCaptchaReset}
+                                        />
+                                    </div>
+                                )}
                                 <div className={styles.buttonGroup}>
                                     <Button
                                         type="submit"
                                         variant="primary"
                                         size="large"
-                                        disabled={isLoading || !email.trim() || !password.trim()}
+                                        disabled={
+                                            isLoading ||
+                                            !email.trim() ||
+                                            !password.trim() ||
+                                            (isCaptchaEnabled && !captchaVerified)
+                                        }
                                         className={styles.submitButton}
                                     >
                                         {isLoading ? "Logging in..." : "Login"}
