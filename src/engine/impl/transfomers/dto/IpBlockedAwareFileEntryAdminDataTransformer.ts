@@ -13,13 +13,12 @@ export class IpBlockedAwareFileEntryAdminDataTransformer implements ITransformer
         if (!input) {
             return false;
         }
-        const keys = Object.keys(input);
         return (
-            keys.length === 4 &&
-            keys[0] === "draw" &&
-            keys[1] === "recordsTotal" &&
-            keys[2] === "recordsFiltered" &&
-            keys[3] === "data"
+            "draw" in input &&
+            "recordsTotal" in input &&
+            "recordsFiltered" in input &&
+            "data" in input &&
+            Object.getOwnPropertyNames(input).length === 4
         );
     }
 
