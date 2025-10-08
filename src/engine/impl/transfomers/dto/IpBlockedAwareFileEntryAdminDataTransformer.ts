@@ -15,14 +15,15 @@ export class IpBlockedAwareFileEntryAdminDataTransformer
     @InjectContext()
     private $ctx?: PlatformContext;
 
-    public supportsInput(input: object): boolean {
-        if (!input) {
+    public supportsInput(input: unknown): boolean {
+        if (!input || typeof input !== "object") {
             return false;
         }
 
         if (this.$ctx && this.$ctx.request.url.startsWith("/rest/admin") && "ipBlocked" in input) {
             return true;
         }
+
         return (
             "draw" in input &&
             "recordsTotal" in input &&
