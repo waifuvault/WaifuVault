@@ -20,6 +20,10 @@ export class IpBlockedAwareFileEntryAdminDataTransformer
             return false;
         }
 
+        if (this.$ctx?.request.url.includes("getBucketType")) {
+            return false;
+        }
+
         if (this.$ctx && this.$ctx.request.url.startsWith("/rest/admin") && "ipBlocked" in input) {
             return true;
         }
