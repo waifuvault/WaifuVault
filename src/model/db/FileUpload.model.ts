@@ -195,18 +195,20 @@ export class FileUploadModel extends AbstractModel {
 
     public getPublicUrl(): string {
         const isProtected = this.fileProtectionLevel !== "None";
+        const pathPrefix = isProtected ? "/p" : "/f";
         const baseUrl = isProtected
             ? (constant(GlobalEnv.FRONT_END_URL) ?? constant(GlobalEnv.BASE_URL))
             : constant(GlobalEnv.BASE_URL);
+
         let url: string;
         if (this.settings?.hideFilename || !this.originalFileName) {
-            url = `${baseUrl}/f/${this.fullFileNameOnSystem}`;
+            url = `${baseUrl}${pathPrefix}/${this.fullFileNameOnSystem}`;
         } else {
             let { originalFileName } = this;
             if (originalFileName.startsWith("/")) {
                 originalFileName = originalFileName.substring(1);
             }
-            url = `${baseUrl}/f/${this.fileName}/${originalFileName}`;
+            url = `${baseUrl}${pathPrefix}/${this.fileName}/${originalFileName}`;
         }
         return encodeURI(url);
     }

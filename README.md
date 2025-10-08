@@ -11,6 +11,17 @@ of hosting.
 
 > **Important!** This requires Docker, Node >= 20 and TypeScript >= 5.5
 
+## Migration Notice
+
+> **⚠️ Breaking Change - Password Protected Files**
+>
+> Password protected file URLs have changed from `/f/` to `/p/`. If you have existing password-protected file links, you must replace `/f/` with `/p/` in the URL.
+>
+> **Before:** `https://waifuvault.moe/f/4c80f857-4147-4f6e-b77f-80b11aadd452/LMG.jpg`
+> **After:** `https://waifuvault.moe/p/4c80f857-4147-4f6e-b77f-80b11aadd452/LMG.jpg`
+>
+> Non-password-protected files continue to use `/f/` as before.
+
 `.env` file must be created for this application to work. Rename `.envExample` to `.env`
 
 #### Postgres
