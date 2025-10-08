@@ -15,24 +15,26 @@ export class IpBlockedAwareFileEntryAdminDataTransformer
     @InjectContext()
     private $ctx?: PlatformContext;
 
-    public supportsInput(input: object): boolean {
+    public supportsInput(input: unknown): boolean {
         if (!input) {
             return false;
         }
 
-        if (this.$ctx?.request.url.includes("getBucketType")) {
+        if (typeof input !== "object") {
             return false;
         }
 
-        if (this.$ctx && this.$ctx.request.url.startsWith("/rest/admin") && "ipBlocked" in input) {
+        const objCast = input as object;
+
+        if (this.$ctx && this.$ctx.request.url.startsWith("/rest/admin") && "ipBlocked" in objCast) {
             return true;
         }
         return (
-            "draw" in input &&
-            "recordsTotal" in input &&
-            "recordsFiltered" in input &&
-            "data" in input &&
-            Object.getOwnPropertyNames(input).length === 4
+            "draw" in objCast &&
+            "recordsTotal" in objCast &&
+            "recordsFiltered" in objCast &&
+            "data" in objCast &&
+            Object.getOwnPropertyNames(objCast).length === 4
         );
     }
 
