@@ -769,6 +769,7 @@ export function FileBrowser({
                         </p>
                     )}
                 </div>
+
                 {allowUpload && (
                     <FileUploadModal
                         isOpen={uploadModal.isOpen}
