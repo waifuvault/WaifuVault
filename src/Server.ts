@@ -52,7 +52,6 @@ import { RedisStore } from "connect-redis";
 import { uuid } from "./utils/uuidUtils.js";
 import { GlobalEnv } from "./model/constants/GlobalEnv.js";
 import { SettingsService } from "./services/SettingsService.js";
-import { StatusCodes } from "http-status-codes";
 
 const socketIoStatus = process.env.HOME_PAGE_FILE_COUNTER ? process.env.HOME_PAGE_FILE_COUNTER : "dynamic";
 
@@ -272,13 +271,13 @@ export class Server implements BeforeRoutesInit {
             this.logger.info(`Connected IO to redis at ${this.redisUrl}`);
         }
 
-        if (this.frontEndUrl) {
+        /* if (this.frontEndUrl) {
             this.app.addRoute("GET", "/", [
                 (_req: Request, res: Response): void => {
                     res.redirect(StatusCodes.PERMANENT_REDIRECT, this.frontEndUrl!);
                 },
             ]);
-        }
+        }*/
     }
 
     private parseError(error: Exception): DefaultRenderException {
