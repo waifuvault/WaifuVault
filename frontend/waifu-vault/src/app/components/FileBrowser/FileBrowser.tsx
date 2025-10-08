@@ -768,6 +768,19 @@ export function FileBrowser({
                         </p>
                     )}
                 </div>
+
+                {allowUpload && (
+                    <FileUploadModal
+                        isOpen={uploadModal.isOpen}
+                        onClose={handleUploadClose}
+                        bucketToken={bucketToken}
+                        albumToken={uploadModal.albumToken}
+                        albumName={uploadModal.albumName}
+                        currentAlbumFileCount={uploadModal.albumToken ? filteredFiles.length : 0}
+                        bucketType={bucketType}
+                        onUploadComplete={handleUploadCompleteInternal}
+                    />
+                )}
             </div>
         );
     }
