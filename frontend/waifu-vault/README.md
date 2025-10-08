@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## WaifuVault Frontend
 
-## Getting Started
+Next.js frontend for WaifuVault, a temporary file hosting service.
 
-First, run the development server:
+## Getting started
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+> **Important!** This requires Node >= 20 and TypeScript >= 5.5
+
+> **Note:** The WaifuVault backend must be running for this frontend to work. See the main repository README for backend setup instructions.
+
+## Migration Notice
+
+> **⚠️ Breaking Change - Password Protected Files**
+>
+> Password protected file URLs have changed from `/f/` to `/p/`. If you have existing password-protected file links, you must replace `/f/` with `/p/` in the URL.
+>
+> **Before:** `https://waifuvault.moe/f/{token}/{filename}.jpg`
+> **After:** `https://waifuvault.moe/p/{token}/{filename}.jpg`
+>
+> Non-password-protected files continue to use `/f/` as before.
+
+### Environment Setup
+
+Create a `.env` file in the root of this directory (`frontend/waifu-vault/`) with the following settings:
+
+```env
+NEXT_PUBLIC_BASE_URL=http://127.0.0.1:8280
+NEXT_PUBLIC_WAIFUVAULT_BACKEND=http://127.0.0.1:8081
+NEXT_PUBLIC_HOME_PAGE_FILE_COUNTER=dynamic
+NODE_ENV=development
+NEXT_PUBLIC_UPLOADER_URL=http://localhost:3000
+NEXT_PUBLIC_ALLOWED_DEV_ORIGINS=127.0.0.1
+NEXT_PUBLIC_THUMBNAIL_SERVICE=http://127.0.0.1:5006
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Setting                            | Description                                                                         |
+|------------------------------------|-------------------------------------------------------------------------------------|
+| NEXT_PUBLIC_BASE_URL               | The URL where the Next.js frontend is hosted (default: http://127.0.0.1:8280)       |
+| NEXT_PUBLIC_WAIFUVAULT_BACKEND     | The URL where the backend API is hosted (default: http://127.0.0.1:8081)            |
+| NEXT_PUBLIC_HOME_PAGE_FILE_COUNTER | Controls the file counter display: `static`, `dynamic`, or `off` (default: dynamic) |
+| NODE_ENV                           | The Node environment: `development` or `production`                                 |
+| NEXT_PUBLIC_UPLOADER_URL           | The URL for the uploader service                                                    |
+| NEXT_PUBLIC_ALLOWED_DEV_ORIGINS    | Comma-separated list of allowed origins for development (default: 127.0.0.1)        |
+| NEXT_PUBLIC_THUMBNAIL_SERVICE      | The URL for the thumbnail generation service (default: http://127.0.0.1:5006)       |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> **Note:** For production deployments, adjust these URLs to match your production environment.
 
-## Learn More
+### Build and Run Commands
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# install dependencies
+npm install
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# run development server (http://localhost:8280)
+npm run dev
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# build for production
+npm run build
 
-## Deploy on Vercel
+# start production server
+npm start
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# run linter
+npm run lint
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# fix linting issues
+npm run lint:fix
+
+# check code formatting
+npm run prettier
+
+# fix code formatting
+npm run prettier:fix
+```
+
+## Development Notes
+
+The development server runs on port **8280** with Turbopack enabled for faster builds.
+
+The production server runs on **localhost:8280** by default.
+
+## Project Structure
+
+This is a Next.js 15 application using:
+- React 19
+- TypeScript 5
+- Sass for styling
+- Socket.io for real-time updates
+- Highlight.js for code highlighting
+- QRCode generation support
+
+## Backend Compatibility
+
+This is the official frontend for WaifuVault, communicating with the backend API via the configured `NEXT_PUBLIC_WAIFUVAULT_BACKEND` URL.
