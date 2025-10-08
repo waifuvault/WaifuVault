@@ -1,6 +1,6 @@
 import { AbstractAdminController } from "./AbstractAdminController.js";
 import { Controller, Inject } from "@tsed/di";
-import { Delete, Get, Hidden } from "@tsed/schema";
+import { Delete, Get, Hidden, CollectionOf } from "@tsed/schema";
 import { PlatformResponse, Res } from "@tsed/platform-http";
 import { BodyParams, PathParams, QueryParams } from "@tsed/platform-params";
 import { UseBefore } from "@tsed/platform-middlewares";
@@ -82,7 +82,7 @@ export class BucketAdminController extends AbstractAdminController implements IA
     @Delete("/deleteEntries")
     public override deleteEntries(
         @Res() res: PlatformResponse,
-        @BodyParams() ids: number[],
+        @BodyParams() @CollectionOf(Number) ids: number[],
     ): Promise<PlatformResponse> {
         return super.deleteEntries(res, ids);
     }
