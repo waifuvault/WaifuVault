@@ -728,7 +728,6 @@ export function FileBrowser({
     );
 
     if (files.length === 0) {
-
         return (
             <div className={styles.fileBrowser}>
                 <div className={styles.toolbar}>
