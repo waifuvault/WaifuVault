@@ -9,7 +9,7 @@ import {
     FileUploadModal,
     Input,
     Pill,
-    Tooltip
+    Tooltip,
 } from "@/app/components";
 import { useContextMenu, useErrorHandler } from "@/app/hooks";
 import styles from "./FileBrowser.module.scss";
@@ -20,7 +20,7 @@ import {
     getSortFieldKey,
     getSortOrderKey,
     getViewModeKey,
-    LocalStorage
+    LocalStorage,
 } from "@/constants/localStorageKeys";
 
 type SortField = "name" | "date" | "size" | "type";
@@ -982,10 +982,18 @@ export function FileBrowser({
                                 draggable={true}
                                 onDragStart={e => handleDragStart(e, file.id)}
                                 onDragOver={
-                                    allowReorder && !isDraggingToAlbum && !isSearchActive ? e => handleDragOver(e, file.id) : undefined
+                                    allowReorder && !isDraggingToAlbum && !isSearchActive
+                                        ? e => handleDragOver(e, file.id)
+                                        : undefined
                                 }
-                                onDragLeave={allowReorder && !isDraggingToAlbum && !isSearchActive ? handleDragLeave : undefined}
-                                onDrop={allowReorder && !isDraggingToAlbum && !isSearchActive ? e => handleDrop(e, file.id) : undefined}
+                                onDragLeave={
+                                    allowReorder && !isDraggingToAlbum && !isSearchActive ? handleDragLeave : undefined
+                                }
+                                onDrop={
+                                    allowReorder && !isDraggingToAlbum && !isSearchActive
+                                        ? e => handleDrop(e, file.id)
+                                        : undefined
+                                }
                                 onDragEnd={handleDragEnd}
                             >
                                 <div className={styles.filePreviewContainer}>
@@ -1066,11 +1074,19 @@ export function FileBrowser({
                                     draggable={true}
                                     onDragStart={e => handleDragStart(e, file.id)}
                                     onDragOver={
-                                        allowReorder && !isDraggingToAlbum && !isSearchActive ? e => handleDragOver(e, file.id) : undefined
+                                        allowReorder && !isDraggingToAlbum && !isSearchActive
+                                            ? e => handleDragOver(e, file.id)
+                                            : undefined
                                     }
-                                    onDragLeave={allowReorder && !isDraggingToAlbum && !isSearchActive ? handleDragLeave : undefined}
+                                    onDragLeave={
+                                        allowReorder && !isDraggingToAlbum && !isSearchActive
+                                            ? handleDragLeave
+                                            : undefined
+                                    }
                                     onDrop={
-                                        allowReorder && !isDraggingToAlbum && !isSearchActive ? e => handleDrop(e, file.id) : undefined
+                                        allowReorder && !isDraggingToAlbum && !isSearchActive
+                                            ? e => handleDrop(e, file.id)
+                                            : undefined
                                     }
                                     onDragEnd={handleDragEnd}
                                 >
