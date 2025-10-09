@@ -9,7 +9,7 @@ import {
     FileUploadModal,
     Input,
     Pill,
-    Tooltip,
+    Tooltip
 } from "@/app/components";
 import { useContextMenu, useErrorHandler } from "@/app/hooks";
 import styles from "./FileBrowser.module.scss";
@@ -20,7 +20,7 @@ import {
     getSortFieldKey,
     getSortOrderKey,
     getViewModeKey,
-    LocalStorage,
+    LocalStorage
 } from "@/constants/localStorageKeys";
 
 type SortField = "name" | "date" | "size" | "type" | "layout";
@@ -527,7 +527,7 @@ export function FileBrowser({
 
             setTimeout(() => document.body.removeChild(dragImage), 0);
 
-            const isDraggingToAlbum = !allowReorder || !albumToken || isSearchActive;
+            const isDraggingToAlbum = !allowReorder || !albumToken || isSearchActive || sortField !== "layout";
             if (isDraggingToAlbum) {
                 setIsDraggingToAlbum(true);
                 onDragStart?.(true);
@@ -535,7 +535,7 @@ export function FileBrowser({
                 onDragStart?.(false);
             }
         },
-        [selectedFiles, allowReorder, albumToken, sortedFiles, onDragStart, isSearchActive],
+        [selectedFiles, allowReorder, albumToken, sortedFiles, onDragStart, isSearchActive, sortField],
     );
 
     const handleDragOver = useCallback(
@@ -909,6 +909,15 @@ export function FileBrowser({
             {showSort && (
                 <div className={styles.sortHeader}>
                     <div className={styles.sortControls}>
+                        {albumToken && (
+                            <Button
+                                variant={sortField === "layout" ? "primary" : "outline"}
+                                size="small"
+                                onClick={() => handleSort("layout")}
+                            >
+                                Layout
+                            </Button>
+                        )}
                         <Button
                             variant={sortField === "name" ? "primary" : "outline"}
                             size="small"
@@ -937,15 +946,6 @@ export function FileBrowser({
                         >
                             Type {sortField === "type" && (sortOrder === "asc" ? "↑" : "↓")}
                         </Button>
-                        {albumToken && (
-                            <Button
-                                variant={sortField === "layout" ? "primary" : "outline"}
-                                size="small"
-                                onClick={() => handleSort("layout")}
-                            >
-                                Layout
-                            </Button>
-                        )}
                         <Button
                             variant={currentItemsPerPage === itemsPerPage ? "primary" : "outline"}
                             size="small"
@@ -969,6 +969,26 @@ export function FileBrowser({
                             {itemsPerPage * 10}
                         </Button>
                     </div>
+                    {albumToken && sortField === "layout" && (
+                        <div className={styles.albumOrderInfo}>
+                            <i className="bi bi-info-circle"></i>
+                            <div className={styles.infoContent}>
+                                <strong>Public Album Layout:</strong> This is the layout for the public album view.
+                                Use <strong>drag-and-drop</strong> to reorder files as they will appear when this album
+                                is shared publicly.
+                            </div>
+                        </div>
+                    )}
+                    {albumToken && sortField !== "layout" && (
+                        <div className={styles.albumOrderInfo}>
+                            <i className="bi bi-info-circle"></i>
+                            <div className={styles.infoContent}>
+                                <strong>Drag-Drop Disabled:</strong> File reordering is disabled when using sort options.
+                                Select <strong>Layout</strong> to modify the public album view and enable drag-and-drop
+                                reordering.
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
