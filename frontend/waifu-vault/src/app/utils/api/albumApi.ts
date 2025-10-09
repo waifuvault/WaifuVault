@@ -29,7 +29,6 @@ export async function createAlbum(backendRestBaseUrl: string, bucketToken: strin
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ name }),
     });
 
@@ -48,7 +47,6 @@ export async function deleteAlbum(
 ): Promise<void> {
     const response = await fetch(`${backendRestBaseUrl}/album/${albumToken}?deleteFiles=${deleteFiles}`, {
         method: "DELETE",
-        credentials: "include",
     });
 
     if (!response.ok) {
@@ -63,7 +61,6 @@ export async function getAlbum(
 ): Promise<{ files: UrlFileMixin[]; album: AlbumInfo }> {
     const response = await fetch(`${backendRestBaseUrl}/album/${albumToken}`, {
         method: "GET",
-        credentials: "include",
     });
 
     if (!response.ok) {
@@ -95,7 +92,6 @@ export async function assignFilesToAlbum(
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ fileTokens }),
     });
 
@@ -115,7 +111,6 @@ export async function removeFilesFromAlbum(
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ fileTokens }),
     });
 
@@ -136,7 +131,6 @@ export async function reorderFiles(
         `${backendRestBaseUrl}/album/${albumToken}/swapFileOrder/${fileId}/${oldPosition}/${newPosition}`,
         {
             method: "POST",
-            credentials: "include",
         },
     );
 
@@ -152,7 +146,6 @@ export async function shareAlbum(backendRestBaseUrl: string, albumToken: string)
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
     });
 
     if (!response.ok) {
@@ -170,7 +163,6 @@ export async function unshareAlbum(backendRestBaseUrl: string, albumToken: strin
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
     });
 
     if (!response.ok) {
