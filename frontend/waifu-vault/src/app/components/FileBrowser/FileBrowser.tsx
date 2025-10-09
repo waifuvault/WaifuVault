@@ -565,7 +565,7 @@ export function FileBrowser({
 
     const handleDrop = useCallback(
         async (e: React.DragEvent, targetFileId: number) => {
-            if (!allowReorder || !onReorderFiles || isDraggingToAlbum) {
+            if (!allowReorder || !onReorderFiles || isDraggingToAlbum || sortField !== "layout") {
                 return;
             }
 
