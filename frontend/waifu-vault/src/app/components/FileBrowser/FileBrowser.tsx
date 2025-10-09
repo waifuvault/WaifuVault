@@ -125,14 +125,6 @@ export function FileBrowser({
 
     const sortedFiles = useMemo(() => {
         return [...filteredFiles].sort((a, b) => {
-            if (albumToken && a.addedToAlbumOrder !== null && b.addedToAlbumOrder !== null) {
-                const orderA = a.addedToAlbumOrder ?? Infinity;
-                const orderB = b.addedToAlbumOrder ?? Infinity;
-                if (orderA !== orderB) {
-                    return orderA - orderB;
-                }
-            }
-
             let comparison: number;
 
             switch (sortField) {
