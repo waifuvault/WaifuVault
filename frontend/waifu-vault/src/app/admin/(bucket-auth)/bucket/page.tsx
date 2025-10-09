@@ -13,7 +13,7 @@ import {
     FileBrowser,
     Footer,
     Header,
-    ParticleBackground
+    ParticleBackground,
 } from "@/app/components";
 import { useToast } from "@/app/components/Toast";
 import type { AdminBucketDto, BucketType, UrlFileMixin } from "@/app/types";
@@ -402,6 +402,17 @@ function BucketAdminContent() {
                                     currentFilesCount={filteredFiles.length}
                                 />
                                 <div className={styles.fileBrowserWrapper}>
+                                    {selectedAlbum && (
+                                        <div className={styles.albumOrderInfo}>
+                                            <i className="bi bi-info-circle"></i>
+                                            <div className={styles.infoContent}>
+                                                <strong>Album Ordering:</strong> The file order shown below is the order
+                                                that will be displayed when this album is shared publicly. Use{" "}
+                                                <strong>drag-and-drop</strong> to reorder files. Sort buttons are
+                                                disabled when viewing albums as the custom order takes precedence.
+                                            </div>
+                                        </div>
+                                    )}
                                     <FileBrowser
                                         files={FileWrapper.wrapFiles(filteredFiles)}
                                         albums={albumsWithCounts.map(a => ({ token: a.token, name: a.name }))}

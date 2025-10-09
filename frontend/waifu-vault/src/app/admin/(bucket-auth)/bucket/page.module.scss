@@ -71,6 +71,37 @@
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.albumOrderInfo {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 8px;
+    color: var(--text-primary, #ffffff);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    backdrop-filter: blur(10px);
+
+    i {
+        font-size: 1.2rem;
+        color: rgba(59, 130, 246, 0.9);
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+    }
+
+    .infoContent {
+        flex: 1;
+
+        strong {
+            font-weight: 600;
+            color: rgba(59, 130, 246, 1);
+        }
+    }
+}
+
 .albumIndicator {
     display: flex;
     align-items: center;
