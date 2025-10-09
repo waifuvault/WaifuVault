@@ -23,7 +23,7 @@ import {
     LocalStorage,
 } from "@/constants/localStorageKeys";
 
-type SortField = "name" | "date" | "size" | "type";
+type SortField = "name" | "date" | "size" | "type" | "layout";
 type SortOrder = "asc" | "desc";
 type ViewMode = "grid" | "list" | "detailed";
 
@@ -125,6 +125,14 @@ export function FileBrowser({
 
     const sortedFiles = useMemo(() => {
         return [...filteredFiles].sort((a, b) => {
+            if (albumToken && a.addedToAlbumOrder !== null && b.addedToAlbumOrder !== null && sortField === "layout") {
+                const orderA = a.addedToAlbumOrder ?? Infinity;
+                const orderB = b.addedToAlbumOrder ?? Infinity;
+                if (orderA !== orderB) {
+                    return orderA - orderB;
+                }
+            }
+
             let comparison: number;
 
             switch (sortField) {
@@ -200,7 +208,8 @@ export function FileBrowser({
             savedSortField === "name" ||
             savedSortField === "date" ||
             savedSortField === "size" ||
-            savedSortField === "type"
+            savedSortField === "type" ||
+            savedSortField === "layout"
         ) {
             setSortField(savedSortField);
         }
@@ -926,6 +935,15 @@ export function FileBrowser({
                         >
                             Type {sortField === "type" && (sortOrder === "asc" ? "↑" : "↓")}
                         </Button>
+                        {albumToken && (
+                            <Button
+                                variant={sortField === "layout" ? "primary" : "outline"}
+                                size="small"
+                                onClick={() => handleSort("layout")}
+                            >
+                                Layout
+                            </Button>
+                        )}
                         <Button
                             variant={currentItemsPerPage === itemsPerPage ? "primary" : "outline"}
                             size="small"
