@@ -567,7 +567,7 @@ export function FileBrowser({
 
     const handleDrop = useCallback(
         async (e: React.DragEvent, targetFileId: number) => {
-            if (!allowReorder || !onReorderFiles || isDraggingToAlbum || sortField !== "layout" || isSearchActive)  {
+            if (!allowReorder || !onReorderFiles || isDraggingToAlbum || sortField !== "layout" || isSearchActive) {
                 return;
             }
 
@@ -973,9 +973,9 @@ export function FileBrowser({
                         <div className={styles.albumOrderInfo}>
                             <i className="bi bi-info-circle"></i>
                             <div className={styles.infoContent}>
-                                <strong>Public Album Layout:</strong> This is the layout for the public album view.
-                                Use <strong>drag-and-drop</strong> to reorder files as they will appear when this album
-                                is shared publicly.
+                                <strong>Public Album Layout:</strong> This is the layout for the public album view. Use{" "}
+                                <strong>drag-and-drop</strong> to reorder files as they will appear when this album is
+                                shared publicly.
                             </div>
                         </div>
                     )}
@@ -983,9 +983,9 @@ export function FileBrowser({
                         <div className={styles.albumOrderInfo}>
                             <i className="bi bi-info-circle"></i>
                             <div className={styles.infoContent}>
-                                <strong>Drag-Drop Disabled:</strong> File reordering is disabled when using sort options.
-                                Select <strong>Layout</strong> to modify the public album view and enable drag-and-drop
-                                reordering.
+                                <strong>Drag-Drop Disabled:</strong> File reordering is disabled when using sort
+                                options. Select <strong>Layout</strong> to modify the public album view and enable
+                                drag-and-drop reordering.
                             </div>
                         </div>
                     )}
