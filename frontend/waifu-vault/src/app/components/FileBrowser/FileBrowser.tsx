@@ -23,7 +23,7 @@ import {
     LocalStorage,
 } from "@/constants/localStorageKeys";
 
-type SortField = "name" | "date" | "size" | "type";
+type SortField = "name" | "date" | "size" | "type" | "layout";
 type SortOrder = "asc" | "desc";
 type ViewMode = "grid" | "list" | "detailed";
 
@@ -127,7 +127,7 @@ export function FileBrowser({
 
     const sortedFiles = useMemo(() => {
         return [...filteredFiles].sort((a, b) => {
-            if (albumToken && a.addedToAlbumOrder !== null && b.addedToAlbumOrder !== null) {
+            if (albumToken && a.addedToAlbumOrder !== null && b.addedToAlbumOrder !== null && sortField === "layout") {
                 const orderA = a.addedToAlbumOrder ?? Infinity;
                 const orderB = b.addedToAlbumOrder ?? Infinity;
                 if (orderA !== orderB) {
@@ -210,7 +210,8 @@ export function FileBrowser({
             savedSortField === "name" ||
             savedSortField === "date" ||
             savedSortField === "size" ||
-            savedSortField === "type"
+            savedSortField === "type" ||
+            savedSortField === "layout"
         ) {
             setSortField(savedSortField);
         }
@@ -566,7 +567,7 @@ export function FileBrowser({
 
     const handleDrop = useCallback(
         async (e: React.DragEvent, targetFileId: number) => {
-            if (!allowReorder || !onReorderFiles || isDraggingToAlbum || isSearchActive) {
+            if (!allowReorder || !onReorderFiles || isDraggingToAlbum || sortField !== "layout" || isSearchActive)  {
                 return;
             }
 
@@ -936,6 +937,15 @@ export function FileBrowser({
                         >
                             Type {sortField === "type" && (sortOrder === "asc" ? "↑" : "↓")}
                         </Button>
+                        {albumToken && (
+                            <Button
+                                variant={sortField === "layout" ? "primary" : "outline"}
+                                size="small"
+                                onClick={() => handleSort("layout")}
+                            >
+                                Layout
+                            </Button>
+                        )}
                         <Button
                             variant={currentItemsPerPage === itemsPerPage ? "primary" : "outline"}
                             size="small"
