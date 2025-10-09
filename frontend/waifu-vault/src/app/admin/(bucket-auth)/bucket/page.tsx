@@ -13,7 +13,7 @@ import {
     FileBrowser,
     Footer,
     Header,
-    ParticleBackground
+    ParticleBackground,
 } from "@/app/components";
 import { useToast } from "@/app/components/Toast";
 import type { AdminBucketDto, BucketType, UrlFileMixin } from "@/app/types";

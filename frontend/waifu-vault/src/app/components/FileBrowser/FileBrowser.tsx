@@ -9,7 +9,7 @@ import {
     FileUploadModal,
     Input,
     Pill,
-    Tooltip
+    Tooltip,
 } from "@/app/components";
 import { useContextMenu, useErrorHandler } from "@/app/hooks";
 import styles from "./FileBrowser.module.scss";
@@ -20,7 +20,7 @@ import {
     getSortFieldKey,
     getSortOrderKey,
     getViewModeKey,
-    LocalStorage
+    LocalStorage,
 } from "@/constants/localStorageKeys";
 
 type SortField = "name" | "date" | "size" | "type" | "layout";
