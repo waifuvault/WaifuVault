@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"mime/multipart"
 	"os"
@@ -12,11 +15,12 @@ import (
 	"strconv"
 	"strings"
 
+	_ "golang.org/x/image/webp"
+
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dto"
-	"golang.org/x/image/webp"
 )
 
 type Processor interface {
@@ -76,7 +80,7 @@ func (p *processor) GenerateThumbnailFromMultipart(file multipart.File, header *
 
 	extension := getExtensionFromFilename(header.Filename)
 
-	tempFile, err := os.CreateTemp("", "thumbnail-*"+extension)
+	tempFile, err := os.CreateTemp("", "thumbnail-*."+extension)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp file: %w", err)
 	}
@@ -193,7 +197,7 @@ func (p *processor) generateFirstFrameThumbnail(filePath, extension string) ([]b
 		importParams.NumPages = intSet
 	}
 
-	width, height, err := getResizedDimensions(filePath, extension)
+	width, height, err := getResizedDimensions(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +212,7 @@ func (p *processor) generateFirstFrameThumbnail(filePath, extension string) ([]b
 
 // generateStaticThumbnail handles static images (memory-efficient streaming approach)
 func (p *processor) generateStaticThumbnail(filePath, extension string) ([]byte, error) {
-	width, height, err := getResizedDimensions(filePath, extension)
+	width, height, err := getResizedDimensions(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -308,37 +312,19 @@ func getExtensionFromFilename(filename string) string {
 	return strings.ToLower(filename[lastDot+1:])
 }
 
-func getResizedDimensions(filePath, extension string) (newWidth, newHeight int, err error) {
+func getResizedDimensions(filePath string) (newWidth, newHeight int, err error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return 0, 0, err
 	}
 	defer file.Close()
 
-	origWidth, origHeight, err := getImageDimensions(file, extension)
+	config, _, err := image.DecodeConfig(file)
 	if err != nil {
-		return 0, 0, err
+		return DefaultThumbnailWidth, 0, nil
 	}
-	return calculateThumbnailDimensions(origWidth, origHeight)
-}
 
-// getImageDimensions extracts width and height from any io.ReadSeeker
-func getImageDimensions(reader io.ReadSeeker, extension string) (width, height int, err error) {
-	if strings.ToLower(extension) == "webp" {
-		img, err := webp.Decode(reader)
-		if err != nil {
-			return 0, 0, err
-		}
-		bounds := img.Bounds()
-		return bounds.Dx(), bounds.Dy(), nil
-	} else {
-		reader.Seek(0, 0) // Reset to beginning for non-WebP
-		config, _, err := image.DecodeConfig(reader)
-		if err != nil {
-			return 0, 0, err
-		}
-		return config.Width, config.Height, nil
-	}
+	return calculateThumbnailDimensions(config.Width, config.Height)
 }
 
 // calculateThumbnailDimensions calculates scaled dimensions maintaining the aspect ratio
