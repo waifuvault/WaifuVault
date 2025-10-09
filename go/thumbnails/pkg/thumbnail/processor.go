@@ -15,11 +15,12 @@ import (
 	"strconv"
 	"strings"
 
+	_ "golang.org/x/image/webp"
+
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/samber/lo"
 	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dto"
-	_ "golang.org/x/image/webp"
 )
 
 type Processor interface {
@@ -318,23 +319,12 @@ func getResizedDimensions(filePath string) (newWidth, newHeight int, err error) 
 	}
 	defer file.Close()
 
-	origWidth, origHeight, err := getImageDimensions(file)
+	config, _, err := image.DecodeConfig(file)
 	if err != nil {
-		return 0, 0, err
+		return DefaultThumbnailWidth, 0, nil
 	}
-	return calculateThumbnailDimensions(origWidth, origHeight)
-}
 
-// getImageDimensions extracts width and height from any io.ReadSeeker
-func getImageDimensions(reader io.ReadSeeker) (width, height int, err error) {
-	if _, err := reader.Seek(0, 0); err != nil {
-		return 0, 0, err
-	}
-	config, _, err := image.DecodeConfig(reader)
-	if err != nil {
-		return 0, 0, err
-	}
-	return config.Width, config.Height, nil
+	return calculateThumbnailDimensions(config.Width, config.Height)
 }
 
 // calculateThumbnailDimensions calculates scaled dimensions maintaining the aspect ratio
