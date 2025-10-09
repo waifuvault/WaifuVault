@@ -196,9 +196,11 @@ export class FileUploadModel extends AbstractModel {
     public getPublicUrl(): string {
         const isProtected = this.fileProtectionLevel !== "None";
         const pathPrefix = isProtected ? "/p" : "/f";
-        const baseUrl = isProtected
-            ? (constant(GlobalEnv.FRONT_END_URL) ?? constant(GlobalEnv.BASE_URL))
-            : constant(GlobalEnv.BASE_URL);
+
+        const frontendUrl = constant(GlobalEnv.FRONT_END_URL) ?? constant(GlobalEnv.BASE_URL);
+        const backendUrl = constant(GlobalEnv.BASE_URL);
+
+        const baseUrl = isProtected ? frontendUrl : backendUrl;
 
         let url: string;
         if (this.settings?.hideFilename || !this.originalFileName) {
