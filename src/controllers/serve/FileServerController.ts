@@ -47,6 +47,7 @@ export class FileServerController {
         @QueryParams("check") check?: boolean,
     ): Promise<unknown> {
         try {
+            console.log(check);
             await this.hasPassword(resource, req, check, password);
         } catch (e) {
             if (e instanceof RedirectException) {
