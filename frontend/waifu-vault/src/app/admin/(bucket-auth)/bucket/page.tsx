@@ -13,7 +13,7 @@ import {
     FileBrowser,
     Footer,
     Header,
-    ParticleBackground,
+    ParticleBackground
 } from "@/app/components";
 import { useToast } from "@/app/components/Toast";
 import type { AdminBucketDto, BucketType, UrlFileMixin } from "@/app/types";
@@ -416,7 +416,7 @@ function BucketAdminContent() {
                                         bucketToken={bucketData?.token}
                                         bucketType={bucketType || undefined}
                                         showSearch={true}
-                                        showSort={true}
+                                        showSort={selectedAlbum === null}
                                         showViewToggle={true}
                                         allowSelection={true}
                                         allowDeletion={true}

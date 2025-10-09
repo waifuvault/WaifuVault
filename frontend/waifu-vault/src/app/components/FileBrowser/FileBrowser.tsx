@@ -9,7 +9,7 @@ import {
     FileUploadModal,
     Input,
     Pill,
-    Tooltip,
+    Tooltip
 } from "@/app/components";
 import { useContextMenu, useErrorHandler } from "@/app/hooks";
 import styles from "./FileBrowser.module.scss";
@@ -20,7 +20,7 @@ import {
     getSortFieldKey,
     getSortOrderKey,
     getViewModeKey,
-    LocalStorage,
+    LocalStorage
 } from "@/constants/localStorageKeys";
 
 type SortField = "name" | "date" | "size" | "type";
@@ -115,6 +115,8 @@ export function FileBrowser({
     });
 
     const fileListRef = useRef<HTMLDivElement>(null);
+
+    const isSearchActive = useMemo(() => searchQuery.trim() !== "", [searchQuery]);
 
     const filteredFiles = useMemo(() => {
         return files.filter(file => {
@@ -524,7 +526,7 @@ export function FileBrowser({
 
             setTimeout(() => document.body.removeChild(dragImage), 0);
 
-            const isDraggingToAlbum = !allowReorder || !albumToken;
+            const isDraggingToAlbum = !allowReorder || !albumToken || isSearchActive;
             if (isDraggingToAlbum) {
                 setIsDraggingToAlbum(true);
                 onDragStart?.(true);
@@ -532,12 +534,12 @@ export function FileBrowser({
                 onDragStart?.(false);
             }
         },
-        [selectedFiles, allowReorder, albumToken, sortedFiles, onDragStart],
+        [selectedFiles, allowReorder, albumToken, sortedFiles, onDragStart, isSearchActive],
     );
 
     const handleDragOver = useCallback(
         (e: React.DragEvent, targetFileId: number) => {
-            if (!allowReorder || isDraggingToAlbum) {
+            if (!allowReorder || isDraggingToAlbum || isSearchActive) {
                 return;
             }
 
@@ -546,12 +548,12 @@ export function FileBrowser({
 
             setDraggedOverFile(targetFileId);
         },
-        [allowReorder, isDraggingToAlbum],
+        [allowReorder, isDraggingToAlbum, isSearchActive],
     );
 
     const handleDragLeave = useCallback(
         (e: React.DragEvent) => {
-            if (!allowReorder || isDraggingToAlbum) {
+            if (!allowReorder || isDraggingToAlbum || isSearchActive) {
                 return;
             }
 
@@ -559,12 +561,12 @@ export function FileBrowser({
                 setDraggedOverFile(null);
             }
         },
-        [allowReorder, isDraggingToAlbum],
+        [allowReorder, isDraggingToAlbum, isSearchActive],
     );
 
     const handleDrop = useCallback(
         async (e: React.DragEvent, targetFileId: number) => {
-            if (!allowReorder || !onReorderFiles || isDraggingToAlbum) {
+            if (!allowReorder || !onReorderFiles || isDraggingToAlbum || isSearchActive) {
                 return;
             }
 
@@ -598,7 +600,7 @@ export function FileBrowser({
             }
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [allowReorder, onReorderFiles, isDraggingToAlbum, draggedFiles, sortedFiles],
+        [allowReorder, onReorderFiles, isDraggingToAlbum, draggedFiles, sortedFiles, isSearchActive],
     );
 
     const handleDragEnd = useCallback(() => {
@@ -980,10 +982,10 @@ export function FileBrowser({
                                 draggable={true}
                                 onDragStart={e => handleDragStart(e, file.id)}
                                 onDragOver={
-                                    allowReorder && !isDraggingToAlbum ? e => handleDragOver(e, file.id) : undefined
+                                    allowReorder && !isDraggingToAlbum && !isSearchActive ? e => handleDragOver(e, file.id) : undefined
                                 }
-                                onDragLeave={allowReorder && !isDraggingToAlbum ? handleDragLeave : undefined}
-                                onDrop={allowReorder && !isDraggingToAlbum ? e => handleDrop(e, file.id) : undefined}
+                                onDragLeave={allowReorder && !isDraggingToAlbum && !isSearchActive ? handleDragLeave : undefined}
+                                onDrop={allowReorder && !isDraggingToAlbum && !isSearchActive ? e => handleDrop(e, file.id) : undefined}
                                 onDragEnd={handleDragEnd}
                             >
                                 <div className={styles.filePreviewContainer}>
@@ -1064,11 +1066,11 @@ export function FileBrowser({
                                     draggable={true}
                                     onDragStart={e => handleDragStart(e, file.id)}
                                     onDragOver={
-                                        allowReorder && !isDraggingToAlbum ? e => handleDragOver(e, file.id) : undefined
+                                        allowReorder && !isDraggingToAlbum && !isSearchActive ? e => handleDragOver(e, file.id) : undefined
                                     }
-                                    onDragLeave={allowReorder && !isDraggingToAlbum ? handleDragLeave : undefined}
+                                    onDragLeave={allowReorder && !isDraggingToAlbum && !isSearchActive ? handleDragLeave : undefined}
                                     onDrop={
-                                        allowReorder && !isDraggingToAlbum ? e => handleDrop(e, file.id) : undefined
+                                        allowReorder && !isDraggingToAlbum && !isSearchActive ? e => handleDrop(e, file.id) : undefined
                                     }
                                     onDragEnd={handleDragEnd}
                                 >
