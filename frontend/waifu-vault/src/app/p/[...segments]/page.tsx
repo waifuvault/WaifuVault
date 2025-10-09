@@ -26,7 +26,7 @@ export default function FileAccess() {
     const segments = Array.isArray(params.segments) ? params.segments : [params.segments];
     const filename = segments[1] ?? segments[0];
 
-    const fileUrl = `${waifuVaultBackend}/f/${segments.join("/")}`;
+    const fileUrl = `${waifuVaultBackend}/f/${segments.join("/")}?check=true`;
 
     const checkIfPasswordNeeded = useCallback(async () => {
         try {
