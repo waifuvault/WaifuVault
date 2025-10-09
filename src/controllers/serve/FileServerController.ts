@@ -11,26 +11,17 @@ import { FileUploadService } from "../../services/FileUploadService.js";
 import { EntryEncryptionWrapper } from "../../model/rest/EntryEncryptionWrapper.js";
 import { StatusCodes } from "http-status-codes";
 import { FileUtils } from "../../utils/Utils.js";
-import { SettingsService } from "../../services/SettingsService.js";
-import { GlobalEnv } from "../../model/constants/GlobalEnv.js";
-import { RedirectException } from "@tsed/exceptions";
 
 @Hidden()
 @Controller("/")
 export class FileServerController {
-    private readonly allowedChunkMimeTypes = ["video/", "audio/"];
-    private readonly chunkSize = 10 ** 6; // 1MB
-    private readonly frontendUrl: string | null = null;
-    private readonly backendUrl: string;
-
     public constructor(
         @Inject() private fileService: FileService,
         @Inject() private fileUploadService: FileUploadService,
-        @Inject() settingsService: SettingsService,
-    ) {
-        this.frontendUrl = settingsService.getSetting(GlobalEnv.FRONT_END_URL);
-        this.backendUrl = settingsService.getSetting(GlobalEnv.BASE_URL);
-    }
+    ) {}
+
+    private readonly allowedChunkMimeTypes = ["video/", "audio/"];
+    private readonly chunkSize = 10 ** 6; // 1MB
 
     @Get("/:t")
     @Get("/:t/:file")
@@ -45,18 +36,7 @@ export class FileServerController {
         @PathParams("file") requestedFileName?: string,
         @QueryParams("download") download?: boolean,
     ): Promise<unknown> {
-        try {
-            await this.hasPassword(resource, req, password);
-        } catch (e) {
-            if (e instanceof RedirectException) {
-                const requestUrl = new URL(req.originalUrl, `${req.protocol}://${req.host}`);
-                requestUrl.pathname = requestUrl.pathname.replace(/^\/f\//, "/p/");
-                res.redirect(StatusCodes.PERMANENT_REDIRECT, requestUrl.toString());
-                return;
-            }
-            throw e;
-        }
-
+        await this.hasPassword(resource, password);
         const entryWrapper = await this.fileService.getEntry(resource, requestedFileName, password);
         const mime = entryWrapper.entry.mediaType ?? "application/octet-stream";
 
@@ -145,14 +125,10 @@ export class FileServerController {
         await this.fileUploadService.incrementViews(entry.token);
     }
 
-    private async hasPassword(resource: string, req: Request, password?: string): Promise<boolean> {
+    private async hasPassword(resource: string, password?: string): Promise<boolean> {
         resource = Path.parse(resource).name;
         const resourceIsProtected = await this.isFilePasswordProtected(resource);
         if (resourceIsProtected && !password) {
-            if (req.path.includes("/f") && this.backendUrl === this.frontendUrl) {
-                throw new RedirectException(StatusCodes.PERMANENT_REDIRECT, "Redirecting to password protected file");
-            }
-
             const isEncrypted = await this.fileService.isFileEncrypted(resource);
             const resourceUrl = await this.fileService.getFileUrl(resource);
 
