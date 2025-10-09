@@ -113,6 +113,38 @@
     margin-left: auto;
 }
 
+.albumOrderInfo {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-top: 1rem;
+    background: color-mix(in srgb, var(--text-accent, #6366f1) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--text-accent, #6366f1) 30%, transparent);
+    border-radius: 8px;
+    color: var(--text-primary, #ffffff);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    backdrop-filter: blur(10px);
+
+    i {
+        font-size: 1.2rem;
+        color: var(--text-accent, #6366f1);
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+        opacity: 0.9;
+    }
+
+    .infoContent {
+        flex: 1;
+
+        strong {
+            font-weight: 600;
+            color: var(--text-accent, #6366f1);
+        }
+    }
+}
+
 /* File Container */
 .fileContainer {
     position: relative;
