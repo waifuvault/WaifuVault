@@ -201,52 +201,59 @@ management page of the admin feature, but restricted to the files contained in t
 Buckets can be created from the login page by using the `Create Bucket` button. This will create and populate a bucket
 token.
 
-![CreateBucket](https://waifuvault.moe/f/1724958169898/CreateBucket.png)
+![CreateBucket](https://waifuvault.moe/f/5264a78d-7147-418b-84cb-2632f587e239/CreateBucket.png)
 
 ### Bucket File Management Operations
+The column on the left allows you to manage albums, which are collections of files.  The `All Files` shows all files in 
+the bucket, which will include all of the files in your albums.  Files can be moved into albums by drag and drop.
+To create an album you can click on `Create First` or use the `+` at the top.
 
-On the navigation bar at the top, select **File Management** to get to the file management page.
+If you right click on an album, you will get a context menu that allows you to share or unshare the album, pin or 
+unpin it from the list and delete it.
 
-Delete a file, by selecting it and pressing Delete File. You will be asked if you are sure.
+![Albums](https://waifuvault.moe/f/c389c62e-8fe8-4757-8e81-b0f5aec5b728/AlbumColumn.png)
 
-![Delete](https://waifuvault.moe/f/1724959374292/BucketDeleteFile.png)
+Delete a file, by selecting it and pressing Delete. You will be asked if you are sure.
 
-Download a file, by selecting it and pressing Download File.
+![Delete](https://waifuvault.moe/f/f9748592-45fa-4333-82a7-c178db6dbb7b/DeleteFile.png)
 
-![Download](https://waifuvault.moe/f/1724959382664/BucketDownloadFile.png)
+Download a file, by selecting it and clicking `View`.
 
-Upload a file, by pressing Upload File, which will bring up the uploader where you can choose the file and set what
+![Download](https://waifuvault.moe/f/c1061c24-dc7a-4c87-9863-2b6f502e8f55/DownloadFile.png)
+
+Upload a file, by clicking `Upload`, which will bring up the uploader where you can choose the file and set what
 options you would like on it.
 
-Select `Choose File` to upload a file, or `Choose URL` to upload from a URL.
+Drag files to the central box, which will put them in the upload queue.  Once in the upload queue, you can set options 
+such as password, expiry time, hidden filename and one time access by clicking on the `gear` icon next to the file.
+You can also delete it from the queue by using the `trash` icon.
 
-> **NOTE:** The uploader will stay open after file upload, to allow you to easily upload multiple files
+Once you have your files and options set in the queue, click on `Upload Files` to upload them.
 
-![Upload](https://waifuvault.moe/f/1724817237240/BucketUploadNew.png)
+> NOTE: The uploader will stay open after upload, top allow easy multiple upload.  Simply close the 
+> modal when you are done.
 
-Details on a file, by selecting it and pressing Details. The longer fields have copy buttons on them in the details
-panel.
+![Upload](https://waifuvault.moe/f/252bd2a5-a288-4ced-8395-d78e2f96098e/UploadFile.png)
 
-![Details](https://waifuvault.moe/f/1724958342820/FileDetails.png)
+If you have an album selected, then the upload button will show as `Upload Files to Album`.  This will bring up the uploader
+and at the top it will show you how many files are in the album and how many more you have before the album is full.
+Now selecting files will upload them directly to the album.
 
-Finally you can choose to delete the entire bucket. Be aware this will also delete all of the files in the bucket.
-You do this by clicking on the red `Delete Bucket` button in the bottom right.
+![UploadAlbumFile](https://waifuvault.moe/f/e8f52ef5-c952-46f6-95f5-93989be2ff23/UploadAlbumFile.png)
 
-![DeleteBucket](https://waifuvault.moe/f/1724959398024/BucketDeleteBucket.png)
+There are a number of views you can choose for files.  `Grid` is the default, and shows the information and a preview of the
+file as a card.  `List` shows a simple list of the filenames with a clickable view icon, and `Table` shows a table version,
+with the filename, some file attributes and a clickable view icon.
 
-### Bucket Statistics
+![FileViews](https://waifuvault.moe/f/17268662-c849-435b-b796-edd0f8b2656e/FileViews.png)
 
-On the navigation bar at the top, select **Statistics** to get to the statistics page.
+Directly below the view column, are the sort and pagination options.  Files can be sorted by `Name`, `Date`, `Size` and 
+`Type`.  If you are in an album then there is also another sort option - `Layout`.  This is how the files will show on 
+the public album page if you share it, and using drag and drop you can rearrange the files as you see fit.
 
-This page shows overall statistics for the files uploaded to the site:
+Pagination sizes can be set to 10, 50 or 100.  Sort and size will be remembered for each album individually.
 
-* Total Number of Files Uploaded
-* Total Size of Files Uploaded
-* File Size Distribution of Files Uploaded
-* Top 10 Media Types of Files Uploaded
-* File Protection Level Distribution
-
-![Stats](https://waifuvault.moe/f/1724107884794/BucketStats.png)
+![SortOptions](https://waifuvault.moe/f/f08ee717-1f43-4779-9213-01d84108cd94/SortOptions.png)
 
 ## Albums Admin Feature
 
@@ -257,23 +264,22 @@ a collection of files.
 
 ### Creating Albums
 
-To create an album, click on the `Create album` button in the main upper table.
+To create an album, click on the `+` button in the upper right of the albums column.
 Fill in the name you would like for the album and then click `Create Album` in the dialog.
 
-A new tab for the album will then appear in the bottom Albums table.
+A new entry for the album will appear in the list.
 
-![CreateAlbum](https://waifuvault.moe/f/1737302267058/CreateAlbum.png)
+![CreateAlbum](https://waifuvault.moe/f/eba48458-febe-4220-8879-17d3cfc9d6b6/CreateAlbum.png)
 
 ### Deleting Albums
 
-To delete an album, in the bottom albums table, select the tab for the album you wish to delete. Then
-in the bottom right, click on the `Delete Album` button.
+To delete an album, in the albums column, right click on the album and choose `Delete Album`
 
 A dialog will then come up asking you if you want to also delete the files in the album. If you choose
-`Yes` then the files will be deleted from both the album and the bucket. If you choose `No` then the
+`Delete album and all files` then the files will be deleted from both the album and the bucket. If you choose `Delete album, keep files` then the
 files will be removed from the album, but not deleted from the bucket.
 
-![DeleteAlbum](https://waifuvault.moe/f/1737302605135/DeleteAlbum.png)
+![DeleteAlbum](https://waifuvault.moe/f/3241e39d-bd29-4ccc-9d06-d87546f04165/DeleteAlbum.png)
 
 ### Sharing Albums
 
@@ -283,23 +289,21 @@ files within the album.
 > **Note Well** One time download files cannot be included in albums, and files which are protected will
 > still need the password to download.
 
-To share an album, select the tab for the album in the bottom albums section, and then click on the `Share Album`
-button in the bottom left.
+To share an album, right click on the album and choose `Share Album`.
 
-This will add a new button with the public URL in the middle of the bottom bar. Clicking on this button
-will copy the URL to the clipboard for you.
+Now when you right click again on the album, there will be an option `Copy public URL`, which will
+copy the public URL for the album.
 
-![ShareAlbum](https://waifuvault.moe/f/1737303000335/ShareAlbum.png)
+![ShareAlbum](https://waifuvault.moe/f/76200299-ec2b-4448-9327-093124b4cd90/ShareAlbum.png)
 
-To revoke sharing an album, select the tab for the album in the bottom albums section, and then click on
-the `Unshare Album` button in the bottom left.
+To revoke sharing an album, right click on the album and choose `Unshare Album`.
 
-The green URL button will now disappear and the album will be private only again.
+The `Copy public URL` option will now disappear and the album will be private only again.
 
 > **Note Well** If you unshare an album, the original album share URL is destroyed. If you share it again afterwards
 > the URL will be different.
 
-![UnshareAlbum](https://waifuvault.moe/f/1737303226165/UnshareAlbum.png)
+![UnshareAlbum](https://waifuvault.moe/f/56c382b1-cd28-4c8b-adc7-20354ab020ee/UnshareAlbum.png)
 
 ### Public Album Interface
 
@@ -311,46 +315,21 @@ ability to download the files within an album as a zip file.
 > **Note Well** The password will still be required for individual protected files within an album and
 > they will not be included in the zip file download.
 
-Two views are provided. The default view is the card view, which provides a thumbnail for those file
-types that support it. Type icons will be shown for those that do not.
+The same three views from the admin are provided - `Grid`, `List` and `Table`.
 
-The card view can also be selected by clicking on the grid icon at the top right of the page.
-
-Selecting individual files by using the checkboxes in the bottom left of the file card allows you to
+Selecting individual files by using the checkboxes in the upper right of the file card allows you to
 select the files you want to download in the zip file.
 
 If no files are selected then all files will be downloaded in the zip file.
 
-![PublicCCards](https://waifuvault.moe/f/1737303700564/PublicCardsAlbum.png)
-
-A table view of the files within the album is also available by clicking on the hamburger icon in the top
-left of the page.
+![PublicCCards](https://waifuvault.moe/f/c8c0fdab-cfe8-492d-b22c-c6fd0ae915cc/PublicAlbum.png)
 
 Selecting individual files by using the checkboxes next to the filename allows you to
 select the files you want to download in the zip file.
 
-If no files are selected then all files will be downloaded in the zip file.
+Buttons allowing you to download the selected files or all of the files are available in the top right.
 
-![PublicTable](https://waifuvault.moe/f/1737304001712/PublicTableAlbum.png)
-
-### Album File Management
-
-To add files from the main bucket table to an album, select the files you want to add from the upper bucket table
-and then click on `Add to Album`, and select the name of the album you wish to add the files to.
-
-> **Note Well** Files can only be assigned to one album at a time. If you choose a file which is already assigned
-> to another album, it will be moved to the chosen album.
-
-![AddFilesToAlbum](https://waifuvault.moe/f/1737304346693/AddFilesAlbum.png)
-
-To remove files from an album, click on the album tab in the lower table, select the file and then click
-on the `Remove File` button.
-
-The file will no longer be associated with the album.
-
-![RemoveFilesFromAlbum](https://waifuvault.moe/f/1737304567646/RemoveFilesAlbum.png)
-
-> **Note Well** For both add and remove, multiple files can be selected
+![PublicDownload](https://waifuvault.moe/f/ce2fb123-85ca-47f4-8678-d0bd149e406f/PublicDownload.png)
 
 ## Admin Feature
 
@@ -387,62 +366,38 @@ username and password, and can view overall stats on the files that have been up
 
 ### File Management Operations
 
-On the navigation bar at the top, select **File Management** to get to the file management page.
+The file management page will show up, and it is very similar to the bucket management page.
+There is no album column, as those are related to buckets.
 
 Delete a file, by selecting it and pressing Delete File. You will be asked if you are sure.
 
-![Deleting Files](https://waifuvault.moe/f/1724958559307/AdminDelete.png)
+![Deleting Files](https://waifuvault.moe/f/e32f1d8b-f7a7-4e38-bfc3-506ed21c7025/AdminDeleteFile.png)
 
-Download a file, by selecting it and pressing Download File.
+Download a file, by selecting it and pressing View.
 
-![Downloading Files](https://waifuvault.moe/f/1724958603142/AdminDownload.png)
+![Downloading Files](https://waifuvault.moe/f/af5a860b-8153-44d7-80a6-aa554ab913bb/AdminDownload.png)
 
-Details on a file, by selecting it and pressing Details. The longer fields have copy buttons on them in the details
-panel.
-
-Upload a file, by pressing Upload File, which will bring up the uploader where you can choose the file and set what
+Upload a file, by clicking `Upload`, which will bring up the uploader where you can choose the file and set what
 options you would like on it.
 
-Select `Choose File` to upload a file, or `Choose URL` to upload from a URL.
+Drag files to the central box, which will put them in the upload queue.  Once in the upload queue, you can set options
+such as password, expiry time, hidden filename and one time access by clicking on the `gear` icon next to the file.
+You can also delete it from the queue by using the `trash` icon.
+
+Once you have your files and options set in the queue, click on `Upload Files` to upload them.
 
 > **NOTE:** The uploader will stay open after file upload, to allow you to easily upload multiple files
 
-![Upload](https://waifuvault.moe/f/1724958492618/AdminFileUpload.png)
-
-![File Details](https://waifuvault.moe/f/1724958342820/FileDetails.png)
+![Upload](https://waifuvault.moe/f/3de0be4b-8a7a-4e51-8bc1-ccadc16e4977/AdminUpload.png)
 
 ### IP Operations
 
-Ban an IP by selecting the file and pressing Ban IP, then confirming you want to ban it and if you want to delete
+Ban an IP by selecting the file and right click, choosing `Ban IP`, then confirming you want to ban it and if you want to delete
 related files.
 
-![Banning IP Address](https://waifuvault.moe/f/1724959406997/AdminBanIp.png)
+Unban an IP by selecting the IP in the lower table and clicking Unblock Selected, then confirming you want to unblock.
 
-Unban an IP by selecting the IP in the lower table and pressing Un Ban, then confirming you want to unban.
-
-![Unban IP Address](https://waifuvault.moe/f/1724959412624/AdminUnbanIp.png)
-
-### Statistics
-
-On the navigation bar at the top, select **Statistics** to get to the statistics page.
-
-This page shows overall statistics for the files uploaded to the site:
-
-* Total Number of Files Uploaded
-* Total Size of Files Uploaded
-* File Size Distribution of Files Uploaded
-* Top 10 Media Types of Files Uploaded
-* File Protection Level Distribution
-
-![Statistics](https://waifuvault.moe/f/1709505507674/Stats.png)
-
-### User Account Operations
-
-On the navigation bar at the top, select **User** to get to the user account control page.
-
-You can change the username and password from here.
-
-![Change Account Details](https://waifuvault.moe/f/1709505880404/UserControl.png)
+![Banning IP Address](https://waifuvault.moe/f/c5b0aa32-20df-4170-a2d9-f09471dbe3ea/AdminBanIP.png)
 
 ## REST Endpoints
 
