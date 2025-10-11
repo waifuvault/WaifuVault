@@ -64,6 +64,12 @@
         gap: 0.75rem;
         align-items: center;
     }
+
+    .headerButtons {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
 }
 
 .fileBrowserWrapper {
@@ -152,6 +158,18 @@
             font-family: monospace;
             font-size: 0.9rem;
             word-break: break-all;
+        }
+    }
+
+    .formField {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+            color: var(--text-primary, #ffffff);
+            font-weight: 500;
+            font-size: 0.9rem;
         }
     }
 

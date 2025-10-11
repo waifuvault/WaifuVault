@@ -7,6 +7,11 @@ export interface BlockedIp {
     updatedAt: Date;
 }
 
+export interface UserInfo {
+    id: string;
+    email: string;
+}
+
 export async function getAllEntries(waifuVaultBackend: string): Promise<AdminFileData[]> {
     const response = await fetch(`${waifuVaultBackend}/rest/admin/allEntries`, {
         method: "GET",
@@ -95,4 +100,32 @@ export async function setBucketType(waifuVaultBackend: string, token: string, bu
     if (!response.ok) {
         throw new Error(`Failed to set bucket type: ${response.statusText}`);
     }
+}
+
+export async function changeDetails(waifuVaultBackend: string, email: string, password: string): Promise<void> {
+    const response = await fetch(`${waifuVaultBackend}/rest/auth/changeDetails`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to change details: ${response.statusText}`);
+    }
+}
+
+export async function getCurrentUser(waifuVaultBackend: string): Promise<UserInfo> {
+    const response = await fetch(`${waifuVaultBackend}/rest/auth/current_user`, {
+        method: "GET",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to get current user: ${response.statusText}`);
+    }
+
+    return await response.json();
 }

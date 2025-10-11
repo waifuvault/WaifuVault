@@ -2,10 +2,12 @@ import { useCallback, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEnvironment } from "./useEnvironment";
 import { useAdminAuthContext } from "@/app/contexts/AdminAuthContext";
+import type { UserInfo } from "@/app/utils/api/adminApi";
+import * as adminApi from "@/app/utils/api/adminApi";
 
 export function useAdminAuth() {
     const { isAuthenticated, setIsAuthenticated } = useAdminAuthContext();
-    const { backendRestBaseUrl } = useEnvironment();
+    const { backendRestBaseUrl, waifuVaultBackend } = useEnvironment();
     const router = useRouter();
     const pathname = usePathname();
 
@@ -51,10 +53,23 @@ export function useAdminAuth() {
         }
     }, [checkAuth, isAuthenticated, pathname]);
 
+    const changeDetails = useCallback(
+        async (email: string, password: string): Promise<void> => {
+            return adminApi.changeDetails(waifuVaultBackend, email, password);
+        },
+        [waifuVaultBackend],
+    );
+
+    const getCurrentUser = useCallback(async (): Promise<UserInfo> => {
+        return adminApi.getCurrentUser(waifuVaultBackend);
+    }, [waifuVaultBackend]);
+
     return {
         isAuthenticated,
         logout,
         checkAuth,
         redirectToLogin,
+        changeDetails,
+        getCurrentUser,
     };
 }

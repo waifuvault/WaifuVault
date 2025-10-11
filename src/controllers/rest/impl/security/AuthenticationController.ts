@@ -73,6 +73,19 @@ export class AuthenticationController extends BaseRestController {
         return this.doSuccess(res, "Authenticated");
     }
 
+    @Get("/current_user")
+    @Authorize("loginAuthProvider")
+    @Security("loginAuthProvider")
+    @Returns(StatusCodes.OK, CustomUserInfoModel)
+    @Returns(StatusCodes.UNAUTHORIZED)
+    public getCurrentUser(@Req() req: Request, @Res() res: PlatformResponse): PlatformResponse {
+        const loggedInUser = req.user as CustomUserInfoModel;
+        if (!loggedInUser) {
+            return this.doError(res, "Not authenticated", StatusCodes.UNAUTHORIZED);
+        }
+        return res.status(StatusCodes.OK).body(loggedInUser);
+    }
+
     @Get("/close_bucket")
     @Returns(StatusCodes.MOVED_TEMPORARILY)
     public closeBucket(@Res() res: Response): void {
@@ -106,7 +119,7 @@ export class AuthenticationController extends BaseRestController {
         @BodyParams() userDetails: UserModel,
     ): Promise<PlatformResponse> {
         const loggedInUser = req.user as CustomUserInfoModel;
-        await this.usersService.changeDetails(userDetails, loggedInUser);
+        req.user = await this.usersService.changeDetails(userDetails, loggedInUser);
         return this.doSuccess(res, "User details changed");
     }
 }
