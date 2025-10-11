@@ -15,6 +15,7 @@ import {
     FileDetailsDialog,
     Footer,
     Header,
+    Input,
     ParticleBackground,
 } from "@/app/components";
 import { useToast } from "@/app/components/Toast";
@@ -23,7 +24,7 @@ import { FileWrapper } from "@/app/types";
 import styles from "./page.module.scss";
 
 function AdminPageContent() {
-    const { isAuthenticated, logout } = useAdminAuth();
+    const { isAuthenticated, logout, changeDetails, getCurrentUser } = useAdminAuth();
     const { withLoading } = useLoading();
     const { getAllEntries, deleteFiles, getBlockedIps, unblockIps, blockIp, setBucketType } = useAdmin();
     const { handleError } = useErrorHandler();
@@ -39,6 +40,9 @@ function AdminPageContent() {
     const [selectedFileForDetails, setSelectedFileForDetails] = useState<FileWrapper | null>(null);
     const [upgradeBucketDialogOpen, setUpgradeBucketDialogOpen] = useState(false);
     const [selectedBucketToken, setSelectedBucketToken] = useState<string | null>(null);
+    const [changeDetailsDialogOpen, setChangeDetailsDialogOpen] = useState(false);
+    const [newEmail, setNewEmail] = useState("");
+    const [newPassword, setNewPassword] = useState("");
 
     const fetchAdminData = useCallback(async () => {
         await withLoading(async () => {
@@ -164,6 +168,38 @@ function AdminPageContent() {
         showToast("success", "Files uploaded successfully");
     }, [fetchAdminData, showToast]);
 
+    const handleChangeDetailsClick = useCallback(async () => {
+        await withLoading(async () => {
+            try {
+                const userInfo = await getCurrentUser();
+                setNewEmail(userInfo.email);
+                setNewPassword("");
+                setChangeDetailsDialogOpen(true);
+            } catch (error) {
+                handleError(error, { defaultMessage: "Failed to load user info" });
+            }
+        });
+    }, [getCurrentUser, withLoading, handleError]);
+
+    const handleChangeDetailsConfirm = useCallback(async () => {
+        if (!newEmail || !newPassword) {
+            showToast("error", "Please enter both email and password");
+            return;
+        }
+
+        await withLoading(async () => {
+            try {
+                await changeDetails(newEmail, newPassword);
+                showToast("success", "Details changed successfully");
+                setChangeDetailsDialogOpen(false);
+                setNewEmail("");
+                setNewPassword("");
+            } catch (error) {
+                handleError(error, { defaultMessage: "Failed to change details" });
+            }
+        });
+    }, [newEmail, newPassword, changeDetails, withLoading, handleError, showToast]);
+
     const uniqueBuckets = useMemo(() => {
         const bucketMap = new Map<string, number>();
         adminFiles.forEach(file => {
@@ -221,9 +257,14 @@ function AdminPageContent() {
                         <CardHeader>
                             <div className={styles.headerContent}>
                                 <h1>Admin Dashboard</h1>
-                                <Button variant="primary" size="small" onClick={handleUpgradeBucketClick}>
-                                    Upgrade Bucket
-                                </Button>
+                                <div className={styles.headerButtons}>
+                                    <Button variant="primary" size="small" onClick={handleChangeDetailsClick}>
+                                        Change Email/Password
+                                    </Button>
+                                    <Button variant="primary" size="small" onClick={handleUpgradeBucketClick}>
+                                        Upgrade Bucket
+                                    </Button>
+                                </div>
                             </div>
                         </CardHeader>
                         <CardBody>
@@ -368,6 +409,61 @@ function AdminPageContent() {
                         </Button>
                         <Button variant="primary" onClick={handleUpgradeBucketConfirm} disabled={!selectedBucketToken}>
                             Upgrade
+                        </Button>
+                    </div>
+                </div>
+            </Dialog>
+
+            <Dialog
+                isOpen={changeDetailsDialogOpen}
+                onClose={() => {
+                    setChangeDetailsDialogOpen(false);
+                    setNewEmail("");
+                    setNewPassword("");
+                }}
+                title="Change Email/Password"
+                size="medium"
+            >
+                <div className={styles.dialogContent}>
+                    <p>Enter your email and new password. Both fields are required.</p>
+
+                    <div className={styles.formField}>
+                        <label htmlFor="newEmail">Email</label>
+                        <Input
+                            id="newEmail"
+                            type="email"
+                            placeholder="Enter email"
+                            value={newEmail}
+                            onChange={e => setNewEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className={styles.formField}>
+                        <label htmlFor="newPassword">New Password</label>
+                        <Input
+                            id="newPassword"
+                            type="password"
+                            placeholder="Enter new password"
+                            value={newPassword}
+                            onChange={e => setNewPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className={styles.dialogActions}>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setChangeDetailsDialogOpen(false);
+                                setNewEmail("");
+                                setNewPassword("");
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button variant="primary" onClick={handleChangeDetailsConfirm}>
+                            Save Changes
                         </Button>
                     </div>
                 </div>
