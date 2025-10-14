@@ -349,11 +349,13 @@ New user created: email: "foo@example.com" password: "password" Please change th
 
 > **Tip** For first startup run manually, so you can easily find the log file on screen
 
-To get to the admin interface, go to **/login**, where you will provide the
+To get to the admin interface, go to **/admin**, where you will provide the
 email and password from above.
 
-Once you are logged in, you can click on the **Change Details** button, where you can change the email address
+Once you are logged in, you can click on the **Change Email/Password** button, where you can change the email address
 and password.
+
+![ChangePassword](https://waifuvault.moe/f/3e23b616-1cf6-4a83-b5b2-8cbe016d53b1/ChangePassword.png)
 
 > **Note Well** It is recommended you change the default username and password at first startup. The system will not
 > provide the default password again.
