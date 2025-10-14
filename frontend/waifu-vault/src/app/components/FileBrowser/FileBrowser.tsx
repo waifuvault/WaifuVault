@@ -22,6 +22,7 @@ import {
     getViewModeKey,
     LocalStorage,
 } from "@/constants/localStorageKeys";
+import { useToast } from "@/app/components/Toast";
 
 type SortField = "name" | "date" | "size" | "type" | "layout";
 type SortOrder = "asc" | "desc";
@@ -113,6 +114,7 @@ export function FileBrowser({
     }>({
         isOpen: false,
     });
+    const { showToast } = useToast();
 
     const fileListRef = useRef<HTMLDivElement>(null);
 
@@ -406,6 +408,24 @@ export function FileBrowser({
                     label: "Open",
                     icon: <i className="bi bi-box-arrow-up-right"></i>,
                     onClick: () => window.open(file.url, "_blank"),
+                });
+
+                contextMenuItems.push({
+                    id: "urlCopy",
+                    label: "Copy URL",
+                    icon: <i className="bi bi bi-link"></i>,
+                    onClick: async () => {
+                        try {
+                            await navigator.clipboard.writeText(file.url);
+                        } catch (e) {
+                            handleError(e, {
+                                defaultMessage: "Failed to copy URL",
+                                rethrow: false,
+                            });
+                            return;
+                        }
+                        showToast("success", "URL copied successfully");
+                    },
                 });
 
                 if (mode === "admin" && onShowDetails) {
