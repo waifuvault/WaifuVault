@@ -25,8 +25,8 @@ export function useContextMenu() {
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        const mouseX = event.pageX ?? event.clientX;
-        const mouseY = event.pageY ?? event.clientY;
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
 
         const menuWidth = 180;
         const menuHeight = Math.min(items.length * 40 + 20, 400);
