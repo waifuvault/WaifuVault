@@ -33,7 +33,7 @@ interface FileBrowserProps {
     albums?: { token: string; name: string }[];
     onFilesSelected?: (fileIds: number[]) => void;
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
-    onDeleteBucket?: (token: string) => Promise<void>;
+    onDeleteBucket?: () => void;
     onReorderFiles?: (
         fileId: number,
         oldPosition: number,
@@ -340,19 +340,6 @@ export function FileBrowser({
             setSelectedFiles(new Set());
         }
     }, [allowDeletion, selectedFiles, onDeleteFiles]);
-
-    const handleDeleteBucket = useCallback(async () => {
-        if (!onDeleteBucket || !bucketToken) {
-            return;
-        }
-
-        if (confirm("Are you sure you want to delete bucket?\nALL FILES AND ALBUMS WILL BE DELETED!")) {
-            await onDeleteBucket(bucketToken);
-            if (onLogout) {
-                onLogout();
-            }
-        }
-    }, [onLogout, bucketToken, onDeleteBucket]);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -933,12 +920,7 @@ export function FileBrowser({
                     </div>
 
                     {mode === "bucket" && (
-                        <Button
-                            variant="outline"
-                            size="small"
-                            onClick={handleDeleteBucket}
-                            className={styles.deleteBtn}
-                        >
+                        <Button variant="outline" size="small" onClick={onDeleteBucket} className={styles.deleteBtn}>
                             <i className="bi bi-radioactive"></i> Delete Bucket
                         </Button>
                     )}
