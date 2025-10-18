@@ -34,7 +34,7 @@ function BucketAdminContent() {
         shareAlbum,
         unshareAlbum,
     } = useAlbums();
-    const { getBucketData, deleteFiles, getBucketType } = useBucket();
+    const { getBucketData, deleteFiles, deleteBucket, getBucketType } = useBucket();
     const { getThemeClass } = useTheme();
     const { showToast } = useToast();
     const { handleError } = useErrorHandler();
@@ -95,6 +95,19 @@ function BucketAdminContent() {
             });
         },
         [deleteFiles, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
+    );
+
+    const handleDeleteBucket = useCallback(
+        async (token: string) => {
+            await withLoading(async () => {
+                try {
+                    await deleteBucket(token);
+                } catch (error) {
+                    handleError(error, { defaultMessage: "Failed to delete bucket" });
+                }
+            });
+        },
+        [deleteBucket], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
     const handleCreateAlbum = useCallback(
@@ -406,6 +419,7 @@ function BucketAdminContent() {
                                         files={FileWrapper.wrapFiles(filteredFiles)}
                                         albums={albumsWithCounts.map(a => ({ token: a.token, name: a.name }))}
                                         onDeleteFiles={handleDeleteFiles}
+                                        onDeleteBucket={handleDeleteBucket}
                                         onReorderFiles={handleReorderFiles}
                                         onRemoveFromAlbum={handleRemoveFromAlbum}
                                         onDragStart={handleDragStart}

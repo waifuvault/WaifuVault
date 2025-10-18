@@ -33,6 +33,7 @@ interface FileBrowserProps {
     albums?: { token: string; name: string }[];
     onFilesSelected?: (fileIds: number[]) => void;
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
+    onDeleteBucket?: (token: string) => Promise<void>;
     onReorderFiles?: (
         fileId: number,
         oldPosition: number,
@@ -69,6 +70,7 @@ export function FileBrowser({
     albums,
     onFilesSelected,
     onDeleteFiles,
+    onDeleteBucket,
     onReorderFiles,
     onRemoveFromAlbum,
     onDragStart,
@@ -338,6 +340,19 @@ export function FileBrowser({
             setSelectedFiles(new Set());
         }
     }, [allowDeletion, selectedFiles, onDeleteFiles]);
+
+    const handleDeleteBucket = useCallback(async () => {
+        if (!onDeleteBucket || !bucketToken) {
+            return;
+        }
+
+        if (confirm("Are you sure you want to delete bucket?\nALL FILES AND ALBUMS WILL BE DELETED!")) {
+            await onDeleteBucket(bucketToken);
+            if (onLogout) {
+                onLogout();
+            }
+        }
+    }, [onLogout, bucketToken, onDeleteBucket]);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -916,6 +931,17 @@ export function FileBrowser({
                             </Button>
                         )}
                     </div>
+
+                    {mode === "bucket" && (
+                        <Button
+                            variant="outline"
+                            size="small"
+                            onClick={handleDeleteBucket}
+                            className={styles.deleteBtn}
+                        >
+                            <i className="bi bi-radioactive"></i> Delete Bucket
+                        </Button>
+                    )}
 
                     {onLogout && (
                         <Button variant="secondary" size="small" onClick={onLogout} className={styles.logoutBtn}>
