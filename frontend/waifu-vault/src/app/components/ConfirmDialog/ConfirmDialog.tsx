@@ -14,7 +14,16 @@ interface ConfirmDialogProps {
     confirmIcon: string;
 }
 
-export function ConfirmDialog({ isOpen, onCancel, onConfirm, title, message, confirmText, cancelText, confirmIcon}: ConfirmDialogProps) {
+export function ConfirmDialog({
+    isOpen,
+    onCancel,
+    onConfirm,
+    title,
+    message,
+    confirmText,
+    cancelText,
+    confirmIcon,
+}: ConfirmDialogProps) {
     const { getThemeClass } = useTheme();
     return (
         <Dialog
@@ -25,8 +34,10 @@ export function ConfirmDialog({ isOpen, onCancel, onConfirm, title, message, con
             className={getThemeClass() === "themeMinimal" ? styles.solidDialogLight : styles.solidDialog}
         >
             <div style={{ padding: "1rem 0" }}>
-                <p style={{ marginBottom: "1.5rem", fontSize: "0.95rem", lineHeight: "1.4" }} dangerouslySetInnerHTML={{__html:message}}>
-                </p>
+                <p
+                    style={{ marginBottom: "1.5rem", fontSize: "0.95rem", lineHeight: "1.4" }}
+                    dangerouslySetInnerHTML={{ __html: message }}
+                ></p>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                     <Button variant="danger" onClick={onConfirm}>
@@ -40,5 +51,5 @@ export function ConfirmDialog({ isOpen, onCancel, onConfirm, title, message, con
                 </div>
             </div>
         </Dialog>
-    )
+    );
 }

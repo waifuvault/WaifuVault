@@ -509,8 +509,7 @@ function BucketAdminContent() {
                 confirmText="Delete Bucket"
                 confirmIcon="bi bi-radioactive"
                 cancelText="Cancel"
-                >
-            </ConfirmDialog>
+            ></ConfirmDialog>
         </div>
     );
 }
