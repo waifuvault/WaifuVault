@@ -1,0 +1,44 @@
+//Dialogs
+.solidDialog {
+  background: rgba(30, 30, 30, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+
+  :global(.header) {
+    background: rgba(40, 40, 40, 0.9) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  :global(.content) {
+    background: rgba(30, 30, 30, 0.95) !important;
+  }
+}
+
+.solidDialogLight {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+
+  :global(.header) {
+    background: rgba(245, 245, 245, 0.95) !important;
+    border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+    color: #333 !important;
+  }
+
+  :global(.content) {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #333 !important;
+  }
+
+  :global(.title) {
+    color: #333 !important;
+  }
+
+  :global(.closeButton) {
+    color: #666 !important;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.1) !important;
+      color: #333 !important;
+    }
+  }
+}

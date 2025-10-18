@@ -20,6 +20,7 @@ import type { AdminBucketDto, BucketType, UrlFileMixin } from "@/app/types";
 import { FileWrapper, type UploadFile } from "@/app/types";
 import { LocalStorage, SELECTED_ALBUM_KEY } from "@/constants/localStorageKeys";
 import styles from "./page.module.scss";
+import { ConfirmDialog } from "@/app/components/ConfirmDialog/ConfirmDialog";
 
 function BucketAdminContent() {
     const { isAuthenticated, logout } = useBucketAuth();
@@ -499,33 +500,17 @@ function BucketAdminContent() {
                 </div>
             </Dialog>
 
-            <Dialog
+            <ConfirmDialog
                 isOpen={deleteBucketDialog.isOpen}
-                onClose={handleDeleteBucketCancel}
+                onCancel={handleDeleteBucketCancel}
+                onConfirm={handleDeleteBucketConfirm}
                 title="Delete Bucket"
-                maxWidth="450px"
-                className={getThemeClass() === "themeMinimal" ? styles.solidDialogLight : styles.solidDialog}
-            >
-                <div style={{ padding: "1rem 0" }}>
-                    <p style={{ marginBottom: "1.5rem", fontSize: "0.95rem", lineHeight: "1.4" }}>
-                        <strong>THIS WILL DELETE ALL FILES AND ALBUMS!</strong>
-                        <br />
-                        <br />
-                        Are you sure you want to delete the bucket ?
-                    </p>
-
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                        <Button variant="danger" onClick={() => handleDeleteBucketConfirm()}>
-                            <i className="bi bi-radioactive" style={{ marginRight: "0.5rem" }}></i>
-                            Delete Bucket
-                        </Button>
-
-                        <Button variant="secondary" onClick={handleDeleteBucketCancel}>
-                            Cancel
-                        </Button>
-                    </div>
-                </div>
-            </Dialog>
+                message="<strong>THIS WILL DELETE ALL FILES AND ALBUMS!</strong><br /><br />Are you sure you want to delete the bucket ?"
+                confirmText="Delete Bucket"
+                confirmIcon="bi bi-radioactive"
+                cancelText="Cancel"
+                >
+            </ConfirmDialog>
         </div>
     );
 }
