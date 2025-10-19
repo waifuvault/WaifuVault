@@ -505,11 +505,15 @@ function BucketAdminContent() {
                 onCancel={handleDeleteBucketCancel}
                 onConfirm={handleDeleteBucketConfirm}
                 title="Delete Bucket"
-                message="<strong>THIS WILL DELETE ALL FILES AND ALBUMS!</strong><br /><br />Are you sure you want to delete the bucket ?"
                 confirmText="Delete Bucket"
                 confirmIcon="bi bi-radioactive"
                 cancelText="Cancel"
-            ></ConfirmDialog>
+            >
+                <p>
+                    <strong>THIS WILL DELETE ALL FILES AND ALBUMS!</strong>
+                </p>
+                <p>Are you sure you want to delete the bucket?</p>
+            </ConfirmDialog>
         </div>
     );
 }

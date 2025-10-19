@@ -323,7 +323,7 @@ export function FileBrowser({
                 setSelectedFiles(new Set());
                 setDeleteFilesDialog({ isOpen: false });
             } catch (error) {
-                handleError(error, { defaultMessage: "Failed to delete bucket" });
+                handleError(error, { defaultMessage: "Failed to delete files" });
             }
         },
         [allowDeletion, selectedFiles, onDeleteFiles], // eslint-disable-line react-hooks/exhaustive-deps
@@ -1334,11 +1334,12 @@ export function FileBrowser({
                 onCancel={handleDeleteFilesCancel}
                 onConfirm={handleDeleteFilesConfirm}
                 title="Delete Files"
-                message="Are you sure you want to delete these file(s) ?"
                 confirmText="Delete File(s)"
                 confirmIcon="bi bi-trash-fill"
                 cancelText="Cancel"
-            ></ConfirmDialog>
+            >
+                Are you sure you want to delete these file(s)?
+            </ConfirmDialog>
         </div>
     );
 }

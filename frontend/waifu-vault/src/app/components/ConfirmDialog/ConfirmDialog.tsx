@@ -1,4 +1,4 @@
-import React from "react";
+import { PropsWithChildren } from "react";
 import { Button, Dialog } from "@/app/components";
 import { useTheme } from "@/app/contexts";
 import styles from "./ConfirmDialog.module.scss";
@@ -8,7 +8,6 @@ interface ConfirmDialogProps {
     onCancel: () => void;
     onConfirm: () => void;
     title: string;
-    message: string;
     confirmText: string;
     cancelText: string;
     confirmIcon: string;
@@ -19,11 +18,11 @@ export function ConfirmDialog({
     onCancel,
     onConfirm,
     title,
-    message,
+    children,
     confirmText,
     cancelText,
     confirmIcon,
-}: ConfirmDialogProps) {
+}: PropsWithChildren<ConfirmDialogProps>) {
     const { getThemeClass } = useTheme();
     return (
         <Dialog
@@ -34,10 +33,7 @@ export function ConfirmDialog({
             className={getThemeClass() === "themeMinimal" ? styles.solidDialogLight : styles.solidDialog}
         >
             <div style={{ padding: "1rem 0" }}>
-                <p
-                    style={{ marginBottom: "1.5rem", fontSize: "0.95rem", lineHeight: "1.4" }}
-                    dangerouslySetInnerHTML={{ __html: message }}
-                ></p>
+                <div style={{ marginBottom: "1.5rem", fontSize: "0.95rem", lineHeight: "1.4" }}>{children}</div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                     <Button variant="danger" onClick={onConfirm}>
