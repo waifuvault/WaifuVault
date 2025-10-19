@@ -20,6 +20,7 @@ import type { AdminBucketDto, BucketType, UrlFileMixin } from "@/app/types";
 import { FileWrapper, type UploadFile } from "@/app/types";
 import { LocalStorage, SELECTED_ALBUM_KEY } from "@/constants/localStorageKeys";
 import styles from "./page.module.scss";
+import { ConfirmDialog } from "@/app/components/ConfirmDialog/ConfirmDialog";
 
 function BucketAdminContent() {
     const { isAuthenticated, logout } = useBucketAuth();
@@ -34,7 +35,7 @@ function BucketAdminContent() {
         shareAlbum,
         unshareAlbum,
     } = useAlbums();
-    const { getBucketData, deleteFiles, getBucketType } = useBucket();
+    const { getBucketData, deleteFiles, deleteBucket, getBucketType } = useBucket();
     const { getThemeClass } = useTheme();
     const { showToast } = useToast();
     const { handleError } = useErrorHandler();
@@ -52,6 +53,11 @@ function BucketAdminContent() {
         isOpen: false,
         albumToken: "",
         albumName: "",
+    });
+    const [deleteBucketDialog, setDeleteBucketDialog] = useState<{
+        isOpen: boolean;
+    }>({
+        isOpen: false,
     });
     const [isDraggingToAlbum, setIsDraggingToAlbum] = useState(false);
 
@@ -95,6 +101,31 @@ function BucketAdminContent() {
             });
         },
         [deleteFiles, fetchBucketData], // eslint-disable-line react-hooks/exhaustive-deps
+    );
+
+    const handleDeleteBucketClick = useCallback(() => {
+        setDeleteBucketDialog({
+            isOpen: true,
+        });
+    }, []);
+
+    const handleDeleteBucketCancel = useCallback(() => {
+        setDeleteBucketDialog({ isOpen: false });
+    }, []);
+
+    const handleDeleteBucketConfirm = useCallback(
+        async () => {
+            const data = await getBucketData();
+            await withLoading(async () => {
+                try {
+                    await deleteBucket(data.token);
+                    logout();
+                } catch (error) {
+                    handleError(error, { defaultMessage: "Failed to delete bucket" });
+                }
+            });
+        },
+        [deleteBucket], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
     const handleCreateAlbum = useCallback(
@@ -406,6 +437,7 @@ function BucketAdminContent() {
                                         files={FileWrapper.wrapFiles(filteredFiles)}
                                         albums={albumsWithCounts.map(a => ({ token: a.token, name: a.name }))}
                                         onDeleteFiles={handleDeleteFiles}
+                                        onDeleteBucket={handleDeleteBucketClick}
                                         onReorderFiles={handleReorderFiles}
                                         onRemoveFromAlbum={handleRemoveFromAlbum}
                                         onDragStart={handleDragStart}
@@ -467,6 +499,21 @@ function BucketAdminContent() {
                     </div>
                 </div>
             </Dialog>
+
+            <ConfirmDialog
+                isOpen={deleteBucketDialog.isOpen}
+                onCancel={handleDeleteBucketCancel}
+                onConfirm={handleDeleteBucketConfirm}
+                title="Delete Bucket"
+                confirmText="Delete Bucket"
+                confirmIcon="bi bi-radioactive"
+                cancelText="Cancel"
+            >
+                <p>
+                    <strong>THIS WILL DELETE ALL FILES AND ALBUMS!</strong>
+                </p>
+                <p>Are you sure you want to delete the bucket?</p>
+            </ConfirmDialog>
         </div>
     );
 }

@@ -29,6 +29,18 @@ export async function deleteFiles(backendRestBaseUrl: string, fileIds: number[])
     }
 }
 
+export async function deleteBucket(backendRestBaseUrl: string, token: string): Promise<void> {
+    const response = await fetch(`${backendRestBaseUrl}/bucket/${token}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: "Failed to delete bucket" }));
+        throw new Error(error.message || "Failed to delete bucket");
+    }
+}
+
 export async function getBucketType(backendRestBaseUrl: string, bucketToken: string): Promise<BucketType> {
     const response = await fetch(`${backendRestBaseUrl}/admin/bucket/getBucketType/${bucketToken}`, {
         credentials: "include",

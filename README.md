@@ -255,6 +255,14 @@ Pagination sizes can be set to 10, 50 or 100.  Sort and size will be remembered 
 
 ![SortOptions](https://waifuvault.moe/f/f08ee717-1f43-4779-9213-01d84108cd94/SortOptions.png)
 
+On the bar next to logout, is the `Delete Bucket` button.  This will delete the bucket, all albums and all files.
+It will ask you if you are sure.
+
+![DeleteBucket](https://waifuvault.moe/f/b906ff5b-6f0d-4975-9543-eafab69b281a/DeleteBucket.png)
+
+> **Note Well** This will DELETE EVERYTHING in the bucket and the bucket.  This includes any shared albums, which will
+> no longer be available.
+
 ## Albums Admin Feature
 
 Albums are sub-collections of files within a bucket. Albums can be publicly shared, to provide simple access to

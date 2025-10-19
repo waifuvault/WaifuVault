@@ -23,6 +23,7 @@ import {
     LocalStorage,
 } from "@/constants/localStorageKeys";
 import { useToast } from "@/app/components/Toast";
+import { ConfirmDialog } from "@/app/components/ConfirmDialog/ConfirmDialog";
 
 type SortField = "name" | "date" | "size" | "type" | "layout";
 type SortOrder = "asc" | "desc";
@@ -33,6 +34,7 @@ interface FileBrowserProps {
     albums?: { token: string; name: string }[];
     onFilesSelected?: (fileIds: number[]) => void;
     onDeleteFiles?: (fileIds: number[]) => Promise<void>;
+    onDeleteBucket?: () => void;
     onReorderFiles?: (
         fileId: number,
         oldPosition: number,
@@ -69,6 +71,7 @@ export function FileBrowser({
     albums,
     onFilesSelected,
     onDeleteFiles,
+    onDeleteBucket,
     onReorderFiles,
     onRemoveFromAlbum,
     onDragStart,
@@ -111,6 +114,12 @@ export function FileBrowser({
         isOpen: boolean;
         albumToken?: string;
         albumName?: string;
+    }>({
+        isOpen: false,
+    });
+    const [deleteFilesDialog, setDeleteFilesDialog] = useState<{
+        isOpen: boolean;
+        fileId?: number;
     }>({
         isOpen: false,
     });
@@ -294,6 +303,40 @@ export function FileBrowser({
         [onUploadComplete],
     );
 
+    const handleDeleteFilesClick = useCallback((fileId?: number) => {
+        setDeleteFilesDialog({
+            isOpen: true,
+            fileId,
+        });
+    }, []);
+
+    const handleDeleteFilesCancel = useCallback(() => {
+        setDeleteFilesDialog({ isOpen: false });
+    }, []);
+
+    const handleDeleteFilesConfirm = useCallback(async () => {
+        if (!allowDeletion || !onDeleteFiles) {
+            return;
+        }
+
+        const filesToDelete =
+            deleteFilesDialog.fileId && !selectedFiles.has(deleteFilesDialog.fileId)
+                ? [deleteFilesDialog.fileId]
+                : Array.from(selectedFiles);
+
+        if (filesToDelete.length === 0) {
+            return;
+        }
+
+        try {
+            await onDeleteFiles(filesToDelete);
+            setSelectedFiles(new Set());
+            setDeleteFilesDialog({ isOpen: false });
+        } catch (error) {
+            handleError(error, { defaultMessage: "Failed to delete files" });
+        }
+    }, [allowDeletion, selectedFiles, onDeleteFiles, deleteFilesDialog.fileId, handleError]);
+
     const isInitialMount = useRef(true);
     const previousFilesLength = useRef(files.length);
     const previousSearchQuery = useRef(searchQuery);
@@ -328,17 +371,6 @@ export function FileBrowser({
         onFilesSelected?.([]);
     }, [onFilesSelected]);
 
-    const handleDeleteSelected = useCallback(async () => {
-        if (!allowDeletion || selectedFiles.size === 0 || !onDeleteFiles) {
-            return;
-        }
-
-        if (confirm(`Are you sure you want to delete ${selectedFiles.size} file(s)?`)) {
-            await onDeleteFiles(Array.from(selectedFiles));
-            setSelectedFiles(new Set());
-        }
-    }, [allowDeletion, selectedFiles, onDeleteFiles]);
-
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.ctrlKey || event.metaKey) {
@@ -350,7 +382,7 @@ export function FileBrowser({
                 }
             } else if (event.key === "Delete" && selectedFiles.size > 0 && allowDeletion) {
                 event.preventDefault();
-                handleDeleteSelected();
+                handleDeleteFilesClick();
             } else if (event.key === "Escape") {
                 setSelectedFiles(new Set());
                 hideContextMenu();
@@ -359,7 +391,7 @@ export function FileBrowser({
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [selectedFiles, allowDeletion, handleSelectAll, handleDeleteSelected, hideContextMenu]);
+    }, [selectedFiles, allowDeletion, handleSelectAll, handleDeleteFilesClick, hideContextMenu]);
 
     const handleFileSelect = useCallback(
         (fileId: number, event?: React.MouseEvent) => {
@@ -472,7 +504,7 @@ export function FileBrowser({
                         id: "delete",
                         label: "Delete",
                         icon: <i className="bi bi-trash"></i>,
-                        onClick: handleDeleteSelected,
+                        onClick: () => handleDeleteFilesClick(file.id),
                         variant: "danger" as const,
                         separator: true,
                     });
@@ -502,7 +534,7 @@ export function FileBrowser({
             allowDeletion,
             allowRemoveFromAlbum,
             selectedFiles,
-            handleDeleteSelected,
+            handleDeleteFilesClick,
             handleSelectAll,
             handleClearSelection,
             showContextMenu,
@@ -510,6 +542,8 @@ export function FileBrowser({
             mode,
             onBanIp,
             onShowDetails,
+            handleError,
+            showToast,
         ],
     );
 
@@ -718,7 +752,7 @@ export function FileBrowser({
 
     const formatExpires = useCallback(
         (expires: Date | string | number | null): string => {
-            if (!expires || expires === null || expires === undefined || expires === "" || expires === "null") {
+            if (!expires || expires === "" || expires === "null") {
                 return "Never";
             }
 
@@ -897,7 +931,7 @@ export function FileBrowser({
                                     <Button
                                         variant="outline"
                                         size="small"
-                                        onClick={handleDeleteSelected}
+                                        onClick={() => handleDeleteFilesClick()}
                                         className={styles.deleteBtn}
                                     >
                                         <i className="bi bi-trash"></i> Delete ({selectedFiles.size})
@@ -916,6 +950,12 @@ export function FileBrowser({
                             </Button>
                         )}
                     </div>
+
+                    {mode === "bucket" && (
+                        <Button variant="outline" size="small" onClick={onDeleteBucket} className={styles.deleteBtn}>
+                            <i className="bi bi-radioactive"></i> Delete Bucket
+                        </Button>
+                    )}
 
                     {onLogout && (
                         <Button variant="secondary" size="small" onClick={onLogout} className={styles.logoutBtn}>
@@ -1298,6 +1338,18 @@ export function FileBrowser({
                     onUploadComplete={handleUploadCompleteInternal}
                 />
             )}
+
+            <ConfirmDialog
+                isOpen={deleteFilesDialog.isOpen}
+                onCancel={handleDeleteFilesCancel}
+                onConfirm={handleDeleteFilesConfirm}
+                title="Delete Files"
+                confirmText="Delete File(s)"
+                confirmIcon="bi bi-trash-fill"
+                cancelText="Cancel"
+            >
+                Are you sure you want to delete these file(s)?
+            </ConfirmDialog>
         </div>
     );
 }
