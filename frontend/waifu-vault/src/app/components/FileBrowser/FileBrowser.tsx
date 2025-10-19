@@ -119,6 +119,7 @@ export function FileBrowser({
     });
     const [deleteFilesDialog, setDeleteFilesDialog] = useState<{
         isOpen: boolean;
+        fileId?: number;
     }>({
         isOpen: false,
     });
@@ -302,9 +303,10 @@ export function FileBrowser({
         [onUploadComplete],
     );
 
-    const handleDeleteFilesClick = useCallback(() => {
+    const handleDeleteFilesClick = useCallback((fileId?: number) => {
         setDeleteFilesDialog({
             isOpen: true,
+            fileId,
         });
     }, []);
 
@@ -312,22 +314,28 @@ export function FileBrowser({
         setDeleteFilesDialog({ isOpen: false });
     }, []);
 
-    const handleDeleteFilesConfirm = useCallback(
-        async () => {
-            if (!allowDeletion || selectedFiles.size === 0 || !onDeleteFiles) {
-                return;
-            }
+    const handleDeleteFilesConfirm = useCallback(async () => {
+        if (!allowDeletion || !onDeleteFiles) {
+            return;
+        }
 
-            try {
-                await onDeleteFiles(Array.from(selectedFiles));
-                setSelectedFiles(new Set());
-                setDeleteFilesDialog({ isOpen: false });
-            } catch (error) {
-                handleError(error, { defaultMessage: "Failed to delete files" });
-            }
-        },
-        [allowDeletion, selectedFiles, onDeleteFiles], // eslint-disable-line react-hooks/exhaustive-deps
-    );
+        const filesToDelete =
+            deleteFilesDialog.fileId && !selectedFiles.has(deleteFilesDialog.fileId)
+                ? [deleteFilesDialog.fileId]
+                : Array.from(selectedFiles);
+
+        if (filesToDelete.length === 0) {
+            return;
+        }
+
+        try {
+            await onDeleteFiles(filesToDelete);
+            setSelectedFiles(new Set());
+            setDeleteFilesDialog({ isOpen: false });
+        } catch (error) {
+            handleError(error, { defaultMessage: "Failed to delete files" });
+        }
+    }, [allowDeletion, selectedFiles, onDeleteFiles, deleteFilesDialog.fileId, handleError]);
 
     const isInitialMount = useRef(true);
     const previousFilesLength = useRef(files.length);
@@ -496,7 +504,7 @@ export function FileBrowser({
                         id: "delete",
                         label: "Delete",
                         icon: <i className="bi bi-trash"></i>,
-                        onClick: handleDeleteFilesClick,
+                        onClick: () => handleDeleteFilesClick(file.id),
                         variant: "danger" as const,
                         separator: true,
                     });
@@ -534,6 +542,8 @@ export function FileBrowser({
             mode,
             onBanIp,
             onShowDetails,
+            handleError,
+            showToast,
         ],
     );
 
@@ -742,7 +752,7 @@ export function FileBrowser({
 
     const formatExpires = useCallback(
         (expires: Date | string | number | null): string => {
-            if (!expires || expires === null || expires === undefined || expires === "" || expires === "null") {
+            if (!expires || expires === "" || expires === "null") {
                 return "Never";
             }
 
@@ -921,7 +931,7 @@ export function FileBrowser({
                                     <Button
                                         variant="outline"
                                         size="small"
-                                        onClick={handleDeleteFilesClick}
+                                        onClick={() => handleDeleteFilesClick()}
                                         className={styles.deleteBtn}
                                     >
                                         <i className="bi bi-trash"></i> Delete ({selectedFiles.size})
