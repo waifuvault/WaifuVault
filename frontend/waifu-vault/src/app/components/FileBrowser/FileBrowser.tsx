@@ -784,65 +784,45 @@ export function FileBrowser({
         [albums],
     );
 
-    if (files.length === 0) {
-        return (
-            <div className={styles.fileBrowser}>
-                <div className={styles.toolbar}>
-                    <div className={styles.toolbarLeft}></div>
-                    <div className={styles.toolbarCenter}></div>
-                    <div className={styles.toolbarRight}>
-                        <div className={styles.fileActions}>
-                            {allowUpload && (
-                                <Button
-                                    variant="primary"
-                                    size="small"
-                                    onClick={() => handleUploadClick(albumToken)}
-                                    className={styles.uploadBtn}
-                                >
-                                    <i className="bi bi-cloud-upload"></i> Upload Files
-                                    {albumToken && " to Album"}
-                                </Button>
-                            )}
-                            {onLogout && (
-                                <Button
-                                    variant="secondary"
-                                    size="small"
-                                    onClick={onLogout}
-                                    className={styles.logoutBtn}
-                                >
-                                    Logout
-                                </Button>
-                            )}
-                        </div>
+    const renderEmptyState = () => (
+        <div className={styles.fileBrowser}>
+            <div className={styles.toolbar}>
+                <div className={styles.toolbarLeft}></div>
+                <div className={styles.toolbarCenter}></div>
+                <div className={styles.toolbarRight}>
+                    <div className={styles.fileActions}>
+                        {allowUpload && (
+                            <Button
+                                variant="primary"
+                                size="small"
+                                onClick={() => handleUploadClick(albumToken)}
+                                className={styles.uploadBtn}
+                            >
+                                <i className="bi bi-cloud-upload"></i> Upload Files
+                                {albumToken && " to Album"}
+                            </Button>
+                        )}
+                        {onLogout && (
+                            <Button variant="secondary" size="small" onClick={onLogout} className={styles.logoutBtn}>
+                                Logout
+                            </Button>
+                        )}
                     </div>
                 </div>
-                <div className={styles.emptyState}>
-                    <p>No files available.</p>
-                    {allowUpload && (
-                        <p>
-                            Click the &ldquo;Upload Files&rdquo; button above to add files
-                            {albumToken ? " to this album" : ""}.
-                        </p>
-                    )}
-                </div>
-
+            </div>
+            <div className={styles.emptyState}>
+                <p>No files available.</p>
                 {allowUpload && (
-                    <FileUploadModal
-                        isOpen={uploadModal.isOpen}
-                        onClose={handleUploadClose}
-                        bucketToken={bucketToken}
-                        albumToken={uploadModal.albumToken}
-                        albumName={uploadModal.albumName}
-                        currentAlbumFileCount={uploadModal.albumToken ? filteredFiles.length : 0}
-                        bucketType={bucketType}
-                        onUploadComplete={handleUploadCompleteInternal}
-                    />
+                    <p>
+                        Click the &ldquo;Upload Files&rdquo; button above to add files
+                        {albumToken ? " to this album" : ""}.
+                    </p>
                 )}
             </div>
-        );
-    }
+        </div>
+    );
 
-    return (
+    const renderFileList = () => (
         <div className={styles.fileBrowser}>
             {/* Drag overlay for screen dimming */}
             {isDraggingToAlbum && (
@@ -1325,6 +1305,12 @@ export function FileBrowser({
                     </div>
                 </div>
             )}
+        </div>
+    );
+
+    return (
+        <>
+            {files.length === 0 ? renderEmptyState() : renderFileList()}
 
             {allowUpload && (
                 <FileUploadModal
@@ -1350,6 +1336,6 @@ export function FileBrowser({
             >
                 Are you sure you want to delete these file(s)?
             </ConfirmDialog>
-        </div>
+        </>
     );
 }

@@ -491,12 +491,31 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .filePreviewLarge {
-        width: 150px;
-        height: 150px;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
     }
 
     .filePreviewMedium {
         width: 100px;
         height: 100px;
+    }
+
+    .filePreviewSmall {
+        width: 50px;
+        height: 50px;
+    }
+
+    .imageContainer,
+    .videoContainer {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .imageContainer .previewImage,
+    .videoContainer .previewImage {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
     }
 }
