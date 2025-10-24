@@ -472,7 +472,7 @@ export function AlbumSidebar({
                     {albums.length === 0 && !isCreating && (
                         <div className={styles.emptyState}>
                             <i className="bi bi-collection"></i>
-                            <p>No albums</p>
+                            <p>No albums yet</p>
                             <Button
                                 variant="outline"
                                 size="small"
@@ -480,7 +480,7 @@ export function AlbumSidebar({
                                 disabled={isLoading}
                                 className={styles.createFirstButton}
                             >
-                                <i className="bi bi-plus"></i> Create first
+                                <i className="bi bi-plus-circle"></i> Create First Album
                             </Button>
                         </div>
                     )}

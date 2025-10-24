@@ -135,65 +135,63 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
                     return;
                 }
 
-                if (fileType === "image") {
-                    if (isClientFile) {
-                        const clientFile = wrappedFile.raw as File;
-                        const cacheKey = `${clientFile.name}-${clientFile.size}-${clientFile.lastModified}`;
-                        if (thumbnailCache.has(cacheKey)) {
-                            if (mounted) {
-                                setCachedImageUrl(thumbnailCache.get(cacheKey)!);
-                                setIsLoading(false);
-                            }
-                            return;
-                        }
-
-                        const reader = new FileReader();
-                        reader.onload = e => {
-                            if (e.target?.result && mounted) {
-                                const blobUrl = e.target.result as string;
-                                thumbnailCache.set(cacheKey, blobUrl);
-                                setCachedImageUrl(blobUrl);
-                                setIsLoading(false);
-                            }
-                        };
-                        reader.onerror = () => {
-                            if (mounted) {
-                                setPreviewError("Failed to generate image preview");
-                                setIsLoading(false);
-                            }
-                        };
-                        reader.readAsDataURL(clientFile);
-                    } else {
-                        if (!fileUrl) {
-                            if (mounted) {
-                                setIsLoading(false);
-                            }
-                            return;
-                        }
-
-                        const cacheKey = fileToken || `${wrappedFile.id}-${publicToken}`;
-                        if (thumbnailCache.has(cacheKey)) {
-                            if (mounted) {
-                                setCachedImageUrl(thumbnailCache.get(cacheKey)!);
-                                setIsLoading(false);
-                            }
-                            return;
-                        }
-
-                        const response = await fetch(fileUrl);
-                        if (!response.ok) {
-                            throw new Error("Failed to fetch thumbnail");
-                        }
-
-                        const blob = await response.blob();
-                        const blobUrl = URL.createObjectURL(blob);
-
-                        thumbnailCache.set(cacheKey, blobUrl);
-
+                if (fileType === "image" && isClientFile) {
+                    const clientFile = wrappedFile.raw as File;
+                    const cacheKey = `${clientFile.name}-${clientFile.size}-${clientFile.lastModified}`;
+                    if (thumbnailCache.has(cacheKey)) {
                         if (mounted) {
+                            setCachedImageUrl(thumbnailCache.get(cacheKey)!);
+                            setIsLoading(false);
+                        }
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        if (e.target?.result && mounted) {
+                            const blobUrl = e.target.result as string;
+                            thumbnailCache.set(cacheKey, blobUrl);
                             setCachedImageUrl(blobUrl);
                             setIsLoading(false);
                         }
+                    };
+                    reader.onerror = () => {
+                        if (mounted) {
+                            setPreviewError("Failed to generate preview");
+                            setIsLoading(false);
+                        }
+                    };
+                    reader.readAsDataURL(clientFile);
+                } else if ((fileType === "image" || fileType === "video") && !isClientFile) {
+                    if (!fileUrl) {
+                        if (mounted) {
+                            setIsLoading(false);
+                        }
+                        return;
+                    }
+
+                    const cacheKey = fileToken || `${wrappedFile.id}-${publicToken}`;
+                    if (thumbnailCache.has(cacheKey)) {
+                        if (mounted) {
+                            setCachedImageUrl(thumbnailCache.get(cacheKey)!);
+                            setIsLoading(false);
+                        }
+                        return;
+                    }
+
+                    const response = await fetch(fileUrl);
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch thumbnail");
+                    }
+
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    thumbnailCache.set(cacheKey, blobUrl);
+
+                    if (mounted) {
+                        setCachedImageUrl(blobUrl);
+                        setIsLoading(false);
                     }
                 } else if (fileType === "audio") {
                     setIsLoading(false);
@@ -286,11 +284,28 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
                 );
 
             case "video":
+                const videoSrc = cachedImageUrl || fileUrl;
                 return (
                     <div className={styles.videoContainer}>
-                        <div className={styles.videoIcon}>
-                            <i className="bi bi-play-circle-fill"></i>
-                        </div>
+                        {videoSrc ? (
+                            <>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    alt={fileName}
+                                    className={styles.previewImage}
+                                    src={videoSrc}
+                                    loading={lazy && !priority ? "lazy" : "eager"}
+                                    onError={() => setPreviewError("Failed to load video thumbnail")}
+                                />
+                                <div className={styles.videoIcon}>
+                                    <i className="bi bi-play-circle-fill"></i>
+                                </div>
+                            </>
+                        ) : (
+                            <div className={styles.videoIcon}>
+                                <i className="bi bi-play-circle-fill"></i>
+                            </div>
+                        )}
                     </div>
                 );
 

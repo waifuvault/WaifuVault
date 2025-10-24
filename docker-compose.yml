@@ -18,7 +18,7 @@ services:
     env_file:
       - postgres.env
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     networks:
       default:
         aliases:
