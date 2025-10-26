@@ -22,9 +22,6 @@ import { getCaptchaBodyKey } from "@/app/utils/captchaUtils";
 function AdminLoginContent() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [captchaVerified, setCaptchaVerified] = useState(false);
-    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const captchaRef = useRef<CaptchaHandle>(null);
     const { backendRestBaseUrl } = useEnvironment();
     const { withLoading, isLoading } = useLoading();
@@ -34,21 +31,24 @@ function AdminLoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
+    const errorParam = searchParams.get("error");
+    const initialError =
+        errorParam === "invalid_credentials"
+            ? "Invalid email or password. Please try again."
+            : errorParam === "unauthorized"
+              ? "You are not authorized to access this area."
+              : "";
+
+    const [error, setError] = useState(initialError);
+    const [captchaVerified, setCaptchaVerified] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
     useEffect(() => {
         if (isAuthenticated === true) {
             router.replace("/admin");
             return;
         }
     }, [isAuthenticated, router]);
-
-    useEffect(() => {
-        const errorParam = searchParams.get("error");
-        if (errorParam === "invalid_credentials") {
-            setError("Invalid email or password. Please try again.");
-        } else if (errorParam === "unauthorized") {
-            setError("You are not authorized to access this area.");
-        }
-    }, [searchParams]);
 
     const handleCaptchaVerify = (token: string) => {
         setCaptchaVerified(true);

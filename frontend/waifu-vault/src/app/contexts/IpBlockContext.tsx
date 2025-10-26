@@ -41,10 +41,14 @@ export function IpBlockProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if (pathname !== "/blocked") {
-            checkIpStatus();
+            (async () => {
+                await checkIpStatus();
+            })();
 
             const interval = setInterval(() => {
-                checkIpStatus();
+                (async () => {
+                    await checkIpStatus();
+                })();
             }, 30000);
 
             return () => clearInterval(interval);

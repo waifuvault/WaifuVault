@@ -21,9 +21,6 @@ import { getCaptchaBodyKey } from "@/app/utils/captchaUtils";
 
 function BucketAccessContent() {
     const [token, setToken] = useState("");
-    const [error, setError] = useState("");
-    const [captchaVerified, setCaptchaVerified] = useState(false);
-    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const captchaRef = useRef<CaptchaHandle>(null);
     const { backendRestBaseUrl } = useEnvironment();
     const { isAuthenticated } = useBucketAuth();
@@ -33,31 +30,24 @@ function BucketAccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
+    const errorParam = searchParams.get("error");
+    const initialError =
+        errorParam === "invalid_token"
+            ? "Invalid or expired token. Please enter your bucket token to continue."
+            : errorParam === "no_token"
+              ? "No bucket token provided. Please enter your bucket token below or create a new bucket."
+              : "";
+
+    const [error, setError] = useState(initialError);
+    const [captchaVerified, setCaptchaVerified] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
     useEffect(() => {
         if (isAuthenticated === true) {
             router.replace("/admin/bucket");
             return;
         }
     }, [isAuthenticated, router]);
-
-    useEffect(() => {
-        const errorParam = searchParams.get("error");
-        if (errorParam === "invalid_token") {
-            setError("Invalid or expired token. Please enter your bucket token to continue.");
-        } else if (errorParam === "no_token") {
-            setError("No bucket token provided. Please enter your bucket token below or create a new bucket.");
-        }
-    }, [searchParams]);
-
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const errorParam = urlParams.get("error");
-        if (errorParam === "invalid_token") {
-            setError("Invalid or expired token. Please enter your bucket token to continue.");
-        } else if (errorParam === "no_token") {
-            setError("No bucket token provided. Please enter your bucket token below or create a new bucket.");
-        }
-    }, []);
 
     const handleCaptchaVerify = (token: string) => {
         setCaptchaVerified(true);

@@ -10,16 +10,14 @@ interface StatsData {
 }
 
 export function useStats(enableDynamic: boolean = true) {
-    const [stats, setStats] = useState<StatsData>({ recordCount: 0, recordSize: "0kb" });
+    const [stats, setStats] = useState<StatsData>(() =>
+        enableDynamic ? { recordCount: 0, recordSize: "0kb" } : { recordCount: 2847392, recordSize: "15.2TB" },
+    );
     const [isConnected, setIsConnected] = useState(false);
     const { waifuVaultBackend } = useEnvironment();
 
     useEffect(() => {
         if (!enableDynamic) {
-            setStats({
-                recordCount: 2847392,
-                recordSize: "15.2TB",
-            });
             return;
         }
 
