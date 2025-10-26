@@ -53,12 +53,11 @@ export function AlbumSidebar({
         () => LocalStorage.getString(ALBUM_SORT_DIR_KEY, "asc") as "asc" | "desc",
     );
     const [search, setSearch] = useState("");
-    const [pins, setPins] = useState<string[]>([]);
+    const [pins, setPins] = useState<string[]>(() => LocalStorage.getJson<string[]>(PINNED_ALBUMS_KEY, []));
 
     useEffect(() => LocalStorage.setBoolean(ALBUM_SIDEBAR_COLLAPSED_KEY, isCollapsed), [isCollapsed]);
     useEffect(() => LocalStorage.setString(ALBUM_SORT_BY_KEY, sortBy), [sortBy]);
     useEffect(() => LocalStorage.setString(ALBUM_SORT_DIR_KEY, sortDir), [sortDir]);
-    useEffect(() => setPins(LocalStorage.getJson<string[]>(PINNED_ALBUMS_KEY, [])), []);
 
     const albumSort = useMemo(() => {
         return (a: AlbumInfo, b: AlbumInfo) => {

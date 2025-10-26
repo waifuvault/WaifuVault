@@ -377,81 +377,89 @@ function ParticleBackground({
         [isDragging, isUploading, createParticle],
     );
 
-    const animate = useCallback(() => {
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext("2d");
-        if (!canvas || !ctx) {
-            return;
-        }
+    const animateRef = useRef<(() => void) | undefined>(undefined);
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    useEffect(() => {
+        animateRef.current = () => {
+            const canvas = canvasRef.current;
+            const ctx = canvas?.getContext("2d");
+            if (!canvas || !ctx) {
+                return;
+            }
 
-        const targetCount = getParticleCount();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        while (particlesRef.current.length < targetCount) {
-            particlesRef.current.push(createParticle());
-        }
+            const targetCount = getParticleCount();
 
-        while (particlesRef.current.length > targetCount) {
-            particlesRef.current.pop();
-        }
+            while (particlesRef.current.length < targetCount) {
+                particlesRef.current.push(createParticle());
+            }
 
-        if (theme === ThemeType.CYBERPUNK) {
-            ctx.strokeStyle = config.colors[0];
-            ctx.globalAlpha = 0.1;
-            ctx.lineWidth = 1;
+            while (particlesRef.current.length > targetCount) {
+                particlesRef.current.pop();
+            }
 
-            for (let i = 0; i < particlesRef.current.length; i++) {
-                for (let j = i + 1; j < particlesRef.current.length; j++) {
-                    const p1 = particlesRef.current[i];
-                    const p2 = particlesRef.current[j];
-                    const dx = p1.x - p2.x;
-                    const dy = p1.y - p2.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+            if (theme === ThemeType.CYBERPUNK) {
+                ctx.strokeStyle = config.colors[0];
+                ctx.globalAlpha = 0.1;
+                ctx.lineWidth = 1;
 
-                    if (distance < 100) {
-                        ctx.globalAlpha = ((100 - distance) / 100) * 0.2;
-                        ctx.beginPath();
-                        ctx.moveTo(p1.x, p1.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
+                for (let i = 0; i < particlesRef.current.length; i++) {
+                    for (let j = i + 1; j < particlesRef.current.length; j++) {
+                        const p1 = particlesRef.current[i];
+                        const p2 = particlesRef.current[j];
+                        const dx = p1.x - p2.x;
+                        const dy = p1.y - p2.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < 100) {
+                            ctx.globalAlpha = ((100 - distance) / 100) * 0.2;
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
                     }
                 }
             }
-        }
 
-        if (theme === ThemeType.STEAMPUNK) {
-            ctx.strokeStyle = config.colors[0];
-            ctx.globalAlpha = 0.05;
-            ctx.lineWidth = 2;
+            if (theme === ThemeType.STEAMPUNK) {
+                ctx.strokeStyle = config.colors[0];
+                ctx.globalAlpha = 0.05;
+                ctx.lineWidth = 2;
 
-            const gears = particlesRef.current.filter(p => p.type === "gear");
-            for (let i = 0; i < gears.length; i++) {
-                for (let j = i + 1; j < gears.length; j++) {
-                    const p1 = gears[i];
-                    const p2 = gears[j];
-                    const dx = p1.x - p2.x;
-                    const dy = p1.y - p2.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+                const gears = particlesRef.current.filter(p => p.type === "gear");
+                for (let i = 0; i < gears.length; i++) {
+                    for (let j = i + 1; j < gears.length; j++) {
+                        const p1 = gears[i];
+                        const p2 = gears[j];
+                        const dx = p1.x - p2.x;
+                        const dy = p1.y - p2.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
 
-                    if (distance < 150) {
-                        ctx.globalAlpha = ((150 - distance) / 150) * 0.1;
-                        ctx.beginPath();
-                        ctx.moveTo(p1.x, p1.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
+                        if (distance < 150) {
+                            ctx.globalAlpha = ((150 - distance) / 150) * 0.1;
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
                     }
                 }
             }
-        }
 
-        particlesRef.current.forEach(particle => {
-            updateParticle(particle, 16);
-            drawParticle(ctx, particle);
-        });
+            particlesRef.current.forEach(particle => {
+                updateParticle(particle, 16);
+                drawParticle(ctx, particle);
+            });
 
-        animationRef.current = requestAnimationFrame(animate);
+            animationRef.current = requestAnimationFrame(() => animateRef.current?.());
+        };
     }, [getParticleCount, createParticle, theme, config.colors, updateParticle, drawParticle]);
+
+    const animate = useCallback(() => {
+        animateRef.current?.();
+    }, []);
 
     const handleMouseMove = (e: MouseEvent) => {
         const canvas = canvasRef.current;
@@ -474,7 +482,12 @@ function ParticleBackground({
     };
 
     useEffect(() => {
-        handleResize();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setDimensions({
+            width: window.innerWidth,
+            height: window.innerHeight,
+        });
+
         window.addEventListener("resize", handleResize);
         document.addEventListener("mousemove", handleMouseMove);
 

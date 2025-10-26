@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import styles from "./ThemeSelector.module.scss";
 import { useTheme } from "@/app/contexts";
 import { ThemeType } from "@/app/constants/theme";
-import { LocalStorage, THEME_KEY } from "@/constants/localStorageKeys";
 
 export default function ThemeSelector() {
     const { currentTheme, setTheme, themes, particlesEnabled, setParticlesEnabled } = useTheme();
@@ -12,18 +11,8 @@ export default function ThemeSelector() {
     const [popupPosition, setPopupPosition] = useState({ top: 0, right: 0 });
     const buttonRef = useRef<HTMLButtonElement>(null);
 
-    useEffect(() => {
-        const saved = LocalStorage.getString(THEME_KEY) as ThemeType;
-        if (saved && themes.some(theme => theme.id === saved)) {
-            setTheme(saved);
-            document.documentElement.dataset.theme = saved;
-        }
-    }, [setTheme, themes]);
-
     const handleThemeChange = (themeId: ThemeType) => {
         setTheme(themeId);
-        document.documentElement.dataset.theme = themeId;
-        LocalStorage.setString(THEME_KEY, themeId);
         setIsOpen(false);
     };
 

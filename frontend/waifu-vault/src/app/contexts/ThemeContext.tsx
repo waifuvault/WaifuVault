@@ -81,18 +81,16 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-    const [currentTheme, setCurrentTheme] = useState<ThemeType>(ThemeType.DEFAULT);
-    const [particlesEnabled, setParticlesEnabledState] = useState<boolean>(true);
-
-    useEffect(() => {
+    const [currentTheme, setCurrentTheme] = useState<ThemeType>(() => {
         const savedTheme = LocalStorage.getString(THEME_KEY) as ThemeType;
         if (savedTheme && themes.find(t => t.id === savedTheme)) {
-            setCurrentTheme(savedTheme);
+            return savedTheme;
         }
-
-        const savedParticles = LocalStorage.getBoolean(PARTICLES_ENABLED_KEY, true);
-        setParticlesEnabledState(savedParticles);
-    }, []);
+        return ThemeType.DEFAULT;
+    });
+    const [particlesEnabled, setParticlesEnabledState] = useState<boolean>(() =>
+        LocalStorage.getBoolean(PARTICLES_ENABLED_KEY, true),
+    );
 
     useEffect(() => {
         const observer = new MutationObserver(() => {
