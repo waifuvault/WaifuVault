@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"mime"
+	"net/http"
 	"os/exec"
+	"path"
 	"strings"
 
 	"github.com/davidbyttow/govips/v2/vips"
@@ -88,4 +91,22 @@ func getSupportedImageFormats() []string {
 		formats = append(formats, f)
 	}
 	return formats
+}
+
+func GetMimeType(filename string, buff []byte) string {
+	// the order here is important, ALWAYS check the binary first before deriving from the extension, because extensions can be spoofed
+	mimeType := http.DetectContentType(buff)
+
+	if mimeType == "application/octet-stream" {
+		// it could really be an octet-stream. but let's see if we can get a more accurate result from checking the extension
+		ext := path.Ext(filename)
+		if ext != "" {
+			mimeTypeFromExt := mime.TypeByExtension(ext)
+			if mimeTypeFromExt != "" {
+				mimeType = mimeTypeFromExt
+			}
+		}
+	}
+
+	return mimeType
 }
