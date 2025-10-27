@@ -74,8 +74,9 @@ func (p *processor) SupportsFile(fileEntry dto.FileEntryDto) bool {
 
 // GenerateThumbnailFromMultipart creates a thumbnail for a multipart file
 func (p *processor) GenerateThumbnailFromMultipart(file multipart.File, header *multipart.FileHeader, animate bool) ([]byte, error) {
-	if !p.SupportsMultipartFile(header) {
-		return nil, fmt.Errorf("unsupported file type: %s", header.Header.Get("Content-Type"))
+	mediaType, err := detectMimeTypeFromMultipart(header)
+	if err != nil {
+		return nil, fmt.Errorf("failed to detect mime type: %w", err)
 	}
 
 	extension := getExtensionFromFilename(header.Filename)
@@ -92,24 +93,47 @@ func (p *processor) GenerateThumbnailFromMultipart(file multipart.File, header *
 		return nil, fmt.Errorf("failed to copy file content: %w", err)
 	}
 
-	mediaType := header.Header.Get("Content-Type")
-
-	if utils.IsImage(mediaType) {
+	if utils.IsImage(mediaType) && lo.Contains(p.imageFormats, extension) {
 		return p.generateImageThumbnailFromFile(tempFile.Name(), extension, animate)
-	} else if utils.IsVideo(mediaType) {
+	} else if utils.IsVideo(mediaType) && lo.Contains(p.ffmpegFormats, extension) {
 		return p.generateVideoThumbnailFromPath(tempFile.Name())
 	}
 
-	return nil, fmt.Errorf("unsupported media type: %s", mediaType)
+	return nil, fmt.Errorf("unsupported file type: %s (detected: %s)", header.Filename, mediaType)
+}
+
+// detectMimeTypeFromMultipart detects the MIME type from a multipart file header by reading its binary content
+func detectMimeTypeFromMultipart(header *multipart.FileHeader) (string, error) {
+	file, err := header.Open()
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	buffer := make([]byte, 512)
+	n, err := file.Read(buffer)
+	if err != nil && err != io.EOF {
+		return "", err
+	}
+
+	return GetMimeType(header.Filename, buffer[:n]), nil
+}
+
+// isSupportedMediaType checks if the media type and extension combination is supported
+func (p *processor) isSupportedMediaType(mediaType, extension string) bool {
+	return (utils.IsImage(mediaType) && lo.Contains(p.imageFormats, extension)) ||
+		(utils.IsVideo(mediaType) && lo.Contains(p.ffmpegFormats, extension))
 }
 
 // SupportsMultipartFile checks if the multipart file can be processed
 func (p *processor) SupportsMultipartFile(header *multipart.FileHeader) bool {
-	mediaType := header.Header.Get("Content-Type")
-	extension := getExtensionFromFilename(header.Filename)
+	mediaType, err := detectMimeTypeFromMultipart(header)
+	if err != nil {
+		return false
+	}
 
-	return (utils.IsImage(mediaType) && lo.Contains(p.imageFormats, extension)) ||
-		(utils.IsVideo(mediaType) && lo.Contains(p.ffmpegFormats, extension))
+	extension := getExtensionFromFilename(header.Filename)
+	return p.isSupportedMediaType(mediaType, extension)
 }
 
 // generateVideoThumbnail creates a thumbnail from a video file

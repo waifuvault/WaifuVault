@@ -77,7 +77,7 @@ func (s service) GenerateThumbnails(files []dto.FileEntryDto, albumId int) error
 
 func (s service) GenerateThumbnail(header *multipart.FileHeader, animate bool) ([]byte, error) {
 	if !s.processor.SupportsMultipartFile(header) {
-		return nil, fmt.Errorf("unsupported file type: %s", header.Header.Get("Content-Type"))
+		return nil, fmt.Errorf("unsupported file type for: %s", header.Filename)
 	}
 
 	cacheKey, err := s.generateCacheKeyForMultipart(header, animate)
