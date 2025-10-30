@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTheme } from "@/app/contexts";
-import { useErrorHandler } from "@/app/hooks";
 import styles from "./FilePreview.module.scss";
 import { FileWrapper, type WrappableFile } from "@/app/types";
 
@@ -27,7 +26,6 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
 
     const containerRef = useRef<HTMLDivElement>(null);
     const { getThemeClass } = useTheme();
-    const { handleError } = useErrorHandler();
 
     const wrappedFile = file instanceof FileWrapper ? file : new FileWrapper(file);
 
@@ -181,7 +179,11 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
 
                     const response = await fetch(fileUrl);
                     if (!response.ok) {
-                        throw new Error("Failed to fetch thumbnail");
+                        if (mounted) {
+                            setPreviewError("Failed to fetch thumbnail");
+                            setIsLoading(false);
+                        }
+                        return;
                     }
 
                     const blob = await response.blob();
@@ -198,8 +200,7 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
                 } else {
                     setIsLoading(false);
                 }
-            } catch (error) {
-                handleError(error, { defaultMessage: "Failed to load file preview" });
+            } catch {
                 if (mounted) {
                     setPreviewError("Failed to generate preview");
                     setIsLoading(false);
