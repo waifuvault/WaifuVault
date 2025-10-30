@@ -181,7 +181,11 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
 
                     const response = await fetch(fileUrl);
                     if (!response.ok) {
-                        throw new Error("Failed to fetch thumbnail");
+                        if (mounted) {
+                            setPreviewError("Failed to fetch thumbnail");
+                            setIsLoading(false);
+                        }
+                        return;
                     }
 
                     const blob = await response.blob();
@@ -199,7 +203,6 @@ export function FilePreview({ file, size = "medium", lazy = false, priority = fa
                     setIsLoading(false);
                 }
             } catch (error) {
-                handleError(error, { defaultMessage: "Failed to load file preview" });
                 if (mounted) {
                     setPreviewError("Failed to generate preview");
                     setIsLoading(false);
