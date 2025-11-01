@@ -5,6 +5,7 @@ export { default as Features } from "@/app/components/Features/Features";
 export { default as AdvancedFeatures } from "@/app/components/AdvancedFeatures/AdvancedFeatures";
 export { default as BespokeSDKs } from "@/app/components/BespokeSDKs/BespokeSDKs";
 export { default as SDKExamples } from "@/app/components/SDKExamples/SDKExamples";
+export { default as AppsAndTools } from "@/app/components/AppsAndTools/AppsAndTools";
 export { default as LegalSection } from "@/app/components/LegalSection/LegalSection";
 export { default as Restrictions } from "@/app/components/Restrictions/Restrictions";
 export { default as PrivacyPolicy } from "@/app/components/PrivacyPolicy/PrivacyPolicy";
