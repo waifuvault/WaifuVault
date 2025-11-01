@@ -13,7 +13,7 @@ import {
     LegalSection,
     Logo,
     ParticleBackground,
-    SDKExamples
+    SDKExamples,
 } from "@/app/components";
 import { useRestrictions, useStats } from "@/app/hooks";
 
