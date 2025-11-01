@@ -10,7 +10,16 @@ jobs:
     name: Build Go microservices
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      # Cache libvips dependencies
+      - name: Cache libvips
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt
+          key: ${{ runner.os }}-apt-libvips
+          restore-keys: |
+            ${{ runner.os }}-apt-
 
       # Install required packages for building the thumbnails module
       - name: Install libvips dependencies for thumbnails
@@ -18,11 +27,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libvips-dev build-essential
 
-      # Setup Go
+      # Setup Go with caching
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: 'stable'
+          cache: true
+          cache-dependency-path: 'go/**/go.sum'
 
       # Build the thumbnails module with CGO enabled
       - name: Build thumbnails
@@ -43,10 +54,10 @@ jobs:
       run:
         working-directory: frontend/waifu-vault
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Setup Node.js
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 'lts/*'
           check-latest: true
@@ -81,10 +92,10 @@ jobs:
     name: Build Backend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Setup Node.js
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 'lts/*'
           check-latest: true
