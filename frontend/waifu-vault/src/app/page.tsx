@@ -4,6 +4,7 @@ import React from "react";
 import styles from "./page.module.scss";
 import {
     AdvancedFeatures,
+    AppsAndTools,
     BespokeSDKs,
     Features,
     Footer,
@@ -44,6 +45,7 @@ export default function Home() {
                     />
                     <Features />
                     <AdvancedFeatures />
+                    <AppsAndTools />
                     <BespokeSDKs />
                     <SDKExamples />
                     <LegalSection />
