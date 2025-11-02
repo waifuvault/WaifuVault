@@ -16,6 +16,7 @@ import (
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/controllers"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dao"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/routes"
+	"github.com/waifuvault/WaifuVault/thumbnails/pkg/thumbnail"
 	"golang.org/x/net/context"
 
 	"github.com/waifuvault/WaifuVault/thumbnails/docs"
@@ -54,7 +55,7 @@ func main() {
 
 	// Define Fiber config.
 	config := configs.FiberConfig()
-	config.BodyLimit = 100 * 1024 * 1024
+	config.BodyLimit = thumbnail.BodyLimit
 
 	// Define a new Fiber app with config.
 	app := fiber.New(config)

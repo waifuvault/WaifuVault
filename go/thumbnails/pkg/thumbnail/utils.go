@@ -16,6 +16,10 @@ import (
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dto"
 )
 
+const (
+	BodyLimit = 100 * 1024 * 1024
+)
+
 // fileSupported checks if a file type is supported for thumbnail generation
 func fileSupported(file dto.FileEntryDto, ffmpegFormats []string, imageExtensions []string) bool {
 	if utils.IsImage(file.MediaType) {
