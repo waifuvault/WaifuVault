@@ -10,6 +10,7 @@ import (
 	_ "image/png"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -35,6 +36,9 @@ type Processor interface {
 
 	// SupportsMultipartFile checks if the multipart file can be processed
 	SupportsMultipartFile(header *multipart.FileHeader) bool
+
+	// GenerateThumbnailFromURL creates a thumbnail from a URL
+	GenerateThumbnailFromURL(url string, animate bool) ([]byte, error)
 }
 
 type processor struct {
@@ -55,7 +59,7 @@ func NewProcessor(ffmpegFormats []string, supportedExtensions []string) Processo
 // GenerateThumbnail determines the file type and creates an appropriate thumbnail
 func (p *processor) GenerateThumbnail(fileEntry dto.FileEntryDto, animate bool) ([]byte, error) {
 	if !p.SupportsFile(fileEntry) {
-		return nil, fmt.Errorf("unsupported file type: %s", fileEntry.MediaType)
+		return nil, fmt.Errorf("%w: %s", ErrUnsupportedFileType, fileEntry.MediaType)
 	}
 
 	if utils.IsImage(fileEntry.MediaType) {
@@ -64,7 +68,7 @@ func (p *processor) GenerateThumbnail(fileEntry dto.FileEntryDto, animate bool) 
 		return p.generateVideoThumbnail(fileEntry.FullFileNameOnSystem)
 	}
 
-	return nil, fmt.Errorf("unsupported media type: %s", fileEntry.MediaType)
+	return nil, fmt.Errorf("%w: %s", ErrUnsupportedFileType, fileEntry.MediaType)
 }
 
 // SupportsFile checks if the file type can be processed
@@ -99,7 +103,7 @@ func (p *processor) GenerateThumbnailFromMultipart(file multipart.File, header *
 		return p.generateVideoThumbnailFromPath(tempFile.Name())
 	}
 
-	return nil, fmt.Errorf("unsupported file type: %s (detected: %s)", header.Filename, mediaType)
+	return nil, fmt.Errorf("%w: %s (detected: %s)", ErrUnsupportedFileType, header.Filename, mediaType)
 }
 
 // detectMimeTypeFromMultipart detects the MIME type from a multipart file header by reading its binary content
@@ -361,4 +365,99 @@ func calculateThumbnailDimensions(origWidth, origHeight int) (newWidth, newHeigh
 	scaleFactor := float64(newWidth) / float64(origWidth)
 	newHeight = int(float64(origHeight) * scaleFactor)
 	return newWidth, newHeight, nil
+}
+
+func (p *processor) GenerateThumbnailFromURL(url string, animate bool) ([]byte, error) {
+	if err := validateURL(url); err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrInvalidURL, err)
+	}
+
+	headResp, err := http.Head(url)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrFailedToDownload, err)
+	}
+	defer headResp.Body.Close()
+
+	if headResp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%w: HTTP %d", ErrFailedToDownload, headResp.StatusCode)
+	}
+
+	contentLength := headResp.ContentLength
+	if contentLength > BodyLimit {
+		return nil, fmt.Errorf("%w: file size %d bytes exceeds limit of %d bytes", ErrFileTooLarge, contentLength, BodyLimit)
+	}
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrFailedToDownload, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%w: HTTP %d", ErrFailedToDownload, resp.StatusCode)
+	}
+
+	limitedReader := io.LimitReader(resp.Body, BodyLimit)
+
+	buffer := make([]byte, 512)
+	n, err := limitedReader.Read(buffer)
+	if err != nil && err != io.EOF {
+		return nil, fmt.Errorf("%w: %s", ErrFailedToDownload, err)
+	}
+
+	filename := getFilenameFromURL(url)
+	mediaType := GetMimeType(filename, buffer[:n])
+	extension := getExtensionFromFilename(filename)
+
+	if extension == "" {
+		return nil, ErrFailedToExtractExtension
+	}
+
+	if !p.isSupportedMediaType(mediaType, extension) {
+		return nil, fmt.Errorf("%w: %s (extension: %s)", ErrUnsupportedFileType, mediaType, extension)
+	}
+
+	tempFile, err := os.CreateTemp("", "thumbnail-url-*."+extension)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(tempFile.Name())
+	defer tempFile.Close()
+
+	_, err = tempFile.Write(buffer[:n])
+	if err != nil {
+		return nil, fmt.Errorf("failed to write to temp file: %w", err)
+	}
+
+	bytesWritten, err := io.Copy(tempFile, limitedReader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to copy file content: %w", err)
+	}
+
+	totalSize := int64(n) + bytesWritten
+	if totalSize >= BodyLimit {
+		return nil, fmt.Errorf("%w: file exceeded %d bytes during download", ErrFileTooLarge, BodyLimit)
+	}
+
+	if utils.IsImage(mediaType) && lo.Contains(p.imageFormats, extension) {
+		return p.generateImageThumbnailFromFile(tempFile.Name(), extension, animate)
+	} else if utils.IsVideo(mediaType) && lo.Contains(p.ffmpegFormats, extension) {
+		return p.generateVideoThumbnailFromPath(tempFile.Name())
+	}
+
+	return nil, fmt.Errorf("%w: %s", ErrUnsupportedFileType, mediaType)
+}
+
+func getFilenameFromURL(url string) string {
+	lastSlash := strings.LastIndex(url, "/")
+	if lastSlash == -1 {
+		return ""
+	}
+	filename := url[lastSlash+1:]
+
+	if questionMark := strings.Index(filename, "?"); questionMark != -1 {
+		filename = filename[:questionMark]
+	}
+
+	return filename
 }

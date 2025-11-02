@@ -20,6 +20,7 @@ type Service interface {
 	GenerateThumbnails(files []dto.FileEntryDto, album int) error
 	GenerateThumbnail(header *multipart.FileHeader, animate bool) ([]byte, error)
 	GenerateThumbnailByToken(fileToken uuid.UUID, animate bool) ([]byte, error)
+	GenerateThumbnailFromURL(url string, animate bool) ([]byte, error)
 	GetAllSupportedExtensions() []string
 	IsAlbumLoading(album int) bool
 }
@@ -110,13 +111,13 @@ func (s service) GenerateThumbnailByToken(fileToken uuid.UUID, animate bool) ([]
 
 	fileEntryModel, err := s.dao.GetFileEntry(fileToken)
 	if err != nil {
-		return nil, fmt.Errorf("file not found: %w", err)
+		return nil, fmt.Errorf("%w: %s", ErrFileNotFound, err)
 	}
 
 	fileEntryDto := dto.FromModel(*fileEntryModel)
 
 	if !s.processor.SupportsFile(fileEntryDto) {
-		return nil, fmt.Errorf("unsupported file type: %s", fileEntryDto.MediaType)
+		return nil, fmt.Errorf("%w: %s", ErrUnsupportedFileType, fileEntryDto.MediaType)
 	}
 
 	thumbnail, err := s.processor.GenerateThumbnail(fileEntryDto, animate)
@@ -125,6 +126,22 @@ func (s service) GenerateThumbnailByToken(fileToken uuid.UUID, animate bool) ([]
 	}
 
 	s.storeThumbnailInCache(cacheKey, thumbnail, time.Hour*24*365)
+	return thumbnail, nil
+}
+
+func (s service) GenerateThumbnailFromURL(url string, animate bool) ([]byte, error) {
+	cacheKey := fmt.Sprintf("url:%s:%s", url, s.getAnimateKey(animate))
+
+	if thumbnail := s.getThumbnailFromCache(cacheKey); thumbnail != nil {
+		return thumbnail, nil
+	}
+
+	thumbnail, err := s.processor.GenerateThumbnailFromURL(url, animate)
+	if err != nil {
+		return nil, err
+	}
+
+	s.storeThumbnailInCache(cacheKey, thumbnail, time.Minute*10)
 	return thumbnail, nil
 }
 

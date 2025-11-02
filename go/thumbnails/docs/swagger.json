@@ -53,15 +53,60 @@
                     "200": {
                         "description": "File uploaded successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/wapimod.ApiResult"
                         }
                     },
                     "400": {
                         "description": "Bad request - no file uploaded",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/wapimod.ApiResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/generateThumbnail/ext/fromURL": {
+            "get": {
+                "description": "Generates a thumbnail from a file URL",
+                "produces": [
+                    "image/webp"
+                ],
+                "tags": [
+                    "thumbnails"
+                ],
+                "summary": "Generate thumbnail from URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "URL of the file to generate thumbnail for",
+                        "name": "url",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "set to true if you want to animate the thumbnail (only works with animated gif, webp or heif)",
+                        "name": "animate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thumbnail image in WebP format",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid URL or unsupported file type",
+                        "schema": {
+                            "$ref": "#/definitions/wapimod.ApiResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/wapimod.ApiResult"
                         }
                     }
                 }
@@ -102,15 +147,13 @@
                     "400": {
                         "description": "Bad request - invalid file token or unsupported file type",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/wapimod.ApiResult"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/wapimod.ApiResult"
                         }
                     }
                 }
@@ -165,6 +208,21 @@
                             }
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "wapimod.ApiResult": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         }
