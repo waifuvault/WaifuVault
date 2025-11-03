@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
@@ -41,5 +40,5 @@ func (s *Service) zipFiles(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(wapimod.NewApiError("error zipping files", err))
 	}
-	return ctx.Status(fiber.StatusOK).JSON(wapimod.NewApiResult(fmt.Sprintf(result), true))
+	return ctx.Status(fiber.StatusOK).JSON(wapimod.NewApiResult(result, true))
 }

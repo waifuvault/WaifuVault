@@ -38,6 +38,8 @@ jobs:
       - name: Build zipFiles
         run: |
           cd go/zipFiles
+          chmod +x ./build-scripts/test-all.sh
+          ./build-scripts/test-all.sh
           go build .
 
   frontend-build:
