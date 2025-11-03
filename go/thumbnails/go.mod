@@ -3,6 +3,7 @@ module github.com/waifuvault/WaifuVault/thumbnails
 go 1.25
 
 require (
+	github.com/alicebob/miniredis/v2 v2.35.0
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/create-go-app/fiber-go-template v1.14.0
 	github.com/davidbyttow/govips/v2 v2.16.0
@@ -26,7 +27,6 @@ replace github.com/waifuvault/WaifuVault/shared => ../shared
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/alicebob/miniredis/v2 v2.35.0 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

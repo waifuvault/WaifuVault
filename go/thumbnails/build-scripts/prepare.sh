@@ -25,7 +25,7 @@ then
   echo "... done"
 
   echo "generate swagger docs ..."
-  swag init --parseDependency --parseInternal --parseVendor --generalInfo pkg/api/service.go --output ./pkg/gen/swagger
+  swag init --parseDependency --parseInternal
   echo "... done"
 
   echo "format code ..."
