@@ -30,12 +30,16 @@ jobs:
       - name: Build thumbnails
         run: |
           cd go/thumbnails
+          chmod +x ./build-scripts/test-all.sh
+          ./build-scripts/test-all.sh
           CGO_ENABLED=1 go build .
 
       # Build the zipFiles module
       - name: Build zipFiles
         run: |
           cd go/zipFiles
+          chmod +x ./build-scripts/test-all.sh
+          ./build-scripts/test-all.sh
           go build .
 
   frontend-build:

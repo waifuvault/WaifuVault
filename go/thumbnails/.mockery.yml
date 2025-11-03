@@ -1,0 +1,23 @@
+all: false
+dir: '{{.InterfaceDir}}'
+filename: "{{ .InterfaceName | snakecase }}_mock.go"
+force-file-write: true
+formatter: goimports
+include-auto-generated: false
+log-level: info
+structname: '{{.Mock}}{{.InterfaceName}}'
+pkgname: '{{.SrcPackageName}}'
+recursive: false
+require-template-schema-exists: true
+template: testify
+template-schema: '{{.Template}}.schema.json'
+packages:
+  github.com/waifuvault/WaifuVault/thumbnails:
+    config:
+      all: true
+  github.com/waifuvault/WaifuVault/thumbnails/pkg/thumbnail:
+    config:
+      all: true
+  github.com/waifuvault/WaifuVault/thumbnails/pkg/dao:
+    interfaces:
+      Dao:

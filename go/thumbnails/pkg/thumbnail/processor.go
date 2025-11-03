@@ -450,13 +450,22 @@ func (p *processor) GenerateThumbnailFromURL(url string, animate bool) ([]byte, 
 
 func getFilenameFromURL(url string) string {
 	lastSlash := strings.LastIndex(url, "/")
-	if lastSlash == -1 {
+	if lastSlash == -1 || lastSlash < len(url)-1 && url[lastSlash:lastSlash+2] == "//" {
 		return ""
 	}
+
+	if lastSlash <= strings.Index(url, "://")+2 {
+		return ""
+	}
+
 	filename := url[lastSlash+1:]
 
 	if questionMark := strings.Index(filename, "?"); questionMark != -1 {
 		filename = filename[:questionMark]
+	}
+
+	if filename == "" {
+		return ""
 	}
 
 	return filename
