@@ -9,7 +9,7 @@ import {
     FileUploadModal,
     Input,
     Pill,
-    Tooltip,
+    Tooltip
 } from "@/app/components";
 import { useContextMenu, useErrorHandler } from "@/app/hooks";
 import styles from "./FileBrowser.module.scss";
@@ -20,7 +20,7 @@ import {
     getSortFieldKey,
     getSortOrderKey,
     getViewModeKey,
-    LocalStorage,
+    LocalStorage
 } from "@/constants/localStorageKeys";
 import { useToast } from "@/app/components/Toast";
 import { ConfirmDialog } from "@/app/components/ConfirmDialog/ConfirmDialog";
@@ -747,7 +747,12 @@ export function FileBrowser({
 
     const formatDate = useCallback((date: string | Date) => {
         const d = date instanceof Date ? date : new Date(date);
-        return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        const year = d.getFullYear();
+        const hours = String(d.getHours()).padStart(2, "0");
+        const minutes = String(d.getMinutes()).padStart(2, "0");
+        return `${month}/${day}/${year} ${hours}:${minutes}`;
     }, []);
 
     const formatExpires = useCallback(
