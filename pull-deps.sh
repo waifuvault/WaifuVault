@@ -2,9 +2,12 @@
 
 set -e  # Exit on any error
 
-echo "Starting deployment script..."
+# Check for -pull flag
+PULL_IMAGES=false
+if [[ "$*" == *"-pull"* ]]; then
+    PULL_IMAGES=true
+fi
 
-# Git pull
 echo "Pulling latest changes from git..."
 git pull
 
@@ -19,8 +22,12 @@ npm install
 cd ../..
 
 # Docker compose operations
-echo "Pulling and starting Docker services..."
-docker compose pull redis postgres
+if [ "$PULL_IMAGES" = true ]; then
+    echo "Pulling Docker images..."
+    docker compose pull redis postgres
+fi
+
+echo "Starting Docker services..."
 docker compose up -d --build
 
 echo "Deployment complete!"
