@@ -21,7 +21,7 @@
         "qrcode": "^1.5.4",
         "react": "19.2.0",
         "react-dom": "19.2.0",
-        "sass": "^1.93.2",
+        "sass": "^1.93.3",
         "socket.io-client": "^4.8.1"
     },
     "devDependencies": {
