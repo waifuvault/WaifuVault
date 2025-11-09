@@ -45,6 +45,7 @@ export async function uploadFile(
         let lastProgressTime = Date.now();
         let lastLoaded = 0;
         let stallCheckInterval: NodeJS.Timeout | null = null;
+        const STALL_TIMEOUT = 120000;
 
         const cleanup = () => {
             if (stallCheckInterval) {
@@ -57,13 +58,16 @@ export async function uploadFile(
             const now = Date.now();
             const timeSinceLastProgress = now - lastProgressTime;
 
-            if (timeSinceLastProgress > 30000) {
-                console.error(`Upload stalled for ${file.name}: No progress for ${timeSinceLastProgress}ms`);
+            if (timeSinceLastProgress > STALL_TIMEOUT) {
+                console.error(`Upload stalled for ${file.name}: No progress for ${timeSinceLastProgress}ms (${Math.round(timeSinceLastProgress / 1000)}s)`);
+                console.error(`Last loaded: ${lastLoaded} bytes, XHR readyState: ${xhr.readyState}, status: ${xhr.status}`);
                 cleanup();
                 xhr.abort();
-                reject(new Error(`Upload stalled - no progress for ${Math.round(timeSinceLastProgress / 1000)}s. This usually indicates a network issue or server timeout.`));
+                reject(new Error(`Upload stalled - no progress for ${Math.round(timeSinceLastProgress / 1000)}s. Last progress at ${Math.round((lastLoaded / file.size) * 100)}%. Try uploading fewer files at once or check your network connection.`));
+            } else if (timeSinceLastProgress > 30000) {
+                console.warn(`Upload slow for ${file.name}: No progress for ${Math.round(timeSinceLastProgress / 1000)}s (will abort at ${STALL_TIMEOUT / 1000}s)`);
             }
-        }, 5000);
+        }, 10000);
 
         xhr.upload.onprogress = e => {
             if (e.lengthComputable) {
