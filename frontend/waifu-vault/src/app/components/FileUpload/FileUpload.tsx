@@ -232,15 +232,26 @@ export const FileUpload = ({
         setIsUploading(true);
 
         try {
-            const uploadPromises = validFiles.map(uploadFile);
-            const results = await Promise.all(uploadPromises);
+            const results: UploadFile[] = [];
+            const MAX_CONCURRENT = 2;
 
-            setUploadFiles(prev =>
-                prev.map(existing => {
-                    const result = results.find(r => r.id === existing.id);
-                    return result || existing;
-                }),
-            );
+            for (let i = 0; i < validFiles.length; i += MAX_CONCURRENT) {
+                const batch = validFiles.slice(i, i + MAX_CONCURRENT);
+                console.log(
+                    `Uploading batch ${Math.floor(i / MAX_CONCURRENT) + 1}: ${batch.map(f => f.file.name).join(", ")}`,
+                );
+
+                const batchPromises = batch.map(uploadFile);
+                const batchResults = await Promise.all(batchPromises);
+                results.push(...batchResults);
+
+                setUploadFiles(prev =>
+                    prev.map(existing => {
+                        const result = batchResults.find(r => r.id === existing.id);
+                        return result || existing;
+                    }),
+                );
+            }
 
             onUploadComplete?.(results);
         } catch (error) {
