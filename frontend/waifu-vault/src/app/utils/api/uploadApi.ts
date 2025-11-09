@@ -40,6 +40,8 @@ export async function uploadFile(
 
         const xhr = new XMLHttpRequest();
 
+        xhr.timeout = 0;
+
         xhr.upload.onprogress = e => {
             if (e.lengthComputable && onProgress) {
                 const progress = Math.round((e.loaded * 100) / e.total);
@@ -63,7 +65,15 @@ export async function uploadFile(
         };
 
         xhr.onerror = () => {
-            reject(new Error("Network error"));
+            reject(new Error("Network error during upload"));
+        };
+
+        xhr.ontimeout = () => {
+            reject(new Error("Upload timed out"));
+        };
+
+        xhr.onabort = () => {
+            reject(new Error("Upload was aborted"));
         };
 
         xhr.open("PUT", uploadUrl);

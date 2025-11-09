@@ -212,6 +212,11 @@ export class Server implements BeforeRoutesInit {
         if (isProduction) {
             this.app.getApp().set("trust proxy", 1);
         }
+
+        this.app.getApp().settings.timeout = 0;
+        this.app.getApp().settings.keepAliveTimeout = 0;
+        this.app.getApp().settings.headersTimeout = 0;
+
         if (this.sessionKey) {
             this.app.use(
                 session({
