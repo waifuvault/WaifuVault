@@ -59,13 +59,13 @@ export async function uploadFile(
             const timeSinceLastProgress = now - lastProgressTime;
 
             if (timeSinceLastProgress > STALL_TIMEOUT) {
-                console.error(`Upload stalled for ${file.name}: No progress for ${timeSinceLastProgress}ms (${Math.round(timeSinceLastProgress / 1000)}s)`);
-                console.error(`Last loaded: ${lastLoaded} bytes, XHR readyState: ${xhr.readyState}, status: ${xhr.status}`);
                 cleanup();
                 xhr.abort();
-                reject(new Error(`Upload stalled - no progress for ${Math.round(timeSinceLastProgress / 1000)}s. Last progress at ${Math.round((lastLoaded / file.size) * 100)}%. Try uploading fewer files at once or check your network connection.`));
-            } else if (timeSinceLastProgress > 30000) {
-                console.warn(`Upload slow for ${file.name}: No progress for ${Math.round(timeSinceLastProgress / 1000)}s (will abort at ${STALL_TIMEOUT / 1000}s)`);
+                reject(
+                    new Error(
+                        `Upload stalled - no progress for ${Math.round(timeSinceLastProgress / 1000)}s. Last progress at ${Math.round((lastLoaded / file.size) * 100)}%. Try uploading fewer files at once or check your network connection.`,
+                    ),
+                );
             }
         }, 10000);
 
@@ -76,7 +76,6 @@ export async function uploadFile(
                 if (e.loaded > lastLoaded) {
                     lastProgressTime = Date.now();
                     lastLoaded = e.loaded;
-                    console.log(`Upload progress for ${file.name}: ${progress}% (${e.loaded}/${e.total} bytes)`);
                 }
 
                 if (onProgress) {
@@ -85,55 +84,35 @@ export async function uploadFile(
             }
         };
 
-        xhr.onreadystatechange = () => {
-            console.log(`Upload readyState for ${file.name}:`, xhr.readyState, `status:`, xhr.status);
-        };
-
         xhr.onload = () => {
             cleanup();
-            console.log(`Upload completed for ${file.name}, status: ${xhr.status}`);
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (xhr.status >= 200 && xhr.status < 300) {
                     resolve(response);
                 } else {
-                    console.error(`Upload API Error (${xhr.status}):`, response);
                     reject(new Error(response.message || `Upload failed (${xhr.status})`));
                 }
             } catch {
-                console.error("Upload API Parse Error:", xhr.responseText);
                 reject(new Error(`Invalid response from server (${xhr.status})`));
             }
         };
 
-        xhr.onerror = (e) => {
+        xhr.onerror = () => {
             cleanup();
-            console.error(`Network error during upload of ${file.name}:`, e);
-            console.error(`XHR state at error - readyState: ${xhr.readyState}, status: ${xhr.status}`);
-            reject(new Error(`Network error during upload. ReadyState: ${xhr.readyState}, Status: ${xhr.status}`));
+            reject(new Error(`Network error during upload`));
         };
 
         xhr.ontimeout = () => {
             cleanup();
-            console.error(`Upload timeout for ${file.name}`);
             reject(new Error("Upload timed out"));
         };
 
         xhr.onabort = () => {
             cleanup();
-            console.error(`Upload aborted for ${file.name}`);
             reject(new Error("Upload was aborted"));
         };
 
-        xhr.onloadstart = () => {
-            console.log(`Upload started for ${file.name} to ${uploadUrl}`);
-        };
-
-        xhr.onloadend = () => {
-            console.log(`Upload loadend event for ${file.name}, readyState: ${xhr.readyState}, status: ${xhr.status}`);
-        };
-
-        console.log(`Initiating upload for ${file.name} (${file.size} bytes) to ${uploadUrl}`);
         xhr.open("PUT", uploadUrl);
         xhr.send(formData);
     });

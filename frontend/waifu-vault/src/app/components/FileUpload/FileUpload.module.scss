@@ -365,6 +365,10 @@
     transition: width 0.3s ease;
 }
 
+.progressBarError {
+    background: var(--error-color);
+}
+
 .progressText {
     font-size: 0.75rem;
     color: var(--text-secondary);

@@ -203,18 +203,17 @@ export const FileUpload = ({
                 },
             );
 
-            console.log(`Upload successful for ${uploadFile.file.name}:`, response);
             return {
                 ...uploadFile,
                 status: "completed",
                 response,
             };
         } catch (error) {
-            handleError(error, { defaultMessage: `Upload failed for ${uploadFile.file.name}` });
+            const errorMessage = error instanceof Error ? error.message : "Upload failed";
             return {
                 ...uploadFile,
                 status: "error",
-                error: error instanceof Error ? error.message : "Upload failed",
+                error: errorMessage,
             };
         }
     };
@@ -237,11 +236,8 @@ export const FileUpload = ({
 
             for (let i = 0; i < validFiles.length; i += MAX_CONCURRENT) {
                 const batch = validFiles.slice(i, i + MAX_CONCURRENT);
-                console.log(
-                    `Uploading batch ${Math.floor(i / MAX_CONCURRENT) + 1}: ${batch.map(f => f.file.name).join(", ")}`,
-                );
 
-                const batchPromises = batch.map(uploadFile);
+                const batchPromises = batch.map(file => uploadFile(file).catch(error => error));
                 const batchResults = await Promise.all(batchPromises);
                 results.push(...batchResults);
 
@@ -254,8 +250,6 @@ export const FileUpload = ({
             }
 
             onUploadComplete?.(results);
-        } catch (error) {
-            handleError(error, { defaultMessage: "Upload process failed" });
         } finally {
             setIsUploading(false);
         }
@@ -361,6 +355,21 @@ export const FileUpload = ({
                                                 <span className={styles.progressText}>{uploadFile.progress || 0}%</span>
                                             </div>
                                         )}
+                                        {uploadFile.status === "error" &&
+                                            uploadFile.progress &&
+                                            uploadFile.progress > 0 && (
+                                                <div className={styles.progressContainer}>
+                                                    <div className={styles.progress}>
+                                                        <div
+                                                            className={`${styles.progressBar} ${styles.progressBarError}`}
+                                                            style={{ width: `${uploadFile.progress || 0}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className={styles.progressText}>
+                                                        {uploadFile.progress || 0}%
+                                                    </span>
+                                                </div>
+                                            )}
                                         {uploadFile.status === "completed" && (
                                             <i
                                                 className="bi bi-check-circle"
