@@ -5,9 +5,8 @@ import { WaifuFileWithAlbum } from "../../../model/dto/WaifuFile.js";
 import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { BadRequest } from "@tsed/exceptions";
 import { Req, Res } from "@tsed/platform-http";
-import { PathParams, QueryParams } from "@tsed/platform-params";
+import { BodyParams, PathParams, QueryParams } from "@tsed/platform-params";
 import { MultipartFile, type PlatformMulterFile } from "@tsed/platform-multer";
-import { BodyParams } from "@tsed/platform-params";
 import { FileUploadService } from "../../../services/FileUploadService.js";
 import { FileUtils, NetworkUtils } from "../../../utils/Utils.js";
 import { BaseRestController } from "../BaseRestController.js";
@@ -40,6 +39,9 @@ export class FileUploadController extends BaseRestController {
     @(Returns(StatusCodes.OK, WaifuFileWithAlbum).Description("If the file already exists"))
     @(Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, DefaultRenderException).Description(
         "If the media type of the file specified was blocked",
+    ))
+    @(Returns(StatusCodes.REQUEST_TOO_LONG, DefaultRenderException).Description(
+        "If the file size exceeds the maximum allowed size",
     ))
     public async addEntry(
         @Req() req: Request,

@@ -93,7 +93,7 @@ export type RestrictionTypeMapping = {
     [RestrictionType.BLOCKED_MIME_TYPES]: string;
 };
 
-export type RestrictionValueType = string | number | string[];
+export type RestrictionValueType = string | number | string[] | null;
 
 export type AdminDataTaleEntryModel = {
     draw: number;

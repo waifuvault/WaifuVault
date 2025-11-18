@@ -1,7 +1,6 @@
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import TimeUnit from "../model/constants/TimeUnit.js";
-import process from "node:process";
 import type { Request } from "express";
 import fs from "node:fs/promises";
 import { type PlatformMulterFile } from "@tsed/platform-multer";
@@ -154,16 +153,15 @@ export class FileUtils {
         return entry.expires === null ? null : entry.expires - Date.now();
     }
 
-    public static getTimeLeftBySize(filesize: number): number {
+    public static getTimeLeftBySize(filesize: number, maxFileSize: number): number {
         const ttl = Math.floor(
-            (FileUtils.minExpiration - FileUtils.maxExpiration) *
-                Math.pow(filesize / (Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB!) * 1048576) - 1, 3),
+            (FileUtils.minExpiration - FileUtils.maxExpiration) * Math.pow(filesize / (maxFileSize * 1048576) - 1, 3),
         );
         return ttl < FileUtils.minExpiration ? FileUtils.minExpiration : ttl;
     }
 
-    public static getExpiresBySize(filesize: number, dateToUse = Date.now()): number {
-        return dateToUse + this.getTimeLeftBySize(filesize);
+    public static getExpiresBySize(filesize: number, maxFileSize: number, dateToUse = Date.now()): number {
+        return dateToUse + this.getTimeLeftBySize(filesize, maxFileSize);
     }
 
     public static async getFilesCount(): Promise<number> {
