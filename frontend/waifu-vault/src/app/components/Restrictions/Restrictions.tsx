@@ -24,6 +24,11 @@ export default function Restrictions() {
         setCalculatorResult("");
         setCalculatorError("");
 
+        if (fileSizeLimit === null) {
+            setCalculatorResult("File will be retained indefinitely (unlimited storage)");
+            return;
+        }
+
         if (fileSize > fileSizeLimit) {
             setCalculatorError("File too large!");
             return;

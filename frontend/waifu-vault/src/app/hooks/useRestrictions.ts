@@ -9,7 +9,7 @@ interface UseRestrictionsReturn {
     maxFileSizeFormatted: string;
     bannedTypes: string[];
     restrictions: {
-        maxFileSize: number;
+        maxFileSize: number | null;
         maxAlbumSize: number;
     };
     isLoading: boolean;
@@ -22,7 +22,7 @@ const DEFAULT_MAX_ALBUM_SIZE = 256; // fallback album size limit
 
 export const useRestrictions = (): UseRestrictionsReturn => {
     const { backendRestBaseUrl } = useEnvironment();
-    const [maxFileSize, setMaxFileSize] = useState<number>(DEFAULT_MAX_FILE_SIZE);
+    const [maxFileSize, setMaxFileSize] = useState<number | null>(DEFAULT_MAX_FILE_SIZE);
     const [maxAlbumSize, setMaxAlbumSize] = useState<number>(DEFAULT_MAX_ALBUM_SIZE);
     const [bannedTypes, setBannedTypes] = useState<string[]>(DEFAULT_BANNED_TYPES);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -37,8 +37,12 @@ export const useRestrictions = (): UseRestrictionsReturn => {
 
             for (const restriction of restrictions) {
                 if (restriction.type === "MAX_FILE_SIZE") {
-                    const sizeInBytes = Number(restriction.value);
-                    setMaxFileSize(sizeInBytes);
+                    if (restriction.value === null) {
+                        setMaxFileSize(null);
+                    } else {
+                        const sizeInBytes = Number(restriction.value);
+                        setMaxFileSize(sizeInBytes);
+                    }
                 } else if (restriction.type === "BANNED_MIME_TYPE") {
                     const types = String(restriction.value)
                         .split(",")
@@ -62,7 +66,7 @@ export const useRestrictions = (): UseRestrictionsReturn => {
     }, [fetchRestrictions]);
 
     return {
-        maxFileSizeFormatted: formatFileSize(maxFileSize),
+        maxFileSizeFormatted: maxFileSize === null ? "Unlimited" : formatFileSize(maxFileSize),
         bannedTypes,
         restrictions: {
             maxFileSize,

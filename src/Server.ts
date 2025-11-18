@@ -35,10 +35,9 @@ import type { NextFunction, Request, Response } from "express";
 import { REDIS_CONNECTION, SQLITE_DATA_SOURCE } from "./model/di/tokens.js";
 import { DataSource } from "typeorm";
 import compression from "compression";
-import multer from "multer";
 import path from "node:path";
 import rateLimit from "express-rate-limit";
-import { filesDir, FileUtils, NetworkUtils } from "./utils/Utils.js";
+import { filesDir, NetworkUtils } from "./utils/Utils.js";
 import { fileURLToPath } from "node:url";
 import { ExpressRateLimitTypeOrmStore } from "typeorm-rate-limit-store";
 import { ExpressRateLimitStoreModel } from "./model/db/ExpressRateLimitStore.model.js";
@@ -49,9 +48,9 @@ import { initRedisProvider, type RedisConnection } from "./redis/Connection.js";
 import { createShardedAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
 import { RedisStore } from "connect-redis";
-import { uuid } from "./utils/uuidUtils.js";
 import { GlobalEnv } from "./model/constants/GlobalEnv.js";
 import { SettingsService } from "./services/SettingsService.js";
+import { SizeLimitDiskStorage } from "./config/multer/SizeLimitDiskStorage.js";
 
 const socketIoStatus = process.env.HOME_PAGE_FILE_COUNTER ? process.env.HOME_PAGE_FILE_COUNTER : "dynamic";
 
@@ -74,20 +73,7 @@ const opts: Partial<TsED.Configuration> = {
     })(),
     multer: {
         dest: filesDir,
-        limits: {
-            fileSize: Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB as string) * 1048576,
-        },
-        storage: multer.diskStorage({
-            destination: (_, _2, cb) => {
-                cb(null, filesDir);
-            },
-            filename: (_, file, cb) => {
-                const ext = FileUtils.getExtension(file.originalname);
-                const token = uuid();
-                const fileName = ext ? `${token}.${ext}` : token;
-                return cb(null, fileName);
-            },
-        }),
+        storage: new SizeLimitDiskStorage(),
         preservePath: true,
     },
     passport: {
@@ -133,15 +119,21 @@ const opts: Partial<TsED.Configuration> = {
             })(req, res, next);
         },
         cors((req: CorsRequest, callback: (err: Error | null, options?: e.CorsOptions) => void) => {
+            const allowedOrigins = [process.env.BASE_URL!, process.env.FRONT_END_URL!];
+            const requestOrigin = req.headers.origin;
+
             const corsOptions = isPublicPath((req as Request).path)
                 ? {
-                      origin: "*",
+                      origin: (_origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void): void => {
+                          cb(null, true);
+                      },
                       methods: "*",
                       allowedHeaders: "*",
                       exposedHeaders: "*",
+                      credentials: requestOrigin ? allowedOrigins.includes(requestOrigin) : false,
                   }
                 : {
-                      origin: [process.env.BASE_URL!, process.env.FRONT_END_URL!],
+                      origin: allowedOrigins,
                       exposedHeaders: ["Location", "Content-Disposition"],
                       credentials: true,
                   };
@@ -181,30 +173,23 @@ await initRedis(opts);
 @Configuration(opts)
 export class Server implements BeforeRoutesInit {
     private readonly sessionKey: string;
-
     private readonly https: string | null;
-
     private readonly rateLimitMs: string | null;
-
     private readonly rateLimit: string | null;
-
     private readonly redisUrl: string | null;
-
-    private readonly frontEndUrl: string | null;
 
     public constructor(
         @Inject() private app: PlatformApplication,
         @Inject(SQLITE_DATA_SOURCE) private ds: DataSource,
         @Inject() private logger: Logger,
         @Inject(REDIS_CONNECTION) private redis: RedisConnection,
-        @Inject() settingsService: SettingsService,
+        @Inject() private settingsService: SettingsService,
     ) {
         this.sessionKey = settingsService.getSetting(GlobalEnv.SESSION_KEY);
         this.https = settingsService.getSetting(GlobalEnv.HTTPS);
         this.rateLimitMs = settingsService.getSetting(GlobalEnv.RATE_LIMIT_MS);
         this.rateLimit = settingsService.getSetting(GlobalEnv.RATE_LIMIT);
         this.redisUrl = settingsService.getSetting(GlobalEnv.REDIS_URI);
-        this.frontEndUrl = settingsService.getSetting(GlobalEnv.FRONT_END_URL);
     }
 
     public $beforeRoutesInit(): void {
@@ -275,14 +260,6 @@ export class Server implements BeforeRoutesInit {
         if (this.redisUrl) {
             this.logger.info(`Connected IO to redis at ${this.redisUrl}`);
         }
-
-        /* if (this.frontEndUrl) {
-            this.app.addRoute("GET", "/", [
-                (_req: Request, res: Response): void => {
-                    res.redirect(StatusCodes.PERMANENT_REDIRECT, this.frontEndUrl!);
-                },
-            ]);
-        }*/
     }
 
     private parseError(error: Exception): DefaultRenderException {

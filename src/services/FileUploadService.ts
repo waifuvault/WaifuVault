@@ -33,6 +33,7 @@ export class FileUploadService {
     private readonly secret: string | null;
     private readonly vtApiKey: string | null;
     private readonly dangerousMimeTypes: string | null;
+    private readonly maxFileSize: number;
 
     public constructor(
         @Inject() private repo: FileRepo,
@@ -50,6 +51,7 @@ export class FileUploadService {
         this.secret = settingsService.getSetting(GlobalEnv.UPLOAD_SECRET);
         this.vtApiKey = settingsService.getSetting(GlobalEnv.VIRUSTOTAL_KEY);
         this.dangerousMimeTypes = settingsService.getSetting(GlobalEnv.DANGEROUS_MIME_TYPES);
+        this.maxFileSize = settingsService.getMaxFileSize();
     }
 
     public async processUpload({
@@ -155,7 +157,7 @@ export class FileUploadService {
         } else if (await this.hasUnlimitedExpire(secretToken, bucketToken)) {
             entryBuilder.expires(null);
         } else {
-            entryBuilder.expires(FileUtils.getExpiresBySize(fileSize));
+            entryBuilder.expires(FileUtils.getExpiresBySize(fileSize, this.maxFileSize));
         }
     }
 
@@ -273,7 +275,7 @@ export class FileUploadService {
             await this.calculateCustomExpires(builder, dto.customExpiry);
         } else if (dto.customExpiry === "") {
             const fileSize = await FileUtils.getFileSize(entryToModify);
-            builder.expires(FileUtils.getExpiresBySize(fileSize, entryToModify.createdAt.getTime()));
+            builder.expires(FileUtils.getExpiresBySize(fileSize, this.maxFileSize, entryToModify.createdAt.getTime()));
         }
         return this.repo.saveEntry(builder.build());
     }
@@ -299,7 +301,9 @@ export class FileUploadService {
 
         const unlimitedExpire = await this.hasUnlimitedExpire(secretToken, bucketToken);
 
-        const maxExp: number | null = unlimitedExpire ? null : FileUtils.getTimeLeftBySize(entry.fileSize());
+        const maxExp: number | null = unlimitedExpire
+            ? null
+            : FileUtils.getTimeLeftBySize(entry.fileSize(), this.maxFileSize);
 
         if (maxExp !== null && value > maxExp) {
             throw new BadRequest(`Cannot extend time remaining beyond ${ObjectUtils.timeToHuman(maxExp)}`);

@@ -42,7 +42,7 @@ export const FileUpload = ({
     const [expiresError, setExpiresError] = useState<string | null>(null);
 
     const validateFile = (file: File): { isValid: boolean; error?: string } => {
-        if (file.size > restrictions.maxFileSize) {
+        if (restrictions.maxFileSize !== null && file.size > restrictions.maxFileSize) {
             return {
                 isValid: false,
                 error: `File too large (${formatFileSize(file.size)}). Max: ${formatFileSize(restrictions.maxFileSize)}`,

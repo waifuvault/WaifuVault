@@ -1,4 +1,4 @@
-import { Configuration, Injectable } from "@tsed/di";
+import { Configuration, constant, Injectable } from "@tsed/di";
 import { defaultValues, GlobalEnv, GuaranteedString, prefix } from "../../model/constants/GlobalEnv.js";
 
 @Injectable()
@@ -7,7 +7,7 @@ export class SettingsDao {
 
     public getSetting<K extends GlobalEnv>(setting: K): K extends GuaranteedString ? string : string | null {
         type ReturnType = K extends GuaranteedString ? string : string | null;
-        return this.configuration.get<string | null>(setting, defaultValues[setting]) as ReturnType;
+        return constant(setting, defaultValues[setting]) as ReturnType;
     }
 
     public getAllSettings(): Record<GlobalEnv, string | null> {

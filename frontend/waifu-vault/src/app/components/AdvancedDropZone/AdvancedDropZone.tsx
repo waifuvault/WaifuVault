@@ -11,7 +11,7 @@ let fileCounter = 0;
 
 interface AdvancedDropZoneProps {
     isDragging: boolean;
-    maxFileSize: number;
+    maxFileSize: number | null;
     disabled?: boolean;
     bucketType?: BucketType;
     onDragEnter: (e: DragEvent) => void;
@@ -49,7 +49,7 @@ export default function AdvancedDropZone({
     const { currentTheme: theme } = useTheme();
 
     const validateFile = (file: File): { isValid: boolean; error?: string } => {
-        if (file.size > maxFileSize) {
+        if (maxFileSize !== null && file.size > maxFileSize) {
             return {
                 isValid: false,
                 error: `File too large (${formatFileSize(file.size)}). Max: ${formatFileSize(maxFileSize)}`,
@@ -336,7 +336,8 @@ export default function AdvancedDropZone({
                     <div className={styles.dropzoneText}>
                         <p className={styles.mainMessage}>{getThemeMessage()}</p>
                         <span className={styles.hint}>
-                            Multiple files supported • Max {formatFileSize(maxFileSize)} per file
+                            Multiple files supported •{" "}
+                            {maxFileSize ? `Max file size: ${formatFileSize(maxFileSize)}` : "No file size limit"}
                         </span>
                         {bucketType === "PREMIUM" && (
                             <span className={styles.permanentHint}>
