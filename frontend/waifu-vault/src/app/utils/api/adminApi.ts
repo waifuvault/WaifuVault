@@ -73,13 +73,13 @@ export async function unblockIps(waifuVaultBackend: string, ips: string[]): Prom
 }
 
 export async function blockIp(waifuVaultBackend: string, ip: string, deleteFiles: boolean): Promise<void> {
-    const response = await fetch(`${waifuVaultBackend}/rest/admin/blockIp`, {
+    const response = await fetch(`${waifuVaultBackend}/rest/admin/blockIp?removeRelatedData=${deleteFiles}`, {
         method: "POST",
         credentials: "include",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ip, deleteFiles }),
+        body: JSON.stringify({ ip }),
     });
 
     if (!response.ok) {
