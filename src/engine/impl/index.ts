@@ -12,6 +12,7 @@ export * from "./captcha/ReCAPTCHAEngine.js";
 export * from "./captcha/TurnstileCaptchaEngine.js";
 export * from "./fileFilters/AbstractFileFilter.js";
 export * from "./fileFilters/AvFilter.js";
+export * from "./fileFilters/FileRejectionFilter.js";
 export * from "./fileFilters/MimeFilter.js";
 export * from "./transfomers/dto/AlbumModelTransformer.js";
 export * from "./transfomers/dto/BucketModelTransformer.js";
