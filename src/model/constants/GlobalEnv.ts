@@ -38,6 +38,8 @@ export enum GlobalEnv {
     ALBUM_FILE_LIMIT = `${prefix}ALBUM_FILE_LIMIT`,
     TRUSTED_UPLOADER_IPS = `${prefix}TRUSTED_UPLOADER_IPS`,
     FRONT_END_URL = `${prefix}FRONT_END_URL`,
+    FILE_FILTER_PATTERN = `${prefix}FILE_FILTER_PATTERN`,
+    FILE_FILTER_AUTO_BLOCK = `${prefix}FILE_FILTER_AUTO_BLOCK`,
 }
 
 export type GuaranteedString = WithDefault | MandatoryValues;
@@ -63,7 +65,8 @@ export type WithDefault =
     | GlobalEnv.HOME_PAGE_FILE_COUNTER
     | GlobalEnv.ZIP_MAX_SIZE_MB
     | GlobalEnv.ALBUM_FILE_LIMIT
-    | GlobalEnv.IP_SALT;
+    | GlobalEnv.IP_SALT
+    | GlobalEnv.FILE_FILTER_AUTO_BLOCK;
 
 export const defaultValues = {
     ...baseDefaults,
@@ -77,6 +80,7 @@ export const defaultValues = {
     [GlobalEnv.PORT]: "",
     [GlobalEnv.BASE_URL]: "",
     [GlobalEnv.REDIS_URI]: "",
+    [GlobalEnv.FILE_FILTER_AUTO_BLOCK]: "false",
 } satisfies DefaultMapping & Record<MandatoryValues, string>;
 
 const mandatoryValues: MandatoryValues[] = [

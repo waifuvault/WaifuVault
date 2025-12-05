@@ -82,7 +82,7 @@ export class FileUploadService {
             const token = uuid();
             const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
 
-            await this.filterFile(resourcePath);
+            await this.filterFile(source);
 
             uploadEntry.fileName(path.parse(resourcePath).name);
             const mediaType = await this.mimeService.findMimeType(resourcePath);
@@ -332,7 +332,7 @@ export class FileUploadService {
         hashSum.update(fileBuffer);
         return hashSum.digest("hex");
     }
-    private async filterFile(resourcePath: string): Promise<void> {
+    private async filterFile(resourcePath: PlatformMulterFile | string): Promise<void> {
         const failedFilters = await this.fileFilterManager.process(resourcePath);
         if (failedFilters.length > 0) {
             // throw the error of the highest priority

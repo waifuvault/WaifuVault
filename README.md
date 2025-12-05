@@ -15,7 +15,8 @@ of hosting.
 
 > **⚠️ Breaking Change - Password Protected Files**
 >
-> Password protected file URLs have changed from `/f/` to `/p/`. If you have existing password-protected file links, you must replace `/f/` with `/p/` in the URL.
+> Password protected file URLs have changed from `/f/` to `/p/`. If you have existing password-protected file links, you
+> must replace `/f/` with `/p/` in the URL.
 >
 > **Before:** `https://waifuvault.moe/f/4c80f857-4147-4f6e-b77f-80b11aadd452/LMG.jpg`
 > **After:** `https://waifuvault.moe/p/4c80f857-4147-4f6e-b77f-80b11aadd452/LMG.jpg`
@@ -90,8 +91,10 @@ Optional Settings
 | VIRUSTOTAL_REPUTATION_LIMIT | This is a value from 0 (requires almost no malicious reports) to 9 (will pass with 90% malicious reports) to decide if the file should be deleted                                                                                                                                                     |
 | DANGEROUS_MIME_TYPES        | A comma seperated list of mime types that will be subjected to file reputation check                                                                                                                                                                                                                  |
 | FILE_REPUTATION_CRON        | This allows you to set a custom cron schedule to check recent uploads                                                                                                                                                                                                                                 |
-| FRONT_END_URL               | The URL for the Next.js frontend application. Used for protected file URLs and authentication redirects                                                                                                                                                                                                |
-| COOKIE_DOMAIN               | The domain to use for session cookies. Should match your deployment domain                                                                                                                                                                                                                            | 
+| FRONT_END_URL               | The URL for the Next.js frontend application. Used for protected file URLs and authentication redirects                                                                                                                                                                                               |
+| COOKIE_DOMAIN               | The domain to use for session cookies. Should match your deployment domain                                                                                                                                                                                                                            |
+| FILE_FILTER_PATTERN         | A regex pattern to reject files by filename                                                                                                                                                                                                                                                           |
+| FILE_FILTER_AUTO_BLOCK      | If `true`, IPs that upload more than 10 rejected files within 10 seconds will be automatically banned                                                                                                                                                                                                    |
 
 The available `CAPTCHA_SERVICE` values are:
 
@@ -112,8 +115,10 @@ The available `CAPTCHA_SERVICE` values are:
 
 #### File Reputation Check
 
-In addition to blocking certain file types, you can allow a given set of file types, but subject those file to a reputation check using VirusTotal.
-Newly uploaded files will be checked using their hash by a background service.  If they exceed a set threshold (settable int he env file), they will be deleted.
+In addition to blocking certain file types, you can allow a given set of file types, but subject those file to a
+reputation check using VirusTotal.
+Newly uploaded files will be checked using their hash by a background service. If they exceed a set threshold (settable
+int he env file), they will be deleted.
 For this you will need a virustotal API key and to set the following in the .env file.
 
 > If the VIRUSTOTAL_KEY is not set, this system will not be used
@@ -127,7 +132,8 @@ For this you will need a virustotal API key and to set the following in the .env
 
 ### Frontend Setup
 
-The Next.js frontend is located in the `frontend/waifu-vault` directory and requires its own `.env` file for configuration.
+The Next.js frontend is located in the `frontend/waifu-vault` directory and requires its own `.env` file for
+configuration.
 
 Create a `.env` file in `frontend/waifu-vault/` with the following settings:
 
@@ -143,15 +149,15 @@ NEXT_PUBLIC_THUMBNAIL_SERVICE=http://127.0.0.1:5006
 
 Frontend Environment Variables:
 
-| Setting                             | Description                                                                                   |
-|-------------------------------------|-----------------------------------------------------------------------------------------------|
-| NEXT_PUBLIC_BASE_URL                | The URL where the Next.js frontend is hosted                                                  |
-| NEXT_PUBLIC_WAIFUVAULT_BACKEND      | The URL where the backend API is hosted                                                       |
-| NEXT_PUBLIC_HOME_PAGE_FILE_COUNTER  | Controls the file counter display (static, dynamic, or off)                                   |
-| NODE_ENV                            | The Node environment (development or production)                                              |
-| NEXT_PUBLIC_UPLOADER_URL            | The URL for the uploader service                                                              |
-| NEXT_PUBLIC_ALLOWED_DEV_ORIGINS     | Comma-separated list of allowed origins for development                                       |
-| NEXT_PUBLIC_THUMBNAIL_SERVICE       | The URL for the thumbnail generation service                                                  |
+| Setting                            | Description                                                 |
+|------------------------------------|-------------------------------------------------------------|
+| NEXT_PUBLIC_BASE_URL               | The URL where the Next.js frontend is hosted                |
+| NEXT_PUBLIC_WAIFUVAULT_BACKEND     | The URL where the backend API is hosted                     |
+| NEXT_PUBLIC_HOME_PAGE_FILE_COUNTER | Controls the file counter display (static, dynamic, or off) |
+| NODE_ENV                           | The Node environment (development or production)            |
+| NEXT_PUBLIC_UPLOADER_URL           | The URL for the uploader service                            |
+| NEXT_PUBLIC_ALLOWED_DEV_ORIGINS    | Comma-separated list of allowed origins for development     |
+| NEXT_PUBLIC_THUMBNAIL_SERVICE      | The URL for the thumbnail generation service                |
 
 > **Note:** For production deployments, adjust these URLs to match your production environment.
 
@@ -204,11 +210,12 @@ token.
 ![CreateBucket](https://waifuvault.moe/f/5264a78d-7147-418b-84cb-2632f587e239/CreateBucket.png)
 
 ### Bucket File Management Operations
-The column on the left allows you to manage albums, which are collections of files.  The `All Files` shows all files in 
-the bucket, which will include all of the files in your albums.  Files can be moved into albums by drag and drop.
+
+The column on the left allows you to manage albums, which are collections of files. The `All Files` shows all files in
+the bucket, which will include all of the files in your albums. Files can be moved into albums by drag and drop.
 To create an album you can click on `Create First` or use the `+` at the top.
 
-If you right click on an album, you will get a context menu that allows you to share or unshare the album, pin or 
+If you right click on an album, you will get a context menu that allows you to share or unshare the album, pin or
 unpin it from the list and delete it.
 
 ![Albums](https://waifuvault.moe/f/c389c62e-8fe8-4757-8e81-b0f5aec5b728/AlbumColumn.png)
@@ -224,43 +231,46 @@ Download a file, by selecting it and clicking `View`.
 Upload a file, by clicking `Upload`, which will bring up the uploader where you can choose the file and set what
 options you would like on it.
 
-Drag files to the central box, which will put them in the upload queue.  Once in the upload queue, you can set options 
+Drag files to the central box, which will put them in the upload queue. Once in the upload queue, you can set options
 such as password, expiry time, hidden filename and one time access by clicking on the `gear` icon next to the file.
 You can also delete it from the queue by using the `trash` icon.
 
 Once you have your files and options set in the queue, click on `Upload Files` to upload them.
 
-> NOTE: The uploader will stay open after upload, top allow easy multiple upload.  Simply close the 
+> NOTE: The uploader will stay open after upload, top allow easy multiple upload. Simply close the
 > modal when you are done.
 
 ![Upload](https://waifuvault.moe/f/252bd2a5-a288-4ced-8395-d78e2f96098e/UploadFile.png)
 
-If you have an album selected, then the upload button will show as `Upload Files to Album`.  This will bring up the uploader
+If you have an album selected, then the upload button will show as `Upload Files to Album`. This will bring up the
+uploader
 and at the top it will show you how many files are in the album and how many more you have before the album is full.
 Now selecting files will upload them directly to the album.
 
 ![UploadAlbumFile](https://waifuvault.moe/f/e8f52ef5-c952-46f6-95f5-93989be2ff23/UploadAlbumFile.png)
 
-There are a number of views you can choose for files.  `Grid` is the default, and shows the information and a preview of the
-file as a card.  `List` shows a simple list of the filenames with a clickable view icon, and `Table` shows a table version,
+There are a number of views you can choose for files.  `Grid` is the default, and shows the information and a preview of
+the
+file as a card.  `List` shows a simple list of the filenames with a clickable view icon, and `Table` shows a table
+version,
 with the filename, some file attributes and a clickable view icon.
 
 ![FileViews](https://waifuvault.moe/f/17268662-c849-435b-b796-edd0f8b2656e/FileViews.png)
 
-Directly below the view column, are the sort and pagination options.  Files can be sorted by `Name`, `Date`, `Size` and 
-`Type`.  If you are in an album then there is also another sort option - `Layout`.  This is how the files will show on 
+Directly below the view column, are the sort and pagination options. Files can be sorted by `Name`, `Date`, `Size` and
+`Type`. If you are in an album then there is also another sort option - `Layout`. This is how the files will show on
 the public album page if you share it, and using drag and drop you can rearrange the files as you see fit.
 
-Pagination sizes can be set to 10, 50 or 100.  Sort and size will be remembered for each album individually.
+Pagination sizes can be set to 10, 50 or 100. Sort and size will be remembered for each album individually.
 
 ![SortOptions](https://waifuvault.moe/f/f08ee717-1f43-4779-9213-01d84108cd94/SortOptions.png)
 
-On the bar next to logout, is the `Delete Bucket` button.  This will delete the bucket, all albums and all files.
+On the bar next to logout, is the `Delete Bucket` button. This will delete the bucket, all albums and all files.
 It will ask you if you are sure.
 
 ![DeleteBucket](https://waifuvault.moe/f/b906ff5b-6f0d-4975-9543-eafab69b281a/DeleteBucket.png)
 
-> **Note Well** This will DELETE EVERYTHING in the bucket and the bucket.  This includes any shared albums, which will
+> **Note Well** This will DELETE EVERYTHING in the bucket and the bucket. This includes any shared albums, which will
 > no longer be available.
 
 ## Albums Admin Feature
@@ -284,7 +294,8 @@ A new entry for the album will appear in the list.
 To delete an album, in the albums column, right click on the album and choose `Delete Album`
 
 A dialog will then come up asking you if you want to also delete the files in the album. If you choose
-`Delete album and all files` then the files will be deleted from both the album and the bucket. If you choose `Delete album, keep files` then the
+`Delete album and all files` then the files will be deleted from both the album and the bucket. If you choose
+`Delete album, keep files` then the
 files will be removed from the album, but not deleted from the bucket.
 
 ![DeleteAlbum](https://waifuvault.moe/f/3241e39d-bd29-4ccc-9d06-d87546f04165/DeleteAlbum.png)
@@ -390,7 +401,7 @@ Download a file, by selecting it and pressing View.
 Upload a file, by clicking `Upload`, which will bring up the uploader where you can choose the file and set what
 options you would like on it.
 
-Drag files to the central box, which will put them in the upload queue.  Once in the upload queue, you can set options
+Drag files to the central box, which will put them in the upload queue. Once in the upload queue, you can set options
 such as password, expiry time, hidden filename and one time access by clicking on the `gear` icon next to the file.
 You can also delete it from the queue by using the `trash` icon.
 
@@ -402,7 +413,8 @@ Once you have your files and options set in the queue, click on `Upload Files` t
 
 ### IP Operations
 
-Ban an IP by selecting the file and right click, choosing `Ban IP`, then confirming you want to ban it and if you want to delete
+Ban an IP by selecting the file and right click, choosing `Ban IP`, then confirming you want to ban it and if you want
+to delete
 related files.
 
 Unban an IP by selecting the IP in the lower table and clicking Unblock Selected, then confirming you want to unblock.
