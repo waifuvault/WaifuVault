@@ -5,7 +5,6 @@ import { AvManager } from "../../../manager/AvManager.js";
 import { AbstractFileFilter } from "./AbstractFileFilter.js";
 import { Logger } from "@tsed/logger";
 import { BadRequest, Exception } from "@tsed/exceptions";
-import { FileFilterPriority } from "../../IFileFilter.js";
 
 @Injectable({
     scope: ProviderScope.SINGLETON,
@@ -28,6 +27,6 @@ export class AvFilter extends AbstractFileFilter {
     }
 
     public override get priority(): number {
-        return FileFilterPriority.HIGHEST;
+        return 2;
     }
 }

@@ -5,7 +5,6 @@ import { AbstractFileFilter } from "./AbstractFileFilter.js";
 import { Logger } from "@tsed/logger";
 import { MimeService } from "../../../services/MimeService.js";
 import { Exception, UnsupportedMediaType } from "@tsed/exceptions";
-import { FileFilterPriority } from "../../IFileFilter.js";
 
 @Injectable({
     scope: ProviderScope.SINGLETON,
@@ -29,6 +28,6 @@ export class MimeFilter extends AbstractFileFilter {
     }
 
     public override get priority(): number {
-        return FileFilterPriority.LOWEST;
+        return 3;
     }
 }
