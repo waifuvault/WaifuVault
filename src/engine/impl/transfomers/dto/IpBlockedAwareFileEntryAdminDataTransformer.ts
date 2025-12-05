@@ -9,9 +9,10 @@ import type { PlatformContext } from "@tsed/platform-http";
     scope: ProviderScope.SINGLETON,
     type: TRANSFORMER,
 })
-export class IpBlockedAwareFileEntryAdminDataTransformer
-    implements ITransformer<AdminDataTaleEntryModel | IpBlockedAwareFileEntry, AdminData>
-{
+export class IpBlockedAwareFileEntryAdminDataTransformer implements ITransformer<
+    AdminDataTaleEntryModel | IpBlockedAwareFileEntry,
+    AdminData
+> {
     @InjectContext()
     private $ctx?: PlatformContext;
 

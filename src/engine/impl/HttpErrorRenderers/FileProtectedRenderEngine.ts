@@ -10,9 +10,10 @@ import { EncryptedRenderException } from "../../../model/rest/EncryptedRenderExc
     scope: ProviderScope.SINGLETON,
     type: HTTP_RENDER_ENGINE,
 })
-export class FileProtectedRenderEngine
-    implements IHttpErrorRenderEngine<EncryptedRenderException, FileProtectedException>
-{
+export class FileProtectedRenderEngine implements IHttpErrorRenderEngine<
+    EncryptedRenderException,
+    FileProtectedException
+> {
     public supportsError(exception: Exception): boolean {
         return exception instanceof FileProtectedException;
     }
