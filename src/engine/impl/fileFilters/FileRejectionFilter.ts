@@ -81,8 +81,9 @@ export class FileRejectionFilter extends AbstractFileFilter {
     }
 
     public override get error(): Exception {
-        throw new UnprocessableEntity("File Not Accepted");
+        return new UnprocessableEntity("File Not Accepted");
     }
+
     public override get priority(): number {
         return FileFilterPriority.HIGHEST;
     }
