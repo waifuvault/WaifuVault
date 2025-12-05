@@ -259,8 +259,8 @@ export const FileUpload = ({
     const hasValidationErrors = expiresError !== null;
     const isAtFileLimit = Boolean(
         albumToken &&
-            bucketType !== "PREMIUM" &&
-            currentAlbumFileCount + uploadFiles.length >= restrictions.maxAlbumSize,
+        bucketType !== "PREMIUM" &&
+        currentAlbumFileCount + uploadFiles.length >= restrictions.maxAlbumSize,
     );
 
     if (restrictionsLoading) {
