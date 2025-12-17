@@ -132,9 +132,12 @@ export function FileBrowser({
     const filteredFiles = useMemo(() => {
         return files.filter(file => {
             const searchLower = searchQuery.toLowerCase();
-            return file.fileName.toLowerCase().includes(searchLower);
+            return (
+                file.fileName.toLowerCase().includes(searchLower) ||
+                (file.ip?.toLowerCase().startsWith(searchLower) && mode === "admin")
+            );
         });
-    }, [files, searchQuery]);
+    }, [files, searchQuery, mode]);
 
     const sortedFiles = useMemo(() => {
         return [...filteredFiles].sort((a, b) => {
@@ -876,7 +879,9 @@ export function FileBrowser({
                         <div className={styles.searchBox}>
                             <Input
                                 type="text"
-                                placeholder="Search files and types..."
+                                placeholder={
+                                    mode === "admin" ? "Search files,types and ip hash..." : "Search files and types..."
+                                }
                                 className={styles.searchInput}
                                 variant="search"
                                 value={searchQuery}
