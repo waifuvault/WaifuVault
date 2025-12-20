@@ -16,21 +16,21 @@
         "@types/qrcode": "^1.5.6",
         "bootstrap-icons": "^1.13.1",
         "highlight.js": "^11.11.1",
-        "next": "16.0.7",
+        "next": "16.1.0",
         "prettier": "^3.7.4",
         "qrcode": "^1.5.4",
-        "react": "19.2.1",
-        "react-dom": "19.2.1",
-        "sass": "^1.94.2",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "sass": "^1.97.1",
         "socket.io-client": "^4.8.1"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3",
-        "@types/node": "^24",
+        "@types/node": "^25",
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "eslint": "^9",
-        "eslint-config-next": "16.0.7",
+        "eslint-config-next": "16.1.0",
         "typescript": "^5"
     }
 }
