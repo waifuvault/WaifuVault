@@ -38,10 +38,21 @@ export class FileCleaner implements OnReady {
     private async sync(): Promise<void> {
         const allFilesFromDb = await this.repo.getAllEntries();
         const allFilesFromSystem = await fs.readdir(filesDir);
+
+        // Delete files from disk that aren't in DB
         const deleteFilesPromises = allFilesFromSystem
             .filter(fileOnSystem => !this.isFileInDb(allFilesFromDb, fileOnSystem))
-            .map(fileToDelete => FileUtils.deleteFile(fileToDelete));
-        await Promise.all(deleteFilesPromises);
+            .map(fileToDelete => FileUtils.deleteFile(fileToDelete, true, true));
+
+        // Delete DB entries for files that don't exist on disk
+        const orphanedDbEntries = allFilesFromDb
+            .filter(dbFile => !allFilesFromSystem.includes(dbFile.fullFileNameOnSystem))
+            .map(entry => entry.token);
+
+        await Promise.all([
+            ...deleteFilesPromises,
+            orphanedDbEntries.length > 0 ? this.fileUploadService.processDelete(orphanedDbEntries) : Promise.resolve(),
+        ]);
     }
 
     private isFileInDb(fileDbList: FileUploadModel[], fileName: string): boolean {

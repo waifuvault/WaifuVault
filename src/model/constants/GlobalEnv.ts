@@ -40,6 +40,7 @@ export enum GlobalEnv {
     FRONT_END_URL = `${prefix}FRONT_END_URL`,
     FILE_FILTER_PATTERN = `${prefix}FILE_FILTER_PATTERN`,
     FILE_FILTER_AUTO_BLOCK = `${prefix}FILE_FILTER_AUTO_BLOCK`,
+    SOFT_DELETE_LOCATION = `${prefix}SOFT_DELETE_LOCATION`,
 }
 
 export type GuaranteedString = WithDefault | MandatoryValues;
