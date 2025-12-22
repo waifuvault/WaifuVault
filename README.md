@@ -218,15 +218,15 @@ To create an album you can click on `Create First` or use the `+` at the top.
 If you right click on an album, you will get a context menu that allows you to share or unshare the album, pin or
 unpin it from the list and delete it.
 
-![Albums](https://waifuvault.moe/f/c389c62e-8fe8-4757-8e81-b0f5aec5b728/AlbumColumn.png)
+![Albums](https://waifuvault.moe/f/454b6f11-0c8c-48dd-87ba-a1cf054ac0fb/Albums.png)
 
 Delete a file, by selecting it and pressing Delete. You will be asked if you are sure.
 
-![Delete](https://waifuvault.moe/f/f9748592-45fa-4333-82a7-c178db6dbb7b/DeleteFile.png)
+![Delete](https://waifuvault.moe/f/6b31b92f-c6d0-4be5-9621-4a0ad3f16d58/Delete.png)
 
 Download a file, by selecting it and clicking `View`.
 
-![Download](https://waifuvault.moe/f/c1061c24-dc7a-4c87-9863-2b6f502e8f55/DownloadFile.png)
+![Download](https://waifuvault.moe/f/ac104fd0-5023-4328-ab0d-9e4a6b610d5c/Download.png)
 
 Upload a file, by clicking `Upload`, which will bring up the uploader where you can choose the file and set what
 options you would like on it.
@@ -268,7 +268,7 @@ Pagination sizes can be set to 10, 50 or 100. Sort and size will be remembered f
 On the bar next to logout, is the `Delete Bucket` button. This will delete the bucket, all albums and all files.
 It will ask you if you are sure.
 
-![DeleteBucket](https://waifuvault.moe/f/b906ff5b-6f0d-4975-9543-eafab69b281a/DeleteBucket.png)
+![DeleteBucket](https://waifuvault.moe/f/3404f762-8753-4288-8ec4-a666a8d77cb5/DeleteBucket.png)
 
 > **Note Well** This will DELETE EVERYTHING in the bucket and the bucket. This includes any shared albums, which will
 > no longer be available.
@@ -287,7 +287,7 @@ Fill in the name you would like for the album and then click `Create Album` in t
 
 A new entry for the album will appear in the list.
 
-![CreateAlbum](https://waifuvault.moe/f/eba48458-febe-4220-8879-17d3cfc9d6b6/CreateAlbum.png)
+![CreateAlbum](https://waifuvault.moe/f/4695f218-e216-4181-bf09-f45f969d6523/CreateAlbum.png)
 
 ### Deleting Albums
 
@@ -313,7 +313,7 @@ To share an album, right click on the album and choose `Share Album`.
 Now when you right click again on the album, there will be an option `Copy public URL`, which will
 copy the public URL for the album.
 
-![ShareAlbum](https://waifuvault.moe/f/76200299-ec2b-4448-9327-093124b4cd90/ShareAlbum.png)
+![ShareAlbum](https://waifuvault.moe/f/2f00a813-2fd2-448a-a238-b2a737421692/ShareAlbum.png)
 
 To revoke sharing an album, right click on the album and choose `Unshare Album`.
 
@@ -322,7 +322,7 @@ The `Copy public URL` option will now disappear and the album will be private on
 > **Note Well** If you unshare an album, the original album share URL is destroyed. If you share it again afterwards
 > the URL will be different.
 
-![UnshareAlbum](https://waifuvault.moe/f/56c382b1-cd28-4c8b-adc7-20354ab020ee/UnshareAlbum.png)
+![UnshareAlbum](https://waifuvault.moe/f/3f5928f5-9475-4730-97f9-a6c587f83437/UnshareAlbum.png)
 
 ### Public Album Interface
 
@@ -341,14 +341,12 @@ select the files you want to download in the zip file.
 
 If no files are selected then all files will be downloaded in the zip file.
 
-![PublicCCards](https://waifuvault.moe/f/c8c0fdab-cfe8-492d-b22c-c6fd0ae915cc/PublicAlbum.png)
+![PublicCCards](https://waifuvault.moe/f/0975de25-6578-4757-ae3d-80501974321d/PublicCCards.png)
 
 Selecting individual files by using the checkboxes next to the filename allows you to
 select the files you want to download in the zip file.
 
 Buttons allowing you to download the selected files or all of the files are available in the top right.
-
-![PublicDownload](https://waifuvault.moe/f/ce2fb123-85ca-47f4-8678-d0bd149e406f/PublicDownload.png)
 
 ## Admin Feature
 
@@ -374,7 +372,7 @@ email and password from above.
 Once you are logged in, you can click on the **Change Email/Password** button, where you can change the email address
 and password.
 
-![ChangePassword](https://waifuvault.moe/f/3e23b616-1cf6-4a83-b5b2-8cbe016d53b1/ChangePassword.png)
+![ChangePassword](https://waifuvault.moe/f/3deacf78-a238-4a78-9341-a346f1456bde/ChangePassword.png)
 
 > **Note Well** It is recommended you change the default username and password at first startup. The system will not
 > provide the default password again.
@@ -392,11 +390,11 @@ There is no album column, as those are related to buckets.
 
 Delete a file, by selecting it and pressing Delete File. You will be asked if you are sure.
 
-![Deleting Files](https://waifuvault.moe/f/e32f1d8b-f7a7-4e38-bfc3-506ed21c7025/AdminDeleteFile.png)
+![Deleting Files](https://waifuvault.moe/f/bba2571b-b560-4926-9789-433259e69e11/AdminDelete.png)
 
 Download a file, by selecting it and pressing View.
 
-![Downloading Files](https://waifuvault.moe/f/af5a860b-8153-44d7-80a6-aa554ab913bb/AdminDownload.png)
+![Downloading Files](https://waifuvault.moe/f/c7db3c16-bbd5-441e-adbc-2509908da23f/AdminDownload.png)
 
 Upload a file, by clicking `Upload`, which will bring up the uploader where you can choose the file and set what
 options you would like on it.
@@ -409,7 +407,7 @@ Once you have your files and options set in the queue, click on `Upload Files` t
 
 > **NOTE:** The uploader will stay open after file upload, to allow you to easily upload multiple files
 
-![Upload](https://waifuvault.moe/f/3de0be4b-8a7a-4e51-8bc1-ccadc16e4977/AdminUpload.png)
+![Upload](https://waifuvault.moe/f/73af3e8e-69a5-4148-964c-aad0b898bb15/AdminUpload.png)
 
 ### IP Operations
 
@@ -419,7 +417,7 @@ related files.
 
 Unban an IP by selecting the IP in the lower table and clicking Unblock Selected, then confirming you want to unblock.
 
-![Banning IP Address](https://waifuvault.moe/f/c5b0aa32-20df-4170-a2d9-f09471dbe3ea/AdminBanIP.png)
+![Banning IP Address](https://waifuvault.moe/f/3c6a613a-35f2-464e-b634-838481c0be33/BanIP.png)
 
 ## REST Endpoints
 
