@@ -5,10 +5,12 @@ import {
     Button,
     ContextMenu,
     type ContextMenuItem,
+    Dialog,
     FilePreview,
     FileUploadModal,
     Input,
     Pill,
+    Toggle,
     Tooltip,
 } from "@/app/components";
 import { useContextMenu, useErrorHandler } from "@/app/hooks";
@@ -123,6 +125,10 @@ export function FileBrowser({
     }>({
         isOpen: false,
     });
+    const [copyUrlsDialog, setCopyUrlsDialog] = useState(false);
+    const [useThumbnailUrls, setUseThumbnailUrls] = useState(false);
+    const [actionsDropdownOpen, setActionsDropdownOpen] = useState(false);
+    const actionsDropdownRef = useRef<HTMLDivElement>(null);
     const { showToast } = useToast();
 
     const fileListRef = useRef<HTMLDivElement>(null);
@@ -340,6 +346,79 @@ export function FileBrowser({
         }
     }, [allowDeletion, selectedFiles, onDeleteFiles, deleteFilesDialog.fileId, handleError]);
 
+    const handleCopyUrlsClick = useCallback(() => {
+        setCopyUrlsDialog(true);
+    }, []);
+
+    const handleCopyUrlsClose = useCallback(() => {
+        setCopyUrlsDialog(false);
+    }, []);
+
+    const getSelectedFileUrls = useCallback(() => {
+        return Array.from(selectedFiles)
+            .map(fileId => {
+                const file = sortedFiles.find(f => f.id === fileId);
+                if (!file) {
+                    return null;
+                }
+
+                const mediaType = file.mediaType?.toLowerCase() || "";
+                const isImage = mediaType.startsWith("image/");
+                const isVideo = mediaType.startsWith("video/");
+                const hasThumbnail = isImage || isVideo;
+
+                let thumbnailUrl: string | null = null;
+                if (hasThumbnail) {
+                    const rawThumbnailUrl = file.getFileUrl(isImage ? "image" : "video", publicToken);
+                    if (rawThumbnailUrl) {
+                        thumbnailUrl = rawThumbnailUrl.startsWith("/")
+                            ? `${window.location.origin}${rawThumbnailUrl}`
+                            : rawThumbnailUrl;
+                    }
+                }
+
+                return { url: file.url, thumbnailUrl, hasThumbnail };
+            })
+            .filter(
+                (item): item is { url: string; thumbnailUrl: string | null; hasThumbnail: boolean } => item !== null,
+            );
+    }, [selectedFiles, sortedFiles, publicToken]);
+
+    const getSelectedUrls = useCallback((): string => {
+        return getSelectedFileUrls()
+            .map(({ url, thumbnailUrl }) => (useThumbnailUrls && thumbnailUrl ? thumbnailUrl : url))
+            .join("\n");
+    }, [getSelectedFileUrls, useThumbnailUrls]);
+
+    const handleCopyUrlsToClipboard = useCallback(async () => {
+        const urls = getSelectedUrls();
+        try {
+            await navigator.clipboard.writeText(urls);
+            showToast("success", "URLs copied to clipboard");
+        } catch (e) {
+            handleError(e, { defaultMessage: "Failed to copy URLs", rethrow: false });
+        }
+    }, [getSelectedUrls, showToast, handleError]);
+
+    const handleExportToPhpBB = useCallback(async () => {
+        const bbcode = getSelectedFileUrls()
+            .filter(({ hasThumbnail, thumbnailUrl }) => hasThumbnail && thumbnailUrl)
+            .map(({ url, thumbnailUrl }) => `[url=${url}][img]${thumbnailUrl}[/img][/url]`)
+            .join("\n");
+
+        if (!bbcode) {
+            showToast("warning", "No images or videos selected");
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(bbcode);
+            showToast("success", "phpBB code copied to clipboard");
+        } catch (e) {
+            handleError(e, { defaultMessage: "Failed to copy phpBB code", rethrow: false });
+        }
+    }, [getSelectedFileUrls, showToast, handleError]);
+
     const isInitialMount = useRef(true);
     const previousFilesLength = useRef(files.length);
     const previousSearchQuery = useRef(searchQuery);
@@ -395,6 +474,20 @@ export function FileBrowser({
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
     }, [selectedFiles, allowDeletion, handleSelectAll, handleDeleteFilesClick, hideContextMenu]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (actionsDropdownRef.current && !actionsDropdownRef.current.contains(event.target as Node)) {
+                setActionsDropdownOpen(false);
+            }
+        };
+
+        if (actionsDropdownOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [actionsDropdownOpen]);
 
     const handleFileSelect = useCallback(
         (fileId: number, event?: React.MouseEvent) => {
@@ -906,28 +999,52 @@ export function FileBrowser({
                         )}
 
                         {selectedFiles.size > 0 && (
-                            <>
-                                {mode === "admin" && onBanSelectedIps && (
-                                    <Button
-                                        variant="outline"
-                                        size="small"
-                                        onClick={onBanSelectedIps}
-                                        className={styles.banIpBtn}
-                                    >
-                                        <i className="bi bi-shield-x"></i> Ban IPs ({selectedFiles.size})
-                                    </Button>
+                            <div className={styles.actionsDropdown} ref={actionsDropdownRef}>
+                                <Button
+                                    variant="outline"
+                                    size="small"
+                                    onClick={() => setActionsDropdownOpen(!actionsDropdownOpen)}
+                                    className={styles.actionsDropdownToggle}
+                                >
+                                    <i className="bi bi-three-dots-vertical"></i> Actions ({selectedFiles.size})
+                                    <i className={`bi bi-chevron-${actionsDropdownOpen ? "up" : "down"}`}></i>
+                                </Button>
+                                {actionsDropdownOpen && (
+                                    <div className={styles.actionsDropdownMenu}>
+                                        <button
+                                            className={styles.actionsDropdownItem}
+                                            onClick={() => {
+                                                handleCopyUrlsClick();
+                                                setActionsDropdownOpen(false);
+                                            }}
+                                        >
+                                            <i className="bi bi-link-45deg"></i> Copy URLs
+                                        </button>
+                                        {mode === "admin" && onBanSelectedIps && (
+                                            <button
+                                                className={`${styles.actionsDropdownItem} ${styles.danger}`}
+                                                onClick={() => {
+                                                    onBanSelectedIps();
+                                                    setActionsDropdownOpen(false);
+                                                }}
+                                            >
+                                                <i className="bi bi-shield-x"></i> Ban IPs
+                                            </button>
+                                        )}
+                                        {allowDeletion && (
+                                            <button
+                                                className={`${styles.actionsDropdownItem} ${styles.danger}`}
+                                                onClick={() => {
+                                                    handleDeleteFilesClick();
+                                                    setActionsDropdownOpen(false);
+                                                }}
+                                            >
+                                                <i className="bi bi-trash"></i> Delete
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
-                                {allowDeletion && (
-                                    <Button
-                                        variant="outline"
-                                        size="small"
-                                        onClick={() => handleDeleteFilesClick()}
-                                        className={styles.deleteBtn}
-                                    >
-                                        <i className="bi bi-trash"></i> Delete ({selectedFiles.size})
-                                    </Button>
-                                )}
-                            </>
+                            </div>
                         )}
 
                         <Button variant="outline" size="small" onClick={handleSelectAll}>
@@ -1346,6 +1463,39 @@ export function FileBrowser({
             >
                 Are you sure you want to delete these file(s)?
             </ConfirmDialog>
+
+            <Dialog
+                isOpen={copyUrlsDialog}
+                onClose={handleCopyUrlsClose}
+                title={`Copy URLs (${selectedFiles.size})`}
+                size="large"
+            >
+                <div className={styles.copyUrlsDialog}>
+                    <Toggle
+                        checked={useThumbnailUrls}
+                        onChange={setUseThumbnailUrls}
+                        label="Use thumbnail URLs for images/videos"
+                        icon="bi-image"
+                    />
+                    <textarea
+                        className={styles.urlsTextarea}
+                        value={getSelectedUrls()}
+                        readOnly
+                        rows={Math.min(selectedFiles.size, 10)}
+                    />
+                    <div className={styles.copyUrlsActions}>
+                        <Button variant="primary" onClick={handleCopyUrlsToClipboard}>
+                            <i className="bi bi-clipboard"></i> Copy to Clipboard
+                        </Button>
+                        <Button variant="outline" onClick={handleExportToPhpBB}>
+                            <i className="bi bi-code-square"></i> Export to phpBB
+                        </Button>
+                        <Button variant="outline" onClick={handleCopyUrlsClose}>
+                            Close
+                        </Button>
+                    </div>
+                </div>
+            </Dialog>
         </>
     );
 }

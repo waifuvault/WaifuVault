@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import styles from "./ThemeSelector.module.scss";
 import { useTheme } from "@/app/contexts";
 import { ThemeType } from "@/app/constants/theme";
+import { Toggle } from "@/app/components/Toggle";
 
 export default function ThemeSelector() {
     const { currentTheme, setTheme, themes, particlesEnabled, setParticlesEnabled } = useTheme();
@@ -79,19 +80,12 @@ export default function ThemeSelector() {
                     </div>
 
                     <div className={styles.particleToggle}>
-                        <label className={styles.toggleLabel}>
-                            <input
-                                type="checkbox"
-                                checked={particlesEnabled}
-                                onChange={e => setParticlesEnabled(e.target.checked)}
-                                className={styles.toggleInput}
-                            />
-                            <span className={styles.toggleSlider}></span>
-                            <span className={styles.toggleText}>
-                                <i className="bi-stars" aria-hidden="true"></i>
-                                Particle Effects
-                            </span>
-                        </label>
+                        <Toggle
+                            checked={particlesEnabled}
+                            onChange={setParticlesEnabled}
+                            label="Particle Effects"
+                            icon="bi-stars"
+                        />
                     </div>
 
                     <div className={styles.themeGrid}>

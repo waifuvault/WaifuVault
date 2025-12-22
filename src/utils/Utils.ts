@@ -184,7 +184,7 @@ export class FileUtils {
         if (softDeleteLocation) {
             return fs.rename(toDelete, `${softDeleteLocation}/${path.basename(toDelete)}`);
         }
-        return Promise.resolve();
+        return FileUtils.deleteFile(file, true);
     }
 
     public static async getFileSize(file: string | PlatformMulterFile | FileUploadModel): Promise<number> {
