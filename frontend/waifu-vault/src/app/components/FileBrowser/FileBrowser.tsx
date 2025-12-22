@@ -11,7 +11,7 @@ import {
     Input,
     Pill,
     Toggle,
-    Tooltip
+    Tooltip,
 } from "@/app/components";
 import { useContextMenu, useErrorHandler } from "@/app/hooks";
 import styles from "./FileBrowser.module.scss";
@@ -22,7 +22,7 @@ import {
     getSortFieldKey,
     getSortOrderKey,
     getViewModeKey,
-    LocalStorage
+    LocalStorage,
 } from "@/constants/localStorageKeys";
 import { useToast } from "@/app/components/Toast";
 import { ConfirmDialog } from "@/app/components/ConfirmDialog/ConfirmDialog";
@@ -379,7 +379,9 @@ export function FileBrowser({
 
                 return { url: file.url, thumbnailUrl, hasThumbnail };
             })
-            .filter((item): item is { url: string; thumbnailUrl: string | null; hasThumbnail: boolean } => item !== null);
+            .filter(
+                (item): item is { url: string; thumbnailUrl: string | null; hasThumbnail: boolean } => item !== null,
+            );
     }, [selectedFiles, sortedFiles, publicToken]);
 
     const getSelectedUrls = useCallback((): string => {
