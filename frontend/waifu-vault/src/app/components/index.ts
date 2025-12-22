@@ -29,3 +29,4 @@ export { FileDetailsDialog } from "@/app/components/FileDetailsDialog";
 export { BlockedIpsTable } from "@/app/components/BlockedIpsTable";
 export { Captcha } from "@/app/components/Captcha";
 export type { CaptchaHandle } from "@/app/components/Captcha";
+export { Toggle } from "@/app/components/Toggle";
