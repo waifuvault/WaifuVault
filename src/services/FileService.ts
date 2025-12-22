@@ -20,14 +20,14 @@ export class FileService {
         @Inject() private logger: Logger,
     ) {}
 
-    public async processDelete(tokens: string[]): Promise<boolean> {
+    public async processDelete(tokens: string[], softDelete = false): Promise<boolean> {
         let deleted = false;
         const entries = await this.repo.getEntries(tokens, false);
         if (entries.length === 0) {
             return false;
         }
         try {
-            await this.deleteFilesFromDisk(entries);
+            await this.deleteFilesFromDisk(entries, softDelete);
             deleted = await this.repo.deleteEntries(tokens);
         } catch (e) {
             this.logger.error(e);
@@ -37,9 +37,11 @@ export class FileService {
         return deleted;
     }
 
-    public async deleteFilesFromDisk(entries: FileUploadModel[]): Promise<void> {
+    public async deleteFilesFromDisk(entries: FileUploadModel[], softDelete = false): Promise<void> {
         const fileDeletePArr = entries.map(entry => {
-            return FileUtils.deleteFile(entry.fullFileNameOnSystem, true);
+            return softDelete
+                ? FileUtils.softDelete(entry.fullFileNameOnSystem)
+                : FileUtils.deleteFile(entry.fullFileNameOnSystem, true);
         });
         await Promise.all(fileDeletePArr).catch(e => {
             if (e.message.startsWith("EPERM: operation not permitted")) {

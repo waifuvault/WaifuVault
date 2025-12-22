@@ -173,9 +173,18 @@ export class FileUtils {
         }
     }
 
-    public static deleteFile(file: string | PlatformMulterFile, force = true): Promise<void> {
+    public static deleteFile(file: string | PlatformMulterFile, force = true, soft = false): Promise<void> {
         const toDelete = this.getFilePath(file);
-        return fs.rm(toDelete, { recursive: true, force });
+        return soft ? FileUtils.softDelete(toDelete) : fs.rm(toDelete, { recursive: true, force });
+    }
+
+    public static softDelete(file: string | PlatformMulterFile): Promise<void> {
+        const toDelete = typeof file === "string" ? file : file.path;
+        const softDeleteLocation = getSoftDeleteLocation();
+        if (softDeleteLocation) {
+            return fs.rename(toDelete, `${softDeleteLocation}/${path.basename(toDelete)}`);
+        }
+        return Promise.resolve();
     }
 
     public static async getFileSize(file: string | PlatformMulterFile | FileUploadModel): Promise<number> {
@@ -273,3 +282,11 @@ export class WorkerUtils {
 }
 
 export const filesDir = `${path.dirname(fileURLToPath(import.meta.url))}/../../files`;
+
+export function getSoftDeleteLocation(): string | null {
+    const location = constant(GlobalEnv.SOFT_DELETE_LOCATION, null);
+    if (location) {
+        return `${path.dirname(fileURLToPath(import.meta.url))}/../../${location}`;
+    }
+    return null;
+}
