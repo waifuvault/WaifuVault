@@ -3,11 +3,12 @@ import { AvScanResult } from "../../../utils/typeings.js";
 import { Inject, Injectable, ProviderScope } from "@tsed/di";
 import path from "node:path";
 import { filesDir } from "../../../utils/Utils.js";
-import { promisify } from "node:util";
-import { exec } from "node:child_process";
+import { execFile as execFileCb } from "node:child_process";
 import { AV_ENGINE } from "../../../model/di/tokens.js";
 import { SettingsService } from "../../../services/SettingsService.js";
 import { GlobalEnv } from "../../../model/constants/GlobalEnv.js";
+
+const SCAN_TIMEOUT_MS = 60_000;
 
 @Injectable({
     scope: ProviderScope.SINGLETON,
@@ -24,23 +25,52 @@ export class ClamAvEngine implements IAvEngine {
         return !!this.clamPath;
     }
 
-    public async scan(resource: string): Promise<AvScanResult> {
-        const toScan = path.resolve(`${filesDir}/${resource}`);
-        const execPromise = promisify(exec);
-        try {
-            await execPromise(`"${this.clamPath}/clamdscan" --fdpass ${toScan} `);
-        } catch (e) {
-            return {
-                errorCode: e.code,
-                passed: false,
-                additionalMessage: e.message,
-                engineName: this.name,
-            };
-        }
-        return {
-            passed: true,
-            engineName: this.name,
-        };
+    public scan(resource: string): Promise<AvScanResult> {
+        const toScan = path.join(filesDir, path.basename(resource));
+        const executable = path.join(this.clamPath!, "clamdscan");
+
+        return new Promise(resolve => {
+            const child = execFileCb(
+                executable,
+                ["--fdpass", toScan],
+                { timeout: SCAN_TIMEOUT_MS },
+                (error, _, stderr) => {
+                    if (!error) {
+                        resolve({ passed: true, engineName: this.name });
+                        return;
+                    }
+
+                    if (error.killed) {
+                        resolve({
+                            errorCode: -1,
+                            passed: true,
+                            additionalMessage: "Scan timed out",
+                            engineName: this.name,
+                        });
+                        return;
+                    }
+
+                    const exitCode = child.exitCode ?? 2;
+
+                    if (exitCode === 1) {
+                        resolve({
+                            errorCode: 1,
+                            passed: false,
+                            additionalMessage: stderr.trim() ?? "Malware detected",
+                            engineName: this.name,
+                        });
+                        return;
+                    }
+
+                    resolve({
+                        errorCode: exitCode,
+                        passed: true,
+                        additionalMessage: `Scan error (code ${exitCode}): ${stderr.trim() ?? error.message}`,
+                        engineName: this.name,
+                    });
+                },
+            );
+        });
     }
 
     public get name(): string {
