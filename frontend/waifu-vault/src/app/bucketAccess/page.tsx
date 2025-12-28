@@ -82,14 +82,15 @@ function BucketAccessContent() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!token.trim()) {
+        const tokenTrim = token.trim();
+        if (!tokenTrim) {
             return;
         }
 
         setError("");
 
         try {
-            const requestBody: Record<string, string> = { token };
+            const requestBody: Record<string, string> = { token: tokenTrim };
 
             if (isCaptchaEnabled && captchaToken && captchaType) {
                 const captchaKey = getCaptchaBodyKey(captchaType);
