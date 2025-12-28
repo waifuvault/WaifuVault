@@ -13,7 +13,7 @@ import {
     Footer,
     Header,
     Input,
-    ParticleBackground,
+    ParticleBackground
 } from "@/app/components";
 import { useBucketAuth, useCaptcha, useEnvironment } from "@/app/hooks";
 import { useBucketAuthContext, useLoading } from "@/app/contexts";
@@ -82,14 +82,15 @@ function BucketAccessContent() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!token.trim()) {
+        const tokenTrim = token.trim();
+        if (!tokenTrim) {
             return;
         }
 
         setError("");
 
         try {
-            const requestBody: Record<string, string> = { token };
+            const requestBody: Record<string, string> = { token: tokenTrim };
 
             if (isCaptchaEnabled && captchaToken && captchaType) {
                 const captchaKey = getCaptchaBodyKey(captchaType);
