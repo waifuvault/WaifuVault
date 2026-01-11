@@ -21,7 +21,7 @@
         "qrcode": "^1.5.4",
         "react": "19.2.3",
         "react-dom": "19.2.3",
-        "sass": "^1.97.1",
+        "sass": "^1.97.2",
         "socket.io-client": "^4.8.3"
     },
     "devDependencies": {
@@ -29,7 +29,7 @@
         "@types/node": "^25",
         "@types/react": "^19",
         "@types/react-dom": "^19",
-        "baseline-browser-mapping": "^2.9.11",
+        "baseline-browser-mapping": "^2.9.14",
         "eslint": "^9",
         "eslint-config-next": "16.1.1",
         "typescript": "^5"
