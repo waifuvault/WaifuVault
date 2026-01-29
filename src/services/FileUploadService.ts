@@ -6,6 +6,7 @@ import { FileUrlService } from "./FileUrlService.js";
 import { Builder, type IBuilder } from "builder-pattern";
 import path from "node:path";
 import fs from "node:fs/promises";
+import { createReadStream } from "node:fs";
 import crypto from "node:crypto";
 import { Logger } from "@tsed/logger";
 import { EntrySettings, FileUploadProps } from "../utils/typeings.js";
@@ -326,11 +327,14 @@ export class FileUploadService {
         return false;
     }
 
-    private async getFileHash(resourcePath: string): Promise<string> {
-        const fileBuffer = await fs.readFile(resourcePath);
-        const hashSum = crypto.createHash("md5");
-        hashSum.update(fileBuffer);
-        return hashSum.digest("hex");
+    private getFileHash(resourcePath: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const hashSum = crypto.createHash("md5");
+            const stream = createReadStream(resourcePath);
+            stream.on("data", (chunk: Buffer) => hashSum.update(chunk));
+            stream.on("end", () => resolve(hashSum.digest("hex")));
+            stream.on("error", reject);
+        });
     }
     private async filterFile(resourcePath: PlatformMulterFile | string): Promise<void> {
         const failedFilters = await this.fileFilterManager.process(resourcePath);
