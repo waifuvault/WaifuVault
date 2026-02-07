@@ -14,6 +14,7 @@ import {
     Tooltip,
 } from "@/app/components";
 import { useContextMenu, useErrorHandler } from "@/app/hooks";
+import { formatDate } from "@/app/utils";
 import styles from "./FileBrowser.module.scss";
 import { type BucketType, FileWrapper, type UploadFile } from "@/app/types";
 import {
@@ -841,42 +842,28 @@ export function FileBrowser({
         return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
     }, []);
 
-    const formatDate = useCallback((date: string | Date) => {
-        const d = date instanceof Date ? date : new Date(date);
-        const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-        const day = String(d.getUTCDate()).padStart(2, "0");
-        const year = d.getUTCFullYear();
-        const hours = String(d.getUTCHours()).padStart(2, "0");
-        const minutes = String(d.getUTCMinutes()).padStart(2, "0");
-        return `${month}/${day}/${year} ${hours}:${minutes}`;
-    }, []);
+    const formatExpires = useCallback((expires: Date | string | number | null): string => {
+        if (!expires || expires === "" || expires === "null") {
+            return "Never";
+        }
 
-    const formatExpires = useCallback(
-        (expires: Date | string | number | null): string => {
-            if (!expires || expires === "" || expires === "null") {
-                return "Never";
-            }
+        if (
+            typeof expires === "string" &&
+            (expires.includes("days") || expires.includes("hours") || expires.includes("minutes"))
+        ) {
+            return `In ${expires}`;
+        }
 
-            if (
-                typeof expires === "string" &&
-                (expires.includes("days") || expires.includes("hours") || expires.includes("minutes"))
-            ) {
-                return `In ${expires}`;
-            }
-
-            try {
-                const dateObj =
-                    typeof expires === "string" || typeof expires === "number" ? new Date(expires) : expires;
-                if (isNaN(dateObj.getTime())) {
-                    return "Invalid Date";
-                }
-                return formatDate(dateObj);
-            } catch {
+        try {
+            const dateObj = typeof expires === "string" || typeof expires === "number" ? new Date(expires) : expires;
+            if (isNaN(dateObj.getTime())) {
                 return "Invalid Date";
             }
-        },
-        [formatDate],
-    );
+            return formatDate(dateObj);
+        } catch {
+            return "Invalid Date";
+        }
+    }, []);
 
     const getAlbumName = useCallback(
         (file: FileWrapper): string | null => {
