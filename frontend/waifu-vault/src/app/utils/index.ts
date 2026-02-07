@@ -6,3 +6,4 @@ export type { BucketType } from "./api/bucketApi";
 export type { PublicAlbumData, WaifuPublicFile, WaifuPublicFileMetadata } from "./api/albumApi";
 export { formatFileSize, validateExpires } from "./upload";
 export { getTimeLeftBySize, timeToHuman } from "./retention";
+export { formatDate } from "./dateFormat";

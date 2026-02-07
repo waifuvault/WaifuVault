@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import type { BlockedIp } from "@/app/utils/api/adminApi";
+import { formatDate } from "@/app/utils";
 import styles from "./BlockedIpsTable.module.scss";
 
 interface BlockedIpsTableProps {
@@ -42,10 +43,6 @@ export function BlockedIpsTable({ blockedIps, onUnblock }: BlockedIpsTableProps)
         }
         await onUnblock(Array.from(selectedIps));
         setSelectedIps(new Set());
-    };
-
-    const formatDate = (date: Date) => {
-        return new Date(date).toLocaleString();
     };
 
     return (

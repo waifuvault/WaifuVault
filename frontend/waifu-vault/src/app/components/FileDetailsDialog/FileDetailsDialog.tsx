@@ -3,6 +3,7 @@
 import React from "react";
 import { Dialog } from "@/app/components";
 import { FileWrapper } from "@/app/types";
+import { formatDate } from "@/app/utils";
 import styles from "./FileDetailsDialog.module.scss";
 
 interface FileDetailsDialogProps {
@@ -27,25 +28,6 @@ export function FileDetailsDialog({ isOpen, onClose, file }: FileDetailsDialogPr
         }
 
         return `${size.toFixed(2)} ${units[unitIndex]}`;
-    };
-
-    const formatDate = (date: Date | string | number): string => {
-        if (!date || date === null || date === undefined) {
-            return "N/A";
-        }
-
-        try {
-            const dateObj = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
-
-            // Check if the date is valid
-            if (isNaN(dateObj.getTime())) {
-                return "Invalid Date";
-            }
-
-            return dateObj.toLocaleString();
-        } catch {
-            return "Invalid Date";
-        }
     };
 
     const formatExpires = (expires: Date | string | number | null): string => {
