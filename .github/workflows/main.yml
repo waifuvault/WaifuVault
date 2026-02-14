@@ -10,7 +10,7 @@ jobs:
     name: Build Go microservices
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # Install required packages for building the thumbnails module
       - name: Install libvips dependencies for thumbnails
@@ -20,7 +20,7 @@ jobs:
 
       # Setup Go with caching
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: 'stable'
           cache: true
@@ -49,16 +49,16 @@ jobs:
       run:
         working-directory: frontend/waifu-vault
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # Setup Node.js
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
           check-latest: true
 
       # setup nextjs cache
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.npm
@@ -87,10 +87,10 @@ jobs:
     name: Build Backend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # Setup Node.js
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
           check-latest: true

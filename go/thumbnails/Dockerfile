@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 # Install required tools: git, pkgconf, vips-dev for libvips support, and gcc/musl-dev for CGO.
 RUN apk add --no-cache git pkgconf vips-dev gcc musl-dev
