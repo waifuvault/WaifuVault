@@ -27,6 +27,7 @@ services:
       - clamav_data:/var/lib/clamav
 
   waifuvault:
+    image: ghcr.io/waifuvault/waifuvault/waifuvault:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -56,6 +57,7 @@ services:
       - POSTGRES_PORT=5432
 
   frontend:
+    image: ghcr.io/waifuvault/waifuvault/frontend:latest
     build:
       context: .
       dockerfile: ./frontend/waifu-vault/Dockerfile
@@ -69,6 +71,7 @@ services:
       - ./frontend/waifu-vault/.env
 
   zipfiles:
+    image: ghcr.io/waifuvault/waifuvault/zipfiles:latest
     build:
       context: .
       dockerfile: ./go/zipFiles/Dockerfile
@@ -86,6 +89,7 @@ services:
       - postgres.env
 
   thumbnails:
+    image: ghcr.io/waifuvault/waifuvault/thumbnails:latest
     build:
       context: .
       dockerfile: ./go/thumbnails/Dockerfile
