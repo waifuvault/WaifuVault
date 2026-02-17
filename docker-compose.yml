@@ -27,7 +27,6 @@ services:
       - clamav_data:/var/lib/clamav
 
   waifuvault:
-    image: ghcr.io/waifuvault/waifuvault/waifuvault:latest
     build:
       context: .
       dockerfile: Dockerfile

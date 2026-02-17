@@ -7,10 +7,26 @@ on:
     branches: [main]
 
 jobs:
-  build-images:
+  fetch-frontend-env:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: production
+    outputs:
+      frontend-env: ${{ steps.fetch.outputs.env }}
+    steps:
+      - name: Fetch frontend .env from server
+        id: fetch
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          port: 1222
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: cat ${{ secrets.DEPLOY_PATH }}/frontend/waifu-vault/.env
+
+  build-images:
+    needs: fetch-frontend-env
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -33,6 +49,10 @@ jobs:
       IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.service }}
     steps:
       - uses: actions/checkout@v6
+
+      - name: Write frontend .env
+        if: matrix.service == 'frontend'
+        run: echo "${{ needs.fetch-frontend-env.outputs.frontend-env }}" > frontend/waifu-vault/.env
 
       - name: Lowercase image name
         run: echo "IMAGE=${IMAGE,,}" >> "$GITHUB_ENV"
