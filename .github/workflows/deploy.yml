@@ -7,26 +7,10 @@ on:
     branches: [main]
 
 jobs:
-  fetch-frontend-env:
+  build-images:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: production
-    outputs:
-      frontend-env: ${{ steps.fetch.outputs.env }}
-    steps:
-      - name: Fetch frontend .env from server
-        id: fetch
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          port: 1222
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: cat ${{ secrets.DEPLOY_PATH }}/frontend/waifu-vault/.env
-
-  build-images:
-    needs: fetch-frontend-env
-    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -50,9 +34,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Write frontend .env
+      - name: Fetch frontend .env from server
         if: matrix.service == 'frontend'
-        run: echo "${{ needs.fetch-frontend-env.outputs.frontend-env }}" > frontend/waifu-vault/.env
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p 1222 ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          scp -P 1222 -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.DEPLOY_PATH }}/frontend/waifu-vault/.env frontend/waifu-vault/.env
+          rm -f ~/.ssh/deploy_key
 
       - name: Lowercase image name
         run: echo "IMAGE=${IMAGE,,}" >> "$GITHUB_ENV"
