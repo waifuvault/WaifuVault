@@ -1,4 +1,4 @@
-import { Inject, Service } from "@tsed/di";
+import { Constant, Inject, Service } from "@tsed/di";
 import { AlbumModel } from "../../../model/db/Album.model";
 import { ThumbnailCacheRepo } from "../../../db/repo/ThumbnailCacheRepo.js";
 import { Logger } from "@tsed/logger";
@@ -7,11 +7,17 @@ import { AfterInit } from "@tsed/platform-http";
 import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { isGhAction } from "../../../config/envs/index.js";
 import { HTTPException } from "@tsed/exceptions";
+import { GlobalEnv } from "../../../model/constants/GlobalEnv.js";
 
 @Service()
 export class ThumbnailService implements AfterInit {
-    // private readonly url = "http://127.0.0.1:8080/api/v1";
-    private readonly url = "http://127.0.0.1:5006/api/v1";
+    @Constant(GlobalEnv.THUMBNAIL_SERVICE_BASE_URL, "http://127.0.0.1:5006")
+    private readonly baseUrl: string;
+
+    private get url(): string {
+        return `${this.baseUrl}/api/v1`;
+    }
+
     private supportedImageExtensions: string[] = ["jpg"];
 
     public constructor(
