@@ -43,7 +43,7 @@ services:
       clamav:
         condition: service_started
     ports:
-      - "127.0.0.1:${PORT:-8081}:${PORT:-8081}"
+      - "127.0.0.1:8082:8082"
     volumes:
       - ./files:/home/node/app/files
       - ./main.sqlite:/home/node/app/main.sqlite
