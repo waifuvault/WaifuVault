@@ -27,10 +27,11 @@ if (dbType === "postgres") {
         entities: [`${path.dirname(fileURLToPath(import.meta.url))}/../model/db/**/*.model.{ts,js}`],
         synchronize: false,
         migrations: [`${path.dirname(fileURLToPath(import.meta.url))}/../migrations/postgres/*`],
+        host: process.env.POSTGRES_HOST ?? "localhost",
         database: postgresOptions.POSTGRES_DB,
         username: postgresOptions.POSTGRES_USER,
         password: postgresOptions.POSTGRES_PASSWORD,
-        port: postgresOptions.POSTGRES_PORT ? Number.parseInt(postgresOptions.POSTGRES_PORT) : 5004,
+        port: Number.parseInt(process.env.POSTGRES_PORT ?? postgresOptions.POSTGRES_PORT ?? "5004"),
         cache: isGhAction
             ? false
             : {

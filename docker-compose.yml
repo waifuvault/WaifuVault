@@ -4,10 +4,6 @@ services:
     container_name: redis
     restart: always
     command: [ "redis-server", "--maxmemory", "1gb", "--maxmemory-policy", "allkeys-lru" ]
-    networks:
-      default:
-        aliases:
-          - redis
     ports:
       - "127.0.0.1:6379:6379"
 
@@ -19,12 +15,45 @@ services:
       - postgres.env
     volumes:
       - postgres_data:/var/lib/postgresql
-    networks:
-      default:
-        aliases:
-          - postgres
     ports:
       - "127.0.0.1:5004:5432"
+
+  clamav:
+    image: clamav/clamav-debian:stable
+    container_name: clamav
+    restart: always
+    volumes:
+      - ./files:/home/node/app/files:ro
+      - clamav_data:/var/lib/clamav
+
+  waifuvault:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: waifuvault
+    restart: always
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
+      thumbnails:
+        condition: service_healthy
+      clamav:
+        condition: service_started
+    ports:
+      - "127.0.0.1:8081:8081"
+    volumes:
+      - ./files:/home/node/app/files
+      - ./main.sqlite:/home/node/app/main.sqlite
+      - ./postgres.env:/home/node/app/postgres.env:ro
+    env_file:
+      - .env.docker
+      - postgres.env
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
 
   frontend:
     build:
@@ -32,26 +61,29 @@ services:
       dockerfile: ./frontend/waifu-vault/Dockerfile
     container_name: waifu-vault-frontend
     restart: always
-    image: waifuvault-frontend
+    depends_on:
+      - waifuvault
     ports:
       - "127.0.0.1:3131:3000"
     env_file:
       - ./frontend/waifu-vault/.env
 
-  zipFiles:
+  zipfiles:
     build:
       context: .
       dockerfile: ./go/zipFiles/Dockerfile
     container_name: zipfiles
     restart: always
-    image: waifuvault-zipfiles
+    depends_on:
+      - redis
+      - postgres
     ports:
       - "127.0.0.1:5005:8080"
     volumes:
       - ./files:/app/files
     env_file:
-      - ./.env
-      - ./postgres.env
+      - .env
+      - postgres.env
 
   thumbnails:
     build:
@@ -59,7 +91,6 @@ services:
       dockerfile: ./go/thumbnails/Dockerfile
     container_name: thumbnails
     restart: always
-    image: waifuvault-thumbnails
     depends_on:
       - redis
       - postgres
@@ -69,8 +100,15 @@ services:
       - ./files:/app/files
       - ./main.sqlite:/app/main.sqlite
     env_file:
-      - ./.env
-      - ./postgres.env
+      - .env
+      - postgres.env
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/api/v1/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
 volumes:
   postgres_data:
+  clamav_data:

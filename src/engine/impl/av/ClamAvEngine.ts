@@ -30,46 +30,41 @@ export class ClamAvEngine implements IAvEngine {
         const executable = path.join(this.clamPath!, "clamdscan");
 
         return new Promise(resolve => {
-            const child = execFileCb(
-                executable,
-                ["--fdpass", toScan],
-                { timeout: SCAN_TIMEOUT_MS },
-                (error, _, stderr) => {
-                    if (!error) {
-                        resolve({ passed: true, engineName: this.name });
-                        return;
-                    }
+            const child = execFileCb(executable, [toScan], { timeout: SCAN_TIMEOUT_MS }, (error, _, stderr) => {
+                if (!error) {
+                    resolve({ passed: true, engineName: this.name });
+                    return;
+                }
 
-                    if (error.killed) {
-                        resolve({
-                            errorCode: -1,
-                            passed: true,
-                            additionalMessage: "Scan timed out",
-                            engineName: this.name,
-                        });
-                        return;
-                    }
-
-                    const exitCode = child.exitCode ?? 2;
-
-                    if (exitCode === 1) {
-                        resolve({
-                            errorCode: 1,
-                            passed: false,
-                            additionalMessage: stderr.trim() ?? "Malware detected",
-                            engineName: this.name,
-                        });
-                        return;
-                    }
-
+                if (error.killed) {
                     resolve({
-                        errorCode: exitCode,
+                        errorCode: -1,
                         passed: true,
-                        additionalMessage: `Scan error (code ${exitCode}): ${stderr.trim() ?? error.message}`,
+                        additionalMessage: "Scan timed out",
                         engineName: this.name,
                     });
-                },
-            );
+                    return;
+                }
+
+                const exitCode = child.exitCode ?? 2;
+
+                if (exitCode === 1) {
+                    resolve({
+                        errorCode: 1,
+                        passed: false,
+                        additionalMessage: stderr.trim() ?? "Malware detected",
+                        engineName: this.name,
+                    });
+                    return;
+                }
+
+                resolve({
+                    errorCode: exitCode,
+                    passed: true,
+                    additionalMessage: `Scan error (code ${exitCode}): ${stderr.trim() ?? error.message}`,
+                    engineName: this.name,
+                });
+            });
         });
     }
 

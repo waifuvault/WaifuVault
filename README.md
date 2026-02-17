@@ -94,8 +94,11 @@ Optional Settings
 | FRONT_END_URL               | The URL for the Next.js frontend application. Used for protected file URLs and authentication redirects                                                                                                                                                                                               |
 | COOKIE_DOMAIN               | The domain to use for session cookies. Should match your deployment domain                                                                                                                                                                                                                            |
 | FILE_FILTER_PATTERN         | A regex pattern to reject files by filename                                                                                                                                                                                                                                                           |
-| FILE_FILTER_AUTO_BLOCK      | If `true`, IPs that upload more than 10 rejected files within 10 seconds will be automatically banned                                                                                                                                                                                                    |
-| DRONEBL_ENABLED             | If `true`, incoming IPs are checked against the [DroneBL](https://dronebl.org) DNS blackhole list and blocked if listed (IPv4 only). Fails open on DNS errors. Defaults to `false`                                                                                                                       |
+| FILE_FILTER_AUTO_BLOCK      | If `true`, IPs that upload more than 10 rejected files within 10 seconds will be automatically banned                                                                                                                                                                                                 |
+| THUMBNAIL_SERVICE_BASE_URL  | The base URL for the thumbnail generation microservice. Defaults to `http://127.0.0.1:5006`. Set to `http://thumbnails:8080` when running in Docker                                                                                                                                                   |
+| SOFT_DELETE_LOCATION        | Directory name for soft-deleted files. Defaults to `softDelete`                                                                                                                                                                                                                                       |
+| LOG_LEVEL                   | Log level for the application (e.g. `info`, `debug`, `warn`, `error`). Defaults to `info`                                                                                                                                                                                                             |
+| DRONEBL_ENABLED             | If `true`, incoming IPs are checked against the [DroneBL](https://dronebl.org) DNS blackhole list and blocked if listed (IPv4 only). Fails open on DNS errors. Defaults to `false`                                                                                                                    |
 
 The available `CAPTCHA_SERVICE` values are:
 
@@ -162,7 +165,7 @@ Frontend Environment Variables:
 
 > **Note:** For production deployments, adjust these URLs to match your production environment.
 
-### Build and Run commands
+### Build and Run (Local Development)
 
 ```batch
 # add directories (once after cloning)
@@ -170,10 +173,10 @@ Frontend Environment Variables:
 
 # install dependencies
     npm install
-    
+
 # start redis, postgres and zipfiles (remove postgres if you intend on using sqlite)
-    docker compose up -d
-    
+    docker compose up -d redis postgres
+
 # build database
     npm run runmigration
 
@@ -184,6 +187,76 @@ Frontend Environment Variables:
     npm run build
     npm run start:prod
 ```
+
+### Docker Deployment (All Services)
+
+All services can be run entirely in Docker using `docker compose`. This includes the main WaifuVault service, frontend, Redis, Postgres, ClamAV, thumbnail service and zip service.
+
+#### Setup
+
+1. Create a `postgres.env` file as described in the [Postgres](#postgres) section above.
+
+2. Create a `.env.docker` file for Docker-specific environment values. You can copy your `.env` and adjust the following settings for Docker networking:
+
+| Setting                      | Docker Value                      | Why                                                       |
+|------------------------------|-----------------------------------|-----------------------------------------------------------|
+| PORT                         | `8081`                            | No `localhost:` prefix, just the port number              |
+| REDIS_URI                    | `redis://redis:6379`              | Uses the Docker service name `redis` as hostname          |
+| THUMBNAIL_SERVICE_BASE_URL   | `http://thumbnails:8080`          | Uses the Docker service name `thumbnails` as hostname     |
+| CLAM_PATH                    | `/usr/bin`                        | Path to `clamdscan` inside the waifuvault container       |
+
+All other settings from your `.env` can remain the same.
+
+3. Create the frontend `.env` file as described in the [Frontend Setup](#frontend-setup) section.
+
+4. Create the `files` directory if it doesn't exist:
+```batch
+mkdir files
+```
+
+#### Running
+
+```batch
+# build and start all services
+    docker compose up -d --build
+
+# view logs
+    docker compose logs -f
+
+# stop all services
+    docker compose down
+```
+
+The following services will start:
+
+| Service      | Port  | Description                             |
+|--------------|-------|-----------------------------------------|
+| waifuvault   | 8081  | Main WaifuVault backend                 |
+| frontend     | 3131  | Next.js frontend                        |
+| redis        | 6379  | Redis cache                             |
+| postgres     | 5004  | PostgreSQL database                     |
+| thumbnails   | 5006  | Thumbnail generation microservice       |
+| zipfiles     | 5005  | Zip file download microservice          |
+| clamav       | —     | ClamAV antivirus (internal TCP on 3310) |
+
+#### ClamAV
+
+ClamAV runs as a separate container using the `clamav/clamav-debian:stable` image (supports both AMD64 and ARM64). The `freshclam` daemon inside the container automatically keeps virus definitions up to date.
+
+The waifuvault container communicates with ClamAV over TCP using `clamdscan`. The `files` directory is mounted read-only into the ClamAV container so it can access uploaded files for scanning.
+
+#### Database
+
+Your database is stored in a Docker named volume (`postgres_data`) and persists across container restarts. If you have an existing database from a non-Docker deployment, the `docker-compose.yml` mounts `./main.sqlite` for SQLite compatibility.
+
+Migrations run automatically on startup.
+
+#### Production Notes
+
+When moving from a local/pm2 deployment to Docker:
+- Your existing `files` directory is mounted into the containers, so uploaded files are preserved
+- Postgres data is stored in a Docker volume — your existing database will need to be migrated or the volume pointed to your existing data directory
+- Set `POSTGRES_HOST` and `POSTGRES_PORT` via the `environment` section in `docker-compose.yml` (already configured as `postgres` and `5432`)
 
 ## Buckets Admin Feature
 
