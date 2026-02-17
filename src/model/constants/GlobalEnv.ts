@@ -41,6 +41,7 @@ export enum GlobalEnv {
     FILE_FILTER_PATTERN = `${prefix}FILE_FILTER_PATTERN`,
     FILE_FILTER_AUTO_BLOCK = `${prefix}FILE_FILTER_AUTO_BLOCK`,
     SOFT_DELETE_LOCATION = `${prefix}SOFT_DELETE_LOCATION`,
+    DRONEBL_ENABLED = `${prefix}DRONEBL_ENABLED`,
 }
 
 export type GuaranteedString = WithDefault | MandatoryValues;
@@ -67,7 +68,8 @@ export type WithDefault =
     | GlobalEnv.ZIP_MAX_SIZE_MB
     | GlobalEnv.ALBUM_FILE_LIMIT
     | GlobalEnv.IP_SALT
-    | GlobalEnv.FILE_FILTER_AUTO_BLOCK;
+    | GlobalEnv.FILE_FILTER_AUTO_BLOCK
+    | GlobalEnv.DRONEBL_ENABLED;
 
 export const defaultValues = {
     ...baseDefaults,
@@ -82,6 +84,7 @@ export const defaultValues = {
     [GlobalEnv.BASE_URL]: "",
     [GlobalEnv.REDIS_URI]: "",
     [GlobalEnv.FILE_FILTER_AUTO_BLOCK]: "false",
+    [GlobalEnv.DRONEBL_ENABLED]: "false",
 } satisfies DefaultMapping & Record<MandatoryValues, string>;
 
 const mandatoryValues: MandatoryValues[] = [

@@ -95,6 +95,7 @@ Optional Settings
 | COOKIE_DOMAIN               | The domain to use for session cookies. Should match your deployment domain                                                                                                                                                                                                                            |
 | FILE_FILTER_PATTERN         | A regex pattern to reject files by filename                                                                                                                                                                                                                                                           |
 | FILE_FILTER_AUTO_BLOCK      | If `true`, IPs that upload more than 10 rejected files within 10 seconds will be automatically banned                                                                                                                                                                                                    |
+| DRONEBL_ENABLED             | If `true`, incoming IPs are checked against the [DroneBL](https://dronebl.org) DNS blackhole list and blocked if listed (IPv4 only). Fails open on DNS errors. Defaults to `false`                                                                                                                       |
 
 The available `CAPTCHA_SERVICE` values are:
 

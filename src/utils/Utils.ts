@@ -211,7 +211,7 @@ export class FileUtils {
 }
 
 export class NetworkUtils {
-    public static getIp(req: Request): string {
+    public static getRawIp(req: Request): string {
         const useCf = constant(GlobalEnv.USE_CLOUDFLARE, "false");
         const trustedUploaders = constant(GlobalEnv.TRUSTED_UPLOADER_IPS, "")?.split(",") ?? [];
 
@@ -227,7 +227,11 @@ export class NetworkUtils {
             ip = reqIp;
         }
 
-        const extractedIp = this.extractIp(ip);
+        return this.extractIp(ip);
+    }
+
+    public static getIp(req: Request): string {
+        const extractedIp = this.getRawIp(req);
         const salt = constant(GlobalEnv.IP_SALT, "");
         return crypto
             .createHash("sha256")
