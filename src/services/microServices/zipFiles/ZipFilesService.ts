@@ -33,6 +33,7 @@ export class ZipFilesService {
 
         const ip = NetworkUtils.getIp(req);
 
+        console.log(`[ZipFilesService] fetching: ${this.url}/zipFiles?albumName=${albumName}&ip=${ip}`);
         const res = await fetch(`${this.url}/zipFiles?albumName=${albumName}&ip=${ip}`, {
             method: "POST",
             body: JSON.stringify(servicePayload),
