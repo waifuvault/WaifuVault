@@ -43,6 +43,7 @@ export enum GlobalEnv {
     SOFT_DELETE_LOCATION = `${prefix}SOFT_DELETE_LOCATION`,
     DRONEBL_ENABLED = `${prefix}DRONEBL_ENABLED`,
     THUMBNAIL_SERVICE_BASE_URL = `${prefix}THUMBNAIL_SERVICE_BASE_URL`,
+    ZIP_SERVICE_BASE_URL = `${prefix}ZIP_SERVICE_BASE_URL`,
 }
 
 export type GuaranteedString = WithDefault | MandatoryValues;
@@ -71,7 +72,8 @@ export type WithDefault =
     | GlobalEnv.IP_SALT
     | GlobalEnv.FILE_FILTER_AUTO_BLOCK
     | GlobalEnv.DRONEBL_ENABLED
-    | GlobalEnv.THUMBNAIL_SERVICE_BASE_URL;
+    | GlobalEnv.THUMBNAIL_SERVICE_BASE_URL
+    | GlobalEnv.ZIP_SERVICE_BASE_URL;
 
 export const defaultValues = {
     ...baseDefaults,
@@ -88,6 +90,7 @@ export const defaultValues = {
     [GlobalEnv.FILE_FILTER_AUTO_BLOCK]: "false",
     [GlobalEnv.DRONEBL_ENABLED]: "false",
     [GlobalEnv.THUMBNAIL_SERVICE_BASE_URL]: "http://127.0.0.1:5006",
+    [GlobalEnv.ZIP_SERVICE_BASE_URL]: "http://127.0.0.1:5005",
 } satisfies DefaultMapping & Record<MandatoryValues, string>;
 
 const mandatoryValues: MandatoryValues[] = [

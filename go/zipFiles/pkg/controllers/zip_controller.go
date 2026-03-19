@@ -3,7 +3,7 @@ package controllers
 import (
 	"errors"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/wapimod"
 )
@@ -18,9 +18,9 @@ func (s *Service) setupZipFilesRoute(routeGroup fiber.Router) {
 	routeGroup.Post("/zipFiles", s.zipFiles)
 }
 
-func (s *Service) zipFiles(ctx *fiber.Ctx) error {
+func (s *Service) zipFiles(ctx fiber.Ctx) error {
 	var filesToZip []mod.ZipFileEntry
-	if err := ctx.BodyParser(&filesToZip); err != nil {
+	if err := ctx.Bind().Body(&filesToZip); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("invalid payload", err))
 	}
 

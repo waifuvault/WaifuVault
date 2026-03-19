@@ -4,13 +4,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/create-go-app/fiber-go-template/pkg/configs"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/contrib/v3/swaggo"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/static"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
-	"github.com/swaggo/fiber-swagger"
 	"github.com/waifuvault/WaifuVault/shared/middleware"
 	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/controllers"
@@ -20,7 +20,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/waifuvault/WaifuVault/thumbnails/docs"
-	_ "github.com/waifuvault/WaifuVault/thumbnails/docs" // This line is needed for swag
+	_ "github.com/waifuvault/WaifuVault/thumbnails/docs"
 )
 
 // @title           Thumbnail Service API
@@ -42,43 +42,31 @@ import (
 // @tag.name thumbnails
 // @tag.description Operations for generating and managing thumbnails
 func main() {
-	// configure zero log
 	configureLog()
 
-	// load env
 	utils.LoadEnvs()
 
-	// Configure Swagger based on environment
 	configureSwaggerServers()
 
 	rdb := initRedis()
 
-	// Define Fiber config.
-	config := configs.FiberConfig()
-	config.BodyLimit = thumbnail.BodyLimit
+	app := fiber.New(fiber.Config{
+		BodyLimit: thumbnail.BodyLimit,
+	})
 
-	// Define a new Fiber app with config.
-	app := fiber.New(config)
-
-	// dao
 	mainDao, err := dao.NewDao(rdb)
 	if err != nil {
 		panic(err)
 	}
 
-	// services
 	service := controllers.NewService(mainDao, rdb)
 
-	// Middlewares.
 	middleware.SetupCommonMiddleware(app)
 
-	// Static files
-	app.Static("/", "./static")
+	app.Get("/*", static.New("./static"))
 
-	// Swagger documentation
-	app.Get("/swagger/*", fiberSwagger.WrapHandler)
+	app.Get("/swagger/*", swaggo.HandlerDefault)
 
-	// Routes.
 	routes.PublicRoutes(*service, app)
 
 	if os.Getenv("STAGE_STATUS") == "dev" {
@@ -89,9 +77,7 @@ func main() {
 }
 
 func configureSwaggerServers() {
-	// Configure servers based on environment by modifying the SwaggerInfo
 	baseUrl := GetBseUrl()
-	// remove http(s):// from the start
 	baseUrl = strings.TrimPrefix(baseUrl, "https://")
 	baseUrl = strings.TrimPrefix(baseUrl, "http://")
 	docs.SwaggerInfo.Host = baseUrl
