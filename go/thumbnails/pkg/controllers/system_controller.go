@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func (s *Service) getAllSystemRoutes() []FSetupRoute {
@@ -22,7 +22,7 @@ func (s *Service) setupHealthRoute(routeGroup fiber.Router) {
 // @Produce      json
 // @Success      200  {object}  map[string]string  "Service health status"
 // @Router       /health [get]
-func (s *Service) healthCheck(ctx *fiber.Ctx) error {
+func (s *Service) healthCheck(ctx fiber.Ctx) error {
 	return ctx.JSON(fiber.Map{
 		"status":  "ok",
 		"service": "thumbnail-service",

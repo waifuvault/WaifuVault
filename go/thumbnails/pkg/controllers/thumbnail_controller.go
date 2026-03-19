@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/waifuvault/WaifuVault/shared/utils"
@@ -37,7 +37,7 @@ func (s *Service) setupGetAllSupportedExtensionsRoute(routeGroup fiber.Router) {
 	routeGroup.Get("/generateThumbnails/supported", s.getAllSupportedExtensionsRoute)
 }
 
-func (s *Service) getAllSupportedExtensionsRoute(ctx *fiber.Ctx) error {
+func (s *Service) getAllSupportedExtensionsRoute(ctx fiber.Ctx) error {
 	fileTypes := s.ThumbnailService.GetAllSupportedExtensions()
 
 	return ctx.Status(fiber.StatusOK).JSON(fileTypes)
@@ -47,18 +47,18 @@ func (s *Service) setupGenerateThumbnailsRoute(routeGroup fiber.Router) {
 	routeGroup.Post("/generateThumbnails", s.generateThumbnails)
 }
 
-func (s *Service) generateThumbnails(ctx *fiber.Ctx) error {
+func (s *Service) generateThumbnails(ctx fiber.Ctx) error {
 	var thumbnailEntries []dto.FileEntryDto
-	if err := ctx.BodyParser(&thumbnailEntries); err != nil {
+	if err := ctx.Bind().Body(&thumbnailEntries); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("invalid payload", err))
 	}
 
 	var albumId int
-	if albumId = ctx.QueryInt("albumId"); albumId == 0 {
+	if albumId = fiber.Query[int](ctx, "albumId"); albumId == 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("albumId name not specified", errors.New("albumId name not specified")))
 	}
 
-	addingAdditionalFiles := ctx.QueryBool("addingAdditionalFiles", false)
+	addingAdditionalFiles := fiber.Query[bool](ctx, "addingAdditionalFiles", false)
 
 	if !addingAdditionalFiles && s.ThumbnailService.IsAlbumLoading(albumId) {
 		errMsg := fmt.Sprintf("albumId %d is currently loading", albumId)
@@ -97,7 +97,7 @@ func (s *Service) setupUploadFileRoute(routeGroup fiber.Router) {
 	routeGroup.Post("/generateThumbnail", s.generateThumbnail)
 }
 
-func (s *Service) generateThumbnail(ctx *fiber.Ctx) error {
+func (s *Service) generateThumbnail(ctx fiber.Ctx) error {
 	fileHeader, err := ctx.FormFile("file")
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -105,7 +105,7 @@ func (s *Service) generateThumbnail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	animate := ctx.QueryBool("animate", true)
+	animate := fiber.Query[bool](ctx, "animate", true)
 
 	thumbnail, err := s.ThumbnailService.GenerateThumbnail(fileHeader, animate)
 	if err != nil {
@@ -138,7 +138,7 @@ func (s *Service) setupGenerateThumbnailByTokenRoute(routeGroup fiber.Router) {
 	routeGroup.Get("/generateThumbnail/:fileToken", s.generateThumbnailByToken)
 }
 
-func (s *Service) generateThumbnailByToken(ctx *fiber.Ctx) error {
+func (s *Service) generateThumbnailByToken(ctx fiber.Ctx) error {
 	fileToken := ctx.Params("fileToken")
 	if fileToken == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -151,7 +151,7 @@ func (s *Service) generateThumbnailByToken(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("invalid file token", err))
 	}
 
-	animate := ctx.QueryBool("animate", true)
+	animate := fiber.Query[bool](ctx, "animate", true)
 
 	thumbnail, err := s.ThumbnailService.GenerateThumbnailByToken(tokenUUid, animate)
 	if err != nil {
@@ -187,7 +187,7 @@ func (s *Service) setupGenerateThumbnailFromURLRoute(routeGroup fiber.Router) {
 	routeGroup.Get("/generateThumbnail/ext/fromURL", s.generateThumbnailFromURL)
 }
 
-func (s *Service) generateThumbnailFromURL(ctx *fiber.Ctx) error {
+func (s *Service) generateThumbnailFromURL(ctx fiber.Ctx) error {
 	url := ctx.Query("url")
 	if url == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -195,7 +195,7 @@ func (s *Service) generateThumbnailFromURL(ctx *fiber.Ctx) error {
 		})
 	}
 
-	animate := ctx.QueryBool("animate", true)
+	animate := fiber.Query[bool](ctx, "animate", true)
 
 	thumbnail, err := s.ThumbnailService.GenerateThumbnailFromURL(url, animate)
 	if err != nil {

@@ -1,16 +1,22 @@
-import { InjectContext, Service } from "@tsed/di";
+import { Constant, InjectContext, Service } from "@tsed/di";
 import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { MicroServiceResponse } from "../../../utils/typeings.js";
 import { HTTPException } from "@tsed/exceptions";
 import { filesDir, NetworkUtils } from "../../../utils/Utils.js";
 import type { PlatformContext } from "@tsed/platform-http";
+import { GlobalEnv } from "../../../model/constants/GlobalEnv.js";
 
 @Service()
 export class ZipFilesService {
     @InjectContext()
     protected $ctx?: PlatformContext;
 
-    private readonly url = "http://127.0.0.1:5005/api/v1";
+    @Constant(GlobalEnv.ZIP_SERVICE_BASE_URL, "http://127.0.0.1:5005")
+    private readonly baseUrl: string;
+
+    private get url(): string {
+        return `${this.baseUrl}/api/v1`;
+    }
 
     public async zipFiles(files: FileUploadModel[], albumName: string): Promise<string> {
         const servicePayload = files.map(file => {

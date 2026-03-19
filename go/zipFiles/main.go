@@ -3,9 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/create-go-app/fiber-go-template/pkg/configs"
-	"github.com/create-go-app/fiber-go-template/pkg/routes"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/waifuvault/WaifuVault/shared/middleware"
 	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/controllers"
@@ -13,24 +11,22 @@ import (
 )
 
 func main() {
-	// load env
 	utils.LoadEnvs()
 
-	// Define Fiber config.
-	config := configs.FiberConfig()
+	app := fiber.New()
 
-	// Define a new Fiber app with config.
-	app := fiber.New(config)
-
-	// services
 	service := controllers.NewService()
 
-	// Middlewares.
 	middleware.SetupCommonMiddleware(app)
 
-	// Routes.
-	waifuRoutes.PublicRoutes(*service, app) // Register a public routes for app.
-	routes.NotFoundRoute(app)               // Register route for 404 Error.
+	waifuRoutes.PublicRoutes(*service, app)
+
+	app.Use(func(ctx fiber.Ctx) error {
+		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": true,
+			"msg":   "endpoint not found",
+		})
+	})
 
 	if os.Getenv("STAGE_STATUS") == "dev" {
 		utils.StartServer(app)
