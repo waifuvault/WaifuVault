@@ -192,7 +192,7 @@ export class Server implements BeforeRoutesInit {
         this.redisUrl = settingsService.getSetting(GlobalEnv.REDIS_URI);
     }
 
-    public $beforeRoutesInit(): void {
+    public async $beforeRoutesInit(): Promise<void> {
         this.app.getApp().set("query parser", "extended");
         if (isProduction) {
             this.app.getApp().set("trust proxy", 1);
@@ -203,13 +203,15 @@ export class Server implements BeforeRoutesInit {
         this.app.getApp().settings.headersTimeout = 0;
 
         if (this.sessionKey) {
+            const sessionClient = createClient({ url: this.redisUrl! });
+            await sessionClient.connect();
             this.app.use(
                 session({
                     secret: this.sessionKey,
                     resave: false,
                     saveUninitialized: false,
                     store: new RedisStore({
-                        client: this.redis,
+                        client: sessionClient,
                         prefix: "waifu_session:",
                     }),
                     cookie: {
