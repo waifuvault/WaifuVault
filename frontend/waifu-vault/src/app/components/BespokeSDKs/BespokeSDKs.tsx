@@ -41,13 +41,21 @@ const sdks: SDK[] = [
     },
 ];
 
-const rustSDK: SDK = {
-    name: "Rust",
-    description: "The official Rust SDK",
-    icon: "/icons/rust.svg",
-    url: "https://crates.io/crates/waifuvault",
-    customStyle: { width: "80px", height: "auto", marginBottom: "-26px", marginTop: "-10px" },
-};
+const bottomRowSDKs: SDK[] = [
+    {
+        name: "Java",
+        description: "The official Java SDK",
+        icon: "/icons/icons8-java.svg",
+        url: "https://central.sonatype.com/artifact/moe.waifuvault/waifuvault-java-api",
+    },
+    {
+        name: "Rust",
+        description: "The official Rust SDK",
+        icon: "/icons/rust.svg",
+        url: "https://crates.io/crates/waifuvault",
+        customStyle: { width: "80px", height: "auto", marginBottom: "-26px", marginTop: "-10px" },
+    },
+];
 
 export default function BespokeSDKs() {
     return (
@@ -79,31 +87,27 @@ export default function BespokeSDKs() {
                     ))}
                 </div>
 
-                <div className={styles.rustSDKWrapper}>
-                    <div className={styles.rustSDKCard}>
-                        <div className={styles.sdkIcon}>
-                            <Image
-                                src={rustSDK.icon}
-                                alt={`${rustSDK.name} icon`}
-                                width={80}
-                                height={80}
-                                style={rustSDK.customStyle}
-                            />
+                <div className={styles.bottomRow}>
+                    {bottomRowSDKs.map((sdk, index) => (
+                        <div key={index} className={styles.bottomRowCard}>
+                            <div className={styles.sdkIcon}>
+                                <Image
+                                    src={sdk.icon}
+                                    alt={`${sdk.name} icon`}
+                                    width={64}
+                                    height={64}
+                                    style={sdk.customStyle}
+                                />
+                            </div>
+                            <div className={styles.sdkContent}>
+                                <h5 className={styles.sdkTitle}>{sdk.name}</h5>
+                                <p className={styles.sdkDescription}>{sdk.description}</p>
+                                <Button href={sdk.url} target="_blank" rel="noopener noreferrer" size="small">
+                                    {sdk.name} SDK
+                                </Button>
+                            </div>
                         </div>
-                        <div className={styles.sdkContent}>
-                            <h5 className={styles.sdkTitle}>{rustSDK.name}</h5>
-                            <p className={styles.sdkDescription}>{rustSDK.description}</p>
-                            <Button
-                                href={rustSDK.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                size="small"
-                                className={styles.rustButton}
-                            >
-                                Rust SDK
-                            </Button>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </div>
         </div>
