@@ -237,44 +237,28 @@ async fn main() -> anyhow::Result<()> {
         {
             id: "java",
             name: "Java",
+            description: "For Java, there is an official SDK that provides access to all of the features of the site.",
+            sdkUrl: "https://central.sonatype.com/artifact/moe.waifuvault/waifuvault-java-api",
+            sdkText: "WaifuVault Java API",
             language: "java",
-            code: `// using Apache HttpClient
+            code: `import moe.waifuvault.Waifuvault;
+import moe.waifuvault.FileUpload;
 
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+try (final Waifuvault api = new Waifuvault()) {
+    // upload file from disk
+    final var resp = api.uploadFile(
+        FileUpload.fromFile("./files/aCoolFile.jpg"));
+    System.out.println(resp.url());
 
-import java.io.IOException;
-import java.nio.file.Path;
+    // upload via URL
+    final var resp = api.uploadFile(
+        FileUpload.fromUrl("https://waifuvault.moe/assets/custom/images/08.png"));
+    System.out.println(resp.url());
 
-public class Example {
-
-  private static void uploadFile(final Path file) throws IOException {
-    try (final var httpclient = HttpClients.createDefault()) {
-      final var data = MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-          .addBinaryBody("file", file.toFile())
-          .build();
-      final var request = RequestBuilder.put("${waifuVaultBackend}/rest").setEntity(data).build();
-      final ResponseHandler<String> responseHandler = response -> response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : null;
-      final var responseBody = httpclient.execute(request, responseHandler);
-      System.out.println(responseBody);
-    }
-  }
-
-  private static void uploadUrl(final String url) throws IOException {
-    try (final var httpclient = HttpClients.createDefault()) {
-      final var data = MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-          .addTextBody("url", url)
-          .build();
-      final var request = RequestBuilder.put("${waifuVaultBackend}/rest").setEntity(data).build();
-      final ResponseHandler<String> responseHandler = response -> response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : null;
-      final var responseBody = httpclient.execute(request, responseHandler);
-      System.out.println(responseBody);
-    }
-  }
+    // upload from byte array
+    final var resp = api.uploadFile(
+        FileUpload.fromBytes("someData".getBytes(), "aCoolFile.jpg"));
+    System.out.println(resp.url());
 }`,
         },
         {
