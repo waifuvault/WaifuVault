@@ -1,5 +1,5 @@
 import { Constant, Inject, Service } from "@tsed/di";
-import { AlbumModel } from "../../../model/db/Album.model";
+import { AlbumModel } from "../../../model/db/Album.model.js";
 import { ThumbnailCacheRepo } from "../../../db/repo/ThumbnailCacheRepo.js";
 import { Logger } from "@tsed/logger";
 import { FileUtils } from "../../../utils/Utils.js";

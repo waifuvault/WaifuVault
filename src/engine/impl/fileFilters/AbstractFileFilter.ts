@@ -9,7 +9,7 @@ import path from "node:path";
 export abstract class AbstractFileFilter implements IFileFilter {
     protected constructor(protected logger: Logger) {}
     public async doFilter(file: string | PlatformMulterFile): Promise<boolean> {
-        let didPass = false;
+        let didPass: boolean;
         try {
             didPass = await this.doFilterInternal(file);
             if (!didPass) {

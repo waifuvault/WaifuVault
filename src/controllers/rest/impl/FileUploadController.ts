@@ -106,7 +106,7 @@ export class FileUploadController extends BaseRestController {
                 bucketToken,
             });
         } catch (e) {
-            this.logger.error(e.message);
+            this.logger.error((e as Error).message);
             throw e;
         }
 

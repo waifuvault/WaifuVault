@@ -3,8 +3,8 @@ import { BucketModel } from "../../model/db/Bucket.model.js";
 import { Inject, Injectable } from "@tsed/di";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 import { DataSource, EntityManager } from "typeorm";
-import bucketType from "../../model/constants/BucketType";
-import BucketType from "../../model/constants/BucketType";
+import bucketType from "../../model/constants/BucketType.js";
+import BucketType from "../../model/constants/BucketType.js";
 
 @Injectable()
 export class BucketDao extends AbstractTypeOrmDao<BucketModel> {

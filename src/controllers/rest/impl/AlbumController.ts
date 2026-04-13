@@ -17,7 +17,7 @@ import {
 import { StatusCodes } from "http-status-codes";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 import { AlbumDto } from "../../../model/dto/AlbumDto.js";
-import { BodyParams, QueryParams, PathParams } from "@tsed/platform-params";
+import { BodyParams, PathParams, QueryParams } from "@tsed/platform-params";
 import { PlatformResponse, Res } from "@tsed/platform-http";
 import { AlbumService } from "../../../services/AlbumService.js";
 import { SuccessModel } from "../../../model/rest/SuccessModel.js";
@@ -282,7 +282,7 @@ export class AlbumController extends BaseRestController {
             if (e instanceof Exception) {
                 throw e;
             }
-            return super.doError(res, e.message, StatusCodes.INTERNAL_SERVER_ERROR);
+            return super.doError(res, (e as Error).message, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
 

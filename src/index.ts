@@ -23,7 +23,8 @@ async function bootstrap(): Promise<void> {
         });
         await stopOnTest(platform, false);
     } catch (error) {
-        logger().error({ event: "SERVER_BOOTSTRAP_ERROR", message: error.message, stack: error.stack });
+        const err = error as Error;
+        logger().error({ event: "SERVER_BOOTSTRAP_ERROR", message: err.message, stack: err.stack });
         await stopOnTest(platform, true);
     }
 }

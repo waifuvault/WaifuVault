@@ -12,7 +12,7 @@ if (!isGhAction) {
     redisUrl = new URL(process.env.REDIS_URI as string);
 }
 
-let dbOptions: Partial<DataSourceOptions> = {};
+let dbOptions: Partial<DataSourceOptions>;
 
 if (dbType === "postgres") {
     const postgresOptions = dotenv.config({

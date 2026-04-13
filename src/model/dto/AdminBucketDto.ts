@@ -4,7 +4,7 @@ import { AlbumInfo } from "../rest/AlbumInfo.js";
 import { BucketModel } from "../db/Bucket.model.js";
 import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
-import type { ProtectionLevel } from "../../utils/typeings";
+import type { ProtectionLevel } from "../../utils/typeings.js";
 
 export type UrlFileMixin = FileUploadModel & {
     url: string;

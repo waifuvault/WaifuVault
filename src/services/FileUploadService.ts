@@ -122,8 +122,9 @@ export class FileUploadService {
                     uploadEntry.encrypted(didEncrypt !== null);
                 } catch (e) {
                     await FileUtils.deleteFile(resourcePath);
-                    this.logger.error(e.message);
-                    throw new InternalServerError(e.message);
+                    const err = e as Error;
+                    this.logger.error(err.message);
+                    throw new InternalServerError(err.message);
                 }
             }
             const savedEntry = await this.repo.saveEntry(uploadEntry.build());
