@@ -6,7 +6,7 @@ import { FileUtils } from "../../utils/Utils.js";
 import { constant } from "@tsed/di";
 import { FileUploadModel } from "../db/FileUpload.model.js";
 import { GlobalEnv } from "../constants/GlobalEnv.js";
-import { PublicAlbumMetadata } from "../../utils/typeings";
+import { PublicAlbumMetadata } from "../../utils/typeings.js";
 
 @Name("WaifuPublicFileMetadata")
 @Description("Metadata about a public file in an album")

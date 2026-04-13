@@ -21,7 +21,7 @@ export class FileService {
     ) {}
 
     public async processDelete(tokens: string[], softDelete = false): Promise<boolean> {
-        let deleted = false;
+        let deleted: boolean;
         const entries = await this.repo.getEntries(tokens, false);
         if (entries.length === 0) {
             return false;

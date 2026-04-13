@@ -5,7 +5,7 @@ import { Logger } from "@tsed/logger";
 import type { PlatformContext } from "@tsed/platform-http";
 import { FileService } from "./FileService.js";
 import { BucketSessionService } from "./BucketSessionService.js";
-import BucketType from "../model/constants/BucketType";
+import BucketType from "../model/constants/BucketType.js";
 
 @Service()
 export class BucketService {

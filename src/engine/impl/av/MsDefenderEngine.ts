@@ -4,7 +4,7 @@ import { AvScanResult } from "../../../utils/typeings.js";
 import path from "node:path";
 import { filesDir } from "../../../utils/Utils.js";
 import { promisify } from "node:util";
-import { exec } from "node:child_process";
+import { exec, type ExecException } from "node:child_process";
 import { AV_ENGINE } from "../../../model/di/tokens.js";
 import { SettingsService } from "../../../services/SettingsService.js";
 import { GlobalEnv } from "../../../model/constants/GlobalEnv.js";
@@ -32,10 +32,11 @@ export class MsDefenderEngine implements IAvEngine {
                 `"${this.msDefenderPath}/MpCmdRun.exe" -scan -scantype 3 -file ${toScan} -DisableRemediation`,
             );
         } catch (e) {
+            const err = e as ExecException;
             return {
-                errorCode: e.code,
+                errorCode: err.code,
                 passed: false,
-                additionalMessage: e.message,
+                additionalMessage: err.message,
                 engineName: this.name,
             };
         }

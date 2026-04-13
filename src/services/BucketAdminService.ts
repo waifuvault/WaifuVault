@@ -7,7 +7,7 @@ import { SettingsDao } from "../db/dao/SettingsDao.js";
 import { BucketService } from "./BucketService.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
-import BucketType from "../model/constants/BucketType";
+import BucketType from "../model/constants/BucketType.js";
 
 /**
  * This is an admin service that will work when a bucket is open

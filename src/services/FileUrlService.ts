@@ -57,7 +57,7 @@ export class FileUrlService {
                 method: "HEAD",
             });
         } catch (e) {
-            throw new BadRequest(e.message);
+            throw new BadRequest((e as Error).message);
         }
         const contentLengthStr = headCheck.headers.get("content-length");
         if (!contentLengthStr) {
@@ -89,7 +89,7 @@ export class FileUrlService {
                 signal,
             });
         } catch (e) {
-            throw new BadRequest(e.message);
+            throw new BadRequest((e as Error).message);
         }
         if (!response.ok) {
             const resp = await response.text();

@@ -1,6 +1,6 @@
 import { AbstractAdminController } from "./AbstractAdminController.js";
 import { Controller, Inject } from "@tsed/di";
-import { Delete, Get, Hidden, CollectionOf } from "@tsed/schema";
+import { CollectionOf, Delete, Get, Hidden } from "@tsed/schema";
 import { PlatformResponse, Res } from "@tsed/platform-http";
 import { BodyParams, PathParams, QueryParams } from "@tsed/platform-params";
 import { UseBefore } from "@tsed/platform-middlewares";
@@ -17,7 +17,7 @@ import { BucketService } from "../../../../services/BucketService.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
 import { StatsModel } from "../../../../model/dto/StatsDto.js";
 import { AdminBucketDto } from "../../../../model/dto/AdminBucketDto.js";
-import BucketType from "../../../../model/constants/BucketType";
+import BucketType from "../../../../model/constants/BucketType.js";
 import { NotFound } from "@tsed/exceptions";
 
 @Hidden()

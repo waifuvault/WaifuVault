@@ -11,7 +11,7 @@ import { uuid } from "../../utils/uuidUtils.js";
 import { FileDao } from "../dao/FileDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { dataSource } from "../DataSource.js";
-import BucketType from "../../model/constants/BucketType";
+import BucketType from "../../model/constants/BucketType.js";
 
 @Injectable()
 export class BucketRepo {
