@@ -482,7 +482,6 @@ function ParticleBackground({
     };
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDimensions({
             width: window.innerWidth,
             height: window.innerHeight,
