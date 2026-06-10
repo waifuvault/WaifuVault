@@ -83,7 +83,7 @@ export class FileUploadService {
             const token = uuid();
             const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
 
-            await this.filterFile(source);
+            await this.filterFile(resourcePath);
 
             uploadEntry.fileName(path.parse(resourcePath).name);
             const mediaType = await this.mimeService.findMimeType(resourcePath);

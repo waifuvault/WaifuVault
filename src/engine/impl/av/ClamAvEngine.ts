@@ -39,7 +39,7 @@ export class ClamAvEngine implements IAvEngine {
                 if (error.killed) {
                     resolve({
                         errorCode: -1,
-                        passed: true,
+                        passed: false,
                         additionalMessage: "Scan timed out",
                         engineName: this.name,
                     });
@@ -52,7 +52,7 @@ export class ClamAvEngine implements IAvEngine {
                     resolve({
                         errorCode: 1,
                         passed: false,
-                        additionalMessage: stderr.trim() ?? "Malware detected",
+                        additionalMessage: stderr.trim() || "Malware detected",
                         engineName: this.name,
                     });
                     return;
@@ -60,8 +60,8 @@ export class ClamAvEngine implements IAvEngine {
 
                 resolve({
                     errorCode: exitCode,
-                    passed: true,
-                    additionalMessage: `Scan error (code ${exitCode}): ${stderr.trim() ?? error.message}`,
+                    passed: false,
+                    additionalMessage: `Scan error (code ${exitCode}): ${stderr.trim() || error.message}`,
                     engineName: this.name,
                 });
             });
