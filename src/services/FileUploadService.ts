@@ -72,10 +72,10 @@ export class FileUploadService {
             const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip, bucketToken);
 
             if (existingFileModel) {
-                await FileUtils.deleteFile(path.basename(resourcePath), true);
                 if (existingFileModel.hasExpired) {
                     await this.fileService.processDelete([existingFileModel.token]);
                 } else {
+                    await FileUtils.deleteFile(path.basename(resourcePath), true);
                     return [existingFileModel, true];
                 }
             }

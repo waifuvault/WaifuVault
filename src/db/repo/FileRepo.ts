@@ -43,7 +43,7 @@ export class FileRepo {
         return this.fileDao.getExpiredFiles();
     }
 
-    public getAllEntries(ids: number[] = []): Promise<FileUploadModel[]> {
+    public getAllEntries(ids?: number[]): Promise<FileUploadModel[]> {
         return this.fileDao.getAllEntries(ids);
     }
 

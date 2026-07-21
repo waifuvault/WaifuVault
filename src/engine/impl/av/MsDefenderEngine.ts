@@ -34,7 +34,7 @@ export class MsDefenderEngine implements IAvEngine {
         } catch (e) {
             const err = e as ExecException;
             return {
-                errorCode: err.code,
+                errorCode: typeof err.code === "number" ? err.code : undefined,
                 passed: false,
                 additionalMessage: err.message,
                 engineName: this.name,

@@ -7,6 +7,7 @@ import { BadRequest } from "@tsed/exceptions";
 import { Req, Res } from "@tsed/platform-http";
 import { BodyParams, PathParams, QueryParams } from "@tsed/platform-params";
 import { MultipartFile, type PlatformMulterFile } from "@tsed/platform-multer";
+import { RateLimit } from "../../../middleware/endpoint/RateLimit.js";
 import { FileUploadService } from "../../../services/FileUploadService.js";
 import { FileUtils, NetworkUtils } from "../../../utils/Utils.js";
 import { BaseRestController } from "../BaseRestController.js";
@@ -16,6 +17,7 @@ import type { Request, Response } from "express";
 import { DefaultRenderException } from "../../../model/rest/DefaultRenderException.js";
 import { FileUploadQueryParameters } from "../../../model/rest/FileUploadQueryParameters.js";
 import { FileService } from "../../../services/FileService.js";
+import { GlobalEnv } from "../../../model/constants/GlobalEnv.js";
 
 @Controller("/")
 @Description("API for uploading and sharing files.")
@@ -34,7 +36,32 @@ export class FileUploadController extends BaseRestController {
     @(Put("/:bucketToken")
         .Description("Upload a file or a URL to a specific bucket, the bucket must exist")
         .Summary("Upload a file or send URL to a specific bucket"))
+    @RateLimit({
+        key: "upload",
+        limitSetting: GlobalEnv.UPLOAD_RATE_LIMIT,
+        windowSetting: GlobalEnv.UPLOAD_RATE_LIMIT_MS,
+    })
     @(Returns(StatusCodes.CREATED, WaifuFileWithAlbum).Description("If the file was stored successfully"))
+    @(Returns(StatusCodes.TOO_MANY_REQUESTS, DefaultRenderException)
+        .Description("If you are uploading too frequently from the same IP")
+        .Headers({
+            "RateLimit-Limit": {
+                type: "integer",
+                description: "The maximum number of uploads allowed within the current window",
+            },
+            "RateLimit-Remaining": {
+                type: "integer",
+                description: "The number of uploads remaining in the current window",
+            },
+            "RateLimit-Reset": {
+                type: "integer",
+                description: "The number of seconds until the current window resets",
+            },
+            "Retry-After": {
+                type: "integer",
+                description: "The number of seconds to wait before retrying",
+            },
+        }))
     @(Returns(StatusCodes.BAD_REQUEST, DefaultRenderException).Description("If the request was malformed"))
     @(Returns(StatusCodes.OK, WaifuFileWithAlbum).Description("If the file already exists"))
     @(Returns(StatusCodes.UNSUPPORTED_MEDIA_TYPE, DefaultRenderException).Description(

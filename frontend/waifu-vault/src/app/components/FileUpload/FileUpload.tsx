@@ -4,6 +4,7 @@ import React, { DragEvent, useEffect, useState } from "react";
 import { AdvancedDropZone, Button, FilePreview, Input } from "@/app/components";
 import { formatFileSize, uploadApi, validateExpires } from "@/app/utils";
 import { useEnvironment, useErrorHandler, useRestrictions } from "@/app/hooks";
+import { useToast } from "@/app/components/Toast";
 import { type BucketType, type UploadFile } from "@/app/types";
 import styles from "./FileUpload.module.scss";
 
@@ -30,6 +31,7 @@ export const FileUpload = ({
     const { restrictions, bannedTypes, isLoading: restrictionsLoading } = useRestrictions();
     const { backendRestBaseUrl } = useEnvironment();
     const { handleError } = useErrorHandler();
+    const { showToast } = useToast();
     const [isDragging, setIsDragging] = useState(false);
     const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
     const [isUploading, setIsUploading] = useState(false);
@@ -214,6 +216,7 @@ export const FileUpload = ({
                 ...uploadFile,
                 status: "error",
                 error: errorMessage,
+                rateLimited: error instanceof uploadApi.RateLimitError,
             };
         }
     };
@@ -247,6 +250,15 @@ export const FileUpload = ({
                         return result || existing;
                     }),
                 );
+
+                const rateLimitedResult = batchResults.find(r => r.rateLimited);
+                if (rateLimitedResult) {
+                    showToast(
+                        "warning",
+                        rateLimitedResult.error ?? "Upload rate limit reached. Please try again shortly.",
+                    );
+                    break;
+                }
             }
 
             onUploadComplete?.(results);

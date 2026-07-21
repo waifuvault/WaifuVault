@@ -49,7 +49,7 @@ export class ThumbnailCacheRepo {
             return;
         }
         await this.thumbnailCacheDao.deleteThumbnailCaches(fileIds, transaction);
-        this.redis.del(...fileIds.map(id => `${ThumbnailCacheRepo.redisCachePrefix}${id}`));
+        await this.redis.del(...fileIds.map(id => `${ThumbnailCacheRepo.redisCachePrefix}${id}`));
     }
 
     public hasThumbnails(fileIds: number[]): Promise<number[]> {

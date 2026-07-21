@@ -31,6 +31,8 @@ export enum GlobalEnv {
     UPLOAD_SECRET = `${prefix}UPLOAD_SECRET`,
     RATE_LIMIT = `${prefix}RATE_LIMIT`,
     RATE_LIMIT_MS = `${prefix}RATE_LIMIT_MS`,
+    UPLOAD_RATE_LIMIT = `${prefix}UPLOAD_RATE_LIMIT`,
+    UPLOAD_RATE_LIMIT_MS = `${prefix}UPLOAD_RATE_LIMIT_MS`,
     REDIS_URI = `${prefix}REDIS_URI`,
     ZIP_MAX_SIZE_MB = `${prefix}ZIP_MAX_SIZE_MB`,
     IP_SALT = `${prefix}IP_SALT`,

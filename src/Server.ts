@@ -165,7 +165,7 @@ const opts: Partial<TsED.Configuration> = {
             },
         },
     ],
-    exclude: ["**/*.spec.ts"],
+    exclude: ["**/*.spec.ts", "**/__TEST__/**"],
 };
 
 await initRedis(opts);
@@ -204,6 +204,7 @@ export class Server implements BeforeRoutesInit {
 
         if (this.sessionKey) {
             const sessionClient = createClient({ url: this.redisUrl! });
+            sessionClient.on("error", err => this.logger.error(err));
             await sessionClient.connect();
             this.app.use(
                 session({
@@ -288,6 +289,8 @@ async function initRedis(options: Partial<TsED.Configuration>): Promise<void> {
             url: process.env.REDIS_URI as string,
         });
         const subClient = pubClient.duplicate();
+        pubClient.on("error", err => console.error("Redis pub client error:", err));
+        subClient.on("error", err => console.error("Redis sub client error:", err));
 
         await Promise.all([pubClient.connect(), subClient.connect()]);
         opts.socketIO!.adapter = createShardedAdapter(pubClient, subClient);

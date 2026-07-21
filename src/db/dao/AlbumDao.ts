@@ -24,7 +24,7 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
 
     public getAlbum(token: string, includeFiles = true, transaction?: EntityManager): Promise<AlbumModel | null> {
         return this.getRepository(transaction).findOne({
-            relations: includeFiles ? ["files"] : undefined,
+            relations: includeFiles ? { files: true } : undefined,
             order: includeFiles
                 ? {
                       files: {
@@ -46,7 +46,11 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
     public getAlbumByName(name: string, bucket: string, transaction?: EntityManager): Promise<AlbumModel | null> {
         return this.getRepository(transaction).findOne({
             where: { name: name, bucketToken: bucket },
-            select: ["name", "bucketToken", "albumToken"],
+            select: {
+                name: true,
+                bucketToken: true,
+                albumToken: true,
+            },
         });
     }
 
@@ -85,7 +89,9 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
 
     public async getPrivateAlbumToken(publicToken: string, transaction?: EntityManager): Promise<string | null> {
         const r = await this.getRepository(transaction).findOne({
-            select: ["albumToken"],
+            select: {
+                albumToken: true,
+            },
             where: {
                 publicToken,
             },
@@ -100,14 +106,14 @@ export class AlbumDao extends AbstractTypeOrmDao<AlbumModel> {
     ): Promise<AlbumModel[]> {
         if (!bucketToken) {
             return this.getRepository(transaction).find({
-                relations: includeFiles ? ["files"] : undefined,
+                relations: includeFiles ? { files: true } : undefined,
             });
         } else {
             return this.getRepository(transaction).find({
                 where: {
                     bucketToken,
                 },
-                relations: includeFiles ? ["files"] : undefined,
+                relations: includeFiles ? { files: true } : undefined,
             });
         }
     }

@@ -12,7 +12,7 @@ jobs:
     name: Build Go microservices
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Install required packages for building the thumbnails module
       - name: Install libvips dependencies for thumbnails
@@ -22,7 +22,7 @@ jobs:
 
       # Setup Go with caching
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: 'stable'
           cache: true
@@ -51,16 +51,16 @@ jobs:
       run:
         working-directory: frontend/waifu-vault
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Setup Node.js
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
           check-latest: true
 
       # setup nextjs cache
-      - uses: actions/cache@v5
+      - uses: actions/cache@v6
         with:
           path: |
             ~/.npm
@@ -89,10 +89,10 @@ jobs:
     name: Build Backend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Setup Node.js
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
           check-latest: true
@@ -108,6 +108,15 @@ jobs:
 
       - name: Format with Prettier
         run: npm run prettier
+
+      - name: Run unit tests
+        run: npm run test
+        env:
+          FILE_SIZE_UPLOAD_LIMIT_MB: "512"
+          SESSION_KEY: "ci-test"
+          PORT: "8081"
+          BASE_URL: "http://127.0.0.1:8081"
+          REDIS_URI: "redis://localhost:6379"
 
       - name: Build application
         run: npm run build
