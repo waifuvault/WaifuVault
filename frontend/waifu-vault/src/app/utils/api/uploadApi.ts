@@ -11,6 +11,26 @@ export interface UploadOptions {
     oneTimeDownload?: boolean;
 }
 
+export class RateLimitError extends Error {
+    public readonly retryAfter: number | null;
+
+    public constructor(message: string, retryAfter: number | null) {
+        super(message);
+        this.name = "RateLimitError";
+        this.retryAfter = retryAfter;
+    }
+}
+
+const parseRetryAfterSeconds = (xhr: XMLHttpRequest): number | null => {
+    const headerValue = xhr.getResponseHeader("Retry-After") ?? xhr.getResponseHeader("RateLimit-Reset");
+    if (!headerValue) {
+        return null;
+    }
+
+    const seconds = Number.parseInt(headerValue, 10);
+    return Number.isNaN(seconds) ? null : seconds;
+};
+
 export async function uploadFile(
     backendRestBaseUrl: string,
     file: File,
@@ -86,6 +106,14 @@ export async function uploadFile(
 
         xhr.onload = () => {
             cleanup();
+
+            if (xhr.status === 429) {
+                const retryAfter = parseRetryAfterSeconds(xhr);
+                const waitHint = retryAfter !== null ? ` Please wait ${retryAfter}s before trying again.` : "";
+                reject(new RateLimitError(`Upload rate limit reached.${waitHint}`, retryAfter));
+                return;
+            }
+
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (xhr.status >= 200 && xhr.status < 300) {

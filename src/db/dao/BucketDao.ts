@@ -2,7 +2,7 @@ import { AbstractTypeOrmDao } from "./AbstractTypeOrmDao.js";
 import { BucketModel } from "../../model/db/Bucket.model.js";
 import { Inject, Injectable } from "@tsed/di";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
-import { DataSource, EntityManager } from "typeorm";
+import { DataSource, EntityManager, FindOptionsRelations } from "typeorm";
 import bucketType from "../../model/constants/BucketType.js";
 import BucketType from "../../model/constants/BucketType.js";
 
@@ -12,14 +12,17 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
         super(ds, BucketModel);
     }
 
-    private buildRelations(includeFiles: boolean, includeAlbums: boolean): string[] | undefined {
+    private buildRelations(
+        includeFiles: boolean,
+        includeAlbums: boolean,
+    ): FindOptionsRelations<BucketModel> | undefined {
         if (!includeAlbums && !includeFiles) {
             return undefined;
         }
         if (!includeAlbums && includeFiles) {
-            return ["files"];
+            return { files: true };
         }
-        return ["files", "albums", "files.album"];
+        return { files: { album: true }, albums: true };
     }
 
     public createBucket(bucket: BucketModel, transaction?: EntityManager): Promise<BucketModel> {
@@ -41,7 +44,13 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
     ): Promise<BucketModel | null> {
         if (typeof id === "number") {
             return this.getRepository(transaction).findOne({
-                relations: ["albums", "files.album"],
+                relations: {
+                    albums: true,
+
+                    files: {
+                        album: true,
+                    },
+                },
                 where: {
                     id,
                 },
@@ -83,7 +92,9 @@ export class BucketDao extends AbstractTypeOrmDao<BucketModel> {
 
     public async getBucketType(token: string, transaction?: EntityManager): Promise<BucketType | null> {
         const bType = await this.getRepository(transaction).findOne({
-            select: ["type"],
+            select: {
+                type: true,
+            },
             where: { bucketToken: token },
         });
         return bType?.type ?? null;

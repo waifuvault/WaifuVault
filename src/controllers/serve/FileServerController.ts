@@ -14,6 +14,7 @@ import { FileUtils } from "../../utils/Utils.js";
 import { SettingsService } from "../../services/SettingsService.js";
 import { GlobalEnv } from "../../model/constants/GlobalEnv.js";
 import { RedirectException } from "@tsed/exceptions";
+import { Logger } from "@tsed/logger";
 
 @Hidden()
 @Controller("/")
@@ -26,6 +27,7 @@ export class FileServerController {
     public constructor(
         @Inject() private fileService: FileService,
         @Inject() private fileUploadService: FileUploadService,
+        @Inject() private logger: Logger,
         @Inject() settingsService: SettingsService,
     ) {
         this.frontendUrl = settingsService.getSetting(GlobalEnv.FRONT_END_URL);
@@ -68,7 +70,9 @@ export class FileServerController {
 
         if (download) {
             res.setHeader("Content-Length", entryWrapper.entry.fileSize);
-            res.on("finish", () => this.postProcess(entryWrapper.entry));
+            res.on("finish", () => {
+                this.postProcess(entryWrapper.entry).catch(err => this.logger.error(err));
+            });
             return entryWrapper.getStream(password);
         }
 
@@ -87,7 +91,9 @@ export class FileServerController {
         }
 
         res.setHeader("Content-Length", entryWrapper.entry.fileSize);
-        res.on("finish", () => this.postProcess(entryWrapper.entry));
+        res.on("finish", () => {
+            this.postProcess(entryWrapper.entry).catch(err => this.logger.error(err));
+        });
         if (entryWrapper.entry.encrypted) {
             return entryWrapper.getBuffer(password);
         }

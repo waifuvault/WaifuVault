@@ -25,7 +25,9 @@ export class ThumbnailCacheDao extends AbstractTypeOrmDao<ThumbnailCacheModel> {
 
     public async hasThumbnails(fileIds: number[], transaction?: EntityManager): Promise<number[]> {
         const res = await this.getRepository(transaction).find({
-            select: ["fileId"],
+            select: {
+                fileId: true,
+            },
             where: {
                 fileId: In(fileIds),
             },

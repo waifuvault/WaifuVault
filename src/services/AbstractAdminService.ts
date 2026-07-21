@@ -34,6 +34,9 @@ export abstract class AbstractAdminService implements IAdminService {
     }
 
     public async deleteEntries(ids: number[]): Promise<boolean> {
+        if (ids.length === 0) {
+            return false;
+        }
         const matchingEntries = await this.repo.getAllEntries(ids);
         if (matchingEntries.length === 0) {
             return false;

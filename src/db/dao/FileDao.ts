@@ -115,15 +115,15 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         return deleteResult.affected === tokens.length;
     }
 
-    public getAllEntries(ids: number[] = [], transaction?: EntityManager): Promise<FileUploadModel[]> {
-        if (ids.length > 0) {
-            return this.getRepository(transaction).find({
-                where: {
-                    id: In(ids),
-                },
-            });
+    public getAllEntries(ids?: number[], transaction?: EntityManager): Promise<FileUploadModel[]> {
+        if (ids === undefined) {
+            return this.getRepository(transaction).find();
         }
-        return this.getRepository(transaction).find();
+        return this.getRepository(transaction).find({
+            where: {
+                id: In(ids),
+            },
+        });
     }
 
     public getTotalFileSize(transaction?: EntityManager): Promise<number | null> {
@@ -155,7 +155,9 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
                 order: orderOptions,
                 skip: start,
                 take: records,
-                relations: ["album"],
+                relations: {
+                    album: true,
+                },
             });
         }
 
@@ -303,12 +305,16 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
 
     public async clearCache(token: string | string[] | null): Promise<void> {
         if (token !== null) {
-            await this.dataSource.queryResultCache?.remove([this.generateKey(token)]);
             if (Array.isArray(token)) {
-                for (const token of this.cachedToken) {
-                    this.cachedToken.delete(token);
+                const keys = token.map(t => this.generateKey(t));
+                if (keys.length > 0) {
+                    await this.dataSource.queryResultCache?.remove(keys);
+                }
+                for (const t of token) {
+                    this.cachedToken.delete(t);
                 }
             } else {
+                await this.dataSource.queryResultCache?.remove([this.generateKey(token)]);
                 this.cachedToken.delete(token);
             }
         } else {
@@ -316,7 +322,9 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
             for (const token of this.cachedToken) {
                 keys.push(this.generateKey(token));
             }
-            await this.dataSource.queryResultCache?.remove(keys);
+            if (keys.length > 0) {
+                await this.dataSource.queryResultCache?.remove(keys);
+            }
             this.cachedToken.clear();
         }
     }
@@ -381,7 +389,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         // Handle non-bucketed duplicates
         for (const { file_checksum: checksum, file_ip: ip } of nonBucketedDuplicates) {
             const recordsWithChecksum = await repository.find({
-                where: { checksum, bucketToken: IsNull(), ip },
+                where: { checksum, bucketToken: IsNull(), ip: ip === null ? IsNull() : ip },
                 order: { id: "ASC" },
             });
 

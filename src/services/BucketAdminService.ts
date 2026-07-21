@@ -50,6 +50,20 @@ export class BucketAdminService extends AbstractAdminService {
         return this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search, bucket);
     }
 
+    public override async deleteEntries(ids: number[]): Promise<boolean> {
+        if (ids.length === 0) {
+            return false;
+        }
+        const bucket = await this.bucketService.getBucket();
+        const requestedIds = new Set(ids);
+        const ownedFiles = bucket?.files?.filter(file => requestedIds.has(file.id)) ?? [];
+        if (ownedFiles.length === 0) {
+            return false;
+        }
+        await this.fileService.processDelete(ownedFiles.map(file => file.token));
+        return true;
+    }
+
     public getBucketType(token: string): Promise<BucketType | null> {
         return this.bucketService.getBucketType(token);
     }

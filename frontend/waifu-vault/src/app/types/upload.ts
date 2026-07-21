@@ -7,4 +7,5 @@ export interface UploadFile {
     status: "pending" | "uploading" | "completed" | "error";
     response?: { token: string; url: string; [key: string]: unknown };
     showOptions?: boolean;
+    rateLimited?: boolean;
 }

@@ -10,6 +10,8 @@ import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 
 @Service()
 export class FileCleaner implements OnReady {
+    private static readonly syncGraceMs = 5 * 60 * 1000;
+
     public constructor(
         @Inject() private repo: FileRepo,
         @Inject() private fileUploadService: FileService,
@@ -39,10 +41,18 @@ export class FileCleaner implements OnReady {
         const allFilesFromDb = await this.repo.getAllEntries();
         const allFilesFromSystem = await fs.readdir(filesDir);
 
-        // Delete files from disk that aren't in DB
-        const deleteFilesPromises = allFilesFromSystem
-            .filter(fileOnSystem => !this.isFileInDb(allFilesFromDb, fileOnSystem))
-            .map(fileToDelete => FileUtils.deleteFile(fileToDelete, true, true));
+        const orphanedOnDisk: string[] = [];
+        for (const fileOnSystem of allFilesFromSystem) {
+            if (this.isFileInDb(allFilesFromDb, fileOnSystem)) {
+                continue;
+            }
+            if (await this.wasRecentlyModified(fileOnSystem)) {
+                continue;
+            }
+            orphanedOnDisk.push(fileOnSystem);
+        }
+
+        const deleteFilesPromises = orphanedOnDisk.map(fileToDelete => FileUtils.deleteFile(fileToDelete, true, true));
 
         // Delete DB entries for files that don't exist on disk
         const orphanedDbEntries = allFilesFromDb
@@ -57,6 +67,15 @@ export class FileCleaner implements OnReady {
 
     private isFileInDb(fileDbList: FileUploadModel[], fileName: string): boolean {
         return !!fileDbList.find(file => file.fullFileNameOnSystem === fileName);
+    }
+
+    private async wasRecentlyModified(fileName: string): Promise<boolean> {
+        try {
+            const stat = await fs.stat(`${filesDir}/${fileName}`);
+            return Date.now() - stat.mtimeMs < FileCleaner.syncGraceMs;
+        } catch {
+            return false;
+        }
     }
 
     private async removeDupes(): Promise<void> {

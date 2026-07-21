@@ -12,7 +12,6 @@
       "emitDecoratorMetadata": true,
       "moduleResolution": "nodenext",
       "isolatedModules": false,
-      "suppressImplicitAnyIndexErrors": false,
       "noImplicitAny": true,
       "strictNullChecks": true,
       "noUnusedLocals": false,

@@ -5,7 +5,13 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
     {
-        ignores: ["src/migrations/sqlite/**/*", "src/migrations/postgres/**/*", "**/*.mjs", "frontend/**/*"],
+        ignores: [
+            "src/migrations/sqlite/**/*",
+            "src/migrations/postgres/**/*",
+            "**/*.mjs",
+            "frontend/**/*",
+            "vitest.config.ts",
+        ],
     },
     {
         plugins: {
