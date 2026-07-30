@@ -6,7 +6,7 @@ import { filesDir } from "../utils/Utils.js";
 import Module from "node:module";
 import { Logger } from "@tsed/logger";
 import { Readable } from "node:stream";
-import { finished } from "node:stream/promises";
+import { pipeline } from "node:stream/promises";
 import { ReadableStream } from "node:stream/web";
 import isLocalhost from "is-localhost-ip";
 import { SettingsService } from "./SettingsService.js";
@@ -75,7 +75,7 @@ export class FileUrlService {
         const ext = originalFileName.split(".").pop();
         const destination = path.resolve(`${filesDir}/${now}.${ext}`);
         const fileStream = fs.createWriteStream(destination);
-        await finished(Readable.fromWeb(response).pipe(fileStream));
+        await pipeline(Readable.fromWeb(response), fileStream);
         return [destination, originalFileName];
     }
 

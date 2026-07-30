@@ -1,7 +1,7 @@
 import { FileUploadModel } from "../db/FileUpload.model.js";
 import { AutoInjectable, Inject } from "@tsed/di";
 import { EncryptionService } from "../../services/EncryptionService.js";
-import { createReadStream, ReadStream } from "node:fs";
+import { ReadStream } from "node:fs";
 import { FileUtils } from "../../utils/Utils.js";
 import fs from "node:fs/promises";
 
@@ -18,7 +18,16 @@ export class EntryEncryptionWrapper {
             const b = await this.getBuffer(password);
             return ReadStream.from(b) as ReadStream;
         }
-        return createReadStream(FileUtils.getFilePath(this.entry), opts);
+
+        const filePath = FileUtils.getFilePath(this.entry);
+        const handle = await fs.open(filePath, "r");
+
+        const stream = handle.createReadStream(opts);
+        stream.on("error", () => {
+            stream.destroy();
+        });
+
+        return stream;
     }
 
     public getBuffer(password?: string): Promise<Buffer> {

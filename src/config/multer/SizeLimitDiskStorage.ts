@@ -59,18 +59,35 @@ export class SizeLimitDiskStorage implements multer.StorageEngine {
                 callback(err);
             });
 
+            outStream.on("error", (err: Error) => {
+                if (hasError) {
+                    return;
+                }
+                hasError = true;
+                file.stream.unpipe(outStream);
+                file.stream.resume();
+                fs.rm(filePath, () => {});
+                callback(err);
+            });
+
+            outStream.on("finish", () => {
+                if (hasError) {
+                    return;
+                }
+                hasError = true;
+                callback(null, {
+                    destination: filesDir,
+                    filename: fileName,
+                    path: filePath,
+                    size: fileSize,
+                });
+            });
+
             file.stream.on("end", () => {
                 if (hasError) {
                     return;
                 }
-                outStream.end(() => {
-                    callback(null, {
-                        destination: filesDir,
-                        filename: fileName,
-                        path: filePath,
-                        size: fileSize,
-                    });
-                });
+                outStream.end();
             });
 
             file.stream.pipe(outStream);

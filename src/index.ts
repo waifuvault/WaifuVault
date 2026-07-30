@@ -43,4 +43,16 @@ async function stopOnTest(platform: PlatformBuilder<Application> | null, error: 
     }
 }
 
-bootstrap();
+process.on("uncaughtException", error => {
+    const err = error as Error;
+    logger().error({ event: "UNCAUGHT_EXCEPTION", message: err.message, stack: err.stack });
+});
+
+process.on("unhandledRejection", reason => {
+    logger().error({ event: "UNHANDLED_REJECTION", reason });
+});
+
+bootstrap().catch(error => {
+    const err = error as Error;
+    logger().error({ event: "SERVER_BOOTSTRAP_ERROR", message: err.message, stack: err.stack });
+});

@@ -1,5 +1,5 @@
 import { BaseRestController } from "../BaseRestController.js";
-import { Controller, Inject } from "@tsed/di";
+import { Controller, Inject, logger } from "@tsed/di";
 import {
     CollectionOf,
     Default,
@@ -257,14 +257,20 @@ export class AlbumController extends BaseRestController {
                 await fs.rm(zipLocation, { recursive: true, force: true });
             };
 
+            zipFile.on("error", err => {
+                logger().error(err);
+                r.destroy(err);
+            });
+
             if (connectionClosed) {
+                zipFile.destroy();
                 await cleanup();
                 return super.doError(res, "aborted", StatusCodes.CONTINUE);
             }
 
             r.on("close", () => {
                 if (!r.writableFinished) {
-                    cleanup();
+                    cleanup().catch(err => logger().error(err));
                 }
             });
 
@@ -273,8 +279,8 @@ export class AlbumController extends BaseRestController {
             const sizeEstimate = await FileUtils.getFileSize(path.basename(zipLocation));
             res.setHeader("x-content-length", sizeEstimate);
 
-            r.on("finish", async () => {
-                await cleanup();
+            r.on("finish", () => {
+                cleanup().catch(err => logger().error(err));
             });
 
             return zipFile;
