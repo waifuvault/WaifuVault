@@ -8,10 +8,10 @@ import path from "node:path";
 
 export abstract class AbstractFileFilter implements IFileFilter {
     protected constructor(protected logger: Logger) {}
-    public async doFilter(file: string | PlatformMulterFile): Promise<boolean> {
+    public async doFilter(file: string | PlatformMulterFile, originalFileName: string): Promise<boolean> {
         let didPass: boolean;
         try {
-            didPass = await this.doFilterInternal(file);
+            didPass = await this.doFilterInternal(file, originalFileName);
             if (!didPass) {
                 await this.deleteFileOnFilterFail(file);
             }
@@ -35,7 +35,10 @@ export abstract class AbstractFileFilter implements IFileFilter {
         }
     }
 
-    protected abstract doFilterInternal(file: string | PlatformMulterFile): Awaitable<boolean>;
+    protected abstract doFilterInternal(
+        file: string | PlatformMulterFile,
+        originalFileName: string,
+    ): Awaitable<boolean>;
 
     public abstract get error(): Exception;
     public abstract get priority(): number;

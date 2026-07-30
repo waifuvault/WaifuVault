@@ -7,15 +7,16 @@ import { IFileFilter } from "../engine/IFileFilter.js";
 export class FileFilterManager {
     public constructor(@Inject(FILE_FILTER) private readonly fileFilters: IFileFilter[]) {}
 
-    public async process(file: string | PlatformMulterFile): Promise<IFileFilter[]> {
-        const results = await Promise.all(
-            this.fileFilters
-                .sort((a, b) => b.priority - a.priority)
-                .map(async filter => ({
-                    filter,
-                    passed: await filter.doFilter(file),
-                })),
-        );
-        return results.filter(result => !result.passed).map(result => result.filter);
+    public async process(file: string | PlatformMulterFile, originalFileName: string): Promise<IFileFilter[]> {
+        const sortedFilters = [...this.fileFilters].sort((a, b) => b.priority - a.priority);
+
+        for (const filter of sortedFilters) {
+            const passed = await filter.doFilter(file, originalFileName);
+            if (!passed) {
+                return [filter];
+            }
+        }
+
+        return [];
     }
 }

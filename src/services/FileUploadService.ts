@@ -83,7 +83,7 @@ export class FileUploadService {
             const token = uuid();
             const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
 
-            await this.filterFile(resourcePath);
+            await this.filterFile(resourcePath, originalFileName);
 
             uploadEntry.fileName(path.parse(resourcePath).name);
             const mediaType = await this.mimeService.findMimeType(resourcePath);
@@ -337,8 +337,8 @@ export class FileUploadService {
             stream.on("error", reject);
         });
     }
-    private async filterFile(resourcePath: PlatformMulterFile | string): Promise<void> {
-        const failedFilters = await this.fileFilterManager.process(resourcePath);
+    private async filterFile(resourcePath: PlatformMulterFile | string, originalFileName: string): Promise<void> {
+        const failedFilters = await this.fileFilterManager.process(resourcePath, originalFileName);
         if (failedFilters.length > 0) {
             // throw the error of the highest priority
             throw failedFilters.sort((a, b) => b.priority - a.priority)[0].error;

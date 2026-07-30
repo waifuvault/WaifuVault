@@ -43,13 +43,15 @@ export class FileRejectionFilter extends AbstractFileFilter {
         this.autoBlockEnabled = settingsService.getSetting(GlobalEnv.FILE_FILTER_AUTO_BLOCK) === "true";
     }
 
-    protected override async doFilterInternal(file: string | PlatformMulterFile): Promise<boolean> {
+    protected override async doFilterInternal(
+        _file: string | PlatformMulterFile,
+        originalFileName: string,
+    ): Promise<boolean> {
         if (!this.filePattern) {
             return true;
         }
 
-        const fileName = typeof file === "string" ? file : file.originalname;
-        if (this.filePattern.test(fileName)) {
+        if (this.filePattern.test(originalFileName)) {
             if (this.autoBlockEnabled) {
                 await this.trackFailedUpload();
             }

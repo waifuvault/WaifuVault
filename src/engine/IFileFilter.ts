@@ -8,7 +8,7 @@ export enum FileFilterPriority {
 }
 
 export interface IFileFilter {
-    doFilter(file: string | PlatformMulterFile): Awaitable<boolean>;
+    doFilter(file: string | PlatformMulterFile, originalFileName: string): Awaitable<boolean>;
     get error(): Exception;
     get priority(): number;
 }

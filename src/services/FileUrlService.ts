@@ -121,8 +121,16 @@ export class FileUrlService {
     }
 
     private isLocalhost(url: string): Promise<boolean> {
-        return url.includes("://")
-            ? isLocalhost(punycode.toASCII(url).split("://")[1].split("/")[0])
-            : isLocalhost(punycode.toASCII(url).split("/")[0]);
+        const asciiUrl = punycode.toASCII(url);
+        const withScheme = asciiUrl.includes("://") ? asciiUrl : `http://${asciiUrl}`;
+
+        let hostname: string;
+        try {
+            hostname = new URL(withScheme).hostname;
+        } catch {
+            throw new BadRequest("Unable to accept URL");
+        }
+
+        return isLocalhost(hostname.startsWith("[") ? hostname.slice(1, -1) : hostname);
     }
 }
