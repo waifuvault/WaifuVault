@@ -47,7 +47,11 @@ export class FileReputationService implements OnReady {
             }
         }
         if (tokensToDelete.length > 0) {
-            await this.fileService.processDelete(tokensToDelete);
+            try {
+                await this.fileService.processDelete(tokensToDelete);
+            } catch (e) {
+                this.logger.error(`Failed to delete files failing reputation check: ${(e as Error).message}`);
+            }
         }
     }
 

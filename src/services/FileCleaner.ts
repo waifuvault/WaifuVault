@@ -7,6 +7,7 @@ import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { FileService } from "./FileService.js";
 import { RunEvery } from "../model/di/decorators/RunEvery.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
+import { Logger } from "@tsed/logger";
 
 @Service()
 export class FileCleaner implements OnReady {
@@ -15,6 +16,7 @@ export class FileCleaner implements OnReady {
     public constructor(
         @Inject() private repo: FileRepo,
         @Inject() private fileUploadService: FileService,
+        @Inject() private logger: Logger,
     ) {}
 
     public async processFiles(): Promise<void> {
@@ -27,9 +29,23 @@ export class FileCleaner implements OnReady {
 
     @RunEvery(() => getFromEnv(GlobalEnv.FILE_CLEANER_CRON, "0 * * * *"))
     public async $onReady(): Promise<void> {
-        await this.processFiles();
-        await this.sync();
-        await this.removeDupes();
+        try {
+            await this.processFiles();
+        } catch (e) {
+            this.logger.error(`Failed to process expired files: ${(e as Error).message}`);
+        }
+
+        try {
+            await this.sync();
+        } catch (e) {
+            this.logger.error(`Failed to sync files with the database: ${(e as Error).message}`);
+        }
+
+        try {
+            await this.removeDupes();
+        } catch (e) {
+            this.logger.error(`Failed to remove duplicate files: ${(e as Error).message}`);
+        }
     }
 
     @RunEvery("* * * * *")
@@ -52,17 +68,26 @@ export class FileCleaner implements OnReady {
             orphanedOnDisk.push(fileOnSystem);
         }
 
-        const deleteFilesPromises = orphanedOnDisk.map(fileToDelete => FileUtils.deleteFile(fileToDelete, true, true));
+        for (const fileToDelete of orphanedOnDisk) {
+            try {
+                await FileUtils.deleteFile(fileToDelete, true, true);
+            } catch (e) {
+                this.logger.error(`Failed to delete orphaned file ${fileToDelete}: ${(e as Error).message}`);
+            }
+        }
 
         // Delete DB entries for files that don't exist on disk
         const orphanedDbEntries = allFilesFromDb
             .filter(dbFile => !allFilesFromSystem.includes(dbFile.fullFileNameOnSystem))
             .map(entry => entry.token);
 
-        await Promise.all([
-            ...deleteFilesPromises,
-            orphanedDbEntries.length > 0 ? this.fileUploadService.processDelete(orphanedDbEntries) : Promise.resolve(),
-        ]);
+        if (orphanedDbEntries.length > 0) {
+            try {
+                await this.fileUploadService.processDelete(orphanedDbEntries);
+            } catch (e) {
+                this.logger.error(`Failed to delete orphaned database entries: ${(e as Error).message}`);
+            }
+        }
     }
 
     private isFileInDb(fileDbList: FileUploadModel[], fileName: string): boolean {

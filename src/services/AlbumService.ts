@@ -340,7 +340,7 @@ export class AlbumService implements AfterInit {
 
         // something went wrong, the entry is in the DB, but data is an empty string, re-generate thumbnail
         if (thumbnailFromCache && thumbnailFromCache.length === 0 && FileUtils.isValidForThumbnail(entry)) {
-            this.generateThumbnails(albumToken, [imageId]);
+            this.generateThumbnails(albumToken, [imageId]).catch(e => this.logger.error(e));
         }
 
         if (FileUtils.isValidForThumbnail(entry)) {
@@ -394,7 +394,15 @@ export class AlbumService implements AfterInit {
             throw new InternalServerError(`Zip file ${zipLocation} failed to be created`);
         }
 
-        return [fs.createReadStream(zipLocation), album.name, zipLocation];
+        const handle = await fs.promises.open(zipLocation, "r");
+
+        const zipStream = handle.createReadStream();
+        zipStream.on("error", err => {
+            this.logger.error(`Failed to read zip ${zipLocation}: ${err.message}`);
+            zipStream.destroy();
+        });
+
+        return [zipStream, album.name, zipLocation];
     }
 
     public async getPublicAlbumMetadata(publicToken: string): Promise<PublicAlbumMetadata> {

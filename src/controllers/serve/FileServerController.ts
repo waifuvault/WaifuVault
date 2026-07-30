@@ -3,6 +3,8 @@ import { Controller, Inject } from "@tsed/di";
 import { Req, Res } from "@tsed/platform-http";
 import { HeaderParams, PathParams, QueryParams } from "@tsed/platform-params";
 import * as Path from "node:path";
+import { ReadStream } from "node:fs";
+import { pipeline } from "node:stream/promises";
 import { FileProtectedException } from "../../model/exceptions/FileProtectedException.js";
 import type { Request, Response } from "express";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
@@ -64,17 +66,16 @@ export class FileServerController {
         const mime = entryWrapper.entry.mediaType ?? "application/octet-stream";
 
         if (download) {
-            res.attachment(entryWrapper.entry.parsedFileName);
-        }
-        res.contentType(mime);
+            const stream = await entryWrapper.getStream(password);
 
-        if (download) {
-            res.setHeader("Content-Length", entryWrapper.entry.fileSize);
-            res.on("finish", () => {
-                this.postProcess(entryWrapper.entry).catch(err => this.logger.error(err));
-            });
-            return entryWrapper.getStream(password);
+            res.attachment(entryWrapper.entry.parsedFileName);
+            res.contentType(mime);
+            this.commitEntryResponse(res, entryWrapper.entry, stream);
+
+            return stream;
         }
+
+        res.contentType(mime);
 
         if (FileUtils.isVideo(entryWrapper.entry) || FileUtils.isAudio(entryWrapper.entry)) {
             res.setHeader("accept-ranges", "bytes");
@@ -90,14 +91,35 @@ export class FileServerController {
             return;
         }
 
-        res.setHeader("Content-Length", entryWrapper.entry.fileSize);
-        res.on("finish", () => {
-            this.postProcess(entryWrapper.entry).catch(err => this.logger.error(err));
-        });
         if (entryWrapper.entry.encrypted) {
-            return entryWrapper.getBuffer(password);
+            const buffer = await entryWrapper.getBuffer(password);
+
+            this.commitEntryResponse(res, entryWrapper.entry);
+
+            return buffer;
         }
-        return entryWrapper.getStream(password);
+
+        const stream = await entryWrapper.getStream(password);
+
+        this.commitEntryResponse(res, entryWrapper.entry, stream);
+
+        return stream;
+    }
+
+    private commitEntryResponse(res: Response, entry: FileUploadModel, stream?: ReadStream): void {
+        res.setHeader("Content-Length", entry.fileSize);
+        res.on("finish", () => {
+            this.postProcess(entry).catch(err => this.logger.error(err));
+        });
+
+        if (!stream) {
+            return;
+        }
+
+        stream.on("error", err => {
+            this.logger.error(err);
+            res.destroy(err);
+        });
     }
 
     private async chunkData(
@@ -111,10 +133,16 @@ export class FileServerController {
 
         const rangeMatch = range.match(/bytes=(\d*)-(\d*)/);
         if (!rangeMatch) {
+            const videoStream = await entryWrapper.getStream();
+
             res.setHeader("Content-Length", videoSize);
             res.writeHead(StatusCodes.OK, { "Content-Type": contentType });
-            const videoStream = await entryWrapper.getStream();
-            videoStream.pipe(res);
+            try {
+                await pipeline(videoStream, res);
+            } catch (e) {
+                this.logger.error(e);
+            }
+
             return;
         }
         let start = parseInt(rangeMatch[1], 10);
@@ -138,9 +166,14 @@ export class FileServerController {
             "Content-Length": contentLength,
             "Content-Type": contentType,
         };
-        res.writeHead(StatusCodes.PARTIAL_CONTENT, headers);
         const videoStream = await entryWrapper.getStream(undefined, { start, end });
-        videoStream.pipe(res);
+
+        res.writeHead(StatusCodes.PARTIAL_CONTENT, headers);
+        try {
+            await pipeline(videoStream, res);
+        } catch (e) {
+            this.logger.error(e);
+        }
     }
 
     private async postProcess(entry: FileUploadModel): Promise<void> {

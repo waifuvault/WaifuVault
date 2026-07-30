@@ -55,6 +55,14 @@ services:
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
+    labels:
+      - autoheal=true
+    healthcheck:
+      test: [ "CMD", "node", "-e", "fetch('http://127.0.0.1:' + (process.env.PORT || 8081) + '/rest/health/ping').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
 
   frontend:
     image: ghcr.io/waifuvault/waifuvault/frontend:latest
