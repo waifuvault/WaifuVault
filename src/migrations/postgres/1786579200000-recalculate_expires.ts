@@ -36,9 +36,7 @@ export class RecalculateExpires1786579200000 implements MigrationInterface {
 
     private static getMaxFileSizeBytes(): number {
         const parsed = Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB as string);
-        if (Number.isNaN(parsed)) {
-            throw new Error("FILE_SIZE_UPLOAD_LIMIT_MB must be set to run this migration");
-        }
-        return parsed * 1048576;
+        const limitMb = Number.isNaN(parsed) ? 100 : parsed;
+        return limitMb * 1048576;
     }
 }
