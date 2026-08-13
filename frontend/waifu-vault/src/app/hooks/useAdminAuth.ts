@@ -4,6 +4,7 @@ import { useEnvironment } from "./useEnvironment";
 import { useAdminAuthContext } from "@/app/contexts/AdminAuthContext";
 import type { UserInfo } from "@/app/utils/api/adminApi";
 import * as adminApi from "@/app/utils/api/adminApi";
+import { navigateToBackend } from "@/app/utils/navigation";
 
 export function useAdminAuth() {
     const { isAuthenticated, setIsAuthenticated } = useAdminAuthContext();
@@ -43,7 +44,7 @@ export function useAdminAuth() {
     }, [isAuthenticated, pathname, redirectToLogin]);
 
     const logout = () => {
-        window.location.href = `${backendRestBaseUrl}/auth/logout`;
+        navigateToBackend(`${backendRestBaseUrl}/auth/logout`);
     };
 
     useEffect(() => {

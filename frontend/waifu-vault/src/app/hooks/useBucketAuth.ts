@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEnvironment } from "./useEnvironment";
 import { useBucketAuthContext } from "@/app/contexts/BucketAuthContext";
+import { navigateToBackend } from "@/app/utils/navigation";
 
 export function useBucketAuth() {
     const { isAuthenticated, setIsAuthenticated } = useBucketAuthContext();
@@ -41,7 +42,7 @@ export function useBucketAuth() {
     }, [isAuthenticated, pathname, redirectToLogin]);
 
     const logout = () => {
-        window.location.href = `${backendRestBaseUrl}/auth/close_bucket`;
+        navigateToBackend(`${backendRestBaseUrl}/auth/close_bucket`);
     };
 
     useEffect(() => {
