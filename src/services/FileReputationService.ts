@@ -24,6 +24,10 @@ export class FileReputationService implements OnReady {
     }
 
     private async processFiles(): Promise<void> {
+        if (this.queue.length === 0) {
+            return;
+        }
+
         await this.sleep(5000); // wait 5 seconds to avoid too early
         const batch = this.queue.splice(0, 4);
         const tokensToDelete: string[] = [];

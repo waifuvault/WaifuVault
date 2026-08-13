@@ -5,6 +5,7 @@ import { FileRepo } from "../../db/repo/FileRepo.js";
 import { RecordInfoPayload } from "../../model/rest/RecordInfoPayload.js";
 import { SettingsService } from "../SettingsService.js";
 import { GlobalEnv } from "../../model/constants/GlobalEnv.js";
+import { Logger } from "@tsed/logger";
 
 @SocketService("/recordInfo")
 export class RecordInfoSocket {
@@ -15,20 +16,26 @@ export class RecordInfoSocket {
 
     public constructor(
         @Inject() private repo: FileRepo,
+        @Inject() private logger: Logger,
         @Inject() settingsService: SettingsService,
     ) {
         this.socketStatus = settingsService.getSetting(GlobalEnv.HOME_PAGE_FILE_COUNTER);
     }
 
-    public async emit(): Promise<boolean> {
+    public emit(): void {
         if (this.socketStatus !== "dynamic") {
-            return false;
+            return;
         }
-        const payload = await RecordInfoPayload.fromRepo(this.repo);
-        return this.nsp.emit("record", payload);
+
+        this.broadcast().catch(err => this.logger.error(err));
     }
 
-    public async $onConnection(): Promise<void> {
-        await this.emit();
+    private async broadcast(): Promise<void> {
+        const payload = await RecordInfoPayload.fromRepo(this.repo);
+        this.nsp.emit("record", payload);
+    }
+
+    public $onConnection(): void {
+        this.emit();
     }
 }

@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useEnvironment, useErrorHandler } from "@/app/hooks";
 import { Button, Card, CardBody, CardHeader, Footer, Header, Input, ParticleBackground } from "@/app/components";
+import { navigateToBackend } from "@/app/utils/navigation";
 import styles from "./page.module.scss";
 
 interface DownloadProgress {
@@ -35,7 +36,7 @@ export default function FileAccess() {
             });
 
             if (response.ok) {
-                window.location.href = fileUrl;
+                navigateToBackend(fileUrl);
             } else if (response.status === 403) {
                 setNeedsPassword(true);
                 const fullResponse = await fetch(fileUrl);

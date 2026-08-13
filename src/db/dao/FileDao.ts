@@ -29,6 +29,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
 
     private h64ToString: (input: string, seed?: bigint) => string;
     private readonly cachedToken: TimedSet<string | number> = new TimedSet(this.cacheTime);
+    private readonly cachedFileNames: TimedSet<string> = new TimedSet(this.cacheTime);
 
     private readonly relation: { relations: FindOptionsRelations<FileUploadModel> } = {
         relations: {
@@ -115,14 +116,22 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         return deleteResult.affected === tokens.length;
     }
 
-    public getAllEntries(ids?: number[], transaction?: EntityManager): Promise<FileUploadModel[]> {
+    public getAllEntries(
+        ids?: number[],
+        loadRelations = false,
+        transaction?: EntityManager,
+    ): Promise<FileUploadModel[]> {
+        const relations = loadRelations ? { relations: { album: true } } : {};
         if (ids === undefined) {
-            return this.getRepository(transaction).find();
+            return this.getRepository(transaction).find({
+                ...relations,
+            });
         }
         return this.getRepository(transaction).find({
             where: {
                 id: In(ids),
             },
+            ...relations,
         });
     }
 
@@ -190,12 +199,18 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         });
     }
 
-    public getEntryFileName(fileName: string, transaction?: EntityManager): Promise<FileUploadModel | null> {
-        return this.getRepository(transaction).findOne({
+    public async getEntryFileName(fileName: string, transaction?: EntityManager): Promise<FileUploadModel | null> {
+        const r = await this.getRepository(transaction).findOne({
             where: {
                 fileName,
             },
+            cache: {
+                milliseconds: this.cacheTime,
+                id: this.generateFileNameKey(fileName),
+            },
         });
+        this.cachedFileNames.add(fileName);
+        return r;
     }
 
     public getRecordCount(bucket?: string, transaction?: EntityManager): Promise<number> {
@@ -304,6 +319,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
     }
 
     public async clearCache(token: string | string[] | null): Promise<void> {
+        await this.clearFileNameCache();
         if (token !== null) {
             if (Array.isArray(token)) {
                 const keys = token.map(t => this.generateKey(t));
@@ -329,8 +345,23 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         }
     }
 
+    private async clearFileNameCache(): Promise<void> {
+        const keys: string[] = [];
+        for (const fileName of this.cachedFileNames) {
+            keys.push(this.generateFileNameKey(fileName));
+        }
+        if (keys.length > 0) {
+            await this.dataSource.queryResultCache?.remove(keys);
+        }
+        this.cachedFileNames.clear();
+    }
+
     private generateKey(entryToken: string | string[] | number | number[]): string {
         return this.h64ToString(`entryCache_${entryToken}`);
+    }
+
+    private generateFileNameKey(fileName: string): string {
+        return this.h64ToString(`entryFileNameCache_${fileName}`);
     }
 
     public async removeDuplicates(transaction?: EntityManager): Promise<FileUploadModel[]> {

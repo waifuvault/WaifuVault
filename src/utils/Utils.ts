@@ -155,7 +155,7 @@ export class FileUtils {
 
     public static getTimeLeftBySize(filesize: number, maxFileSize: number): number {
         const ttl = Math.floor(
-            (FileUtils.minExpiration - FileUtils.maxExpiration) * Math.pow(filesize / (maxFileSize * 1048576) - 1, 3),
+            (FileUtils.minExpiration - FileUtils.maxExpiration) * Math.pow(filesize / maxFileSize - 1, 3),
         );
         return ttl < FileUtils.minExpiration ? FileUtils.minExpiration : ttl;
     }

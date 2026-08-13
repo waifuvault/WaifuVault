@@ -52,11 +52,15 @@ export class EncryptionService implements OnInit {
     }
 
     public async decrypt(source: FileUploadModel, password: string): Promise<Buffer> {
-        const fileSource = FileUtils.getFilePath(source);
         const passwordMatches = await this.validatePassword(source, password);
         if (!passwordMatches) {
             throw new Forbidden("Password is incorrect");
         }
+        return this.decryptVerified(source, password);
+    }
+
+    public async decryptVerified(source: FileUploadModel, password: string): Promise<Buffer> {
+        const fileSource = FileUtils.getFilePath(source);
         const encrypted = await fs.readFile(fileSource);
         const iv = encrypted.subarray(0, 16);
         const encryptedRest = encrypted.subarray(16);
