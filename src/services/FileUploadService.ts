@@ -136,7 +136,7 @@ export class FileUploadService {
                 }
             }
 
-            await this.recordInfoSocket.emit();
+            this.recordInfoSocket.emit();
 
             return [savedEntry, false];
         } catch (e) {

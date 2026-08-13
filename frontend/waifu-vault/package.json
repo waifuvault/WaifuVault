@@ -16,12 +16,12 @@
         "@types/qrcode": "^1.5.6",
         "bootstrap-icons": "^1.13.1",
         "highlight.js": "^11.11.1",
-        "next": "16.2.11",
+        "next": "16.3.0",
         "prettier": "^3.9.6",
         "qrcode": "^1.5.4",
         "react": "19.2.8",
         "react-dom": "19.2.8",
-        "sass": "^1.101.3",
+        "sass": "^1.102.0",
         "socket.io-client": "^4.8.3"
     },
     "devDependencies": {
@@ -32,7 +32,7 @@
         "@typescript/native": "npm:typescript@^7.0.2",
         "baseline-browser-mapping": "^2.11.0",
         "eslint": "10.7.0",
-        "eslint-config-next": "16.2.11",
+        "eslint-config-next": "16.3.0",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
         "typescript-eslint": "^8.65.0"
     },

@@ -343,10 +343,11 @@ var_dump($response);`,
     useEffect(() => {
         if (codeRef.current) {
             codeRef.current.removeAttribute("data-highlighted");
-            codeRef.current.className = codeRef.current.className.replace(/hljs[a-z\-]*/g, "");
+            codeRef.current.className = `language-${selectedExample.language}`;
+            codeRef.current.textContent = selectedExample.code;
             hljs.highlightElement(codeRef.current);
         }
-    }, [selectedSDK, isLightTheme]);
+    }, [selectedExample, isLightTheme]);
 
     return (
         <div className={styles.sdkExamples}>

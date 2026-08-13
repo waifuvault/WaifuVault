@@ -33,7 +33,7 @@ export class EntryEncryptionWrapper {
     public getBuffer(password?: string): Promise<Buffer> {
         if (this.entry.encrypted) {
             this.checkPassword(password);
-            return this.encryptionService!.decrypt(this.entry, password!);
+            return this.encryptionService!.decryptVerified(this.entry, password!);
         }
         return fs.readFile(FileUtils.getFilePath(this.entry));
     }

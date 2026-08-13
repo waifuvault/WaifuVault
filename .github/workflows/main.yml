@@ -71,7 +71,7 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('frontend/waifu-vault/package-lock.json') }}-
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Check Prettier formatting
         run: npm run prettier
@@ -98,7 +98,7 @@ jobs:
           check-latest: true
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Compile TypeScript
         run: npm run tsc

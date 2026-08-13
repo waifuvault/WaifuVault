@@ -33,7 +33,7 @@ export class FileService {
             this.logger.error(e);
             return false;
         }
-        await this.recordInfoSocket.emit();
+        this.recordInfoSocket.emit();
         return deleted;
     }
 

@@ -43,8 +43,8 @@ export class FileRepo {
         return this.fileDao.getExpiredFiles();
     }
 
-    public getAllEntries(ids?: number[]): Promise<FileUploadModel[]> {
-        return this.fileDao.getAllEntries(ids);
+    public getAllEntries(ids?: number[], loadRelations = false): Promise<FileUploadModel[]> {
+        return this.fileDao.getAllEntries(ids, loadRelations);
     }
 
     public getTotalFileSize(): Promise<number | null> {

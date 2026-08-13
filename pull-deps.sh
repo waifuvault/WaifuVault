@@ -13,12 +13,12 @@ git pull
 
 # Root npm install
 echo "Installing root dependencies..."
-npm install
+npm ci
 
 # Frontend npm install
 echo "Installing frontend dependencies..."
 cd frontend/waifu-vault
-npm install
+npm ci
 cd ../..
 
 # Docker compose operations

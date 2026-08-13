@@ -21,13 +21,12 @@ export abstract class AbstractAdminController extends BaseRestController {
     }
 
     protected async mapIpToFileEntries(entries: FileUploadModel[]): Promise<IpBlockedAwareFileEntry[]> {
-        const ipBlockedPArr = entries.map(entry =>
-            Promise.all([entry, entry.ip ? this.ipBlackListRepo.isIpBlocked(entry.ip) : false]),
-        );
-        const ipBlockedArr = await Promise.all(ipBlockedPArr);
-        return ipBlockedArr.map(([entry, ipBlocked]) => {
+        const blockedIps = await this.ipBlackListRepo.getAllBlockedIps();
+        const blockedIpSet = new Set(blockedIps.map(blocked => blocked.ip));
+
+        return entries.map(entry => {
             return {
-                ipBlocked,
+                ipBlocked: !!entry.ip && blockedIpSet.has(entry.ip),
                 entry,
             };
         });

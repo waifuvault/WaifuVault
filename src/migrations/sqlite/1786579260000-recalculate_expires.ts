@@ -1,0 +1,42 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+import "dotenv/config";
+import process from "process";
+
+export class RecalculateExpires1786579260000 implements MigrationInterface {
+    name = "RecalculateExpires1786579260000";
+
+    private static readonly minExpiration = 30 * 24 * 60 * 60 * 1000;
+
+    private static readonly maxExpiration = 365 * 24 * 60 * 60 * 1000;
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        const { minExpiration, maxExpiration } = RecalculateExpires1786579260000;
+        const delta = minExpiration - maxExpiration;
+        const maxFileSizeBytes = RecalculateExpires1786579260000.getMaxFileSizeBytes();
+
+        const createdAtMs = `(CAST(STRFTIME('%s', createdAt) AS INTEGER) * 1000)`;
+        const ttl = `MAX(CAST((${delta} * POW((CAST(fileSize AS REAL) / ${maxFileSizeBytes}) - 1, 3)) AS INTEGER), ${minExpiration})`;
+        const predicate = `expires IS NOT NULL AND expires > ${createdAtMs} + ${ttl}`;
+
+        const [{ count }] = await queryRunner.query(
+            `SELECT COUNT(*) AS count FROM file_upload_model WHERE ${predicate}`,
+        );
+        console.log(`RecalculateExpires: shortening ${count} entries that outlive the retention their size allows`);
+
+        await queryRunner.query(`UPDATE file_upload_model SET expires = ${createdAtMs} + ${ttl} WHERE ${predicate}`);
+    }
+
+    public async down(): Promise<void> {
+        throw new Error(
+            "RecalculateExpires cannot be reverted: the original expiry values are not recoverable. Restore from a database backup instead.",
+        );
+    }
+
+    private static getMaxFileSizeBytes(): number {
+        const parsed = Number.parseInt(process.env.FILE_SIZE_UPLOAD_LIMIT_MB as string);
+        if (Number.isNaN(parsed)) {
+            throw new Error("FILE_SIZE_UPLOAD_LIMIT_MB must be set to run this migration");
+        }
+        return parsed * 1048576;
+    }
+}

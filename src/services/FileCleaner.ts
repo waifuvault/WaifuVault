@@ -3,11 +3,11 @@ import { OnReady } from "@tsed/platform-http";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { filesDir, FileUtils } from "../utils/Utils.js";
 import fs from "node:fs/promises";
-import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { FileService } from "./FileService.js";
 import { RunEvery } from "../model/di/decorators/RunEvery.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
+import { isSchedulerLeader } from "../utils/clusterUtils.js";
 
 @Service()
 export class FileCleaner implements OnReady {
@@ -29,6 +29,10 @@ export class FileCleaner implements OnReady {
 
     @RunEvery(() => getFromEnv(GlobalEnv.FILE_CLEANER_CRON, "0 * * * *"))
     public async $onReady(): Promise<void> {
+        if (!isSchedulerLeader()) {
+            return;
+        }
+
         try {
             await this.processFiles();
         } catch (e) {
@@ -50,6 +54,10 @@ export class FileCleaner implements OnReady {
 
     @RunEvery("* * * * *")
     private async checkForDuplicateFiles(): Promise<void> {
+        if (!isSchedulerLeader()) {
+            return;
+        }
+
         await this.removeDupes();
     }
 
@@ -57,9 +65,15 @@ export class FileCleaner implements OnReady {
         const allFilesFromDb = await this.repo.getAllEntries();
         const allFilesFromSystem = await fs.readdir(filesDir);
 
+        const dbFileNames = new Set<string>();
+        for (const dbFile of allFilesFromDb) {
+            dbFileNames.add(dbFile.fullFileNameOnSystem);
+        }
+        const systemFileNames = new Set<string>(allFilesFromSystem);
+
         const orphanedOnDisk: string[] = [];
         for (const fileOnSystem of allFilesFromSystem) {
-            if (this.isFileInDb(allFilesFromDb, fileOnSystem)) {
+            if (dbFileNames.has(fileOnSystem)) {
                 continue;
             }
             if (await this.wasRecentlyModified(fileOnSystem)) {
@@ -78,7 +92,7 @@ export class FileCleaner implements OnReady {
 
         // Delete DB entries for files that don't exist on disk
         const orphanedDbEntries = allFilesFromDb
-            .filter(dbFile => !allFilesFromSystem.includes(dbFile.fullFileNameOnSystem))
+            .filter(dbFile => !systemFileNames.has(dbFile.fullFileNameOnSystem))
             .map(entry => entry.token);
 
         if (orphanedDbEntries.length > 0) {
@@ -88,10 +102,6 @@ export class FileCleaner implements OnReady {
                 this.logger.error(`Failed to delete orphaned database entries: ${(e as Error).message}`);
             }
         }
-    }
-
-    private isFileInDb(fileDbList: FileUploadModel[], fileName: string): boolean {
-        return !!fileDbList.find(file => file.fullFileNameOnSystem === fileName);
     }
 
     private async wasRecentlyModified(fileName: string): Promise<boolean> {
