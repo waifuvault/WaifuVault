@@ -3,12 +3,11 @@ import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import * as fs from "node:fs/promises";
 import * as crypto from "node:crypto";
 import argon2 from "argon2";
-import Path from "node:path";
 import { promisify } from "node:util";
-import { FileUtils } from "../utils/Utils.js";
 import { Forbidden } from "@tsed/exceptions";
 import { SettingsService } from "./SettingsService.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
+import { StorageService } from "./StorageService.js";
 
 @Service()
 export class EncryptionService implements OnInit {
@@ -18,7 +17,10 @@ export class EncryptionService implements OnInit {
 
     private readonly salt: string | null;
 
-    public constructor(@Inject() settingsService: SettingsService) {
+    public constructor(
+        @Inject() settingsService: SettingsService,
+        @Inject() private storageService: StorageService,
+    ) {
         this.salt = settingsService.getSetting(GlobalEnv.SALT);
     }
 
@@ -30,25 +32,40 @@ export class EncryptionService implements OnInit {
         });
     }
 
-    public async encrypt(file: string | Buffer, password: string): Promise<Buffer | null> {
+    private async encrypt(buffer: Buffer, password: string): Promise<Buffer | null> {
         if (!this.salt) {
             return null;
-        }
-        let buffer: Buffer;
-        if (typeof file === "string") {
-            const fileSource = FileUtils.getFilePath(Path.basename(file));
-            buffer = await fs.readFile(fileSource);
-        } else {
-            buffer = file;
         }
         const iv = await this.randomBytes(16);
         const key = await this.getKey(password);
         const cipher = crypto.createCipheriv(this.algorithm, key, iv);
-        const encryptedBuffer = Buffer.concat([iv, cipher.update(buffer), cipher.final()]);
-        if (typeof file === "string") {
-            await fs.writeFile(file, encryptedBuffer);
+        return Buffer.concat([iv, cipher.update(buffer), cipher.final()]);
+    }
+
+    public async encryptFile(filePath: string, password: string): Promise<boolean> {
+        if (!this.salt) {
+            return false;
         }
-        return encryptedBuffer;
+
+        const encryptedBuffer = await this.encrypt(await fs.readFile(filePath), password);
+        if (!encryptedBuffer) {
+            return false;
+        }
+        await fs.writeFile(filePath, encryptedBuffer);
+        return true;
+    }
+
+    public async encryptEntry(entry: FileUploadModel, password: string): Promise<boolean> {
+        if (!this.salt) {
+            return false;
+        }
+
+        const encryptedBuffer = await this.encrypt(await this.storageService.readAll(entry), password);
+        if (!encryptedBuffer) {
+            return false;
+        }
+        await this.storageService.write(entry, encryptedBuffer);
+        return true;
     }
 
     public async decrypt(source: FileUploadModel, password: string): Promise<Buffer> {
@@ -60,8 +77,7 @@ export class EncryptionService implements OnInit {
     }
 
     public async decryptVerified(source: FileUploadModel, password: string): Promise<Buffer> {
-        const fileSource = FileUtils.getFilePath(source);
-        const encrypted = await fs.readFile(fileSource);
+        const encrypted = await this.storageService.readAll(source);
         const iv = encrypted.subarray(0, 16);
         const encryptedRest = encrypted.subarray(16);
         const key = await this.getKey(password);
@@ -75,7 +91,7 @@ export class EncryptionService implements OnInit {
         if (!newBuffer) {
             throw new Error("Unable to encrypt file");
         }
-        await fs.writeFile(FileUtils.getFilePath(entry), newBuffer);
+        await this.storageService.write(entry, newBuffer);
     }
 
     public validatePassword(resource: FileUploadModel, password: string): Promise<boolean> {

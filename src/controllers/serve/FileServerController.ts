@@ -3,7 +3,7 @@ import { Controller, Inject } from "@tsed/di";
 import { Req, Res } from "@tsed/platform-http";
 import { HeaderParams, PathParams, QueryParams } from "@tsed/platform-params";
 import * as Path from "node:path";
-import { ReadStream } from "node:fs";
+import type { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { FileProtectedException } from "../../model/exceptions/FileProtectedException.js";
 import type { Request, Response } from "express";
@@ -106,7 +106,7 @@ export class FileServerController {
         return stream;
     }
 
-    private commitEntryResponse(res: Response, entry: FileUploadModel, stream?: ReadStream): void {
+    private commitEntryResponse(res: Response, entry: FileUploadModel, stream?: Readable): void {
         res.setHeader("Content-Length", entry.fileSize);
         res.on("finish", () => {
             this.postProcess(entry).catch(err => this.logger.error(err));

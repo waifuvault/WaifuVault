@@ -29,8 +29,6 @@ import fs from "node:fs/promises";
 import { REDIS_CONNECTION } from "../../../model/di/tokens.js";
 import type { RedisConnection } from "../../../redis/Connection.js";
 import { ThumbnailCacheRepo } from "../../../db/repo/ThumbnailCacheRepo.js";
-import { FileUtils } from "../../../utils/Utils.js";
-import path from "node:path";
 
 @Controller("/album")
 @Description("API for CRUD operations of albums and associating files with them.")
@@ -276,7 +274,7 @@ export class AlbumController extends BaseRestController {
 
             res.attachment(`${albumName}.zip`);
             res.contentType("application/zip");
-            const sizeEstimate = await FileUtils.getFileSize(path.basename(zipLocation));
+            const sizeEstimate = (await fs.stat(zipLocation)).size;
             res.setHeader("x-content-length", sizeEstimate);
 
             r.on("finish", () => {

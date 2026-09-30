@@ -10,7 +10,7 @@ import { createReadStream } from "node:fs";
 import crypto from "node:crypto";
 import { Logger } from "@tsed/logger";
 import { EntrySettings, FileUploadProps } from "../utils/typeings.js";
-import { BadRequest, Exception, InternalServerError } from "@tsed/exceptions";
+import { BadRequest, InternalServerError } from "@tsed/exceptions";
 import { FileUtils, ObjectUtils } from "../utils/Utils.js";
 import TimeUnit from "../model/constants/TimeUnit.js";
 import argon2 from "argon2";
@@ -18,7 +18,6 @@ import { EncryptionService } from "./EncryptionService.js";
 import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
 import { EntryModificationDto } from "../model/dto/EntryModificationDto.js";
 import { FileUploadQueryParameters } from "../model/rest/FileUploadQueryParameters.js";
-import { ProcessUploadException } from "../model/exceptions/ProcessUploadException.js";
 import { FileService } from "./FileService.js";
 import { BucketService } from "./BucketService.js";
 import BucketType from "../model/constants/BucketType.js";
@@ -28,6 +27,7 @@ import { uuid } from "../utils/uuidUtils.js";
 import { SettingsService } from "./SettingsService.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 import { FileReputationService } from "./FileReputationService.js";
+import { StorageService } from "./StorageService.js";
 
 @Service()
 export class FileUploadService {
@@ -47,6 +47,7 @@ export class FileUploadService {
         @Inject() private bucketService: BucketService,
         @Inject() private fileFilterManager: FileFilterManager,
         @Inject() private fileReputationService: FileReputationService,
+        @Inject() private storageService: StorageService,
         @Inject() settingsService: SettingsService,
     ) {
         this.secret = settingsService.getSetting(GlobalEnv.UPLOAD_SECRET);
@@ -64,31 +65,27 @@ export class FileUploadService {
         bucketToken,
     }: FileUploadProps): Promise<[FileUploadModel, boolean]> {
         const { expires } = options;
-        let resourcePath: string | undefined;
-        let originalFileName: string | undefined;
+        const [stagedPath, originalFileName] = await this.determineResourcePathAndFileName(source);
         try {
-            [resourcePath, originalFileName] = await this.determineResourcePathAndFileName(source);
-            const checksum = await this.getFileHash(resourcePath);
-            const existingFileModel = await this.handleExistingFileModel(resourcePath, checksum, ip, bucketToken);
+            const checksum = await this.getFileHash(stagedPath);
+            const existingFileModel = await this.findExistingFileModel(checksum, ip, bucketToken);
 
             if (existingFileModel) {
-                if (existingFileModel.hasExpired) {
-                    await this.fileService.processDelete([existingFileModel.token]);
-                } else {
-                    await FileUtils.deleteFile(path.basename(resourcePath), true);
+                if (!existingFileModel.hasExpired) {
                     return [existingFileModel, true];
                 }
+                await this.fileService.processDelete([existingFileModel.token]);
             }
 
             const token = uuid();
             const uploadEntry = Builder(FileUploadModel).ip(ip).token(token);
 
-            await this.filterFile(resourcePath, originalFileName);
+            await this.filterFile(stagedPath, originalFileName);
 
-            uploadEntry.fileName(path.parse(resourcePath).name);
-            const mediaType = await this.mimeService.findMimeType(resourcePath);
+            uploadEntry.fileName(path.parse(stagedPath).name);
+            const mediaType = await this.mimeService.findMimeType(stagedPath);
             uploadEntry.mediaType(mediaType);
-            const fileSize = await FileUtils.getFileSize(path.basename(resourcePath));
+            const fileSize = (await fs.stat(stagedPath)).size;
             uploadEntry.fileSize(fileSize);
 
             if (bucketToken) {
@@ -118,16 +115,19 @@ export class FileUploadService {
 
             if (password) {
                 try {
-                    const didEncrypt = await this.encryptionService.encrypt(resourcePath, password);
-                    uploadEntry.encrypted(didEncrypt !== null);
+                    const didEncrypt = await this.encryptionService.encryptFile(stagedPath, password);
+                    uploadEntry.encrypted(didEncrypt);
                 } catch (e) {
-                    await FileUtils.deleteFile(resourcePath);
                     const err = e as Error;
                     this.logger.error(err.message);
                     throw new InternalServerError(err.message);
                 }
             }
-            const savedEntry = await this.repo.saveEntry(uploadEntry.build());
+
+            const entry = uploadEntry.build();
+            await this.storageService.commit(stagedPath, entry);
+
+            const savedEntry = await this.saveCommittedEntry(entry);
 
             // Check if dangerous type and enqueue for scanning if so
             if (this.vtApiKey && this.dangerousMimeTypes) {
@@ -139,9 +139,21 @@ export class FileUploadService {
             this.recordInfoSocket.emit();
 
             return [savedEntry, false];
+        } finally {
+            await this.storageService.removeStaged(stagedPath);
+        }
+    }
+
+    private async saveCommittedEntry(entry: FileUploadModel): Promise<FileUploadModel> {
+        try {
+            return await this.repo.saveEntry(entry);
         } catch (e) {
-            if (e instanceof Exception) {
-                throw new ProcessUploadException(e.status, e.message, resourcePath, e);
+            try {
+                await this.storageService.delete([entry]);
+            } catch (deleteError) {
+                this.logger.error(
+                    `Failed to remove stored file ${entry.fullFileNameOnSystem} after its entry failed to save: ${(deleteError as Error).message}`,
+                );
             }
             throw e;
         }
@@ -184,8 +196,7 @@ export class FileUploadService {
         return [resourcePath, originalFileName];
     }
 
-    private async handleExistingFileModel(
-        resourcePath: string,
+    private async findExistingFileModel(
         checksum: string,
         ip: string,
         bucket?: string,
@@ -195,20 +206,10 @@ export class FileUploadService {
             return null;
         }
 
-        let existingFileModel: FileUploadModel | undefined;
         if (bucket) {
-            existingFileModel = existingFileModels[0];
-        } else {
-            existingFileModel = existingFileModels.find(m => m.ip === ip);
+            return existingFileModels[0];
         }
-
-        if (existingFileModel) {
-            if (!existingFileModel.hasExpired) {
-                await FileUtils.deleteFile(resourcePath);
-            }
-            return existingFileModel;
-        }
-        return null;
+        return existingFileModels.find(m => m.ip === ip) ?? null;
     }
 
     private async buildEntrySettings({
@@ -252,10 +253,7 @@ export class FileUploadService {
                 }
                 await this.encryptionService.changePassword(dto.previousPassword, dto.password, entryToModify);
             } else {
-                const didEncrypt = await this.encryptionService.encrypt(
-                    FileUtils.getFilePath(entryToModify),
-                    dto.password,
-                );
+                const didEncrypt = await this.encryptionService.encryptEntry(entryToModify, dto.password);
                 if (didEncrypt) {
                     builder.encrypted(true);
                 }
@@ -266,7 +264,7 @@ export class FileUploadService {
                     throw new BadRequest("Unable to remove password if previousPassword is not supplied");
                 }
                 const decryptedEntry = await this.encryptionService.decrypt(entryToModify, dto.previousPassword);
-                await fs.writeFile(FileUtils.getFilePath(entryToModify), decryptedEntry);
+                await this.storageService.write(entryToModify, decryptedEntry);
                 builder.encrypted(false);
             }
             const newSettings = builder.settings();
@@ -276,8 +274,9 @@ export class FileUploadService {
         if (dto.customExpiry) {
             await this.calculateCustomExpires(builder, dto.customExpiry);
         } else if (dto.customExpiry === "") {
-            const fileSize = await FileUtils.getFileSize(entryToModify);
-            builder.expires(FileUtils.getExpiresBySize(fileSize, this.maxFileSize, entryToModify.createdAt.getTime()));
+            builder.expires(
+                FileUtils.getExpiresBySize(entryToModify.fileSize, this.maxFileSize, entryToModify.createdAt.getTime()),
+            );
         }
         return this.repo.saveEntry(builder.build());
     }

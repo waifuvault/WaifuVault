@@ -1,9 +1,8 @@
 import { constant as getFromEnv, Inject, Service } from "@tsed/di";
 import { OnReady } from "@tsed/platform-http";
 import { FileRepo } from "../db/repo/FileRepo.js";
-import { filesDir, FileUtils } from "../utils/Utils.js";
-import fs from "node:fs/promises";
 import { FileService } from "./FileService.js";
+import { StorageService } from "./StorageService.js";
 import { RunEvery } from "../model/di/decorators/RunEvery.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
@@ -12,11 +11,13 @@ import { isSchedulerLeader } from "../utils/clusterUtils.js";
 @Service()
 export class FileCleaner implements OnReady {
     private static readonly syncGraceMs = 5 * 60 * 1000;
+    private static readonly stagingGraceMs = 60 * 60 * 1000;
 
     public constructor(
         @Inject() private repo: FileRepo,
         @Inject() private fileUploadService: FileService,
         @Inject() private logger: Logger,
+        @Inject() private storageService: StorageService,
     ) {}
 
     public async processFiles(): Promise<void> {
@@ -50,6 +51,12 @@ export class FileCleaner implements OnReady {
         } catch (e) {
             this.logger.error(`Failed to remove duplicate files: ${(e as Error).message}`);
         }
+
+        try {
+            await this.storageService.sweepStaging(FileCleaner.stagingGraceMs);
+        } catch (e) {
+            this.logger.error(`Failed to sweep abandoned staged uploads: ${(e as Error).message}`);
+        }
     }
 
     @RunEvery("* * * * *")
@@ -63,7 +70,10 @@ export class FileCleaner implements OnReady {
 
     private async sync(): Promise<void> {
         const allFilesFromDb = await this.repo.getAllEntries();
-        const allFilesFromSystem = await fs.readdir(filesDir);
+        const allFilesFromSystem: string[] = [];
+        for await (const key of this.storageService.listKeys()) {
+            allFilesFromSystem.push(key);
+        }
 
         const dbFileNames = new Set<string>();
         for (const dbFile of allFilesFromDb) {
@@ -84,7 +94,7 @@ export class FileCleaner implements OnReady {
 
         for (const fileToDelete of orphanedOnDisk) {
             try {
-                await FileUtils.deleteFile(fileToDelete, true, true);
+                await this.storageService.deleteKeys([fileToDelete], true);
             } catch (e) {
                 this.logger.error(`Failed to delete orphaned file ${fileToDelete}: ${(e as Error).message}`);
             }
@@ -105,12 +115,11 @@ export class FileCleaner implements OnReady {
     }
 
     private async wasRecentlyModified(fileName: string): Promise<boolean> {
-        try {
-            const stat = await fs.stat(`${filesDir}/${fileName}`);
-            return Date.now() - stat.mtimeMs < FileCleaner.syncGraceMs;
-        } catch {
+        const info = await this.storageService.headKey(fileName);
+        if (!info) {
             return false;
         }
+        return Date.now() - info.lastModified.getTime() < FileCleaner.syncGraceMs;
     }
 
     private async removeDupes(): Promise<void> {

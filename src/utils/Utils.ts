@@ -2,8 +2,6 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import TimeUnit from "../model/constants/TimeUnit.js";
 import type { Request } from "express";
-import fs from "node:fs/promises";
-import { type PlatformMulterFile } from "@tsed/platform-multer";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { isFormatSupportedByFfmpeg } from "./ffmpgWrapper.js";
 import { WorkerResponse } from "./typeings.js";
@@ -163,51 +161,6 @@ export class FileUtils {
     public static getExpiresBySize(filesize: number, maxFileSize: number, dateToUse = Date.now()): number {
         return dateToUse + this.getTimeLeftBySize(filesize, maxFileSize);
     }
-
-    public static async getFilesCount(): Promise<number> {
-        try {
-            const realFiles = await fs.readdir(filesDir, { withFileTypes: true });
-            return realFiles.length;
-        } catch {
-            return 0;
-        }
-    }
-
-    public static deleteFile(file: string | PlatformMulterFile, force = true, soft = false): Promise<void> {
-        const toDelete = this.getFilePath(file);
-        return soft ? FileUtils.softDelete(toDelete) : fs.rm(toDelete, { recursive: true, force });
-    }
-
-    public static softDelete(file: string | PlatformMulterFile): Promise<void> {
-        const toDelete = typeof file === "string" ? file : file.path;
-        const softDeleteLocation = getSoftDeleteLocation();
-        if (softDeleteLocation) {
-            return fs.rename(toDelete, `${softDeleteLocation}/${path.basename(toDelete)}`);
-        }
-        return FileUtils.deleteFile(file, true);
-    }
-
-    public static async getFileSize(file: string | PlatformMulterFile | FileUploadModel): Promise<number> {
-        const f = this.getFilePath(file);
-        const stat = await fs.stat(f);
-        return stat.size;
-    }
-
-    public static getFilePath(file: string | PlatformMulterFile | FileUploadModel): string {
-        if (file instanceof FileUploadModel) {
-            return file.fullLocationOnDisk;
-        }
-        return typeof file === "string" ? `${filesDir}/${file}` : file.path;
-    }
-
-    public static async fileExists(file: string): Promise<boolean> {
-        try {
-            await fs.access(file, fs.constants.F_OK);
-            return true;
-        } catch {
-            return false;
-        }
-    }
 }
 
 export class NetworkUtils {
@@ -286,6 +239,8 @@ export class WorkerUtils {
 }
 
 export const filesDir = `${path.dirname(fileURLToPath(import.meta.url))}/../../files`;
+
+export const stagingDir = path.resolve(`${filesDir}/.staging`);
 
 export function getSoftDeleteLocation(): string | null {
     const location = constant(GlobalEnv.SOFT_DELETE_LOCATION, null);

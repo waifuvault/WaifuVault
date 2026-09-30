@@ -18,7 +18,7 @@ export class AvFilter extends AbstractFileFilter {
         super(logger);
     }
 
-    protected override doFilterInternal(file: string | PlatformMulterFile): Promise<boolean> {
+    public override doFilter(file: string | PlatformMulterFile): Promise<boolean> {
         return this.avManager.scanFile(file);
     }
 

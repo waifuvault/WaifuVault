@@ -1,8 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import { AbstractModel } from "./AbstractModel.js";
-import { filesDir, FileUtils } from "../../utils/Utils.js";
+import { FileUtils } from "../../utils/Utils.js";
 import type { EntrySettings, ProtectionLevel } from "../../utils/typeings.js";
-import path from "node:path";
 import type { BucketModel } from "./Bucket.model.js";
 import { AlbumModel } from "./Album.model.js";
 import { constant } from "@tsed/di";
@@ -183,14 +182,6 @@ export class FileUploadModel extends AbstractModel {
             return `${this.fileName}.${this.fileExtension}`;
         }
         return this.fileName;
-    }
-
-    /**
-     * Get the full absolute location on disk
-     * @returns {string}
-     */
-    public get fullLocationOnDisk(): string {
-        return path.resolve(`${filesDir}/${this.fullFileNameOnSystem}`);
     }
 
     public getPublicUrl(): string {

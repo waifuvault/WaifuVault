@@ -37,7 +37,7 @@ import { DataSource } from "typeorm";
 import compression from "compression";
 import path from "node:path";
 import rateLimit from "express-rate-limit";
-import { filesDir, NetworkUtils } from "./utils/Utils.js";
+import { NetworkUtils } from "./utils/Utils.js";
 import { fileURLToPath } from "node:url";
 import { ExpressRateLimitTypeOrmStore } from "typeorm-rate-limit-store";
 import { ExpressRateLimitStoreModel } from "./model/db/ExpressRateLimitStore.model.js";
@@ -72,7 +72,6 @@ const opts: Partial<TsED.Configuration> = {
         return false;
     })(),
     multer: {
-        dest: filesDir,
         storage: new SizeLimitDiskStorage(),
         preservePath: true,
     },

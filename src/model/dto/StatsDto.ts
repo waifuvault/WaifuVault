@@ -1,7 +1,8 @@
 import { CollectionOf, Property } from "@tsed/schema";
 import { Builder } from "builder-pattern";
 import { AdminFileData } from "./AdminData.js";
-import { FileUtils } from "../../utils/Utils.js";
+import { inject } from "@tsed/di";
+import { StorageService } from "../../services/StorageService.js";
 import { IpBlockedAwareFileEntry } from "../../utils/typeings.js";
 
 export class StatsDto {
@@ -31,7 +32,7 @@ export class StatsDto {
     public entries: AdminFileData[];
 
     public static async buildStats(entries: AdminFileData[]): Promise<StatsDto> {
-        const realFiles = await FileUtils.getFilesCount();
+        const realFiles = await inject(StorageService).countObjects();
         const fileSizes = entries.reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
         const bucketSet = new Set(entries.map(e => e.bucket).filter(bucket => Boolean(bucket)));
         const bucketSizes = entries.filter(e => e.bucket).reduce((acc, currentValue) => acc + currentValue.fileSize, 0);
