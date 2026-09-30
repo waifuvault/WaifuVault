@@ -161,6 +161,11 @@ export class FileUtils {
     public static getExpiresBySize(filesize: number, maxFileSize: number, dateToUse = Date.now()): number {
         return dateToUse + this.getTimeLeftBySize(filesize, maxFileSize);
     }
+
+    public static isAccessDenied(error: unknown): boolean {
+        const code = (error as NodeJS.ErrnoException | null)?.code;
+        return code === "EPERM" || code === "EACCES";
+    }
 }
 
 export class NetworkUtils {

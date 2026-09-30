@@ -4,8 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { FileUtils, stagingDir } from "../../utils/Utils.js";
 import { uuid } from "../../utils/uuidUtils.js";
-import { RequestEntityTooLarge } from "@tsed/exceptions";
-import { inject } from "@tsed/di";
+import { BadRequest, RequestEntityTooLarge } from "@tsed/exceptions";
+import { inject, logger } from "@tsed/di";
 import { SettingsService } from "../../services/SettingsService.js";
 import { BucketService } from "../../services/BucketService.js";
 
@@ -44,7 +44,7 @@ export class SizeLimitDiskStorage implements multer.StorageEngine {
                         file.stream.unpipe(outStream);
                         file.stream.pause();
                         outStream.destroy();
-                        fs.rm(filePath, () => {});
+                        this.discardStaged(filePath);
                         callback(new RequestEntityTooLarge(`File size exceeds limit of ${maxFileSize} bytes`));
                     }
                 });
@@ -56,7 +56,7 @@ export class SizeLimitDiskStorage implements multer.StorageEngine {
                 }
                 hasError = true;
                 outStream.destroy();
-                fs.rm(filePath, () => {});
+                this.discardStaged(filePath);
                 callback(err);
             });
 
@@ -67,8 +67,14 @@ export class SizeLimitDiskStorage implements multer.StorageEngine {
                 hasError = true;
                 file.stream.unpipe(outStream);
                 file.stream.resume();
-                fs.rm(filePath, () => {});
-                callback(err);
+                this.discardStaged(filePath);
+
+                if (!FileUtils.isAccessDenied(err)) {
+                    callback(err);
+                    return;
+                }
+                logger().warn(`Upload of ${file.originalname} was blocked by the host antivirus: ${err.message}`);
+                callback(new BadRequest("Failed to store file"));
             });
 
             outStream.on("finish", () => {
@@ -94,6 +100,14 @@ export class SizeLimitDiskStorage implements multer.StorageEngine {
             file.stream.pipe(outStream);
         })().catch(err => {
             callback(err as Error);
+        });
+    }
+
+    private discardStaged(filePath: string): void {
+        fs.rm(filePath, { force: true }, err => {
+            if (err) {
+                logger().error(`Failed to remove staged file ${filePath}: ${err.message}`);
+            }
         });
     }
 

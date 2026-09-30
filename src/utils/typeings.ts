@@ -86,9 +86,11 @@ export type RecordInfoPayload = {
     recordSize: string;
 };
 
+export type StagedUpload = Pick<PlatformMulterFile, "path" | "originalname">;
+
 export type FileUploadProps = {
     ip: string;
-    source: PlatformMulterFile | string;
+    source: StagedUpload | string;
     options: FileUploadQueryParameters;
     password?: string;
     secretToken?: string;

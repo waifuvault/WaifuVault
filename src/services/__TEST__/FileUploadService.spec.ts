@@ -3,10 +3,8 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
-import { Readable } from "node:stream";
 import { PlatformTest } from "@tsed/platform-http/testing";
 import { Logger } from "@tsed/logger";
-import type { PlatformMulterFile } from "@tsed/platform-multer";
 import { BadRequest, InternalServerError, UnprocessableEntity } from "@tsed/exceptions";
 import { FileUploadService } from "../FileUploadService.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
@@ -58,6 +56,12 @@ function modification(values: Partial<EntryModificationDto>): EntryModificationD
     return Object.assign(new EntryModificationDto(), values);
 }
 
+function accessDenied(code: string): NodeJS.ErrnoException {
+    const error: NodeJS.ErrnoException = new Error(`${code}: operation not permitted, open '/staging/blocked'`);
+    error.code = code;
+    return error;
+}
+
 describe("FileUploadService", () => {
     const repo = { getEntriesFromChecksum: vi.fn(), saveEntry: vi.fn(), getEntries: vi.fn() };
     const fileUrlService = { getFile: vi.fn() };
@@ -83,25 +87,10 @@ describe("FileUploadService", () => {
     let checksum: string;
     let service: FileUploadService;
 
-    function multerSource(): PlatformMulterFile {
-        return {
-            fieldname: "file",
-            originalname: "picture.txt",
-            encoding: "7bit",
-            mimetype: "text/plain",
-            size: fileContents.length,
-            stream: Readable.from([]),
-            destination: tempDir,
-            filename: "staged-name",
-            path: stagedPath,
-            buffer: Buffer.alloc(0),
-        };
-    }
-
     function uploadProps(overrides: Partial<FileUploadProps> = {}): FileUploadProps {
         return {
             ip: "1.1.1.1",
-            source: multerSource(),
+            source: { path: stagedPath, originalname: "picture.txt" },
             options: {},
             ...overrides,
         };
@@ -409,6 +398,47 @@ describe("FileUploadService", () => {
             expect(saved.originalFileName).toBe("from-url.png");
             expect(saved.fileExtension).toBe("png");
             expect(storageService.removeStaged).toHaveBeenCalledWith(stagedPath);
+        });
+
+        it("rejects with Failed to store file when the host antivirus blocks reading the staged file on commit", async () => {
+            // given
+            storageService.commit.mockRejectedValue(accessDenied("EPERM"));
+
+            // when
+            const result = service.processUpload(uploadProps());
+
+            // then
+            await expect(result).rejects.toThrow(new BadRequest("Failed to store file"));
+            expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("blocked by the host antivirus"));
+            expect(repo.saveEntry).not.toHaveBeenCalled();
+            expect(storageService.removeStaged).toHaveBeenCalledWith(stagedPath);
+        });
+
+        it("rejects with Failed to store file instead of a 500 when the host antivirus blocks encryption", async () => {
+            // given
+            encryptionService.encryptFile.mockRejectedValue(accessDenied("EACCES"));
+
+            // when
+            const result = service.processUpload(uploadProps({ password: "hunter2" }));
+
+            // then
+            await expect(result).rejects.toThrow(new BadRequest("Failed to store file"));
+            expect(logger.error).not.toHaveBeenCalled();
+            expect(storageService.commit).not.toHaveBeenCalled();
+            expect(storageService.removeStaged).toHaveBeenCalledWith(stagedPath);
+        });
+
+        it("rejects with Failed to store file when the host antivirus blocks writing a URL download to staging", async () => {
+            // given
+            fileUrlService.getFile.mockRejectedValue(accessDenied("EPERM"));
+
+            // when
+            const result = service.processUpload(uploadProps({ source: "https://example.com/blocked.exe" }));
+
+            // then
+            await expect(result).rejects.toThrow(new BadRequest("Failed to store file"));
+            expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("https://example.com/blocked.exe"));
+            expect(storageService.commit).not.toHaveBeenCalled();
         });
     });
 

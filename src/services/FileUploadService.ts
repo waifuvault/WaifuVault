@@ -1,6 +1,5 @@
 import { Inject, Service } from "@tsed/di";
 import { FileRepo } from "../db/repo/FileRepo.js";
-import { type PlatformMulterFile } from "@tsed/platform-multer";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { FileUrlService } from "./FileUrlService.js";
 import { Builder, type IBuilder } from "builder-pattern";
@@ -9,7 +8,7 @@ import fs from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import crypto from "node:crypto";
 import { Logger } from "@tsed/logger";
-import { EntrySettings, FileUploadProps } from "../utils/typeings.js";
+import { EntrySettings, FileUploadProps, StagedUpload } from "../utils/typeings.js";
 import { BadRequest, InternalServerError } from "@tsed/exceptions";
 import { FileUtils, ObjectUtils } from "../utils/Utils.js";
 import TimeUnit from "../model/constants/TimeUnit.js";
@@ -65,7 +64,15 @@ export class FileUploadService {
         bucketToken,
     }: FileUploadProps): Promise<[FileUploadModel, boolean]> {
         const { expires } = options;
-        const [stagedPath, originalFileName] = await this.determineResourcePathAndFileName(source);
+
+        let stagedPath: string;
+        let originalFileName: string;
+        try {
+            [stagedPath, originalFileName] = await this.determineResourcePathAndFileName(source);
+        } catch (e) {
+            throw this.blockedOrOriginal(e, typeof source === "string" ? source : source.originalname);
+        }
+
         try {
             const checksum = await this.getFileHash(stagedPath);
             const existingFileModel = await this.findExistingFileModel(checksum, ip, bucketToken);
@@ -118,6 +125,9 @@ export class FileUploadService {
                     const didEncrypt = await this.encryptionService.encryptFile(stagedPath, password);
                     uploadEntry.encrypted(didEncrypt);
                 } catch (e) {
+                    if (FileUtils.isAccessDenied(e)) {
+                        throw e;
+                    }
                     const err = e as Error;
                     this.logger.error(err.message);
                     throw new InternalServerError(err.message);
@@ -139,9 +149,20 @@ export class FileUploadService {
             this.recordInfoSocket.emit();
 
             return [savedEntry, false];
+        } catch (e) {
+            throw this.blockedOrOriginal(e, originalFileName);
         } finally {
             await this.storageService.removeStaged(stagedPath);
         }
+    }
+
+    private blockedOrOriginal(error: unknown, fileName: string): unknown {
+        if (!FileUtils.isAccessDenied(error)) {
+            return error;
+        }
+
+        this.logger.warn(`Upload of ${fileName} was blocked by the host antivirus: ${(error as Error).message}`);
+        return new BadRequest("Failed to store file");
     }
 
     private async saveCommittedEntry(entry: FileUploadModel): Promise<FileUploadModel> {
@@ -179,7 +200,7 @@ export class FileUploadService {
         return argon2.hash(password);
     }
 
-    private async determineResourcePathAndFileName(source: PlatformMulterFile | string): Promise<[string, string]> {
+    private async determineResourcePathAndFileName(source: StagedUpload | string): Promise<[string, string]> {
         let resourcePath: string;
         let originalFileName: string;
         if (typeof source === "string") {
@@ -336,7 +357,7 @@ export class FileUploadService {
             stream.on("error", reject);
         });
     }
-    private async filterFile(resourcePath: PlatformMulterFile | string, originalFileName: string): Promise<void> {
+    private async filterFile(resourcePath: string, originalFileName: string): Promise<void> {
         const failedFilters = await this.fileFilterManager.process(resourcePath, originalFileName);
         if (failedFilters.length > 0) {
             // throw the error of the highest priority
