@@ -3,65 +3,69 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import argon2 from "argon2";
+import { PlatformTest } from "@tsed/platform-http/testing";
 import { Forbidden } from "@tsed/exceptions";
 import { GlobalEnv } from "../../model/constants/GlobalEnv.js";
-import type { FileUploadModel } from "../../model/db/FileUpload.model.js";
-import type { SettingsService } from "../SettingsService.js";
-import type { StorageService } from "../StorageService.js";
+import { FileUploadModel } from "../../model/db/FileUpload.model.js";
+import { SettingsService } from "../SettingsService.js";
+import { StorageService } from "../StorageService.js";
 import { EncryptionService } from "../EncryptionService.js";
+import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
+
+vi.mock("../../db/DataSource.js", () => ({ dataSource: {} }));
 
 const validSalt = "abcdefgh";
 
 const plaintext = Buffer.from("waifu vault secret bytes");
 
-type FakeStorage = {
-    readAll: ReturnType<typeof vi.fn>;
-    write: ReturnType<typeof vi.fn>;
-};
-
-function createSettings(salt: string | null): SettingsService {
-    return {
-        getSetting: (key: GlobalEnv): string | null => (key === GlobalEnv.SALT ? salt : null),
-    } as unknown as SettingsService;
-}
-
-function createStorage(initial: Buffer = Buffer.alloc(0)): FakeStorage {
-    let stored = initial;
-    return {
-        readAll: vi.fn(() => Promise.resolve(stored)),
-        write: vi.fn((_entry: FileUploadModel, data: Buffer) => {
-            stored = data;
-            return Promise.resolve();
-        }),
-    };
-}
-
-function createService(salt: string | null, storage: FakeStorage): EncryptionService {
-    return new EncryptionService(createSettings(salt), storage as unknown as StorageService);
-}
-
-async function createEntry(password: string): Promise<FileUploadModel> {
-    return {
-        fileOnDisk: "file.bin",
+async function makeEntry(password: string): Promise<FileUploadModel> {
+    return Object.assign(new FileUploadModel(), {
+        token: "token-1",
+        fileName: "file",
+        fileExtension: "bin",
         settings: { password: await argon2.hash(password) },
-    } as unknown as FileUploadModel;
+        storageBackend: "local",
+    });
 }
 
 describe("EncryptionService", () => {
+    const settingsService = { getSetting: vi.fn() };
+    const storageService = { readAll: vi.fn(), write: vi.fn() };
+    let stored: Buffer;
     let tmpDir: string;
 
+    function createService(salt: string | null): Promise<EncryptionService> {
+        settingsService.getSetting.mockImplementation((key: GlobalEnv) => (key === GlobalEnv.SALT ? salt : null));
+
+        return PlatformTest.invoke<EncryptionService>(EncryptionService, [
+            { token: SettingsService, use: settingsService },
+            { token: StorageService, use: storageService },
+        ]);
+    }
+
     beforeEach(async () => {
+        await PlatformTest.create({
+            imports: [{ token: SQLITE_DATA_SOURCE, use: { getRepository: vi.fn() } }],
+        });
+        vi.resetAllMocks();
+        stored = plaintext;
+        storageService.readAll.mockImplementation(() => Promise.resolve(stored));
+        storageService.write.mockImplementation((_entry: FileUploadModel, data: Buffer) => {
+            stored = data;
+            return Promise.resolve();
+        });
+
         tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "wv-encryption-"));
     });
 
     afterEach(async () => {
         await fs.rm(tmpDir, { recursive: true, force: true });
+        await PlatformTest.reset();
     });
 
     it("returns false from encryptFile without a salt and never reads the file", async () => {
         // given
-        const storage = createStorage();
-        const service = createService(null, storage);
+        const service = await createService(null);
         const missingPath = path.join(tmpDir, "does-not-exist.bin");
 
         // when
@@ -74,55 +78,52 @@ describe("EncryptionService", () => {
 
     it("returns false from encryptEntry without a salt and never touches storage", async () => {
         // given
-        const storage = createStorage(plaintext);
-        const service = createService(null, storage);
-        const entry = await createEntry("pw");
+        const service = await createService(null);
+        const entry = await makeEntry("pw");
 
         // when
         const result = await service.encryptEntry(entry, "pw");
 
         // then
         expect(result).toBe(false);
-        expect(storage.readAll).not.toHaveBeenCalled();
-        expect(storage.write).not.toHaveBeenCalled();
+        expect(storageService.readAll).not.toHaveBeenCalled();
+        expect(storageService.write).not.toHaveBeenCalled();
     });
 
     it("rewrites a local file as a 16 byte IV plus ciphertext that decrypts back to the original", async () => {
         // given
         const filePath = path.join(tmpDir, "file.bin");
         await fs.writeFile(filePath, plaintext);
-        const storage = createStorage();
-        const service = createService(validSalt, storage);
-        const entry = await createEntry("pw");
+        const service = await createService(validSalt);
+        const entry = await makeEntry("pw");
 
         // when
         const result = await service.encryptFile(filePath, "pw");
         const onDisk = await fs.readFile(filePath);
-        storage.readAll.mockResolvedValue(onDisk);
+        stored = onDisk;
         const decrypted = await service.decryptVerified(entry, "pw");
 
         // then
         expect(result).toBe(true);
         expect(onDisk.length).toBe(16 + plaintext.length);
         expect(onDisk.subarray(16).equals(plaintext)).toBe(false);
-        expect(storage.readAll).toHaveBeenCalledWith(entry);
+        expect(storageService.readAll).toHaveBeenCalledWith(entry);
         expect(decrypted.equals(plaintext)).toBe(true);
     });
 
     it("encrypts an entry through storage and writes the encrypted bytes back", async () => {
         // given
-        const storage = createStorage(plaintext);
-        const service = createService(validSalt, storage);
-        const entry = await createEntry("pw");
+        const service = await createService(validSalt);
+        const entry = await makeEntry("pw");
 
         // when
         const result = await service.encryptEntry(entry, "pw");
 
         // then
         expect(result).toBe(true);
-        expect(storage.readAll).toHaveBeenCalledWith(entry);
-        expect(storage.write).toHaveBeenCalledTimes(1);
-        const [writtenEntry, written] = storage.write.mock.calls[0] as [FileUploadModel, Buffer];
+        expect(storageService.readAll).toHaveBeenCalledWith(entry);
+        expect(storageService.write).toHaveBeenCalledOnce();
+        const [writtenEntry, written] = storageService.write.mock.calls[0];
         expect(writtenEntry).toBe(entry);
         expect(written.length).toBe(16 + plaintext.length);
         expect(written.equals(plaintext)).toBe(false);
@@ -131,43 +132,40 @@ describe("EncryptionService", () => {
 
     it("changes the password so the stored bytes decrypt with the new one", async () => {
         // given
-        const storage = createStorage(plaintext);
-        const service = createService(validSalt, storage);
-        const entry = await createEntry("old-pw");
+        const service = await createService(validSalt);
+        const entry = await makeEntry("old-pw");
         await service.encryptEntry(entry, "old-pw");
-        storage.write.mockClear();
+        storageService.write.mockClear();
 
         // when
         await service.changePassword("old-pw", "new-pw", entry);
 
         // then
-        expect(storage.write).toHaveBeenCalledTimes(1);
-        expect(storage.write.mock.calls[0]?.[0]).toBe(entry);
+        expect(storageService.write).toHaveBeenCalledOnce();
+        expect(storageService.write.mock.calls[0][0]).toBe(entry);
         expect((await service.decryptVerified(entry, "new-pw")).equals(plaintext)).toBe(true);
         expect((await service.decryptVerified(entry, "old-pw")).equals(plaintext)).toBe(false);
     });
 
     it("throws Forbidden when decrypting with the wrong password", async () => {
         // given
-        const storage = createStorage(plaintext);
-        const service = createService(validSalt, storage);
-        const entry = await createEntry("right-pw");
+        const service = await createService(validSalt);
+        const entry = await makeEntry("right-pw");
         await service.encryptEntry(entry, "right-pw");
-        storage.readAll.mockClear();
+        storageService.readAll.mockClear();
 
         // when
         const attempt = service.decrypt(entry, "wrong-pw");
 
         // then
         await expect(attempt).rejects.toBeInstanceOf(Forbidden);
-        expect(storage.readAll).not.toHaveBeenCalled();
+        expect(storageService.readAll).not.toHaveBeenCalled();
     });
 
     it("decrypts with the correct password", async () => {
         // given
-        const storage = createStorage(plaintext);
-        const service = createService(validSalt, storage);
-        const entry = await createEntry("right-pw");
+        const service = await createService(validSalt);
+        const entry = await makeEntry("right-pw");
         await service.encryptEntry(entry, "right-pw");
 
         // when
@@ -177,38 +175,31 @@ describe("EncryptionService", () => {
         expect(decrypted.equals(plaintext)).toBe(true);
     });
 
-    it("rejects a salt that is not 8 characters on init", () => {
+    it("rejects a salt that is not 8 characters on init", async () => {
         // given
-        const service = createService("short", createStorage());
+        const salt = "short";
 
         // when
-        let error: unknown = null;
-        try {
-            service.$onInit();
-        } catch (e) {
-            error = e;
-        }
+        const result = createService(salt);
 
         // then
-        expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toBe("Salt must be 8 characters");
+        await expect(result).rejects.toThrow(new Error("Salt must be 8 characters"));
     });
 
-    it("accepts an 8 character salt or no salt on init", () => {
+    it("accepts an 8 character salt or no salt on init", async () => {
         // given
-        const services = [createService(validSalt, createStorage()), createService(null, createStorage())];
+        const salts = [validSalt, null];
 
         // when
-        const errors: unknown[] = [];
-        for (const service of services) {
-            try {
-                service.$onInit();
-            } catch (e) {
-                errors.push(e);
-            }
+        const services: EncryptionService[] = [];
+        for (const salt of salts) {
+            services.push(await createService(salt));
         }
 
         // then
-        expect(errors).toEqual([]);
+        expect(services).toHaveLength(2);
+        for (const service of services) {
+            expect(service).toBeInstanceOf(EncryptionService);
+        }
     });
 });

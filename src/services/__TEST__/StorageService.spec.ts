@@ -1,48 +1,32 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Mock } from "vitest";
-import type { Logger } from "@tsed/logger";
+import { PlatformTest } from "@tsed/platform-http/testing";
+import { Logger } from "@tsed/logger";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { GlobalEnv } from "../../model/constants/GlobalEnv.js";
 import { StorageOperationError } from "../../model/exceptions/StorageOperationError.js";
-import type { FileUploadModel } from "../../model/db/FileUpload.model.js";
-import type { LocalStorageProvider } from "../../engine/impl/storage/LocalStorageProvider.js";
-import type { S3StorageProvider } from "../../engine/impl/storage/S3StorageProvider.js";
-import type { SettingsService } from "../SettingsService.js";
-import type { StorageBackend } from "../../utils/typeings.js";
+import { FileUploadModel } from "../../model/db/FileUpload.model.js";
+import { LocalStorageProvider } from "../../engine/impl/storage/LocalStorageProvider.js";
+import { S3StorageProvider } from "../../engine/impl/storage/S3StorageProvider.js";
+import { SettingsService } from "../SettingsService.js";
 import { StorageService } from "../StorageService.js";
+import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 
 const dirs = vi.hoisted(() => ({ root: "" }));
 
-vi.mock("../../utils/Utils.js", () => ({
+vi.mock("../../db/DataSource.js", () => ({ dataSource: {} }));
+
+vi.mock(import("../../utils/Utils.js"), async importOriginal => ({
+    ...(await importOriginal()),
     get filesDir(): string {
         return dirs.root;
     },
     get stagingDir(): string {
         return path.join(dirs.root, ".staging");
     },
-    getSoftDeleteLocation: (): string | null => null,
 }));
-
-type FakeProvider = {
-    id: StorageBackend;
-    enabled: boolean;
-    get: Mock;
-    getBuffer: Mock;
-    put: Mock;
-    putFile: Mock;
-    head: Mock;
-    delete: Mock;
-    softDelete: Mock;
-    list: Mock;
-};
-
-type FakeLogger = {
-    error: Mock;
-    warn: Mock;
-};
 
 async function* keysOf(keys: string[]): AsyncIterable<string> {
     for (const key of keys) {
@@ -50,104 +34,120 @@ async function* keysOf(keys: string[]): AsyncIterable<string> {
     }
 }
 
-function createFakeProvider(id: StorageBackend, enabled = true, listed: string[] = []): FakeProvider {
-    return {
-        id,
-        enabled,
-        get: vi.fn().mockResolvedValue(Readable.from([Buffer.from(id)])),
-        getBuffer: vi.fn().mockResolvedValue(Buffer.from(id)),
-        put: vi.fn().mockResolvedValue(undefined),
-        putFile: vi.fn().mockResolvedValue(undefined),
-        head: vi.fn().mockResolvedValue({ key: "k", size: 1, lastModified: new Date(0) }),
-        delete: vi.fn().mockResolvedValue(undefined),
-        softDelete: vi.fn().mockResolvedValue(undefined),
-        list: vi.fn(() => keysOf(listed)),
-    };
-}
-
-function createLogger(): FakeLogger {
-    return {
-        error: vi.fn(),
-        warn: vi.fn(),
-    };
-}
-
-function createService(
-    local: FakeProvider,
-    s3: FakeProvider,
-    configuredBackend: string | null = "local",
-    logger: FakeLogger = createLogger(),
-): StorageService {
-    const settingsService = {
-        getSetting: (key: GlobalEnv): string | null => (key === GlobalEnv.STORAGE_BACKEND ? configuredBackend : null),
-    } as unknown as SettingsService;
-    return new StorageService(
-        local as unknown as LocalStorageProvider,
-        s3 as unknown as S3StorageProvider,
-        settingsService,
-        logger as unknown as Logger,
-    );
-}
-
-function entry(storageBackend: string, fullFileNameOnSystem: string): FileUploadModel {
-    return { storageBackend, fullFileNameOnSystem } as unknown as FileUploadModel;
+function makeEntry(storageBackend: string, fileName: string, fileExtension: string): FileUploadModel {
+    return Object.assign(new FileUploadModel(), { storageBackend, fileName, fileExtension });
 }
 
 describe("StorageService", () => {
-    let local: FakeProvider;
-    let s3: FakeProvider;
+    const local = {
+        id: "local",
+        enabled: true,
+        get: vi.fn(),
+        getBuffer: vi.fn(),
+        put: vi.fn(),
+        putFile: vi.fn(),
+        head: vi.fn(),
+        delete: vi.fn(),
+        softDelete: vi.fn(),
+        list: vi.fn(),
+    };
+    const s3 = {
+        id: "s3",
+        enabled: true,
+        get: vi.fn(),
+        getBuffer: vi.fn(),
+        put: vi.fn(),
+        putFile: vi.fn(),
+        head: vi.fn(),
+        delete: vi.fn(),
+        softDelete: vi.fn(),
+        list: vi.fn(),
+    };
+    const settingsService = { getSetting: vi.fn() };
+    const logger = { error: vi.fn(), warn: vi.fn() };
+    const collaborators = [
+        { token: LocalStorageProvider, use: local },
+        { token: S3StorageProvider, use: s3 },
+        { token: SettingsService, use: settingsService },
+        { token: Logger, use: logger },
+    ];
+    let configuredBackend: string | null;
 
     beforeEach(async () => {
         dirs.root = await fs.mkdtemp(path.join(os.tmpdir(), "wv-storage-service-"));
-        local = createFakeProvider("local");
-        s3 = createFakeProvider("s3");
+
+        await PlatformTest.create({
+            imports: [{ token: SQLITE_DATA_SOURCE, use: { getRepository: vi.fn() } }],
+        });
+        vi.resetAllMocks();
+
+        configuredBackend = "local";
+        s3.enabled = true;
+        settingsService.getSetting.mockImplementation((key: GlobalEnv) =>
+            key === GlobalEnv.STORAGE_BACKEND ? configuredBackend : null,
+        );
+        for (const provider of [local, s3]) {
+            provider.get.mockImplementation(() => Promise.resolve(Readable.from([Buffer.from(provider.id)])));
+            provider.getBuffer.mockImplementation(() => Promise.resolve(Buffer.from(provider.id)));
+            provider.put.mockResolvedValue(undefined);
+            provider.putFile.mockResolvedValue(undefined);
+            provider.head.mockResolvedValue({ key: "k", size: 1, lastModified: new Date(0) });
+            provider.delete.mockResolvedValue(undefined);
+            provider.softDelete.mockResolvedValue(undefined);
+            provider.list.mockImplementation(() => keysOf([]));
+        }
     });
 
     afterEach(async () => {
+        await PlatformTest.reset();
         await fs.rm(dirs.root, { recursive: true, force: true });
     });
 
     describe("construction", () => {
-        it("always registers local and registers s3 only when the S3 provider is enabled", () => {
+        it("always registers local and registers s3 only when the S3 provider is enabled", async () => {
             // given
-            const disabledS3 = createFakeProvider("s3", false);
+            const withS3 = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            s3.enabled = false;
 
             // when
-            const withS3 = createService(local, s3);
-            const withoutS3 = createService(local, disabledS3);
+            const withoutS3 = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // then
             expect(withS3.backends).toEqual(["local", "s3"]);
             expect(withoutS3.backends).toEqual(["local"]);
         });
 
-        it("throws when STORAGE_BACKEND is s3 but S3 is not configured", () => {
+        it("throws when STORAGE_BACKEND is s3 but S3 is not configured", async () => {
             // given
-            const disabledS3 = createFakeProvider("s3", false);
+            s3.enabled = false;
+            configuredBackend = "s3";
 
             // when
-            const construct = (): StorageService => createService(local, disabledS3, "s3");
+            const result = PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // then
-            expect(construct).toThrow(/STORAGE_BACKEND is "s3"/);
+            await expect(result).rejects.toThrow(/STORAGE_BACKEND is "s3"/);
         });
 
-        it("throws when STORAGE_BACKEND is an unknown value", () => {
+        it("throws when STORAGE_BACKEND is an unknown value", async () => {
+            // given
+            configuredBackend = "azure";
+
             // when
-            const construct = (): StorageService => createService(local, s3, "azure");
+            const result = PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // then
-            expect(construct).toThrow(/STORAGE_BACKEND is "azure"/);
+            await expect(result).rejects.toThrow(/STORAGE_BACKEND is "azure"/);
         });
     });
 
     describe("commit", () => {
         it("puts the staged file on the local backend when STORAGE_BACKEND is local", async () => {
             // given
-            const service = createService(local, s3, "local");
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
-            const backend = await service.commit("/staging/abc.tmp", entry("s3", "abc.png"));
+            const backend = await service.commit("/staging/abc.tmp", makeEntry("s3", "abc", "png"));
 
             // then
             expect(backend).toBe("local");
@@ -157,10 +157,11 @@ describe("StorageService", () => {
 
         it("puts the staged file on s3 when STORAGE_BACKEND is s3", async () => {
             // given
-            const service = createService(local, s3, "s3");
+            configuredBackend = "s3";
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
-            const backend = await service.commit("/staging/abc.tmp", entry("local", "abc.png"));
+            const backend = await service.commit("/staging/abc.tmp", makeEntry("local", "abc", "png"));
 
             // then
             expect(backend).toBe("s3");
@@ -170,11 +171,12 @@ describe("StorageService", () => {
 
         it("propagates a failed upload instead of reporting a backend", async () => {
             // given
+            configuredBackend = "s3";
             s3.putFile.mockRejectedValue(new Error("bucket unreachable"));
-            const service = createService(local, s3, "s3");
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
-            const result = service.commit("/staging/abc.tmp", entry("s3", "abc.png"));
+            const result = service.commit("/staging/abc.tmp", makeEntry("s3", "abc", "png"));
 
             // then
             await expect(result).rejects.toThrow("bucket unreachable");
@@ -184,12 +186,12 @@ describe("StorageService", () => {
     describe("routing by entry backend", () => {
         it("opens streams from the provider that holds the entry and forwards the range", async () => {
             // given
-            const service = createService(local, s3);
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const range = { start: 2, end: 5 };
 
             // when
-            await service.openStream(entry("local", "a.txt"), range);
-            await service.openStream(entry("s3", "b.txt"));
+            await service.openStream(makeEntry("local", "a", "txt"), range);
+            await service.openStream(makeEntry("s3", "b", "txt"));
 
             // then
             expect(local.get).toHaveBeenCalledExactlyOnceWith("a.txt", range);
@@ -198,11 +200,11 @@ describe("StorageService", () => {
 
         it("reads whole objects from the provider that holds the entry", async () => {
             // given
-            const service = createService(local, s3);
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
-            const fromLocal = await service.readAll(entry("local", "a.txt"));
-            const fromS3 = await service.readAll(entry("s3", "b.txt"));
+            const fromLocal = await service.readAll(makeEntry("local", "a", "txt"));
+            const fromS3 = await service.readAll(makeEntry("s3", "b", "txt"));
 
             // then
             expect(fromLocal.toString()).toBe("local");
@@ -213,11 +215,11 @@ describe("StorageService", () => {
 
         it("writes to the provider that holds the entry regardless of the default backend", async () => {
             // given
-            const service = createService(local, s3, "local");
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const body = Buffer.from("new bytes");
 
             // when
-            await service.write(entry("s3", "b.txt"), body);
+            await service.write(makeEntry("s3", "b", "txt"), body);
 
             // then
             expect(s3.put).toHaveBeenCalledExactlyOnceWith("b.txt", body);
@@ -227,11 +229,11 @@ describe("StorageService", () => {
         it("reports existence from the head of the provider that holds the entry", async () => {
             // given
             s3.head.mockResolvedValue(null);
-            const service = createService(local, s3);
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
-            const localExists = await service.exists(entry("local", "a.txt"));
-            const s3Exists = await service.exists(entry("s3", "b.txt"));
+            const localExists = await service.exists(makeEntry("local", "a", "txt"));
+            const s3Exists = await service.exists(makeEntry("s3", "b", "txt"));
 
             // then
             expect(localExists).toBe(true);
@@ -242,8 +244,9 @@ describe("StorageService", () => {
 
         it("throws for an entry whose backend is not configured", async () => {
             // given
-            const service = createService(local, createFakeProvider("s3", false));
-            const s3Entry = entry("s3", "b.txt");
+            s3.enabled = false;
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const s3Entry = makeEntry("s3", "b", "txt");
 
             // when
             const open = (): Promise<Readable> => service.openStream(s3Entry);
@@ -257,14 +260,19 @@ describe("StorageService", () => {
             expect(write).toThrow('No storage provider is configured for backend "s3"');
             await expect(exists).rejects.toThrow('No storage provider is configured for backend "s3"');
             expect(local.get).not.toHaveBeenCalled();
+            expect(s3.get).not.toHaveBeenCalled();
         });
     });
 
     describe("delete", () => {
         it("groups entries by backend and calls each provider once with its keys", async () => {
             // given
-            const service = createService(local, s3);
-            const entries = [entry("local", "a.txt"), entry("s3", "b.txt"), entry("local", "c.txt")];
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const entries = [
+                makeEntry("local", "a", "txt"),
+                makeEntry("s3", "b", "txt"),
+                makeEntry("local", "c", "txt"),
+            ];
 
             // when
             await service.delete(entries);
@@ -278,8 +286,8 @@ describe("StorageService", () => {
 
         it("soft deletes on every backend when soft is set", async () => {
             // given
-            const service = createService(local, s3);
-            const entries = [entry("local", "a.txt"), entry("s3", "b.txt")];
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const entries = [makeEntry("local", "a", "txt"), makeEntry("s3", "b", "txt")];
 
             // when
             await service.delete(entries, true);
@@ -297,36 +305,41 @@ describe("StorageService", () => {
             const s3Failures = [new Error("denied a"), new Error("denied b")];
             local.delete.mockRejectedValue(localFailure);
             s3.delete.mockRejectedValue(new StorageOperationError(s3Failures, "s3 failed"));
-            const service = createService(local, s3);
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
-            const result = service.delete([entry("local", "a.txt"), entry("s3", "b.txt"), entry("s3", "c.txt")]);
+            const result = service.delete([
+                makeEntry("local", "a", "txt"),
+                makeEntry("s3", "b", "txt"),
+                makeEntry("s3", "c", "txt"),
+            ]);
 
             // then
-            const error = (await result.catch((e: unknown) => e)) as StorageOperationError;
-            expect(error).toBeInstanceOf(StorageOperationError);
-            expect(error.failures).toEqual([localFailure, ...s3Failures]);
-            expect(error.message).toBe("Failed to delete 3 stored object(s)");
+            await expect(result).rejects.toBeInstanceOf(StorageOperationError);
+            await expect(result).rejects.toMatchObject({
+                failures: [localFailure, ...s3Failures],
+                message: "Failed to delete 3 stored object(s)",
+            });
             expect(s3.delete).toHaveBeenCalledExactlyOnceWith(["b.txt", "c.txt"]);
         });
 
         it("reports an entry on an unconfigured backend as a failure without skipping the others", async () => {
             // given
-            const service = createService(local, createFakeProvider("s3", false));
+            s3.enabled = false;
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
-            const result = service.delete([entry("s3", "b.txt"), entry("local", "a.txt")]);
+            const result = service.delete([makeEntry("s3", "b", "txt"), makeEntry("local", "a", "txt")]);
 
             // then
-            const error = (await result.catch((e: unknown) => e)) as StorageOperationError;
-            expect(error).toBeInstanceOf(StorageOperationError);
-            expect(error.failures).toHaveLength(1);
+            await expect(result).rejects.toBeInstanceOf(StorageOperationError);
+            await expect(result).rejects.toHaveProperty("failures", [expect.any(Error)]);
             expect(local.delete).toHaveBeenCalledExactlyOnceWith(["a.txt"]);
         });
 
         it("does nothing for an empty list of entries", async () => {
             // given
-            const service = createService(local, s3);
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
             await service.delete([]);
@@ -340,7 +353,7 @@ describe("StorageService", () => {
     describe("deleteKeys", () => {
         it("does not touch the provider for an empty list of keys", async () => {
             // given
-            const service = createService(local, s3);
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
             await service.deleteKeys("s3", []);
@@ -353,7 +366,7 @@ describe("StorageService", () => {
 
         it("routes keys to the named backend honouring soft", async () => {
             // given
-            const service = createService(local, s3);
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
             await service.deleteKeys("s3", ["x.txt"]);
@@ -368,10 +381,9 @@ describe("StorageService", () => {
     describe("countObjects", () => {
         it("sums the listed objects across every registered provider", async () => {
             // given
-            const service = createService(
-                createFakeProvider("local", true, ["a", "b", "c"]),
-                createFakeProvider("s3", true, ["d", "e"]),
-            );
+            local.list.mockImplementation(() => keysOf(["a", "b", "c"]));
+            s3.list.mockImplementation(() => keysOf(["d", "e"]));
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
             const count = await service.countObjects();
@@ -382,35 +394,36 @@ describe("StorageService", () => {
 
         it("ignores a disabled s3 provider", async () => {
             // given
-            const disabledS3 = createFakeProvider("s3", false, ["d", "e"]);
-            const service = createService(createFakeProvider("local", true, ["a"]), disabledS3);
+            s3.enabled = false;
+            local.list.mockImplementation(() => keysOf(["a"]));
+            s3.list.mockImplementation(() => keysOf(["d", "e"]));
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
             const count = await service.countObjects();
 
             // then
             expect(count).toBe(1);
-            expect(disabledS3.list).not.toHaveBeenCalled();
+            expect(s3.list).not.toHaveBeenCalled();
         });
     });
 
     describe("staging", () => {
         it("creates the staging directory on init", async () => {
             // given
-            const service = createService(local, s3);
+            const stagingPath = path.join(dirs.root, ".staging");
 
             // when
-            await service.$onInit();
+            await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // then
-            const stat = await fs.stat(path.join(dirs.root, ".staging"));
+            const stat = await fs.stat(stagingPath);
             expect(stat.isDirectory()).toBe(true);
         });
 
         it("removes a staged file and treats a missing one as already removed", async () => {
             // given
-            const logger = createLogger();
-            const service = createService(local, s3, "local", logger);
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const staged = path.join(dirs.root, "staged.tmp");
             await fs.writeFile(staged, "bytes");
 
@@ -425,8 +438,7 @@ describe("StorageService", () => {
 
         it("logs instead of throwing when a staged path cannot be removed", async () => {
             // given
-            const logger = createLogger();
-            const service = createService(local, s3, "local", logger);
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const directory = path.join(dirs.root, "not-a-file");
             await fs.mkdir(directory);
 
@@ -435,15 +447,12 @@ describe("StorageService", () => {
 
             // then
             await expect(result).resolves.toBeUndefined();
-            expect(logger.error).toHaveBeenCalledOnce();
-            expect(logger.error.mock.calls[0][0]).toContain(directory);
+            expect(logger.error).toHaveBeenCalledExactlyOnceWith(expect.stringContaining(directory));
         });
 
         it("sweeps only staged files older than the threshold", async () => {
             // given
-            const logger = createLogger();
-            const service = createService(local, s3, "local", logger);
-            await service.$onInit();
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const stagingPath = path.join(dirs.root, ".staging");
             const oldFile = path.join(stagingPath, "old.tmp");
             const freshFile = path.join(stagingPath, "fresh.tmp");
@@ -463,9 +472,7 @@ describe("StorageService", () => {
 
         it("does nothing when the staging directory is empty", async () => {
             // given
-            const logger = createLogger();
-            const service = createService(local, s3, "local", logger);
-            await service.$onInit();
+            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
 
             // when
             await service.sweepStaging(0);

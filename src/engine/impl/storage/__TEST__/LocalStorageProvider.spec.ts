@@ -1,43 +1,56 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { PlatformTest } from "@tsed/platform-http/testing";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type { Readable } from "node:stream";
 import { StorageNotFoundError } from "../../../../model/exceptions/StorageNotFoundError.js";
+import { SQLITE_DATA_SOURCE } from "../../../../model/di/tokens.js";
 import { LocalStorageProvider } from "../LocalStorageProvider.js";
 
-const dirs = vi.hoisted(() => ({ root: "", staging: "" }));
+const dirs = vi.hoisted(() => ({ root: "" }));
 
-vi.mock("../../../../utils/Utils.js", () => ({
+vi.mock("../../../../db/DataSource.js", () => ({ dataSource: {} }));
+
+vi.mock("../../../../utils/Utils.js", async importOriginal => ({
+    ...(await importOriginal<typeof import("../../../../utils/Utils.js")>()),
     get filesDir(): string {
         return dirs.root;
     },
     get stagingDir(): string {
         return path.join(dirs.root, ".staging");
     },
-    getSoftDeleteLocation: (): string | null => null,
 }));
 
 async function readStream(stream: Readable): Promise<string> {
     const chunks: Buffer[] = [];
     for await (const chunk of stream) {
-        chunks.push(chunk as Buffer);
+        chunks.push(Buffer.from(chunk));
     }
+
     return Buffer.concat(chunks).toString("utf8");
 }
 
 describe("LocalStorageProvider", () => {
+    let stagingRoot: string;
     let provider: LocalStorageProvider;
 
     beforeEach(async () => {
         dirs.root = await fs.mkdtemp(path.join(os.tmpdir(), "wv-files-"));
-        dirs.staging = await fs.mkdtemp(path.join(os.tmpdir(), "wv-staging-"));
-        provider = new LocalStorageProvider();
+        stagingRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wv-staging-"));
+
+        await PlatformTest.create({
+            imports: [{ token: SQLITE_DATA_SOURCE, use: { getRepository: vi.fn() } }],
+        });
+        vi.resetAllMocks();
+
+        provider = await PlatformTest.invoke<LocalStorageProvider>(LocalStorageProvider);
     });
 
     afterEach(async () => {
+        await PlatformTest.reset();
         await fs.rm(dirs.root, { recursive: true, force: true });
-        await fs.rm(dirs.staging, { recursive: true, force: true });
+        await fs.rm(stagingRoot, { recursive: true, force: true });
     });
 
     it("streams a stored object and honours an inclusive byte range", async () => {
@@ -54,8 +67,15 @@ describe("LocalStorageProvider", () => {
     });
 
     it("rejects with StorageNotFoundError before streaming when the object is missing", async () => {
-        await expect(provider.get("missing.txt")).rejects.toBeInstanceOf(StorageNotFoundError);
-        await expect(provider.getBuffer("missing.txt")).rejects.toBeInstanceOf(StorageNotFoundError);
+        // when
+        const [streamed, buffered] = await Promise.allSettled([
+            provider.get("missing.txt"),
+            provider.getBuffer("missing.txt"),
+        ]);
+
+        // then
+        expect(streamed.status === "rejected" && streamed.reason).toBeInstanceOf(StorageNotFoundError);
+        expect(buffered.status === "rejected" && buffered.reason).toBeInstanceOf(StorageNotFoundError);
     });
 
     it("returns null from head for a missing object and size info for a present one", async () => {
@@ -74,7 +94,7 @@ describe("LocalStorageProvider", () => {
 
     it("moves a staged file into the store on putFile", async () => {
         // given
-        const staged = path.join(dirs.staging, "upload.tmp");
+        const staged = path.join(stagingRoot, "upload.tmp");
         await fs.writeFile(staged, "staged bytes");
 
         // when
@@ -114,7 +134,16 @@ describe("LocalStorageProvider", () => {
     });
 
     it("refuses keys that escape the storage root", async () => {
-        await expect(provider.getBuffer("../outside.txt")).rejects.toThrow("Invalid storage key");
-        await expect(provider.delete(["sub/dir.txt"])).rejects.toThrow();
+        // when
+        const [escaping, nested] = await Promise.allSettled([
+            provider.getBuffer("../outside.txt"),
+            provider.delete(["sub/dir.txt"]),
+        ]);
+
+        // then
+        expect(escaping.status === "rejected" && escaping.reason).toEqual(
+            new Error("Invalid storage key ../outside.txt"),
+        );
+        expect(nested.status).toBe("rejected");
     });
 });

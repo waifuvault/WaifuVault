@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { PlatformTest } from "@tsed/platform-http/testing";
 import { mockClient } from "aws-sdk-client-mock";
 import {
     CopyObjectCommand,
@@ -11,7 +12,8 @@ import {
     PutObjectCommand,
     S3Client,
 } from "@aws-sdk/client-s3";
-import type { Logger } from "@tsed/logger";
+import { sdkStreamMixin } from "@smithy/util-stream";
+import { Logger } from "@tsed/logger";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -19,7 +21,7 @@ import { Readable } from "node:stream";
 import { StorageNotFoundError } from "../../../../model/exceptions/StorageNotFoundError.js";
 import { StorageOperationError } from "../../../../model/exceptions/StorageOperationError.js";
 import { GlobalEnv } from "../../../../model/constants/GlobalEnv.js";
-import type { SettingsService } from "../../../../services/SettingsService.js";
+import { SettingsService } from "../../../../services/SettingsService.js";
 import { S3StorageProvider } from "../S3StorageProvider.js";
 
 const s3Mock = mockClient(S3Client);
@@ -34,44 +36,54 @@ const baseSettings: Partial<Record<GlobalEnv, string>> = {
     [GlobalEnv.S3_FORCE_PATH_STYLE]: "false",
 };
 
-const logger = {
-    error: (): undefined => undefined,
-} as unknown as Logger;
-
-function createProvider(overrides: Partial<Record<GlobalEnv, string>> = {}): S3StorageProvider {
-    const settings: Partial<Record<GlobalEnv, string>> = { ...baseSettings, ...overrides };
-    const settingsService = {
-        getSetting: (key: GlobalEnv): string | null => settings[key] ?? (key === GlobalEnv.S3_PREFIX ? "" : null),
-    } as unknown as SettingsService;
-    return new S3StorageProvider(settingsService, logger);
-}
-
 async function collect(iterable: AsyncIterable<string>): Promise<string[]> {
     const keys: string[] = [];
     for await (const key of iterable) {
         keys.push(key);
     }
+
     return keys;
 }
 
 describe("S3StorageProvider", () => {
-    beforeEach(() => {
+    const settingsService = { getSetting: vi.fn() };
+    const logger = { error: vi.fn() };
+
+    function createProvider(overrides: Partial<Record<GlobalEnv, string>> = {}): Promise<S3StorageProvider> {
+        const settings: Partial<Record<GlobalEnv, string>> = { ...baseSettings, ...overrides };
+        settingsService.getSetting.mockImplementation(
+            (key: GlobalEnv) => settings[key] ?? (key === GlobalEnv.S3_PREFIX ? "" : null),
+        );
+
+        return PlatformTest.invoke<S3StorageProvider>(S3StorageProvider, [
+            { token: SettingsService, use: settingsService },
+            { token: Logger, use: logger },
+        ]);
+    }
+
+    beforeEach(async () => {
+        await PlatformTest.create();
+        vi.resetAllMocks();
         s3Mock.reset();
     });
 
-    afterEach(() => {
-        s3Mock.reset();
-    });
+    afterEach(PlatformTest.reset);
 
-    it("is only enabled when endpoint, bucket and both keys are configured", () => {
-        expect(createProvider().enabled).toBe(true);
-        expect(createProvider({ [GlobalEnv.S3_SECRET_ACCESS_KEY]: "" }).enabled).toBe(false);
-        expect(createProvider({ [GlobalEnv.S3_ENDPOINT]: "" }).enabled).toBe(false);
+    it("is only enabled when endpoint, bucket and both keys are configured", async () => {
+        // given
+        const configured = await createProvider();
+        const missingSecret = await createProvider({ [GlobalEnv.S3_SECRET_ACCESS_KEY]: "" });
+        const missingEndpoint = await createProvider({ [GlobalEnv.S3_ENDPOINT]: "" });
+
+        // then
+        expect(configured.enabled).toBe(true);
+        expect(missingSecret.enabled).toBe(false);
+        expect(missingEndpoint.enabled).toBe(false);
     });
 
     it("rejects with StorageNotFoundError before returning a stream when the object is missing", async () => {
         // given
-        const provider = createProvider();
+        const provider = await createProvider();
         s3Mock.on(GetObjectCommand).rejects(new NoSuchKey({ message: "missing", $metadata: {} }));
         s3Mock.on(HeadObjectCommand).rejects(new NotFound({ message: "missing", $metadata: {} }));
 
@@ -88,7 +100,7 @@ describe("S3StorageProvider", () => {
 
     it("rethrows errors that are not a missing object", async () => {
         // given
-        const provider = createProvider();
+        const provider = await createProvider();
         s3Mock.on(GetObjectCommand).rejects(new Error("connection reset"));
 
         // when
@@ -100,8 +112,8 @@ describe("S3StorageProvider", () => {
 
     it("sends an inclusive range header and applies the normalised prefix", async () => {
         // given
-        const provider = createProvider();
-        s3Mock.on(GetObjectCommand).resolves({ Body: Readable.from([Buffer.from("world")]) as never });
+        const provider = await createProvider();
+        s3Mock.on(GetObjectCommand).resolves({ Body: sdkStreamMixin(Readable.from([Buffer.from("world")])) });
 
         // when
         await provider.get("a.txt", { start: 6, end: 10 });
@@ -117,7 +129,7 @@ describe("S3StorageProvider", () => {
 
     it("uses the bare key when no prefix is configured", async () => {
         // given
-        const provider = createProvider({ [GlobalEnv.S3_PREFIX]: "" });
+        const provider = await createProvider({ [GlobalEnv.S3_PREFIX]: "" });
         s3Mock.on(HeadObjectCommand).resolves({ ContentLength: 3, LastModified: new Date(1000) });
 
         // when
@@ -130,7 +142,7 @@ describe("S3StorageProvider", () => {
 
     it("lists keys without the prefix across pages and excludes soft deleted objects", async () => {
         // given
-        const provider = createProvider();
+        const provider = await createProvider();
         s3Mock
             .on(ListObjectsV2Command)
             .resolvesOnce({
@@ -153,7 +165,7 @@ describe("S3StorageProvider", () => {
 
     it("deletes in chunks of 1000 and aggregates per key failures while ignoring missing keys", async () => {
         // given
-        const provider = createProvider();
+        const provider = await createProvider();
         const keys = Array.from({ length: 1500 }, (_, i) => `f${i}.txt`);
         s3Mock
             .on(DeleteObjectsCommand)
@@ -166,12 +178,12 @@ describe("S3StorageProvider", () => {
             .rejectsOnce(new Error("timeout"));
 
         // when
-        const result = provider.delete(keys);
+        const error = await provider.delete(keys).catch((e: unknown) => e);
 
         // then
-        await expect(result).rejects.toBeInstanceOf(StorageOperationError);
-        const error = (await result.catch(e => e)) as StorageOperationError;
-        expect(error.failures).toHaveLength(2);
+        expect(error).toBeInstanceOf(StorageOperationError);
+        expect(error).toHaveProperty("failures", [expect.any(Error), expect.any(Error)]);
+
         const calls = s3Mock.commandCalls(DeleteObjectsCommand);
         expect(calls).toHaveLength(2);
         expect(calls[0].args[0].input.Delete?.Objects).toHaveLength(1000);
@@ -181,7 +193,7 @@ describe("S3StorageProvider", () => {
 
     it("resolves when every failure is a missing key", async () => {
         // given
-        const provider = createProvider();
+        const provider = await createProvider();
         s3Mock.on(DeleteObjectsCommand).resolves({ Errors: [{ Key: "files/x.txt", Code: "NoSuchKey" }] });
 
         // when
@@ -193,7 +205,7 @@ describe("S3StorageProvider", () => {
 
     it("uploads a staged file and removes it locally once stored", async () => {
         // given
-        const provider = createProvider();
+        const provider = await createProvider();
         const dir = await fs.mkdtemp(path.join(os.tmpdir(), "wv-s3-"));
         const staged = path.join(dir, "upload.tmp");
         await fs.writeFile(staged, "staged bytes");
@@ -215,7 +227,7 @@ describe("S3StorageProvider", () => {
 
     it("copies to the soft deleted location then deletes the original, skipping missing objects", async () => {
         // given
-        const provider = createProvider({ [GlobalEnv.SOFT_DELETE_LOCATION]: "softDelete" });
+        const provider = await createProvider({ [GlobalEnv.SOFT_DELETE_LOCATION]: "softDelete" });
         s3Mock
             .on(HeadObjectCommand, { Key: "files/x.txt" })
             .resolves({ ContentLength: 10, LastModified: new Date() })
@@ -242,7 +254,7 @@ describe("S3StorageProvider", () => {
 
     it("hard deletes on softDelete when no soft delete location is configured", async () => {
         // given
-        const provider = createProvider();
+        const provider = await createProvider();
         s3Mock.on(DeleteObjectsCommand).resolves({});
 
         // when
@@ -254,9 +266,15 @@ describe("S3StorageProvider", () => {
     });
 
     it("refuses keys that escape the prefix", async () => {
-        const provider = createProvider();
+        // given
+        const provider = await createProvider();
 
-        await expect(provider.getBuffer("../outside.txt")).rejects.toThrow("Invalid storage key");
-        await expect(provider.delete(["sub/dir.txt"])).rejects.toThrow("Invalid storage key");
+        // when
+        const bufferResult = provider.getBuffer("../outside.txt");
+        const deleteResult = provider.delete(["sub/dir.txt"]);
+
+        // then
+        await expect(bufferResult).rejects.toThrow("Invalid storage key");
+        await expect(deleteResult).rejects.toThrow("Invalid storage key");
     });
 });

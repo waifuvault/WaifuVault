@@ -1,34 +1,31 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { PlatformTest } from "@tsed/platform-http/testing";
 import { BadRequest, Forbidden, NotFound } from "@tsed/exceptions";
-import type { Logger } from "@tsed/logger";
+import { Logger } from "@tsed/logger";
 import { FileService } from "../FileService.js";
-import type { FileRepo } from "../../db/repo/FileRepo.js";
-import type { EncryptionService } from "../EncryptionService.js";
-import type { RecordInfoSocket } from "../socket/RecordInfoSocket.js";
-import type { StorageService } from "../StorageService.js";
-import type { FileUploadModel } from "../../model/db/FileUpload.model.js";
+import { FileRepo } from "../../db/repo/FileRepo.js";
+import { EncryptionService } from "../EncryptionService.js";
+import { RecordInfoSocket } from "../socket/RecordInfoSocket.js";
+import { StorageService } from "../StorageService.js";
+import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { StorageOperationError } from "../../model/exceptions/StorageOperationError.js";
 import { EntryEncryptionWrapper } from "../../model/rest/EntryEncryptionWrapper.js";
+import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 
-type EntryOverrides = {
-    token?: string;
-    originalFileName?: string;
-    hasExpired?: boolean;
-    encrypted?: boolean;
-    settings?: { password?: string } | null;
-};
+vi.mock("../../db/DataSource.js", () => ({ dataSource: {} }));
 
-function makeEntry(overrides: EntryOverrides = {}): FileUploadModel {
-    return {
+function makeEntry(overrides: Partial<FileUploadModel> = {}): FileUploadModel {
+    return Object.assign(new FileUploadModel(), {
         token: "token-1",
+        fileName: "abc",
+        fileExtension: "png",
         originalFileName: "cat.png",
-        hasExpired: false,
+        expires: null,
         encrypted: false,
         settings: null,
         storageBackend: "local",
-        fullFileNameOnSystem: "abc.png",
         ...overrides,
-    } as unknown as FileUploadModel;
+    });
 }
 
 function errnoError(code: string): NodeJS.ErrnoException {
@@ -38,35 +35,32 @@ function errnoError(code: string): NodeJS.ErrnoException {
 }
 
 describe("FileService", () => {
-    let repo: {
-        getEntries: ReturnType<typeof vi.fn>;
-        deleteEntries: ReturnType<typeof vi.fn>;
-        getEntryByFileName: ReturnType<typeof vi.fn>;
-    };
-    let encryptionService: { validatePassword: ReturnType<typeof vi.fn> };
-    let recordInfoSocket: { emit: ReturnType<typeof vi.fn> };
-    let logger: { warn: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
-    let storageService: { delete: ReturnType<typeof vi.fn>; exists: ReturnType<typeof vi.fn> };
+    const repo = { getEntries: vi.fn(), deleteEntries: vi.fn(), getEntryByFileName: vi.fn() };
+    const encryptionService = { validatePassword: vi.fn() };
+    const recordInfoSocket = { emit: vi.fn() };
+    const logger = { warn: vi.fn(), error: vi.fn() };
+    const storageService = { delete: vi.fn(), exists: vi.fn() };
     let service: FileService;
 
-    beforeEach(() => {
-        repo = {
-            getEntries: vi.fn(),
-            deleteEntries: vi.fn().mockResolvedValue(true),
-            getEntryByFileName: vi.fn(),
-        };
-        encryptionService = { validatePassword: vi.fn() };
-        recordInfoSocket = { emit: vi.fn() };
-        logger = { warn: vi.fn(), error: vi.fn() };
-        storageService = { delete: vi.fn().mockResolvedValue(undefined), exists: vi.fn().mockResolvedValue(true) };
-        service = new FileService(
-            repo as unknown as FileRepo,
-            encryptionService as unknown as EncryptionService,
-            recordInfoSocket as unknown as RecordInfoSocket,
-            logger as unknown as Logger,
-            storageService as unknown as StorageService,
-        );
+    beforeEach(async () => {
+        await PlatformTest.create({
+            imports: [{ token: SQLITE_DATA_SOURCE, use: { getRepository: vi.fn() } }],
+        });
+        vi.resetAllMocks();
+        repo.deleteEntries.mockResolvedValue(true);
+        storageService.delete.mockResolvedValue(undefined);
+        storageService.exists.mockResolvedValue(true);
+
+        service = await PlatformTest.invoke<FileService>(FileService, [
+            { token: FileRepo, use: repo },
+            { token: EncryptionService, use: encryptionService },
+            { token: RecordInfoSocket, use: recordInfoSocket },
+            { token: Logger, use: logger },
+            { token: StorageService, use: storageService },
+        ]);
     });
+
+    afterEach(PlatformTest.reset);
 
     describe("processDelete", () => {
         it("deletes stored objects before the database rows and emits the record socket", async () => {
@@ -216,7 +210,7 @@ describe("FileService", () => {
 
         it("deletes an expired entry and throws NotFound", async () => {
             // given
-            const entry = makeEntry({ hasExpired: true });
+            const entry = makeEntry({ expires: Date.now() - 1000 });
             repo.getEntryByFileName.mockResolvedValue(entry);
             repo.getEntries.mockResolvedValue([entry]);
 
@@ -340,7 +334,7 @@ describe("FileService", () => {
 
         it("deletes an expired entry and throws BadRequest", async () => {
             // given
-            const entry = makeEntry({ hasExpired: true });
+            const entry = makeEntry({ expires: Date.now() - 1000 });
             repo.getEntries.mockResolvedValue([entry]);
 
             // when
