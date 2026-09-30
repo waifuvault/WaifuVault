@@ -3,6 +3,8 @@ import { OnReady } from "@tsed/platform-http";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileService } from "./FileService.js";
 import { StorageService } from "./StorageService.js";
+import type { StorageBackend } from "../utils/typeings.js";
+import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { RunEvery } from "../model/di/decorators/RunEvery.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
@@ -69,9 +71,18 @@ export class FileCleaner implements OnReady {
     }
 
     private async sync(): Promise<void> {
-        const allFilesFromDb = await this.repo.getAllEntries();
+        const allEntries = await this.repo.getAllEntries();
+        for (const backend of this.storageService.backends) {
+            await this.syncBackend(
+                backend,
+                allEntries.filter(entry => entry.storageBackend === backend),
+            );
+        }
+    }
+
+    private async syncBackend(backend: StorageBackend, allFilesFromDb: FileUploadModel[]): Promise<void> {
         const allFilesFromSystem: string[] = [];
-        for await (const key of this.storageService.listKeys()) {
+        for await (const key of this.storageService.listKeys(backend)) {
             allFilesFromSystem.push(key);
         }
 
@@ -86,7 +97,7 @@ export class FileCleaner implements OnReady {
             if (dbFileNames.has(fileOnSystem)) {
                 continue;
             }
-            if (await this.wasRecentlyModified(fileOnSystem)) {
+            if (await this.wasRecentlyModified(backend, fileOnSystem)) {
                 continue;
             }
             orphanedOnDisk.push(fileOnSystem);
@@ -94,7 +105,7 @@ export class FileCleaner implements OnReady {
 
         for (const fileToDelete of orphanedOnDisk) {
             try {
-                await this.storageService.deleteKeys([fileToDelete], true);
+                await this.storageService.deleteKeys(backend, [fileToDelete], true);
             } catch (e) {
                 this.logger.error(`Failed to delete orphaned file ${fileToDelete}: ${(e as Error).message}`);
             }
@@ -114,8 +125,8 @@ export class FileCleaner implements OnReady {
         }
     }
 
-    private async wasRecentlyModified(fileName: string): Promise<boolean> {
-        const info = await this.storageService.headKey(fileName);
+    private async wasRecentlyModified(backend: StorageBackend, fileName: string): Promise<boolean> {
+        const info = await this.storageService.headKey(backend, fileName);
         if (!info) {
             return false;
         }

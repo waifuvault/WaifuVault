@@ -125,7 +125,7 @@ export class FileUploadService {
             }
 
             const entry = uploadEntry.build();
-            await this.storageService.commit(stagedPath, entry);
+            entry.storageBackend = await this.storageService.commit(stagedPath, entry);
 
             const savedEntry = await this.saveCommittedEntry(entry);
 

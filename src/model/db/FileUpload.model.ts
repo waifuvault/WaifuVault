@@ -1,7 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import { AbstractModel } from "./AbstractModel.js";
 import { FileUtils } from "../../utils/Utils.js";
-import type { EntrySettings, ProtectionLevel } from "../../utils/typeings.js";
+import type { EntrySettings, ProtectionLevel, StorageBackend } from "../../utils/typeings.js";
 import type { BucketModel } from "./Bucket.model.js";
 import { AlbumModel } from "./Album.model.js";
 import { constant } from "@tsed/di";
@@ -102,6 +102,13 @@ export class FileUploadModel extends AbstractModel {
         default: false,
     })
     public encrypted: boolean;
+
+    @Column({
+        nullable: false,
+        type: "text",
+        default: "local",
+    })
+    public storageBackend: StorageBackend;
 
     @Column({
         nullable: true,

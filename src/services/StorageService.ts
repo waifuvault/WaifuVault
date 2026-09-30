@@ -5,74 +5,108 @@ import path from "node:path";
 import type { Readable } from "node:stream";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import type { IStorageProvider } from "../engine/IStorageProvider.js";
-import type { ByteRange, StoredObjectInfo } from "../utils/typeings.js";
+import type { ByteRange, StorageBackend, StoredObjectInfo } from "../utils/typeings.js";
+import { StorageOperationError } from "../model/exceptions/StorageOperationError.js";
 import { LocalStorageProvider } from "../engine/impl/index.js";
 import { stagingDir } from "../utils/Utils.js";
 
 @Service()
 export class StorageService implements OnInit {
-    private readonly provider: IStorageProvider;
+    private readonly providers: Map<StorageBackend, IStorageProvider>;
+    private readonly defaultProvider: IStorageProvider;
 
     public constructor(
         @Inject() localStorageProvider: LocalStorageProvider,
         @Inject() private logger: Logger,
     ) {
-        this.provider = localStorageProvider;
+        this.providers = new Map([[localStorageProvider.id, localStorageProvider]]);
+        this.defaultProvider = localStorageProvider;
     }
 
     public async $onInit(): Promise<void> {
         await fs.mkdir(stagingDir, { recursive: true });
     }
 
+    public get backends(): StorageBackend[] {
+        return [...this.providers.keys()];
+    }
+
     public openStream(entry: FileUploadModel, range?: ByteRange): Promise<Readable> {
-        return this.provider.get(entry.fullFileNameOnSystem, range);
+        return this.providerFor(entry.storageBackend).get(entry.fullFileNameOnSystem, range);
     }
 
     public readAll(entry: FileUploadModel): Promise<Buffer> {
-        return this.provider.getBuffer(entry.fullFileNameOnSystem);
+        return this.providerFor(entry.storageBackend).getBuffer(entry.fullFileNameOnSystem);
     }
 
     public write(entry: FileUploadModel, body: Buffer): Promise<void> {
-        return this.provider.put(entry.fullFileNameOnSystem, body);
+        return this.providerFor(entry.storageBackend).put(entry.fullFileNameOnSystem, body);
     }
 
-    public commit(stagedPath: string, entry: FileUploadModel): Promise<void> {
-        return this.provider.putFile(entry.fullFileNameOnSystem, stagedPath);
+    public async commit(stagedPath: string, entry: FileUploadModel): Promise<StorageBackend> {
+        await this.defaultProvider.putFile(entry.fullFileNameOnSystem, stagedPath);
+        return this.defaultProvider.id;
     }
 
     public async exists(entry: FileUploadModel): Promise<boolean> {
-        const info = await this.provider.head(entry.fullFileNameOnSystem);
+        const info = await this.providerFor(entry.storageBackend).head(entry.fullFileNameOnSystem);
         return info !== null;
     }
 
-    public delete(entries: FileUploadModel[], soft = false): Promise<void> {
-        return this.deleteKeys(
-            entries.map(entry => entry.fullFileNameOnSystem),
-            soft,
-        );
+    public async delete(entries: FileUploadModel[], soft = false): Promise<void> {
+        const keysByBackend = new Map<StorageBackend, string[]>();
+        for (const entry of entries) {
+            const keys = keysByBackend.get(entry.storageBackend) ?? [];
+            keys.push(entry.fullFileNameOnSystem);
+            keysByBackend.set(entry.storageBackend, keys);
+        }
+
+        const failures: unknown[] = [];
+        for (const [backend, keys] of keysByBackend) {
+            try {
+                await this.deleteKeys(backend, keys, soft);
+            } catch (e) {
+                failures.push(...(e instanceof StorageOperationError ? e.failures : [e]));
+            }
+        }
+
+        if (failures.length > 0) {
+            throw new StorageOperationError(failures, `Failed to delete ${failures.length} stored object(s)`);
+        }
     }
 
-    public deleteKeys(keys: string[], soft = false): Promise<void> {
+    public deleteKeys(backend: StorageBackend, keys: string[], soft = false): Promise<void> {
         if (keys.length === 0) {
             return Promise.resolve();
         }
-        return soft ? this.provider.softDelete(keys) : this.provider.delete(keys);
+        const provider = this.providerFor(backend);
+        return soft ? provider.softDelete(keys) : provider.delete(keys);
     }
 
-    public headKey(key: string): Promise<StoredObjectInfo | null> {
-        return this.provider.head(key);
+    public headKey(backend: StorageBackend, key: string): Promise<StoredObjectInfo | null> {
+        return this.providerFor(backend).head(key);
     }
 
-    public listKeys(): AsyncIterable<string> {
-        return this.provider.list();
+    public listKeys(backend: StorageBackend): AsyncIterable<string> {
+        return this.providerFor(backend).list();
     }
 
     public async countObjects(): Promise<number> {
         let count = 0;
-        for await (const _key of this.provider.list()) {
-            count++;
+        for (const provider of this.providers.values()) {
+            for await (const _key of provider.list()) {
+                count++;
+            }
         }
         return count;
+    }
+
+    private providerFor(backend: StorageBackend): IStorageProvider {
+        const provider = this.providers.get(backend);
+        if (!provider) {
+            throw new Error(`No storage provider is configured for backend "${backend}"`);
+        }
+        return provider;
     }
 
     public async removeStaged(stagedPath: string): Promise<void> {

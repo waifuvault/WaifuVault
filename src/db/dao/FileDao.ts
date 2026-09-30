@@ -357,11 +357,11 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
     }
 
     private generateKey(entryToken: string | string[] | number | number[]): string {
-        return this.h64ToString(`entryCache_${entryToken}`);
+        return this.h64ToString(`entryCache_v2_${entryToken}`);
     }
 
     private generateFileNameKey(fileName: string): string {
-        return this.h64ToString(`entryFileNameCache_${fileName}`);
+        return this.h64ToString(`entryFileNameCache_v2_${fileName}`);
     }
 
     public async removeDuplicates(transaction?: EntityManager): Promise<FileUploadModel[]> {
