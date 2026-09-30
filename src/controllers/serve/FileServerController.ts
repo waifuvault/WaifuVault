@@ -72,7 +72,7 @@ export class FileServerController {
             res.contentType(mime);
             this.commitEntryResponse(res, entryWrapper.entry, stream);
 
-            return stream;
+            return this.streamBody(req, stream);
         }
 
         res.contentType(mime);
@@ -103,7 +103,30 @@ export class FileServerController {
 
         this.commitEntryResponse(res, entryWrapper.entry, stream);
 
-        return stream;
+        return this.streamBody(req, stream);
+    }
+
+    private streamBody(req: Request, stream: Readable): Readable | undefined {
+        if (req.method !== "HEAD") {
+            return stream;
+        }
+
+        stream.destroy();
+        return undefined;
+    }
+
+    private async pipeToResponse(req: Request, res: Response, stream: Readable): Promise<void> {
+        if (req.method === "HEAD") {
+            stream.destroy();
+            res.end();
+            return;
+        }
+
+        try {
+            await pipeline(stream, res);
+        } catch (e) {
+            this.logger.error(e);
+        }
     }
 
     private commitEntryResponse(res: Response, entry: FileUploadModel, stream?: Readable): void {
@@ -119,6 +142,9 @@ export class FileServerController {
         stream.on("error", err => {
             this.logger.error(err);
             res.destroy(err);
+        });
+        res.once("close", () => {
+            stream.destroy();
         });
     }
 
@@ -137,11 +163,7 @@ export class FileServerController {
 
             res.setHeader("Content-Length", videoSize);
             res.writeHead(StatusCodes.OK, { "Content-Type": contentType });
-            try {
-                await pipeline(videoStream, res);
-            } catch (e) {
-                this.logger.error(e);
-            }
+            await this.pipeToResponse(req, res, videoStream);
 
             return;
         }
@@ -169,11 +191,7 @@ export class FileServerController {
         const videoStream = await entryWrapper.getStream(undefined, { start, end });
 
         res.writeHead(StatusCodes.PARTIAL_CONTENT, headers);
-        try {
-            await pipeline(videoStream, res);
-        } catch (e) {
-            this.logger.error(e);
-        }
+        await this.pipeToResponse(req, res, videoStream);
     }
 
     private async postProcess(entry: FileUploadModel): Promise<void> {

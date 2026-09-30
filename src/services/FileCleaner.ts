@@ -72,11 +72,21 @@ export class FileCleaner implements OnReady {
 
     private async sync(): Promise<void> {
         const allEntries = await this.repo.getAllEntries();
+        const failures: string[] = [];
+
         for (const backend of this.storageService.backends) {
-            await this.syncBackend(
-                backend,
-                allEntries.filter(entry => entry.storageBackend === backend),
-            );
+            try {
+                await this.syncBackend(
+                    backend,
+                    allEntries.filter(entry => entry.storageBackend === backend),
+                );
+            } catch (e) {
+                failures.push(`${backend}: ${(e as Error).message}`);
+            }
+        }
+
+        if (failures.length > 0) {
+            throw new Error(`Failed to sync storage backend(s) ${failures.join("; ")}`);
         }
     }
 
@@ -92,7 +102,7 @@ export class FileCleaner implements OnReady {
         }
         const systemFileNames = new Set<string>(allFilesFromSystem);
 
-        const orphanedOnDisk: string[] = [];
+        const orphanCandidates: string[] = [];
         for (const fileOnSystem of allFilesFromSystem) {
             if (dbFileNames.has(fileOnSystem)) {
                 continue;
@@ -100,8 +110,10 @@ export class FileCleaner implements OnReady {
             if (await this.wasRecentlyModified(backend, fileOnSystem)) {
                 continue;
             }
-            orphanedOnDisk.push(fileOnSystem);
+            orphanCandidates.push(fileOnSystem);
         }
+
+        const orphanedOnDisk = await this.withoutCurrentEntries(backend, orphanCandidates);
 
         for (const fileToDelete of orphanedOnDisk) {
             try {
@@ -123,6 +135,19 @@ export class FileCleaner implements OnReady {
                 this.logger.error(`Failed to delete orphaned database entries: ${(e as Error).message}`);
             }
         }
+    }
+
+    private async withoutCurrentEntries(backend: StorageBackend, fileNames: string[]): Promise<string[]> {
+        if (fileNames.length === 0) {
+            return fileNames;
+        }
+
+        const currentEntries = await this.repo.getAllEntries();
+        const currentFileNames = new Set(
+            currentEntries.filter(entry => entry.storageBackend === backend).map(entry => entry.fullFileNameOnSystem),
+        );
+
+        return fileNames.filter(fileName => !currentFileNames.has(fileName));
     }
 
     private async wasRecentlyModified(backend: StorageBackend, fileName: string): Promise<boolean> {

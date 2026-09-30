@@ -2,6 +2,7 @@ package thumbnail
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -13,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -20,6 +22,7 @@ import (
 
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/samber/lo"
+	"github.com/waifuvault/WaifuVault/shared/storage"
 	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dto"
 )
@@ -42,7 +45,6 @@ type Processor interface {
 }
 
 type processor struct {
-	baseUrl       string
 	ffmpegFormats []string
 	imageFormats  []string
 }
@@ -50,7 +52,6 @@ type processor struct {
 // NewProcessor creates a new thumbnail processor
 func NewProcessor(ffmpegFormats []string, supportedExtensions []string) Processor {
 	return &processor{
-		baseUrl:       utils.FileBaseUrl,
 		ffmpegFormats: ffmpegFormats,
 		imageFormats:  supportedExtensions,
 	}
@@ -62,10 +63,15 @@ func (p *processor) GenerateThumbnail(fileEntry dto.FileEntryDto, animate bool) 
 		return nil, fmt.Errorf("%w: %s", ErrUnsupportedFileType, fileEntry.MediaType)
 	}
 
+	backend, err := storage.ParseBackend(fileEntry.StorageBackend)
+	if err != nil {
+		return nil, err
+	}
+
 	if utils.IsImage(fileEntry.MediaType) {
-		return p.generateImageThumbnailFromFileEntry(fileEntry, animate)
+		return p.generateImageThumbnailFromFileEntry(fileEntry, backend, animate)
 	} else if utils.IsVideo(fileEntry.MediaType) {
-		return p.generateVideoThumbnail(fileEntry.FullFileNameOnSystem)
+		return p.generateVideoThumbnail(fileEntry.FullFileNameOnSystem, backend)
 	}
 
 	return nil, fmt.Errorf("%w: %s", ErrUnsupportedFileType, fileEntry.MediaType)
@@ -100,7 +106,7 @@ func (p *processor) GenerateThumbnailFromMultipart(file multipart.File, header *
 	if utils.IsImage(mediaType) && lo.Contains(p.imageFormats, extension) {
 		return p.generateImageThumbnailFromFile(tempFile.Name(), extension, animate)
 	} else if utils.IsVideo(mediaType) && lo.Contains(p.ffmpegFormats, extension) {
-		return p.generateVideoThumbnailFromPath(tempFile.Name())
+		return p.generateVideoThumbnailFromPath(context.Background(), tempFile.Name(), nil)
 	}
 
 	return nil, fmt.Errorf("%w: %s (detected: %s)", ErrUnsupportedFileType, header.Filename, mediaType)
@@ -141,15 +147,47 @@ func (p *processor) SupportsMultipartFile(header *multipart.FileHeader) bool {
 }
 
 // generateVideoThumbnail creates a thumbnail from a video file
-func (p *processor) generateVideoThumbnail(videoPath string) ([]byte, error) {
-	fullPath := p.baseUrl + "/" + videoPath
-	return p.generateVideoThumbnailFromPath(fullPath)
+func (p *processor) generateVideoThumbnail(videoPath string, backend storage.Backend) ([]byte, error) {
+	if backend == storage.Local {
+		return p.generateVideoThumbnailFromPath(context.Background(), filepath.Join(utils.FileBaseUrl, videoPath), nil)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), remoteVideoTimeout)
+	defer cancel()
+
+	input, err := storage.InputLocation(ctx, backend, videoPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.generateVideoThumbnailFromPath(ctx, input, []string{"-rw_timeout", remoteReadWriteTimeoutMicros})
 }
 
 // generateImageThumbnailFromFileEntry creates a thumbnail from a file entry with animate parameter
-func (p *processor) generateImageThumbnailFromFileEntry(fileEntry dto.FileEntryDto, animate bool) ([]byte, error) {
-	file := p.baseUrl + "/" + fileEntry.FullFileNameOnSystem
-	return p.generateImageThumbnailFromFile(file, fileEntry.Extension, animate)
+func (p *processor) generateImageThumbnailFromFileEntry(fileEntry dto.FileEntryDto, backend storage.Backend, animate bool) ([]byte, error) {
+	if backend == storage.Local {
+		file := filepath.Join(utils.FileBaseUrl, fileEntry.FullFileNameOnSystem)
+		return p.generateImageThumbnailFromFile(file, fileEntry.Extension, animate)
+	}
+
+	object, err := storage.Open(context.Background(), backend, fileEntry.FullFileNameOnSystem)
+	if err != nil {
+		return nil, err
+	}
+	defer object.Close()
+
+	tempFile, err := os.CreateTemp("", "thumbnail-remote-*."+fileEntry.Extension)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(tempFile.Name())
+	defer tempFile.Close()
+
+	if _, err := io.Copy(tempFile, object); err != nil {
+		return nil, fmt.Errorf("failed to copy file content: %w", err)
+	}
+
+	return p.generateImageThumbnailFromFile(tempFile.Name(), fileEntry.Extension, animate)
 }
 
 // generateImageThumbnailFromFile creates a thumbnail from an image file path
@@ -284,8 +322,10 @@ func (p *processor) getImportParams(extension string) *vips.ImportParams {
 }
 
 // generateVideoThumbnailFromPath creates a thumbnail from a video file path (without baseUrl prefix)
-func (p *processor) generateVideoThumbnailFromPath(videoPath string) ([]byte, error) {
-	probeCmd := exec.Command("ffprobe", "-v", "error", "-show_format", "-print_format", "json", videoPath)
+func (p *processor) generateVideoThumbnailFromPath(ctx context.Context, videoPath string, inputArgs []string) ([]byte, error) {
+	probeArgs := append([]string{"-v", "error", "-show_format", "-print_format", "json"}, inputArgs...)
+	probeArgs = append(probeArgs, videoPath)
+	probeCmd := exec.CommandContext(ctx, "ffprobe", probeArgs...)
 	probeOut, err := probeCmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve video metadata: %w", err)
@@ -310,8 +350,8 @@ func (p *processor) generateVideoThumbnailFromPath(videoPath string) ([]byte, er
 	randomTimestamp := globalFloat64() * duration
 	ts := fmt.Sprintf("%.2f", randomTimestamp)
 
-	ffmpegArgs := []string{
-		"-ss", ts,
+	ffmpegArgs := append([]string{"-ss", ts}, inputArgs...)
+	ffmpegArgs = append(ffmpegArgs,
 		"-i", videoPath,
 		"-frames:v", "1",
 		"-f", "image2",
@@ -319,9 +359,9 @@ func (p *processor) generateVideoThumbnailFromPath(videoPath string) ([]byte, er
 		"-q:v", "10",
 		"-vf", "scale=-1:200",
 		"pipe:1",
-	}
+	)
 
-	ffmpegCmd := exec.Command("ffmpeg", ffmpegArgs...)
+	ffmpegCmd := exec.CommandContext(ctx, "ffmpeg", ffmpegArgs...)
 	var buf bytes.Buffer
 	ffmpegCmd.Stdout = &buf
 
@@ -442,7 +482,7 @@ func (p *processor) GenerateThumbnailFromURL(url string, animate bool) ([]byte, 
 	if utils.IsImage(mediaType) && lo.Contains(p.imageFormats, extension) {
 		return p.generateImageThumbnailFromFile(tempFile.Name(), extension, animate)
 	} else if utils.IsVideo(mediaType) && lo.Contains(p.ffmpegFormats, extension) {
-		return p.generateVideoThumbnailFromPath(tempFile.Name())
+		return p.generateVideoThumbnailFromPath(context.Background(), tempFile.Name(), nil)
 	}
 
 	return nil, fmt.Errorf("%w: %s", ErrUnsupportedFileType, mediaType)

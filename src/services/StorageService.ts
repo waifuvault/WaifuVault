@@ -7,7 +7,10 @@ import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import type { IStorageProvider } from "../engine/IStorageProvider.js";
 import type { ByteRange, StorageBackend, StoredObjectInfo } from "../utils/typeings.js";
 import { StorageOperationError } from "../model/exceptions/StorageOperationError.js";
-import { LocalStorageProvider } from "../engine/impl/index.js";
+import { LocalStorageProvider } from "../engine/impl/storage/LocalStorageProvider.js";
+import { S3StorageProvider } from "../engine/impl/storage/S3StorageProvider.js";
+import { SettingsService } from "./SettingsService.js";
+import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 import { stagingDir } from "../utils/Utils.js";
 
 @Service()
@@ -17,10 +20,23 @@ export class StorageService implements OnInit {
 
     public constructor(
         @Inject() localStorageProvider: LocalStorageProvider,
+        @Inject() s3StorageProvider: S3StorageProvider,
+        @Inject() settingsService: SettingsService,
         @Inject() private logger: Logger,
     ) {
-        this.providers = new Map([[localStorageProvider.id, localStorageProvider]]);
-        this.defaultProvider = localStorageProvider;
+        this.providers = new Map<StorageBackend, IStorageProvider>([[localStorageProvider.id, localStorageProvider]]);
+        if (s3StorageProvider.enabled) {
+            this.providers.set(s3StorageProvider.id, s3StorageProvider);
+        }
+
+        const configuredBackend = settingsService.getSetting(GlobalEnv.STORAGE_BACKEND);
+        const defaultProvider = this.providers.get(configuredBackend as StorageBackend);
+        if (!defaultProvider) {
+            throw new Error(
+                `STORAGE_BACKEND is "${configuredBackend}" but no storage provider is configured for it. Valid values are "local" and "s3", and "s3" requires S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY to be set`,
+            );
+        }
+        this.defaultProvider = defaultProvider;
     }
 
     public async $onInit(): Promise<void> {

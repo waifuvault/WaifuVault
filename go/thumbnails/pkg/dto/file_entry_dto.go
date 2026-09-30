@@ -8,6 +8,7 @@ type FileEntryDto struct {
 	FullFileNameOnSystem string `json:"fileOnDisk" example:"uploads/image.jpg" validate:"required" description:"Path to the file on the server"`
 	MediaType            string `json:"mediaType" example:"image/jpeg" validate:"required" description:"MIME type of the file"`
 	Extension            string `json:"extension" example:"jpg" validate:"required" description:"File extension"`
+	StorageBackend       string `json:"storageBackend" example:"local" enums:"local,s3" description:"Where the file is stored, empty means local"`
 }
 
 func FromModel(model mod.FileEntry) FileEntryDto {
@@ -16,5 +17,6 @@ func FromModel(model mod.FileEntry) FileEntryDto {
 		FullFileNameOnSystem: model.FullFileNameOnSystem(),
 		MediaType:            model.MediaType,
 		Extension:            model.Extension,
+		StorageBackend:       model.StorageBackend,
 	}
 }

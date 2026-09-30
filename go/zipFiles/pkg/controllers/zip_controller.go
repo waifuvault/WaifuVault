@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/waifuvault/WaifuVault/shared/storage"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/wapimod"
 )
@@ -36,8 +37,11 @@ func (s *Service) zipFiles(ctx fiber.Ctx) error {
 		return ctx.Status(fiber.StatusConflict).JSON(wapimod.NewApiError("another process is already zipping this album from this IP", errors.New("another process is already zipping this album from this IP")))
 	}
 
-	result, err := s.ZipService.ZipFiles(albumName, filesToZip, key)
+	result, err := s.ZipService.ZipFiles(ctx.Context(), albumName, filesToZip, key)
 	if err != nil {
+		if errors.Is(err, storage.ErrUnknownBackend) {
+			return ctx.Status(fiber.StatusBadRequest).JSON(wapimod.NewApiError("invalid storage backend", err))
+		}
 		return ctx.Status(fiber.StatusInternalServerError).JSON(wapimod.NewApiError("error zipping files", err))
 	}
 	return ctx.Status(fiber.StatusOK).JSON(wapimod.NewApiResult(result, true))

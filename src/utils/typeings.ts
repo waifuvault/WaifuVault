@@ -16,7 +16,7 @@ export type EntrySettings = {
     oneTimeDownload?: boolean;
 };
 
-export type StorageBackend = "local";
+export type StorageBackend = "local" | "s3";
 
 export type ByteRange = {
     start: number;

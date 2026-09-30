@@ -1,6 +1,7 @@
 package zip
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -9,19 +10,28 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/klauspost/compress/zip"
+	"github.com/waifuvault/WaifuVault/shared/storage"
 	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
 )
 
-var activeZipping sync.Map
+type (
+	Service interface {
+		ZipFiles(ctx context.Context, albumName string, filesToZip []mod.ZipFileEntry, concurrentKey string) (string, error)
+		IsZipping(concurrentKey string) bool
+	}
 
-type Service interface {
-	ZipFiles(albumName string, filesToZip []mod.ZipFileEntry, concurrentKey string) (string, error)
-	IsZipping(concurrentKey string) bool
-}
+	service struct {
+	}
+)
 
-type service struct {
-}
+const (
+	zipEntryMode os.FileMode = 0o644
+)
+
+var (
+	activeZipping sync.Map
+)
 
 func NewService() Service {
 	return &service{}
@@ -33,6 +43,7 @@ func (s *service) IsZipping(concurrentKey string) bool {
 }
 
 func (s *service) ZipFiles(
+	ctx context.Context,
 	albumName string,
 	filesToZip []mod.ZipFileEntry,
 	concurrentKey string,
@@ -50,32 +61,26 @@ func (s *service) ZipFiles(
 	defer zipWriter.Close()
 
 	for _, file := range filesToZip {
-		if err := addFileToZip(zipWriter, file); err != nil {
+		if err := addFileToZip(ctx, zipWriter, file); err != nil {
 			return "", err
 		}
 	}
 	return zipName, nil
 }
 
-func addFileToZip(zipWriter *zip.Writer, fileObject mod.ZipFileEntry) error {
-	file, err := getFileToZip(fileObject)
+func addFileToZip(ctx context.Context, zipWriter *zip.Writer, fileObject mod.ZipFileEntry) error {
+	file, err := getFileToZip(ctx, fileObject)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	info, err := file.Stat()
-	if err != nil {
-		return err
+	header := &zip.FileHeader{
+		Name:     filepath.Base(fileObject.ParsedFilename),
+		Method:   zip.Deflate,
+		Modified: file.ModTime,
 	}
-
-	header, err := zip.FileInfoHeader(info)
-	if err != nil {
-		return err
-	}
-
-	header.Name = filepath.Base(fileObject.ParsedFilename)
-	header.Method = zip.Deflate
+	header.SetMode(zipEntryMode)
 
 	writer, err := zipWriter.CreateHeader(header)
 	if err != nil {
@@ -97,6 +102,11 @@ func createZipFile(name string) (*os.File, string, error) {
 	return create, zipName, nil
 }
 
-func getFileToZip(FileOnDisk mod.ZipFileEntry) (*os.File, error) {
-	return os.Open(filepath.Join(utils.FileBaseUrl, FileOnDisk.FullFileNameOnSystem))
+func getFileToZip(ctx context.Context, fileObject mod.ZipFileEntry) (*storage.Object, error) {
+	backend, err := storage.ParseBackend(fileObject.StorageBackend)
+	if err != nil {
+		return nil, err
+	}
+
+	return storage.Open(ctx, backend, fileObject.FullFileNameOnSystem)
 }

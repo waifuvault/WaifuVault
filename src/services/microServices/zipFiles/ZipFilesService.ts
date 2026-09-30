@@ -23,6 +23,7 @@ export class ZipFilesService {
             return {
                 fileOnDisk: file.fullFileNameOnSystem,
                 parsedFilename: file.parsedFileName,
+                storageBackend: file.storageBackend,
             };
         });
 

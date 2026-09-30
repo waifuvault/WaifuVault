@@ -1,5 +1,4 @@
 import { defineConfig, type Plugin } from "vitest/config";
-import swc from "unplugin-swc";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -18,26 +17,19 @@ const resolveJsToTs: Plugin = {
 };
 
 export default defineConfig({
-    oxc: false,
-    plugins: [
-        resolveJsToTs,
-        swc.vite({
-            jsc: {
-                parser: {
-                    syntax: "typescript",
-                    decorators: true,
-                    dynamicImport: true,
-                },
-                transform: {
-                    legacyDecorator: true,
-                    decoratorMetadata: true,
-                    useDefineForClassFields: false,
-                },
-                target: "esnext",
-                keepClassNames: true,
-            },
-        }),
-    ],
+    oxc: {
+        decorator: {
+            legacy: true,
+            emitDecoratorMetadata: true,
+        },
+        typescript: {
+            removeClassFieldsWithoutInitializer: true,
+        },
+        assumptions: {
+            setPublicClassFields: true,
+        },
+    },
+    plugins: [resolveJsToTs],
     test: {
         include: ["src/**/__TEST__/**/*.spec.ts"],
         globals: true,

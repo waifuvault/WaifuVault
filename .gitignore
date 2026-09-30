@@ -133,3 +133,4 @@ files/**
 **/*.iml
 postgres.env
 postgres-data/**
+scripts

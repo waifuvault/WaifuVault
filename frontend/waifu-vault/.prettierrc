@@ -1,8 +1,0 @@
-{
-  "tabWidth": 4,
-  "semi": true,
-  "bracketSpacing": true,
-  "arrowParens": "avoid",
-  "proseWrap": "never",
-  "printWidth": 120
-}

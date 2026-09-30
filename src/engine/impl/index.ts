@@ -14,6 +14,7 @@ export * from "./fileFilters/AvFilter.js";
 export * from "./fileFilters/FileRejectionFilter.js";
 export * from "./fileFilters/MimeFilter.js";
 export * from "./storage/LocalStorageProvider.js";
+export * from "./storage/S3StorageProvider.js";
 export * from "./transfomers/dto/AlbumModelTransformer.js";
 export * from "./transfomers/dto/BucketModelTransformer.js";
 export * from "./transfomers/dto/FileModelTransformer.js";

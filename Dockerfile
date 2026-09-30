@@ -21,4 +21,4 @@ EXPOSE 8081
 ENV PORT 8081
 ENV NODE_ENV production
 
-CMD [ "sh", "-c", "npm run runmigration && npm run start:prod" ]
+CMD [ "sh", "-c", "node dist/db/runMigration.js && npm run start:prod" ]

@@ -1,0 +1,11 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "tabWidth": 4,
+    "semi": true,
+    "bracketSpacing": true,
+    "arrowParens": "avoid",
+    "proseWrap": "never",
+    "printWidth": 120,
+    "sortPackageJson": true,
+    "ignorePatterns": ["coverage", "dist", "node_modules", "public", "migrations", ".next"]
+}
