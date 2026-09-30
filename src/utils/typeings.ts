@@ -16,6 +16,19 @@ export type EntrySettings = {
     oneTimeDownload?: boolean;
 };
 
+export type StorageBackend = "local" | "s3";
+
+export type ByteRange = {
+    start: number;
+    end: number;
+};
+
+export type StoredObjectInfo = {
+    key: string;
+    size: number;
+    lastModified: Date;
+};
+
 export type AvScanResult = {
     passed: boolean;
     engineName: string;

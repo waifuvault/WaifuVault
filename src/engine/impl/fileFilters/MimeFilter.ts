@@ -18,7 +18,7 @@ export class MimeFilter extends AbstractFileFilter {
         super(logger);
     }
 
-    protected override async doFilterInternal(file: string | PlatformMulterFile): Promise<boolean> {
+    public override async doFilter(file: string | PlatformMulterFile): Promise<boolean> {
         const resource = typeof file === "string" ? file : file.path;
         return !(await this.mimeService.isBlocked(resource));
     }

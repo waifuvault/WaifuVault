@@ -389,12 +389,13 @@ export class AlbumService implements AfterInit {
 
         const zipLocation = await this.zipFilesService.zipFiles(filesToZip, album.name);
 
-        if (!(await FileUtils.fileExists(zipLocation))) {
-            this.logger.error(`Zip file ${zipLocation} failed to be created`);
+        let handle: fs.promises.FileHandle;
+        try {
+            handle = await fs.promises.open(zipLocation, "r");
+        } catch (e) {
+            this.logger.error(`Zip file ${zipLocation} failed to be created: ${(e as Error).message}`);
             throw new InternalServerError(`Zip file ${zipLocation} failed to be created`);
         }
-
-        const handle = await fs.promises.open(zipLocation, "r");
 
         const zipStream = handle.createReadStream();
         zipStream.on("error", err => {

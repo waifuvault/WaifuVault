@@ -1,7 +1,8 @@
 import multer from "multer";
 import { Request } from "express";
 import fs from "node:fs";
-import { filesDir, FileUtils } from "../../utils/Utils.js";
+import path from "node:path";
+import { FileUtils, stagingDir } from "../../utils/Utils.js";
 import { uuid } from "../../utils/uuidUtils.js";
 import { RequestEntityTooLarge } from "@tsed/exceptions";
 import { inject } from "@tsed/di";
@@ -25,7 +26,7 @@ export class SizeLimitDiskStorage implements multer.StorageEngine {
             const ext = FileUtils.getExtension(file.originalname);
             const token = uuid();
             const fileName = ext ? `${token}.${ext}` : token;
-            const filePath = `${filesDir}/${fileName}`;
+            const filePath = path.join(stagingDir, fileName);
 
             const outStream = fs.createWriteStream(filePath);
             let fileSize = 0;
@@ -76,7 +77,7 @@ export class SizeLimitDiskStorage implements multer.StorageEngine {
                 }
                 hasError = true;
                 callback(null, {
-                    destination: filesDir,
+                    destination: stagingDir,
                     filename: fileName,
                     path: filePath,
                     size: fileSize,

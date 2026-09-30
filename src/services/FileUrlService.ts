@@ -2,7 +2,7 @@ import { Inject, Service } from "@tsed/di";
 import { BadRequest, Forbidden, HTTPException, RequestURITooLong } from "@tsed/exceptions";
 import path from "node:path";
 import fs from "node:fs";
-import { filesDir } from "../utils/Utils.js";
+import { stagingDir } from "../utils/Utils.js";
 import Module from "node:module";
 import { Logger } from "@tsed/logger";
 import { Readable } from "node:stream";
@@ -73,7 +73,7 @@ export class FileUrlService {
         const now = Date.now();
         const originalFileName = url.substring(url.lastIndexOf("/") + 1);
         const ext = originalFileName.split(".").pop();
-        const destination = path.resolve(`${filesDir}/${now}.${ext}`);
+        const destination = path.join(stagingDir, `${now}.${ext}`);
         const fileStream = fs.createWriteStream(destination);
         await pipeline(Readable.fromWeb(response), fileStream);
         return [destination, originalFileName];

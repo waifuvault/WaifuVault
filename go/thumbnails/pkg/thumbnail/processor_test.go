@@ -2,17 +2,20 @@ package thumbnail
 
 import (
 	"bytes"
+	"io/fs"
 	"mime/multipart"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/waifuvault/WaifuVault/shared/storage"
+	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/thumbnails/pkg/dto"
 )
 
 func newTestProcessor() Processor {
 	return &processor{
-		baseUrl:       "/tmp/test",
 		ffmpegFormats: []string{"mp4", "webm", "avi"},
 		imageFormats:  []string{"jpg", "png", "gif", "webp"},
 	}
@@ -492,6 +495,46 @@ func TestProcessor_GenerateThumbnail_UnsupportedFileType(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.ErrorIs(t, err, ErrUnsupportedFileType)
+}
+
+func TestProcessor_GenerateThumbnail_UnknownStorageBackend(t *testing.T) {
+	// given
+	p := newTestProcessor()
+	fileEntry := dto.FileEntryDto{
+		MediaType:            "image/png",
+		Extension:            "png",
+		FullFileNameOnSystem: "test.png",
+		StorageBackend:       "ftp",
+	}
+
+	// when
+	result, err := p.GenerateThumbnail(fileEntry, false)
+
+	// then
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, storage.ErrUnknownBackend)
+}
+
+func TestProcessor_GenerateThumbnail_LocalMissingFileReadsFromFileBaseUrl(t *testing.T) {
+	// given
+	originalFileBaseUrl := utils.FileBaseUrl
+	utils.FileBaseUrl = t.TempDir()
+	defer func() { utils.FileBaseUrl = originalFileBaseUrl }()
+
+	p := newTestProcessor()
+	fileEntry := dto.FileEntryDto{
+		MediaType:            "image/png",
+		Extension:            "png",
+		FullFileNameOnSystem: "missing.png",
+	}
+
+	// when
+	result, err := p.GenerateThumbnail(fileEntry, false)
+
+	// then
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, fs.ErrNotExist)
+	assert.Contains(t, err.Error(), filepath.Join(utils.FileBaseUrl, "missing.png"))
 }
 
 func TestFileSupported_ImageWithSupportedExtension(t *testing.T) {

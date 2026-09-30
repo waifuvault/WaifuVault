@@ -6,7 +6,7 @@ import { Builder } from "builder-pattern";
 import { ObjectUtils } from "../../utils/Utils.js";
 import type { ProtectionLevel } from "../../utils/typeings.js";
 
-export type UrlFileMixin = FileUploadModel & {
+export type UrlFileMixin = Omit<FileUploadModel, "storageBackend"> & {
     url: string;
     parsedFilename: string;
     expiresString: string | null;
@@ -26,8 +26,9 @@ export class AdminBucketDto {
     public static fromModel(model: BucketModel): AdminBucketDto {
         const files =
             model?.files?.map(f => {
+                const { storageBackend: _storageBackend, ...file } = f;
                 return {
-                    ...f,
+                    ...file,
                     url: f.getPublicUrl(),
                     parsedFilename: f.parsedFileName,
                     expiresString: f.expiresIn ? ObjectUtils.timeToHuman(f.expiresIn) : null,

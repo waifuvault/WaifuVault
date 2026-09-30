@@ -46,6 +46,14 @@ export enum GlobalEnv {
     DRONEBL_ENABLED = `${prefix}DRONEBL_ENABLED`,
     THUMBNAIL_SERVICE_BASE_URL = `${prefix}THUMBNAIL_SERVICE_BASE_URL`,
     ZIP_SERVICE_BASE_URL = `${prefix}ZIP_SERVICE_BASE_URL`,
+    STORAGE_BACKEND = `${prefix}STORAGE_BACKEND`,
+    S3_ENDPOINT = `${prefix}S3_ENDPOINT`,
+    S3_REGION = `${prefix}S3_REGION`,
+    S3_BUCKET = `${prefix}S3_BUCKET`,
+    S3_ACCESS_KEY_ID = `${prefix}S3_ACCESS_KEY_ID`,
+    S3_SECRET_ACCESS_KEY = `${prefix}S3_SECRET_ACCESS_KEY`,
+    S3_PREFIX = `${prefix}S3_PREFIX`,
+    S3_FORCE_PATH_STYLE = `${prefix}S3_FORCE_PATH_STYLE`,
 }
 
 export type GuaranteedString = WithDefault | MandatoryValues;
@@ -75,7 +83,10 @@ export type WithDefault =
     | GlobalEnv.FILE_FILTER_AUTO_BLOCK
     | GlobalEnv.DRONEBL_ENABLED
     | GlobalEnv.THUMBNAIL_SERVICE_BASE_URL
-    | GlobalEnv.ZIP_SERVICE_BASE_URL;
+    | GlobalEnv.ZIP_SERVICE_BASE_URL
+    | GlobalEnv.STORAGE_BACKEND
+    | GlobalEnv.S3_PREFIX
+    | GlobalEnv.S3_FORCE_PATH_STYLE;
 
 export const defaultValues = {
     ...baseDefaults,
@@ -93,6 +104,9 @@ export const defaultValues = {
     [GlobalEnv.DRONEBL_ENABLED]: "false",
     [GlobalEnv.THUMBNAIL_SERVICE_BASE_URL]: "http://127.0.0.1:5006",
     [GlobalEnv.ZIP_SERVICE_BASE_URL]: "http://127.0.0.1:5005",
+    [GlobalEnv.STORAGE_BACKEND]: "local",
+    [GlobalEnv.S3_PREFIX]: "",
+    [GlobalEnv.S3_FORCE_PATH_STYLE]: "false",
 } satisfies DefaultMapping & Record<MandatoryValues, string>;
 
 const mandatoryValues: MandatoryValues[] = [

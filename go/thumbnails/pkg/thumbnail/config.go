@@ -11,6 +11,9 @@ const (
 	DefaultWorkerCount    = 4
 	DefaultBatchSize      = 50
 	DefaultThumbnailWidth = 400
+
+	remoteVideoTimeout           = 10 * time.Minute
+	remoteReadWriteTimeoutMicros = "30000000"
 )
 
 // Global variables used throughout the package

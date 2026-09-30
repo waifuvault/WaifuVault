@@ -2,7 +2,6 @@ import { IAvEngine } from "../../IAvEngine.js";
 import { AvScanResult } from "../../../utils/typeings.js";
 import { Inject, Injectable, ProviderScope } from "@tsed/di";
 import path from "node:path";
-import { filesDir } from "../../../utils/Utils.js";
 import { execFile as execFileCb } from "node:child_process";
 import { AV_ENGINE } from "../../../model/di/tokens.js";
 import { SettingsService } from "../../../services/SettingsService.js";
@@ -25,8 +24,7 @@ export class ClamAvEngine implements IAvEngine {
         return !!this.clamPath;
     }
 
-    public scan(resource: string): Promise<AvScanResult> {
-        const toScan = path.join(filesDir, path.basename(resource));
+    public scan(toScan: string): Promise<AvScanResult> {
         const executable = path.join(this.clamPath!, "clamdscan");
 
         return new Promise(resolve => {

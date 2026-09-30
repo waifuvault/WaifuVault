@@ -9,7 +9,8 @@ import { BodyParams, PathParams, QueryParams } from "@tsed/platform-params";
 import { MultipartFile, type PlatformMulterFile } from "@tsed/platform-multer";
 import { RateLimit } from "../../../middleware/endpoint/RateLimit.js";
 import { FileUploadService } from "../../../services/FileUploadService.js";
-import { FileUtils, NetworkUtils } from "../../../utils/Utils.js";
+import { NetworkUtils } from "../../../utils/Utils.js";
+import { StorageService } from "../../../services/StorageService.js";
 import { BaseRestController } from "../BaseRestController.js";
 import { Logger } from "@tsed/logger";
 import { EntryModificationDto } from "../../../model/dto/EntryModificationDto.js";
@@ -28,6 +29,7 @@ export class FileUploadController extends BaseRestController {
         @Inject() private fileUploadService: FileUploadService,
         @Inject() private fileService: FileService,
         @Inject() private logger: Logger,
+        @Inject() private storageService: StorageService,
     ) {
         super();
     }
@@ -111,9 +113,7 @@ export class FileUploadController extends BaseRestController {
         bucketToken?: string,
     ): Promise<FileUploadModel> {
         if (file && url) {
-            if (file) {
-                await FileUtils.deleteFile(file);
-            }
+            await this.storageService.removeStaged(file.path);
             throw new BadRequest("Unable to upload both a file and a url");
         }
         if (!file && !url) {

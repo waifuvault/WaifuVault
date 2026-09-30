@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/waifuvault/WaifuVault/shared/storage"
 	"github.com/waifuvault/WaifuVault/shared/utils"
 	"github.com/waifuvault/WaifuVault/zipfiles/pkg/mod"
 )
@@ -60,7 +61,7 @@ func TestService_ZipFiles_EmptyFileList(t *testing.T) {
 	defer func() { utils.FileBaseUrl = originalFileBaseUrl }()
 
 	// when
-	zipName, err := svc.ZipFiles(albumName, files, concurrentKey)
+	zipName, err := svc.ZipFiles(t.Context(), albumName, files, concurrentKey)
 
 	// then
 	assert.NoError(t, err)
@@ -100,7 +101,7 @@ func TestService_ZipFiles_SingleFile(t *testing.T) {
 	}
 
 	// when
-	zipName, err := svc.ZipFiles(albumName, files, concurrentKey)
+	zipName, err := svc.ZipFiles(t.Context(), albumName, files, concurrentKey)
 
 	// then
 	assert.NoError(t, err)
@@ -151,7 +152,7 @@ func TestService_ZipFiles_MultipleFiles(t *testing.T) {
 	}
 
 	// when
-	zipName, err := svc.ZipFiles(albumName, files, concurrentKey)
+	zipName, err := svc.ZipFiles(t.Context(), albumName, files, concurrentKey)
 
 	// then
 	assert.NoError(t, err)
@@ -194,7 +195,7 @@ func TestService_ZipFiles_FileNotFound(t *testing.T) {
 	}
 
 	// when
-	zipName, err := svc.ZipFiles(albumName, files, concurrentKey)
+	zipName, err := svc.ZipFiles(t.Context(), albumName, files, concurrentKey)
 
 	// then
 	assert.Error(t, err)
@@ -216,7 +217,7 @@ func TestService_ZipFiles_CleansUpConcurrentFlag(t *testing.T) {
 	files := []mod.ZipFileEntry{}
 
 	// when
-	_, err := svc.ZipFiles(albumName, files, concurrentKey)
+	_, err := svc.ZipFiles(t.Context(), albumName, files, concurrentKey)
 
 	// then
 	assert.NoError(t, err)
@@ -252,7 +253,7 @@ func TestService_ZipFiles_WithSubdirectories(t *testing.T) {
 	}
 
 	// when
-	zipName, err := svc.ZipFiles(albumName, files, concurrentKey)
+	zipName, err := svc.ZipFiles(t.Context(), albumName, files, concurrentKey)
 
 	// then
 	assert.NoError(t, err)
@@ -297,7 +298,7 @@ func TestService_ZipFiles_LargeFile(t *testing.T) {
 	}
 
 	// when
-	zipName, err := svc.ZipFiles(albumName, files, concurrentKey)
+	zipName, err := svc.ZipFiles(t.Context(), albumName, files, concurrentKey)
 
 	// then
 	assert.NoError(t, err)
@@ -346,7 +347,7 @@ func TestService_ZipFiles_SpecialCharactersInFilename(t *testing.T) {
 	}
 
 	// when
-	zipName, err := svc.ZipFiles(albumName, files, concurrentKey)
+	zipName, err := svc.ZipFiles(t.Context(), albumName, files, concurrentKey)
 
 	// then
 	assert.NoError(t, err)
@@ -381,12 +382,79 @@ func TestGetFileToZip_ValidFile(t *testing.T) {
 	}
 
 	// when
-	file, err := getFileToZip(fileEntry)
+	file, err := getFileToZip(t.Context(), fileEntry)
+
+	// then
+	assert.NoError(t, err)
+	assert.NotNil(t, file)
+	assert.Equal(t, int64(4), file.Size)
+	file.Close()
+}
+
+func TestGetFileToZip_ExplicitLocalBackend(t *testing.T) {
+	// given
+	originalFileBaseUrl := utils.FileBaseUrl
+	tempDir := t.TempDir()
+	utils.FileBaseUrl = tempDir
+	defer func() { utils.FileBaseUrl = originalFileBaseUrl }()
+
+	testFileName := "local-file.txt"
+	err := os.WriteFile(filepath.Join(tempDir, testFileName), []byte("local"), 0644)
+	assert.NoError(t, err)
+
+	fileEntry := mod.ZipFileEntry{
+		FullFileNameOnSystem: testFileName,
+		ParsedFilename:       "renamed.txt",
+		StorageBackend:       "local",
+	}
+
+	// when
+	file, err := getFileToZip(t.Context(), fileEntry)
 
 	// then
 	assert.NoError(t, err)
 	assert.NotNil(t, file)
 	file.Close()
+}
+
+func TestGetFileToZip_UnknownBackend(t *testing.T) {
+	// given
+	fileEntry := mod.ZipFileEntry{
+		FullFileNameOnSystem: "file.txt",
+		ParsedFilename:       "renamed.txt",
+		StorageBackend:       "ftp",
+	}
+
+	// when
+	file, err := getFileToZip(t.Context(), fileEntry)
+
+	// then
+	assert.ErrorIs(t, err, storage.ErrUnknownBackend)
+	assert.Nil(t, file)
+}
+
+func TestService_ZipFiles_UnknownBackend(t *testing.T) {
+	// given
+	svc := NewService()
+	albumName := "unknown-backend-album"
+	concurrentKey := "test-unknown-backend"
+
+	originalFileBaseUrl := utils.FileBaseUrl
+	tempDir := t.TempDir()
+	utils.FileBaseUrl = tempDir
+	defer func() { utils.FileBaseUrl = originalFileBaseUrl }()
+
+	files := []mod.ZipFileEntry{
+		{FullFileNameOnSystem: "file.txt", ParsedFilename: "file.txt", StorageBackend: "ftp"},
+	}
+
+	// when
+	zipName, err := svc.ZipFiles(t.Context(), albumName, files, concurrentKey)
+
+	// then
+	assert.ErrorIs(t, err, storage.ErrUnknownBackend)
+	assert.Empty(t, zipName)
+	assert.False(t, svc.IsZipping(concurrentKey))
 }
 
 func TestGetFileToZip_FileNotFound(t *testing.T) {
@@ -402,10 +470,10 @@ func TestGetFileToZip_FileNotFound(t *testing.T) {
 	}
 
 	// when
-	file, err := getFileToZip(fileEntry)
+	file, err := getFileToZip(t.Context(), fileEntry)
 
 	// then
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, storage.ErrNotFound)
 	assert.Nil(t, file)
 }
 

@@ -3,8 +3,9 @@ import { Inject, Service } from "@tsed/di";
 import { EncryptionService } from "./EncryptionService.js";
 import { RecordInfoSocket } from "./socket/RecordInfoSocket.js";
 import { Logger } from "@tsed/logger";
-import { FileUtils } from "../utils/Utils.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
+import { StorageService } from "./StorageService.js";
+import { StorageOperationError } from "../model/exceptions/StorageOperationError.js";
 import { BadRequest, Forbidden, NotFound } from "@tsed/exceptions";
 import { EntryEncryptionWrapper } from "../model/rest/EntryEncryptionWrapper.js";
 
@@ -18,6 +19,7 @@ export class FileService {
         @Inject() private encryptionService: EncryptionService,
         @Inject() private recordInfoSocket: RecordInfoSocket,
         @Inject() private logger: Logger,
+        @Inject() private storageService: StorageService,
     ) {}
 
     public async processDelete(tokens: string[], softDelete = false): Promise<boolean> {
@@ -38,18 +40,18 @@ export class FileService {
     }
 
     public async deleteFilesFromDisk(entries: FileUploadModel[], softDelete = false): Promise<void> {
-        const fileDeletePArr = entries.map(entry => {
-            return softDelete
-                ? FileUtils.softDelete(entry.fullFileNameOnSystem)
-                : FileUtils.deleteFile(entry.fullFileNameOnSystem, true);
-        });
-        await Promise.all(fileDeletePArr).catch(e => {
-            if (e.message.startsWith("EPERM: operation not permitted")) {
-                // this means there is a lock/handle on the file.
-                // it will be cleaned up when the file cleaner runs, just leave it
-                this.logger.warn(e);
+        try {
+            await this.storageService.delete(entries, softDelete);
+        } catch (e) {
+            const failures = e instanceof StorageOperationError ? e.failures : [e];
+            for (const failure of failures) {
+                if ((failure as NodeJS.ErrnoException).code === "EPERM") {
+                    this.logger.warn(failure);
+                } else {
+                    this.logger.error(failure);
+                }
             }
-        });
+        }
     }
 
     public async getEntry(
@@ -71,7 +73,7 @@ export class FileService {
             this.resourceNotFound(resource);
         }
 
-        if (entry.hasExpired || !(await FileUtils.fileExists(entry.fullLocationOnDisk))) {
+        if (entry.hasExpired || !(await this.storageService.exists(entry))) {
             await this.processDelete([entry.token]);
             this.resourceNotFound(resource);
         }

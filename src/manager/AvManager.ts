@@ -32,7 +32,7 @@ export class AvManager implements OnInit {
         if (this.avEngines.length === 0) {
             return true;
         }
-        const resource = typeof file === "string" ? path.basename(file) : file.filename;
+        const resource = path.resolve(typeof file === "string" ? file : file.path);
         const scanResults = await this.doScan(resource);
         let passed = true;
         for (const scanResult of scanResults) {

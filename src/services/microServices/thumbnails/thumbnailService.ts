@@ -58,6 +58,7 @@ export class ThumbnailService implements AfterInit {
                 return {
                     id: entry.id,
                     fileOnDisk: entry.fullFileNameOnSystem,
+                    storageBackend: entry.storageBackend,
                     mediaType: entry.mediaType,
                     extension: entry.fileExtension,
                 };

@@ -1,9 +1,10 @@
 import { constant as getFromEnv, Inject, Service } from "@tsed/di";
 import { OnReady } from "@tsed/platform-http";
 import { FileRepo } from "../db/repo/FileRepo.js";
-import { filesDir, FileUtils } from "../utils/Utils.js";
-import fs from "node:fs/promises";
 import { FileService } from "./FileService.js";
+import { StorageService } from "./StorageService.js";
+import type { StorageBackend } from "../utils/typeings.js";
+import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { RunEvery } from "../model/di/decorators/RunEvery.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 import { Logger } from "@tsed/logger";
@@ -12,11 +13,13 @@ import { isSchedulerLeader } from "../utils/clusterUtils.js";
 @Service()
 export class FileCleaner implements OnReady {
     private static readonly syncGraceMs = 5 * 60 * 1000;
+    private static readonly stagingGraceMs = 60 * 60 * 1000;
 
     public constructor(
         @Inject() private repo: FileRepo,
         @Inject() private fileUploadService: FileService,
         @Inject() private logger: Logger,
+        @Inject() private storageService: StorageService,
     ) {}
 
     public async processFiles(): Promise<void> {
@@ -50,6 +53,12 @@ export class FileCleaner implements OnReady {
         } catch (e) {
             this.logger.error(`Failed to remove duplicate files: ${(e as Error).message}`);
         }
+
+        try {
+            await this.storageService.sweepStaging(FileCleaner.stagingGraceMs);
+        } catch (e) {
+            this.logger.error(`Failed to sweep abandoned staged uploads: ${(e as Error).message}`);
+        }
     }
 
     @RunEvery("* * * * *")
@@ -62,8 +71,30 @@ export class FileCleaner implements OnReady {
     }
 
     private async sync(): Promise<void> {
-        const allFilesFromDb = await this.repo.getAllEntries();
-        const allFilesFromSystem = await fs.readdir(filesDir);
+        const allEntries = await this.repo.getAllEntries();
+        const failures: string[] = [];
+
+        for (const backend of this.storageService.backends) {
+            try {
+                await this.syncBackend(
+                    backend,
+                    allEntries.filter(entry => entry.storageBackend === backend),
+                );
+            } catch (e) {
+                failures.push(`${backend}: ${(e as Error).message}`);
+            }
+        }
+
+        if (failures.length > 0) {
+            throw new Error(`Failed to sync storage backend(s) ${failures.join("; ")}`);
+        }
+    }
+
+    private async syncBackend(backend: StorageBackend, allFilesFromDb: FileUploadModel[]): Promise<void> {
+        const allFilesFromSystem: string[] = [];
+        for await (const key of this.storageService.listKeys(backend)) {
+            allFilesFromSystem.push(key);
+        }
 
         const dbFileNames = new Set<string>();
         for (const dbFile of allFilesFromDb) {
@@ -71,20 +102,22 @@ export class FileCleaner implements OnReady {
         }
         const systemFileNames = new Set<string>(allFilesFromSystem);
 
-        const orphanedOnDisk: string[] = [];
+        const orphanCandidates: string[] = [];
         for (const fileOnSystem of allFilesFromSystem) {
             if (dbFileNames.has(fileOnSystem)) {
                 continue;
             }
-            if (await this.wasRecentlyModified(fileOnSystem)) {
+            if (await this.wasRecentlyModified(backend, fileOnSystem)) {
                 continue;
             }
-            orphanedOnDisk.push(fileOnSystem);
+            orphanCandidates.push(fileOnSystem);
         }
+
+        const orphanedOnDisk = await this.withoutCurrentEntries(backend, orphanCandidates);
 
         for (const fileToDelete of orphanedOnDisk) {
             try {
-                await FileUtils.deleteFile(fileToDelete, true, true);
+                await this.storageService.deleteKeys(backend, [fileToDelete], true);
             } catch (e) {
                 this.logger.error(`Failed to delete orphaned file ${fileToDelete}: ${(e as Error).message}`);
             }
@@ -104,13 +137,25 @@ export class FileCleaner implements OnReady {
         }
     }
 
-    private async wasRecentlyModified(fileName: string): Promise<boolean> {
-        try {
-            const stat = await fs.stat(`${filesDir}/${fileName}`);
-            return Date.now() - stat.mtimeMs < FileCleaner.syncGraceMs;
-        } catch {
+    private async withoutCurrentEntries(backend: StorageBackend, fileNames: string[]): Promise<string[]> {
+        if (fileNames.length === 0) {
+            return fileNames;
+        }
+
+        const currentEntries = await this.repo.getAllEntries();
+        const currentFileNames = new Set(
+            currentEntries.filter(entry => entry.storageBackend === backend).map(entry => entry.fullFileNameOnSystem),
+        );
+
+        return fileNames.filter(fileName => !currentFileNames.has(fileName));
+    }
+
+    private async wasRecentlyModified(backend: StorageBackend, fileName: string): Promise<boolean> {
+        const info = await this.storageService.headKey(backend, fileName);
+        if (!info) {
             return false;
         }
+        return Date.now() - info.lastModified.getTime() < FileCleaner.syncGraceMs;
     }
 
     private async removeDupes(): Promise<void> {

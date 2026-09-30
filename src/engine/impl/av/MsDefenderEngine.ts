@@ -1,8 +1,6 @@
 import { IAvEngine } from "../../IAvEngine.js";
 import { Inject, Injectable, ProviderScope } from "@tsed/di";
 import { AvScanResult } from "../../../utils/typeings.js";
-import path from "node:path";
-import { filesDir } from "../../../utils/Utils.js";
 import { promisify } from "node:util";
 import { exec, type ExecException } from "node:child_process";
 import { AV_ENGINE } from "../../../model/di/tokens.js";
@@ -24,12 +22,11 @@ export class MsDefenderEngine implements IAvEngine {
         return !!this.msDefenderPath;
     }
 
-    public async scan(resource: string): Promise<AvScanResult> {
-        const toScan = path.resolve(`${filesDir}/${resource}`);
+    public async scan(toScan: string): Promise<AvScanResult> {
         const execPromise = promisify(exec);
         try {
             await execPromise(
-                `"${this.msDefenderPath}/MpCmdRun.exe" -scan -scantype 3 -file ${toScan} -DisableRemediation`,
+                `"${this.msDefenderPath}/MpCmdRun.exe" -scan -scantype 3 -file "${toScan}" -DisableRemediation`,
             );
         } catch (e) {
             const err = e as ExecException;
