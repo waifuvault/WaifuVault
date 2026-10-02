@@ -17,6 +17,7 @@ import { StorageService } from "../../../services/StorageService.js";
 import { EncryptionService } from "../../../services/EncryptionService.js";
 import { SQLITE_DATA_SOURCE } from "../../../model/di/tokens.js";
 import { ThumbnailService } from "../../../services/microServices/thumbnails/thumbnailService.js";
+import { StorageProviderManager } from "../../../manager/StorageProviderManager.js";
 
 vi.mock("../../../db/DataSource.js", () => ({ dataSource: {} }));
 
@@ -82,6 +83,7 @@ describe("FileServerController", () => {
     const fileUploadService = { incrementViews: vi.fn() };
     const settingsService = { getSetting: vi.fn() };
     const thumbnailService = { $afterInit: vi.fn() };
+    const storageProviderManager = { $onInit: vi.fn(), $afterInit: vi.fn() };
     const openServers: Server[] = [];
 
     beforeEach(async () => {
@@ -102,6 +104,7 @@ describe("FileServerController", () => {
                 { token: FileUploadService, use: fileUploadService },
                 { token: SettingsService, use: settingsService },
                 { token: ThumbnailService, use: thumbnailService },
+                { token: StorageProviderManager, use: storageProviderManager },
             ],
         })();
     });

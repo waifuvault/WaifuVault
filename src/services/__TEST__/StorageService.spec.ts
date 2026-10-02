@@ -5,12 +5,9 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { Readable } from "node:stream";
-import { GlobalEnv } from "../../model/constants/GlobalEnv.js";
 import { StorageOperationError } from "../../model/exceptions/StorageOperationError.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
-import { LocalStorageProvider } from "../../engine/impl/storage/LocalStorageProvider.js";
-import { S3StorageProvider } from "../../engine/impl/storage/S3StorageProvider.js";
-import { SettingsService } from "../SettingsService.js";
+import { StorageProviderManager } from "../../manager/StorageProviderManager.js";
 import { StorageService } from "../StorageService.js";
 import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 
@@ -39,7 +36,7 @@ function makeEntry(storageBackend: string, fileName: string, fileExtension: stri
 }
 
 describe("StorageService", () => {
-    const local = {
+    const localEngine = {
         id: "local",
         enabled: true,
         get: vi.fn(),
@@ -51,7 +48,7 @@ describe("StorageService", () => {
         softDelete: vi.fn(),
         list: vi.fn(),
     };
-    const s3 = {
+    const s3Engine = {
         id: "s3",
         enabled: true,
         get: vi.fn(),
@@ -63,15 +60,14 @@ describe("StorageService", () => {
         softDelete: vi.fn(),
         list: vi.fn(),
     };
-    const settingsService = { getSetting: vi.fn() };
+    const managerMock = {
+        engineFor: vi.fn(),
+        activeEngine: localEngine,
+        backends: ["local", "s3"],
+        engines: [localEngine, s3Engine],
+    };
     const logger = { error: vi.fn(), warn: vi.fn() };
-    const collaborators = [
-        { token: LocalStorageProvider, use: local },
-        { token: S3StorageProvider, use: s3 },
-        { token: SettingsService, use: settingsService },
-        { token: Logger, use: logger },
-    ];
-    let configuredBackend: string | null;
+    let service: StorageService;
 
     beforeEach(async () => {
         dirs.root = await fs.mkdtemp(path.join(os.tmpdir(), "wv-storage-service-"));
@@ -81,21 +77,31 @@ describe("StorageService", () => {
         });
         vi.resetAllMocks();
 
-        configuredBackend = "local";
-        s3.enabled = true;
-        settingsService.getSetting.mockImplementation((key: GlobalEnv) =>
-            key === GlobalEnv.STORAGE_BACKEND ? configuredBackend : null,
-        );
-        for (const provider of [local, s3]) {
-            provider.get.mockImplementation(() => Promise.resolve(Readable.from([Buffer.from(provider.id)])));
-            provider.getBuffer.mockImplementation(() => Promise.resolve(Buffer.from(provider.id)));
-            provider.put.mockResolvedValue(undefined);
-            provider.putFile.mockResolvedValue(undefined);
-            provider.head.mockResolvedValue({ key: "k", size: 1, lastModified: new Date(0) });
-            provider.delete.mockResolvedValue(undefined);
-            provider.softDelete.mockResolvedValue(undefined);
-            provider.list.mockImplementation(() => keysOf([]));
+        managerMock.activeEngine = localEngine;
+        managerMock.backends = ["local", "s3"];
+        managerMock.engines = [localEngine, s3Engine];
+        managerMock.engineFor.mockImplementation((backend: string) => {
+            const engine = managerMock.engines.find(candidate => candidate.id === backend);
+            if (!engine) {
+                throw new Error(`No storage engine is enabled for backend "${backend}"`);
+            }
+            return engine;
+        });
+        for (const engine of [localEngine, s3Engine]) {
+            engine.get.mockImplementation(() => Promise.resolve(Readable.from([Buffer.from(engine.id)])));
+            engine.getBuffer.mockImplementation(() => Promise.resolve(Buffer.from(engine.id)));
+            engine.put.mockResolvedValue(undefined);
+            engine.putFile.mockResolvedValue(undefined);
+            engine.head.mockResolvedValue({ key: "k", size: 1, lastModified: new Date(0) });
+            engine.delete.mockResolvedValue(undefined);
+            engine.softDelete.mockResolvedValue(undefined);
+            engine.list.mockImplementation(() => keysOf([]));
         }
+
+        service = await PlatformTest.invoke<StorageService>(StorageService, [
+            { token: StorageProviderManager, use: managerMock },
+            { token: Logger, use: logger },
+        ]);
     });
 
     afterEach(async () => {
@@ -103,77 +109,51 @@ describe("StorageService", () => {
         await fs.rm(dirs.root, { recursive: true, force: true });
     });
 
-    describe("construction", () => {
-        it("always registers local and registers s3 only when the S3 provider is enabled", async () => {
+    describe("backends", () => {
+        it("exposes the backends of the enabled engines from the manager", () => {
             // given
-            const withS3 = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
-            s3.enabled = false;
+            managerMock.backends = ["local"];
 
             // when
-            const withoutS3 = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const backends = service.backends;
 
             // then
-            expect(withS3.backends).toEqual(["local", "s3"]);
-            expect(withoutS3.backends).toEqual(["local"]);
-        });
-
-        it("throws when STORAGE_BACKEND is s3 but S3 is not configured", async () => {
-            // given
-            s3.enabled = false;
-            configuredBackend = "s3";
-
-            // when
-            const result = PlatformTest.invoke<StorageService>(StorageService, collaborators);
-
-            // then
-            await expect(result).rejects.toThrow(/STORAGE_BACKEND is "s3"/);
-        });
-
-        it("throws when STORAGE_BACKEND is an unknown value", async () => {
-            // given
-            configuredBackend = "azure";
-
-            // when
-            const result = PlatformTest.invoke<StorageService>(StorageService, collaborators);
-
-            // then
-            await expect(result).rejects.toThrow(/STORAGE_BACKEND is "azure"/);
+            expect(backends).toEqual(["local"]);
         });
     });
 
     describe("commit", () => {
-        it("puts the staged file on the local backend when STORAGE_BACKEND is local", async () => {
+        it("puts the staged file on the active engine and returns its id", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const entry = makeEntry("s3", "abc", "png");
 
             // when
-            const backend = await service.commit("/staging/abc.tmp", makeEntry("s3", "abc", "png"));
+            const backend = await service.commit("/staging/abc.tmp", entry);
 
             // then
             expect(backend).toBe("local");
-            expect(local.putFile).toHaveBeenCalledWith("abc.png", "/staging/abc.tmp");
-            expect(s3.putFile).not.toHaveBeenCalled();
+            expect(localEngine.putFile).toHaveBeenCalledWith("abc.png", "/staging/abc.tmp");
+            expect(s3Engine.putFile).not.toHaveBeenCalled();
         });
 
-        it("puts the staged file on s3 when STORAGE_BACKEND is s3", async () => {
+        it("puts the staged file on s3 when s3 is the active engine", async () => {
             // given
-            configuredBackend = "s3";
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            managerMock.activeEngine = s3Engine;
+            const entry = makeEntry("local", "abc", "png");
 
             // when
-            const backend = await service.commit("/staging/abc.tmp", makeEntry("local", "abc", "png"));
+            const backend = await service.commit("/staging/abc.tmp", entry);
 
             // then
             expect(backend).toBe("s3");
-            expect(s3.putFile).toHaveBeenCalledWith("abc.png", "/staging/abc.tmp");
-            expect(local.putFile).not.toHaveBeenCalled();
+            expect(s3Engine.putFile).toHaveBeenCalledWith("abc.png", "/staging/abc.tmp");
+            expect(localEngine.putFile).not.toHaveBeenCalled();
         });
 
         it("propagates a failed upload instead of reporting a backend", async () => {
             // given
-            configuredBackend = "s3";
-            s3.putFile.mockRejectedValue(new Error("bucket unreachable"));
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            managerMock.activeEngine = s3Engine;
+            s3Engine.putFile.mockRejectedValue(new Error("bucket unreachable"));
 
             // when
             const result = service.commit("/staging/abc.tmp", makeEntry("s3", "abc", "png"));
@@ -184,9 +164,8 @@ describe("StorageService", () => {
     });
 
     describe("routing by entry backend", () => {
-        it("opens streams from the provider that holds the entry and forwards the range", async () => {
+        it("opens streams from the engine that holds the entry and forwards the range", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const range = { start: 2, end: 5 };
 
             // when
@@ -194,42 +173,43 @@ describe("StorageService", () => {
             await service.openStream(makeEntry("s3", "b", "txt"));
 
             // then
-            expect(local.get).toHaveBeenCalledExactlyOnceWith("a.txt", range);
-            expect(s3.get).toHaveBeenCalledExactlyOnceWith("b.txt", undefined);
+            expect(managerMock.engineFor).toHaveBeenCalledWith("local");
+            expect(managerMock.engineFor).toHaveBeenCalledWith("s3");
+            expect(localEngine.get).toHaveBeenCalledExactlyOnceWith("a.txt", range);
+            expect(s3Engine.get).toHaveBeenCalledExactlyOnceWith("b.txt", undefined);
         });
 
-        it("reads whole objects from the provider that holds the entry", async () => {
+        it("reads whole objects from the engine that holds the entry", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const localEntry = makeEntry("local", "a", "txt");
+            const s3Entry = makeEntry("s3", "b", "txt");
 
             // when
-            const fromLocal = await service.readAll(makeEntry("local", "a", "txt"));
-            const fromS3 = await service.readAll(makeEntry("s3", "b", "txt"));
+            const fromLocal = await service.readAll(localEntry);
+            const fromS3 = await service.readAll(s3Entry);
 
             // then
             expect(fromLocal.toString()).toBe("local");
             expect(fromS3.toString()).toBe("s3");
-            expect(local.getBuffer).toHaveBeenCalledExactlyOnceWith("a.txt");
-            expect(s3.getBuffer).toHaveBeenCalledExactlyOnceWith("b.txt");
+            expect(localEngine.getBuffer).toHaveBeenCalledExactlyOnceWith("a.txt");
+            expect(s3Engine.getBuffer).toHaveBeenCalledExactlyOnceWith("b.txt");
         });
 
-        it("writes to the provider that holds the entry regardless of the default backend", async () => {
+        it("writes to the engine that holds the entry regardless of the active engine", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const body = Buffer.from("new bytes");
 
             // when
             await service.write(makeEntry("s3", "b", "txt"), body);
 
             // then
-            expect(s3.put).toHaveBeenCalledExactlyOnceWith("b.txt", body);
-            expect(local.put).not.toHaveBeenCalled();
+            expect(s3Engine.put).toHaveBeenCalledExactlyOnceWith("b.txt", body);
+            expect(localEngine.put).not.toHaveBeenCalled();
         });
 
-        it("reports existence from the head of the provider that holds the entry", async () => {
+        it("reports existence from the head of the engine that holds the entry", async () => {
             // given
-            s3.head.mockResolvedValue(null);
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            s3Engine.head.mockResolvedValue(null);
 
             // when
             const localExists = await service.exists(makeEntry("local", "a", "txt"));
@@ -238,14 +218,13 @@ describe("StorageService", () => {
             // then
             expect(localExists).toBe(true);
             expect(s3Exists).toBe(false);
-            expect(local.head).toHaveBeenCalledWith("a.txt");
-            expect(s3.head).toHaveBeenCalledWith("b.txt");
+            expect(localEngine.head).toHaveBeenCalledWith("a.txt");
+            expect(s3Engine.head).toHaveBeenCalledWith("b.txt");
         });
 
-        it("throws for an entry whose backend is not configured", async () => {
+        it("propagates the manager error for an entry whose backend has no enabled engine", async () => {
             // given
-            s3.enabled = false;
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            managerMock.engines = [localEngine];
             const s3Entry = makeEntry("s3", "b", "txt");
 
             // when
@@ -255,19 +234,18 @@ describe("StorageService", () => {
             const exists = service.exists(s3Entry);
 
             // then
-            expect(open).toThrow('No storage provider is configured for backend "s3"');
-            expect(read).toThrow('No storage provider is configured for backend "s3"');
-            expect(write).toThrow('No storage provider is configured for backend "s3"');
-            await expect(exists).rejects.toThrow('No storage provider is configured for backend "s3"');
-            expect(local.get).not.toHaveBeenCalled();
-            expect(s3.get).not.toHaveBeenCalled();
+            expect(open).toThrow('No storage engine is enabled for backend "s3"');
+            expect(read).toThrow('No storage engine is enabled for backend "s3"');
+            expect(write).toThrow('No storage engine is enabled for backend "s3"');
+            await expect(exists).rejects.toThrow('No storage engine is enabled for backend "s3"');
+            expect(localEngine.get).not.toHaveBeenCalled();
+            expect(s3Engine.get).not.toHaveBeenCalled();
         });
     });
 
     describe("delete", () => {
-        it("groups entries by backend and calls each provider once with its keys", async () => {
+        it("groups entries by backend and calls each engine once with its keys", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const entries = [
                 makeEntry("local", "a", "txt"),
                 makeEntry("s3", "b", "txt"),
@@ -278,34 +256,32 @@ describe("StorageService", () => {
             await service.delete(entries);
 
             // then
-            expect(local.delete).toHaveBeenCalledExactlyOnceWith(["a.txt", "c.txt"]);
-            expect(s3.delete).toHaveBeenCalledExactlyOnceWith(["b.txt"]);
-            expect(local.softDelete).not.toHaveBeenCalled();
-            expect(s3.softDelete).not.toHaveBeenCalled();
+            expect(localEngine.delete).toHaveBeenCalledExactlyOnceWith(["a.txt", "c.txt"]);
+            expect(s3Engine.delete).toHaveBeenCalledExactlyOnceWith(["b.txt"]);
+            expect(localEngine.softDelete).not.toHaveBeenCalled();
+            expect(s3Engine.softDelete).not.toHaveBeenCalled();
         });
 
         it("soft deletes on every backend when soft is set", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const entries = [makeEntry("local", "a", "txt"), makeEntry("s3", "b", "txt")];
 
             // when
             await service.delete(entries, true);
 
             // then
-            expect(local.softDelete).toHaveBeenCalledExactlyOnceWith(["a.txt"]);
-            expect(s3.softDelete).toHaveBeenCalledExactlyOnceWith(["b.txt"]);
-            expect(local.delete).not.toHaveBeenCalled();
-            expect(s3.delete).not.toHaveBeenCalled();
+            expect(localEngine.softDelete).toHaveBeenCalledExactlyOnceWith(["a.txt"]);
+            expect(s3Engine.softDelete).toHaveBeenCalledExactlyOnceWith(["b.txt"]);
+            expect(localEngine.delete).not.toHaveBeenCalled();
+            expect(s3Engine.delete).not.toHaveBeenCalled();
         });
 
         it("still deletes on later backends and aggregates failures from all of them", async () => {
             // given
             const localFailure = new Error("disk locked");
             const s3Failures = [new Error("denied a"), new Error("denied b")];
-            local.delete.mockRejectedValue(localFailure);
-            s3.delete.mockRejectedValue(new StorageOperationError(s3Failures, "s3 failed"));
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            localEngine.delete.mockRejectedValue(localFailure);
+            s3Engine.delete.mockRejectedValue(new StorageOperationError(s3Failures, "s3 failed"));
 
             // when
             const result = service.delete([
@@ -320,13 +296,12 @@ describe("StorageService", () => {
                 failures: [localFailure, ...s3Failures],
                 message: "Failed to delete 3 stored object(s)",
             });
-            expect(s3.delete).toHaveBeenCalledExactlyOnceWith(["b.txt", "c.txt"]);
+            expect(s3Engine.delete).toHaveBeenCalledExactlyOnceWith(["b.txt", "c.txt"]);
         });
 
-        it("reports an entry on an unconfigured backend as a failure without skipping the others", async () => {
+        it("reports an entry on a backend with no enabled engine as a failure without skipping the others", async () => {
             // given
-            s3.enabled = false;
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            managerMock.engines = [localEngine];
 
             // when
             const result = service.delete([makeEntry("s3", "b", "txt"), makeEntry("local", "a", "txt")]);
@@ -334,56 +309,91 @@ describe("StorageService", () => {
             // then
             await expect(result).rejects.toBeInstanceOf(StorageOperationError);
             await expect(result).rejects.toHaveProperty("failures", [expect.any(Error)]);
-            expect(local.delete).toHaveBeenCalledExactlyOnceWith(["a.txt"]);
+            expect(localEngine.delete).toHaveBeenCalledExactlyOnceWith(["a.txt"]);
         });
 
         it("does nothing for an empty list of entries", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const entries: FileUploadModel[] = [];
 
             // when
-            await service.delete([]);
+            await service.delete(entries);
 
             // then
-            expect(local.delete).not.toHaveBeenCalled();
-            expect(s3.delete).not.toHaveBeenCalled();
+            expect(managerMock.engineFor).not.toHaveBeenCalled();
+            expect(localEngine.delete).not.toHaveBeenCalled();
+            expect(s3Engine.delete).not.toHaveBeenCalled();
         });
     });
 
     describe("deleteKeys", () => {
-        it("does not touch the provider for an empty list of keys", async () => {
+        it("does not touch the engine for an empty list of keys", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const keys: string[] = [];
 
             // when
-            await service.deleteKeys("s3", []);
-            await service.deleteKeys("local", [], true);
+            await service.deleteKeys("s3", keys);
+            await service.deleteKeys("local", keys, true);
 
             // then
-            expect(s3.delete).not.toHaveBeenCalled();
-            expect(local.softDelete).not.toHaveBeenCalled();
+            expect(managerMock.engineFor).not.toHaveBeenCalled();
+            expect(s3Engine.delete).not.toHaveBeenCalled();
+            expect(localEngine.softDelete).not.toHaveBeenCalled();
         });
 
         it("routes keys to the named backend honouring soft", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const hardKeys = ["x.txt"];
+            const softKeys = ["y.txt"];
 
             // when
-            await service.deleteKeys("s3", ["x.txt"]);
-            await service.deleteKeys("local", ["y.txt"], true);
+            await service.deleteKeys("s3", hardKeys);
+            await service.deleteKeys("local", softKeys, true);
 
             // then
-            expect(s3.delete).toHaveBeenCalledExactlyOnceWith(["x.txt"]);
-            expect(local.softDelete).toHaveBeenCalledExactlyOnceWith(["y.txt"]);
+            expect(s3Engine.delete).toHaveBeenCalledExactlyOnceWith(["x.txt"]);
+            expect(localEngine.softDelete).toHaveBeenCalledExactlyOnceWith(["y.txt"]);
+        });
+    });
+
+    describe("headKey", () => {
+        it("heads the key on the named backend", async () => {
+            // given
+            const info = { key: "x.txt", size: 9, lastModified: new Date(1) };
+            s3Engine.head.mockResolvedValue(info);
+
+            // when
+            const result = await service.headKey("s3", "x.txt");
+
+            // then
+            expect(result).toBe(info);
+            expect(s3Engine.head).toHaveBeenCalledExactlyOnceWith("x.txt");
+            expect(localEngine.head).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("listKeys", () => {
+        it("lists the keys of the named backend", async () => {
+            // given
+            s3Engine.list.mockImplementation(() => keysOf(["d", "e"]));
+            const keys: string[] = [];
+
+            // when
+            for await (const key of service.listKeys("s3")) {
+                keys.push(key);
+            }
+
+            // then
+            expect(keys).toEqual(["d", "e"]);
+            expect(localEngine.list).not.toHaveBeenCalled();
         });
     });
 
     describe("countObjects", () => {
-        it("sums the listed objects across every registered provider", async () => {
+        it("sums the listed objects across every engine the manager holds", async () => {
             // given
-            local.list.mockImplementation(() => keysOf(["a", "b", "c"]));
-            s3.list.mockImplementation(() => keysOf(["d", "e"]));
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            localEngine.list.mockImplementation(() => keysOf(["a", "b", "c"]));
+            s3Engine.list.mockImplementation(() => keysOf(["d", "e"]));
 
             // when
             const count = await service.countObjects();
@@ -392,19 +402,18 @@ describe("StorageService", () => {
             expect(count).toBe(5);
         });
 
-        it("ignores a disabled s3 provider", async () => {
+        it("only counts the engines the manager holds", async () => {
             // given
-            s3.enabled = false;
-            local.list.mockImplementation(() => keysOf(["a"]));
-            s3.list.mockImplementation(() => keysOf(["d", "e"]));
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            managerMock.engines = [localEngine];
+            localEngine.list.mockImplementation(() => keysOf(["a"]));
+            s3Engine.list.mockImplementation(() => keysOf(["d", "e"]));
 
             // when
             const count = await service.countObjects();
 
             // then
             expect(count).toBe(1);
-            expect(s3.list).not.toHaveBeenCalled();
+            expect(s3Engine.list).not.toHaveBeenCalled();
         });
     });
 
@@ -414,16 +423,14 @@ describe("StorageService", () => {
             const stagingPath = path.join(dirs.root, ".staging");
 
             // when
-            await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const stat = await fs.stat(stagingPath);
 
             // then
-            const stat = await fs.stat(stagingPath);
             expect(stat.isDirectory()).toBe(true);
         });
 
         it("removes a staged file and treats a missing one as already removed", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const staged = path.join(dirs.root, "staged.tmp");
             await fs.writeFile(staged, "bytes");
 
@@ -438,7 +445,6 @@ describe("StorageService", () => {
 
         it("logs instead of throwing when a staged path cannot be removed", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const directory = path.join(dirs.root, "not-a-file");
             await fs.mkdir(directory);
 
@@ -452,7 +458,6 @@ describe("StorageService", () => {
 
         it("sweeps only staged files older than the threshold", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
             const stagingPath = path.join(dirs.root, ".staging");
             const oldFile = path.join(stagingPath, "old.tmp");
             const freshFile = path.join(stagingPath, "fresh.tmp");
@@ -472,10 +477,10 @@ describe("StorageService", () => {
 
         it("does nothing when the staging directory is empty", async () => {
             // given
-            const service = await PlatformTest.invoke<StorageService>(StorageService, collaborators);
+            const olderThanMs = 0;
 
             // when
-            await service.sweepStaging(0);
+            await service.sweepStaging(olderThanMs);
 
             // then
             expect(logger.warn).not.toHaveBeenCalled();

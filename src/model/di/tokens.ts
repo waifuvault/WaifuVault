@@ -4,5 +4,6 @@ export const ERROR_PROCESSOR_ENGINE = Symbol.for("IErrorProcessorEngine");
 export const AV_ENGINE = Symbol.for("IAvEngine");
 export const CAPTCHA_ENGINE = Symbol.for("ICaptchaEngine");
 export const FILE_FILTER = Symbol.for("IFileFilter");
+export const STORAGE_ENGINE = Symbol.for("IStorageEngine");
 export const TRANSFORMER = Symbol.for("ITransformer");
 export const REDIS_CONNECTION = Symbol.for("REDIS_CONNECTION");

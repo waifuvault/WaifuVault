@@ -21,12 +21,13 @@ import fs from "node:fs/promises";
 import http from "node:http";
 import https from "node:https";
 import type { Readable } from "node:stream";
-import type { IStorageProvider } from "../../IStorageProvider.js";
+import type { IStorageEngine } from "../../IStorageEngine.js";
 import type { ByteRange, StorageBackend, StoredObjectInfo } from "../../../utils/typeings.js";
 import { StorageNotFoundError } from "../../../model/exceptions/StorageNotFoundError.js";
 import { StorageOperationError } from "../../../model/exceptions/StorageOperationError.js";
 import { SettingsService } from "../../../services/SettingsService.js";
 import { GlobalEnv } from "../../../model/constants/GlobalEnv.js";
+import { STORAGE_ENGINE } from "../../../model/di/tokens.js";
 
 type S3Settings = {
     endpoint: string;
@@ -39,16 +40,17 @@ type S3Settings = {
 
 @Injectable({
     scope: ProviderScope.SINGLETON,
+    type: STORAGE_ENGINE,
 })
-export class S3StorageProvider implements IStorageProvider {
-    public static readonly softDeletedFolder = "soft-deleted/";
-    public static readonly deleteBatchSize = 1000;
-    public static readonly maxSingleCopyBytes = 5 * 1024 ** 3;
-    public static readonly multipartCopyPartBytes = 1024 ** 3;
-    public static readonly uploadPartBytes = 16 * 1024 ** 2;
-    public static readonly uploadQueueSize = 4;
-    public static readonly softDeleteConcurrency = 16;
-    public static readonly maxSockets = 512;
+export class S3StorageEngine implements IStorageEngine {
+    private readonly softDeletedFolder = "soft-deleted/";
+    private readonly deleteBatchSize = 1000;
+    private readonly maxSingleCopyBytes = 5 * 1024 ** 3;
+    private readonly multipartCopyPartBytes = 1024 ** 3;
+    private readonly uploadPartBytes = 16 * 1024 ** 2;
+    private readonly uploadQueueSize = 4;
+    private readonly softDeleteConcurrency = 16;
+    private readonly maxSockets = 512;
 
     private readonly client: S3Client | null = null;
     private readonly bucket: string = "";
@@ -59,10 +61,10 @@ export class S3StorageProvider implements IStorageProvider {
         @Inject() settingsService: SettingsService,
         @Inject() private logger: Logger,
     ) {
-        this.prefix = S3StorageProvider.normalisePrefix(settingsService.getSetting(GlobalEnv.S3_PREFIX));
+        this.prefix = this.normalisePrefix(settingsService.getSetting(GlobalEnv.S3_PREFIX));
         this.softDeleteEnabled = !!settingsService.getSetting(GlobalEnv.SOFT_DELETE_LOCATION);
 
-        const settings = S3StorageProvider.readSettings(settingsService);
+        const settings = this.readSettings(settingsService);
         if (!settings) {
             return;
         }
@@ -79,8 +81,8 @@ export class S3StorageProvider implements IStorageProvider {
             requestChecksumCalculation: "WHEN_REQUIRED",
             responseChecksumValidation: "WHEN_REQUIRED",
             requestHandler: new NodeHttpHandler({
-                httpAgent: new http.Agent({ keepAlive: true, maxSockets: S3StorageProvider.maxSockets }),
-                httpsAgent: new https.Agent({ keepAlive: true, maxSockets: S3StorageProvider.maxSockets }),
+                httpAgent: new http.Agent({ keepAlive: true, maxSockets: this.maxSockets }),
+                httpsAgent: new https.Agent({ keepAlive: true, maxSockets: this.maxSockets }),
             }),
         });
     }
@@ -147,8 +149,8 @@ export class S3StorageProvider implements IStorageProvider {
 
         const upload = new Upload({
             client: this.s3,
-            queueSize: S3StorageProvider.uploadQueueSize,
-            partSize: S3StorageProvider.uploadPartBytes,
+            queueSize: this.uploadQueueSize,
+            partSize: this.uploadPartBytes,
             leavePartsOnError: false,
             params: {
                 Bucket: this.bucket,
@@ -203,8 +205,8 @@ export class S3StorageProvider implements IStorageProvider {
         const failures: unknown[] = [];
         const copied: string[] = [];
 
-        for (let i = 0; i < keys.length; i += S3StorageProvider.softDeleteConcurrency) {
-            const batch = keys.slice(i, i + S3StorageProvider.softDeleteConcurrency);
+        for (let i = 0; i < keys.length; i += this.softDeleteConcurrency) {
+            const batch = keys.slice(i, i + this.softDeleteConcurrency);
             const results = await Promise.allSettled(batch.map(key => this.copyToSoftDeleted(key)));
 
             for (const [index, result] of results.entries()) {
@@ -258,9 +260,9 @@ export class S3StorageProvider implements IStorageProvider {
         }
 
         const source = this.objectKey(key);
-        const destination = `${this.prefix}${S3StorageProvider.softDeletedFolder}${key}`;
+        const destination = `${this.prefix}${this.softDeletedFolder}${key}`;
 
-        if (info.size > S3StorageProvider.maxSingleCopyBytes) {
+        if (info.size > this.maxSingleCopyBytes) {
             await this.multipartCopy(source, destination, info.size);
             return true;
         }
@@ -295,8 +297,8 @@ export class S3StorageProvider implements IStorageProvider {
 
         try {
             const parts: CompletedPart[] = [];
-            for (let start = 0; start < size; start += S3StorageProvider.multipartCopyPartBytes) {
-                const end = Math.min(start + S3StorageProvider.multipartCopyPartBytes, size) - 1;
+            for (let start = 0; start < size; start += this.multipartCopyPartBytes) {
+                const end = Math.min(start + this.multipartCopyPartBytes, size) - 1;
                 const partNumber = parts.length + 1;
 
                 const response = await this.s3.send(
@@ -342,8 +344,8 @@ export class S3StorageProvider implements IStorageProvider {
     private async deleteObjectKeys(objectKeys: string[]): Promise<unknown[]> {
         const failures: unknown[] = [];
 
-        for (let i = 0; i < objectKeys.length; i += S3StorageProvider.deleteBatchSize) {
-            const batch = objectKeys.slice(i, i + S3StorageProvider.deleteBatchSize);
+        for (let i = 0; i < objectKeys.length; i += this.deleteBatchSize) {
+            const batch = objectKeys.slice(i, i + this.deleteBatchSize);
 
             try {
                 const response = await this.s3.send(
@@ -402,12 +404,12 @@ export class S3StorageProvider implements IStorageProvider {
         return this.isNotFound(e) ? new StorageNotFoundError(key) : e;
     }
 
-    private static normalisePrefix(rawPrefix: string): string {
+    private normalisePrefix(rawPrefix: string): string {
         const trimmed = rawPrefix.replace(/\/+$/, "");
         return trimmed ? `${trimmed}/` : "";
     }
 
-    private static readSettings(settingsService: SettingsService): S3Settings | null {
+    private readSettings(settingsService: SettingsService): S3Settings | null {
         const endpoint = settingsService.getSetting(GlobalEnv.S3_ENDPOINT);
         const bucket = settingsService.getSetting(GlobalEnv.S3_BUCKET);
         const accessKeyId = settingsService.getSetting(GlobalEnv.S3_ACCESS_KEY_ID);

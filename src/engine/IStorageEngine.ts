@@ -1,8 +1,10 @@
 import type { Readable } from "node:stream";
 import type { ByteRange, StorageBackend, StoredObjectInfo } from "../utils/typeings.js";
 
-export interface IStorageProvider {
+export interface IStorageEngine {
     get id(): StorageBackend;
+
+    get enabled(): boolean;
 
     get(key: string, range?: ByteRange): Promise<Readable>;
 

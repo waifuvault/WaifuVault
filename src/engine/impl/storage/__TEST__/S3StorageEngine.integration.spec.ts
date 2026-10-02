@@ -17,7 +17,7 @@ import { GlobalEnv } from "../../../../model/constants/GlobalEnv.js";
 import { SQLITE_DATA_SOURCE } from "../../../../model/di/tokens.js";
 import { StorageNotFoundError } from "../../../../model/exceptions/StorageNotFoundError.js";
 import { SettingsService } from "../../../../services/SettingsService.js";
-import { S3StorageProvider } from "../S3StorageProvider.js";
+import { S3StorageEngine } from "../S3StorageEngine.js";
 
 vi.mock("../../../../db/DataSource.js", () => ({ dataSource: {} }));
 
@@ -58,7 +58,7 @@ async function collect(iterable: AsyncIterable<string>): Promise<string[]> {
     return keys.sort();
 }
 
-describe.skipIf(!endpoint)("S3StorageProvider against a real S3 server", () => {
+describe.skipIf(!endpoint)("S3StorageEngine against a real S3 server", () => {
     const logger = { error: vi.fn() };
     const settingsService = {
         getSetting: vi.fn((key: GlobalEnv) => settings.get(key) ?? null),
@@ -69,8 +69,8 @@ describe.skipIf(!endpoint)("S3StorageProvider against a real S3 server", () => {
         ),
     };
     let rawClient: S3Client;
-    let provider: S3StorageProvider;
-    let softDeletingProvider: S3StorageProvider;
+    let provider: S3StorageEngine;
+    let softDeletingProvider: S3StorageEngine;
     let workDir: string;
 
     beforeAll(async () => {
@@ -91,11 +91,11 @@ describe.skipIf(!endpoint)("S3StorageProvider against a real S3 server", () => {
             await rawClient.send(new CreateBucketCommand({ Bucket: bucket }));
         }
 
-        provider = await PlatformTest.invoke<S3StorageProvider>(S3StorageProvider, [
+        provider = await PlatformTest.invoke<S3StorageEngine>(S3StorageEngine, [
             { token: SettingsService, use: settingsService },
             { token: Logger, use: logger },
         ]);
-        softDeletingProvider = await PlatformTest.invoke<S3StorageProvider>(S3StorageProvider, [
+        softDeletingProvider = await PlatformTest.invoke<S3StorageEngine>(S3StorageEngine, [
             { token: SettingsService, use: softDeleteSettingsService },
             { token: Logger, use: logger },
         ]);
