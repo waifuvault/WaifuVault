@@ -22,7 +22,7 @@ import { StorageNotFoundError } from "../../../../model/exceptions/StorageNotFou
 import { StorageOperationError } from "../../../../model/exceptions/StorageOperationError.js";
 import { GlobalEnv } from "../../../../model/constants/GlobalEnv.js";
 import { SettingsService } from "../../../../services/SettingsService.js";
-import { S3StorageProvider } from "../S3StorageProvider.js";
+import { S3StorageEngine } from "../S3StorageEngine.js";
 
 const s3Mock = mockClient(S3Client);
 
@@ -45,17 +45,17 @@ async function collect(iterable: AsyncIterable<string>): Promise<string[]> {
     return keys;
 }
 
-describe("S3StorageProvider", () => {
+describe("S3StorageEngine", () => {
     const settingsService = { getSetting: vi.fn() };
     const logger = { error: vi.fn() };
 
-    function createProvider(overrides: Partial<Record<GlobalEnv, string>> = {}): Promise<S3StorageProvider> {
+    function createProvider(overrides: Partial<Record<GlobalEnv, string>> = {}): Promise<S3StorageEngine> {
         const settings: Partial<Record<GlobalEnv, string>> = { ...baseSettings, ...overrides };
         settingsService.getSetting.mockImplementation(
             (key: GlobalEnv) => settings[key] ?? (key === GlobalEnv.S3_PREFIX ? "" : null),
         );
 
-        return PlatformTest.invoke<S3StorageProvider>(S3StorageProvider, [
+        return PlatformTest.invoke<S3StorageEngine>(S3StorageEngine, [
             { token: SettingsService, use: settingsService },
             { token: Logger, use: logger },
         ]);

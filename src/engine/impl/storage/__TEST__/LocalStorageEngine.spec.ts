@@ -6,7 +6,7 @@ import path from "node:path";
 import type { Readable } from "node:stream";
 import { StorageNotFoundError } from "../../../../model/exceptions/StorageNotFoundError.js";
 import { SQLITE_DATA_SOURCE } from "../../../../model/di/tokens.js";
-import { LocalStorageProvider } from "../LocalStorageProvider.js";
+import { LocalStorageEngine } from "../LocalStorageEngine.js";
 
 const dirs = vi.hoisted(() => ({ root: "" }));
 
@@ -31,9 +31,9 @@ async function readStream(stream: Readable): Promise<string> {
     return Buffer.concat(chunks).toString("utf8");
 }
 
-describe("LocalStorageProvider", () => {
+describe("LocalStorageEngine", () => {
     let stagingRoot: string;
-    let provider: LocalStorageProvider;
+    let provider: LocalStorageEngine;
 
     beforeEach(async () => {
         dirs.root = await fs.mkdtemp(path.join(os.tmpdir(), "wv-files-"));
@@ -44,7 +44,7 @@ describe("LocalStorageProvider", () => {
         });
         vi.resetAllMocks();
 
-        provider = await PlatformTest.invoke<LocalStorageProvider>(LocalStorageProvider);
+        provider = await PlatformTest.invoke<LocalStorageEngine>(LocalStorageEngine);
     });
 
     afterEach(async () => {

@@ -2,21 +2,27 @@ import { Injectable, OnInit, ProviderScope } from "@tsed/di";
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { Readable } from "node:stream";
-import type { IStorageProvider } from "../../IStorageProvider.js";
+import type { IStorageEngine } from "../../IStorageEngine.js";
 import type { ByteRange, StorageBackend, StoredObjectInfo } from "../../../utils/typeings.js";
 import { StorageNotFoundError } from "../../../model/exceptions/StorageNotFoundError.js";
 import { StorageOperationError } from "../../../model/exceptions/StorageOperationError.js";
 import { filesDir, getSoftDeleteLocation, stagingDir } from "../../../utils/Utils.js";
+import { STORAGE_ENGINE } from "../../../model/di/tokens.js";
 
 @Injectable({
     scope: ProviderScope.SINGLETON,
+    type: STORAGE_ENGINE,
 })
-export class LocalStorageProvider implements IStorageProvider, OnInit {
+export class LocalStorageEngine implements IStorageEngine, OnInit {
     private readonly root = path.resolve(filesDir);
     private readonly stagingName = path.basename(stagingDir);
 
     public get id(): StorageBackend {
         return "local";
+    }
+
+    public get enabled(): boolean {
+        return true;
     }
 
     public async $onInit(): Promise<void> {
