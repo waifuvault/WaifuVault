@@ -90,7 +90,7 @@ export type StagedUpload = Pick<PlatformMulterFile, "path" | "originalname">;
 
 export type FileUploadProps = {
     ip: string;
-    source: StagedUpload | string;
+    source: StagedUpload;
     options: FileUploadQueryParameters;
     password?: string;
     secretToken?: string;

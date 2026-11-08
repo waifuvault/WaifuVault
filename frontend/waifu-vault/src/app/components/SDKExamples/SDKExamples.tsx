@@ -50,10 +50,7 @@ export default function SDKExamples() {
             id: "curl",
             name: "Curl",
             language: "bash",
-            code: `// upload file via URL
-curl --request PUT --url ${waifuVaultBackend}/rest --data url=https://victorique.moe/img/slider/Quotes.jpg
-
-// upload file via File
+            code: `// upload file via File
 curl --request PUT --url ${waifuVaultBackend}/rest --header 'Content-Type: multipart/form-data' --form file=@someFile.png`,
         },
         {
@@ -68,12 +65,6 @@ curl --request PUT --url ${waifuVaultBackend}/rest --header 'Content-Type: multi
 // upload file
 const resp = await Waifuvault.uploadFile({
     file: "./files/aCoolFile.jpg"
-});
-console.log(resp.url); // the file download URL
-
-// upload via URL
-const resp = await Waifuvault.uploadFile({
-    url: "https://waifuvault.moe/assets/custom/images/vic_vault.webp"
 });
 console.log(resp.url); // the file download URL
 
@@ -100,11 +91,6 @@ upload_file = waifuvault.FileUpload("./files/aCoolFile.png")
 upload_res = waifuvault.upload_file(upload_file)
 print(upload_res.url)
 
-# upload via URL
-upload_file = waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/vic_vault.webp")
-upload_res = waifuvault.upload_file(upload_file)
-print(upload_res.url)
-
 # upload a buffer
 with open("./files/aCoolFile.png", "rb") as fh:
     buf = io.BytesIO(fh.read())
@@ -120,29 +106,7 @@ print(upload_res.url)`,
             sdkUrl: "https://pkg.go.dev/github.com/waifuvault/waifuVault-go-api",
             sdkText: "WaifuVault Go API",
             language: "go",
-            code: `//upload via URL
-package main
-
-import (
-	"context"
-	"fmt"
-	"github.com/waifuvault/waifuVault-go-api/pkg"
-	waifuMod "github.com/waifuvault/waifuVault-go-api/pkg/mod" // namespace mod
-	"net/http"
-)
-
-func main() {
-	api := waifuVault.NewWaifuvaltApi(http.Client{})
-	file, err := api.UploadFile(context.TODO(), waifuMod.WaifuvaultPutOpts{
-		Url: "https://waifuvault.moe/assets/custom/images/vic_vault.webp",
-	})
-	if err != nil {
-		return
-	}
-	fmt.Printf(file.URL) // the URL
-}
-
-// upload file
+            code: `// upload file
 package main
 
 import (
@@ -186,11 +150,6 @@ var uploadFile = new Waifuvault.FileUpload("./aCoolFile.png");
 var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
 Console.WriteLine(uploadResp.url);
 
-// Upload via URL
-var uploadFile = new Waifuvault.FileUpload("https://waifuvault.moe/assets/custom/images/vic_vault.webp");
-var uploadResp = await Waifuvault.Api.uploadFile(uploadFile);
-Console.WriteLine(uploadResp.url);
-
 // Upload via Buffer
 byte[] buffer = File.ReadAllBytes("./aCoolFile.png");
 var uploadFile = new Waifuvault.FileUpload(buffer,"aCoolFile.png");
@@ -220,11 +179,6 @@ async fn main() -> anyhow::Result<()> {
         .one_time_download(true); // Delete after first access
     let response = caller.upload_file(request).await?;
 
-    // Upload a file from a URL
-    let request = WaifuUploadRequest::new()
-        .url("https://some-website/image.jpg"); // URL to content
-    let response = caller.upload_file(request).await?;
-
     // Upload a file from raw bytes
     let data = std::fs::read("some/file/path")?;
     let request = WaifuUploadRequest::new()
@@ -250,11 +204,6 @@ try (final Waifuvault api = new Waifuvault()) {
         FileUpload.fromFile("./files/aCoolFile.jpg"));
     System.out.println(resp.url());
 
-    // upload via URL
-    final var resp = api.uploadFile(
-        FileUpload.fromUrl("https://waifuvault.moe/assets/custom/images/08.png"));
-    System.out.println(resp.url());
-
     // upload from byte array
     final var resp = api.uploadFile(
         FileUpload.fromBytes("someData".getBytes(), "aCoolFile.jpg"));
@@ -275,15 +224,6 @@ use ErnestMarcinko\\WaifuVault\\WaifuApi;
 $waifu = new WaifuApi();
 $response = $waifu->uploadFile(array(
 	'file' =>   __DIR__ . '/image.jpg',
-));
-var_dump($response);
-
-// Upload via URL
-use ErnestMarcinko\\WaifuVault\\WaifuApi;
-
-$waifu = new WaifuApi();
-$response = $waifu->uploadFile(array(
-	'url' =>   'https://waifuvault.moe/assets/custom/images/vic_vault.webp',
 ));
 var_dump($response);
 
@@ -310,11 +250,6 @@ var_dump($response);`,
 # Upload file from disk
   options = %{}
   {:ok, fileResponse} = WaifuVault.upload_local_file("./mix.exs", "my_mix.exs", options)
-  {:ok, %{...}}
-
-# Upload file from URL
-  options = %{}
-  {:ok, fileResponse} = WaifuVault.upload_via_url(image_url, options)
   {:ok, %{...}}
 
 # Upload file from buffer

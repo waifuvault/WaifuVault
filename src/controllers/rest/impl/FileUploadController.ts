@@ -10,7 +10,6 @@ import { MultipartFile, type PlatformMulterFile } from "@tsed/platform-multer";
 import { RateLimit } from "../../../middleware/endpoint/RateLimit.js";
 import { FileUploadService } from "../../../services/FileUploadService.js";
 import { NetworkUtils } from "../../../utils/Utils.js";
-import { StorageService } from "../../../services/StorageService.js";
 import { BaseRestController } from "../BaseRestController.js";
 import { Logger } from "@tsed/logger";
 import { EntryModificationDto } from "../../../model/dto/EntryModificationDto.js";
@@ -29,15 +28,14 @@ export class FileUploadController extends BaseRestController {
         @Inject() private fileUploadService: FileUploadService,
         @Inject() private fileService: FileService,
         @Inject() private logger: Logger,
-        @Inject() private storageService: StorageService,
     ) {
         super();
     }
 
-    @(Put().Description("Upload a file or specify URL to a file.").Summary("Upload a file or send URL"))
+    @(Put().Description("Upload a file.").Summary("Upload a file"))
     @(Put("/:bucketToken")
-        .Description("Upload a file or a URL to a specific bucket, the bucket must exist")
-        .Summary("Upload a file or send URL to a specific bucket"))
+        .Description("Upload a file to a specific bucket, the bucket must exist")
+        .Summary("Upload a file to a specific bucket"))
     @RateLimit({
         key: "upload",
         limitSetting: GlobalEnv.UPLOAD_RATE_LIMIT,
@@ -98,10 +96,6 @@ export class FileUploadController extends BaseRestController {
         @MultipartFile("file")
         file?: PlatformMulterFile,
 
-        @Description("The URL of the file you want to upload")
-        @BodyParams("url")
-        url?: string,
-
         @Description(
             "Set a password for this file, this will encrypt the file on the server that not even the server owner can obtain it, when fetching the file. you can fill out the `x-password` http header with your password to obtain the file via API",
         )
@@ -112,12 +106,8 @@ export class FileUploadController extends BaseRestController {
         @PathParams("bucketToken")
         bucketToken?: string,
     ): Promise<FileUploadModel> {
-        if (file && url) {
-            await this.storageService.removeStaged(file.path);
-            throw new BadRequest("Unable to upload both a file and a url");
-        }
-        if (!file && !url) {
-            throw new BadRequest("Please supply a file or url");
+        if (!file) {
+            throw new BadRequest("Please supply a file");
         }
         const ip = NetworkUtils.getIp(req);
         let uploadModelResponse: FileUploadModel;
@@ -126,7 +116,7 @@ export class FileUploadController extends BaseRestController {
         try {
             [uploadModelResponse, alreadyExists] = await this.fileUploadService.processUpload({
                 ip,
-                source: url || file!,
+                source: file,
                 options: params,
                 password,
                 secretToken,
