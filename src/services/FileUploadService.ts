@@ -1,7 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { FileRepo } from "../db/repo/FileRepo.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
-import { FileUrlService } from "./FileUrlService.js";
 import { Builder, type IBuilder } from "builder-pattern";
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -37,7 +36,6 @@ export class FileUploadService {
 
     public constructor(
         @Inject() private repo: FileRepo,
-        @Inject() private fileUrlService: FileUrlService,
         @Inject() private mimeService: MimeService,
         @Inject() private logger: Logger,
         @Inject() private encryptionService: EncryptionService,
@@ -68,9 +66,9 @@ export class FileUploadService {
         let stagedPath: string;
         let originalFileName: string;
         try {
-            [stagedPath, originalFileName] = await this.determineResourcePathAndFileName(source);
+            [stagedPath, originalFileName] = this.determineResourcePathAndFileName(source);
         } catch (e) {
-            throw this.blockedOrOriginal(e, typeof source === "string" ? source : source.originalname);
+            throw this.blockedOrOriginal(e, source.originalname);
         }
 
         try {
@@ -200,20 +198,14 @@ export class FileUploadService {
         return argon2.hash(password);
     }
 
-    private async determineResourcePathAndFileName(source: StagedUpload | string): Promise<[string, string]> {
-        let resourcePath: string;
-        let originalFileName: string;
-        if (typeof source === "string") {
-            const [filePath, originalFileNameRes] = await this.fileUrlService.getFile(source);
-            resourcePath = filePath;
-            originalFileName = originalFileNameRes;
-        } else {
-            resourcePath = source.path;
-            originalFileName = Buffer.from(source.originalname, "latin1").toString("utf8");
-        }
+    private determineResourcePathAndFileName(source: StagedUpload): [string, string] {
+        const resourcePath = source.path;
+        let originalFileName = Buffer.from(source.originalname, "latin1").toString("utf8");
+
         if (originalFileName.startsWith("/")) {
             originalFileName = originalFileName.substring(1);
         }
+
         return [resourcePath, originalFileName];
     }
 

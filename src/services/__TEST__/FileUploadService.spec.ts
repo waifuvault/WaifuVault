@@ -10,7 +10,6 @@ import { FileUploadService } from "../FileUploadService.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import { FileUtils } from "../../utils/Utils.js";
 import { FileRepo } from "../../db/repo/FileRepo.js";
-import { FileUrlService } from "../FileUrlService.js";
 import { MimeService } from "../MimeService.js";
 import { EncryptionService } from "../EncryptionService.js";
 import { RecordInfoSocket } from "../socket/RecordInfoSocket.js";
@@ -64,7 +63,6 @@ function accessDenied(code: string): NodeJS.ErrnoException {
 
 describe("FileUploadService", () => {
     const repo = { getEntriesFromChecksum: vi.fn(), saveEntry: vi.fn(), getEntries: vi.fn() };
-    const fileUrlService = { getFile: vi.fn() };
     const mimeService = { findMimeType: vi.fn(), isBlocked: vi.fn() };
     const logger = { error: vi.fn(), warn: vi.fn() };
     const encryptionService = {
@@ -126,7 +124,6 @@ describe("FileUploadService", () => {
 
         service = await PlatformTest.invoke<FileUploadService>(FileUploadService, [
             { token: FileRepo, use: repo },
-            { token: FileUrlService, use: fileUrlService },
             { token: MimeService, use: mimeService },
             { token: Logger, use: logger },
             { token: EncryptionService, use: encryptionService },
@@ -385,21 +382,6 @@ describe("FileUploadService", () => {
             expect(storageService.removeStaged).toHaveBeenCalledWith(stagedPath);
         });
 
-        it("uses the staged path and file name returned by FileUrlService for a URL source", async () => {
-            // given
-            fileUrlService.getFile.mockResolvedValue([stagedPath, "/from-url.png"]);
-
-            // when
-            const [saved] = await service.processUpload(uploadProps({ source: "https://example.com/from-url.png" }));
-
-            // then
-            expect(fileUrlService.getFile).toHaveBeenCalledWith("https://example.com/from-url.png");
-            expect(storageService.commit).toHaveBeenCalledWith(stagedPath, expect.any(FileUploadModel));
-            expect(saved.originalFileName).toBe("from-url.png");
-            expect(saved.fileExtension).toBe("png");
-            expect(storageService.removeStaged).toHaveBeenCalledWith(stagedPath);
-        });
-
         it("rejects with Failed to store file when the host antivirus blocks reading the staged file on commit", async () => {
             // given
             storageService.commit.mockRejectedValue(accessDenied("EPERM"));
@@ -426,19 +408,6 @@ describe("FileUploadService", () => {
             expect(logger.error).not.toHaveBeenCalled();
             expect(storageService.commit).not.toHaveBeenCalled();
             expect(storageService.removeStaged).toHaveBeenCalledWith(stagedPath);
-        });
-
-        it("rejects with Failed to store file when the host antivirus blocks writing a URL download to staging", async () => {
-            // given
-            fileUrlService.getFile.mockRejectedValue(accessDenied("EPERM"));
-
-            // when
-            const result = service.processUpload(uploadProps({ source: "https://example.com/blocked.exe" }));
-
-            // then
-            await expect(result).rejects.toThrow(new BadRequest("Failed to store file"));
-            expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("https://example.com/blocked.exe"));
-            expect(storageService.commit).not.toHaveBeenCalled();
         });
     });
 
