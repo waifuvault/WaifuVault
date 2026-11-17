@@ -5,6 +5,7 @@ export { useBucket } from "./useBucket";
 export { useBucketAuth } from "./useBucketAuth";
 export { useCaptcha } from "./useCaptcha";
 export { useContextMenu } from "./useContextMenu";
+export { useDebouncedValue } from "./useDebouncedValue";
 export { useEnvironment } from "./useEnvironment";
 export { useErrorHandler } from "./useErrorHandler";
 export { useFileUpload } from "./useFileUpload";

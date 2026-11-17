@@ -1,4 +1,5 @@
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
+import type { FileSortColumn, SortDirection } from "../utils/typeings.js";
 
 /**
  * An admin service is a service that the admin page will use to be able to render content.
@@ -7,14 +8,13 @@ import { FileUploadModel } from "../model/db/FileUpload.model.js";
 export interface IAdminService {
     getAllEntries(): Promise<FileUploadModel[]>;
     deleteEntries(ids: number[]): Promise<boolean>;
-    getPagedEntries(
+    getMatchingEntries(
         start: number,
         length: number,
-        sortColumn?: string,
-        sortDir?: string,
+        sortColumn?: FileSortColumn,
+        sortDirection?: SortDirection,
         search?: string,
     ): Promise<FileUploadModel[]>;
-    getFileSearchRecordCount(search: string): Promise<number>;
-    getFileRecordCount(): Promise<number>;
+    getMatchingRecordCount(search?: string): Promise<number>;
     getStatsData(): Promise<FileUploadModel[]>;
 }

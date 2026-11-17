@@ -2,15 +2,22 @@
 
 import { useCallback } from "react";
 import { useEnvironment } from "./useEnvironment";
-import type { AdminFileData } from "@/types/AdminTypes";
-import type { BlockedIp } from "@/app/utils/api/adminApi";
+import type { AdminData } from "@/types/AdminTypes";
+import type { AdminFileQuery, BlockedIp, BucketFileCount } from "@/app/utils/api/adminApi";
 import * as adminApi from "@/app/utils/api/adminApi";
 
 export function useAdmin() {
     const { waifuVaultBackend } = useEnvironment();
 
-    const getAllEntries = useCallback(async (): Promise<AdminFileData[]> => {
-        return adminApi.getAllEntries(waifuVaultBackend);
+    const getPagedEntries = useCallback(
+        async (query: AdminFileQuery): Promise<AdminData> => {
+            return adminApi.getPagedEntries(waifuVaultBackend, query);
+        },
+        [waifuVaultBackend],
+    );
+
+    const getBucketFileCounts = useCallback(async (): Promise<BucketFileCount[]> => {
+        return adminApi.getBucketFileCounts(waifuVaultBackend);
     }, [waifuVaultBackend]);
 
     const deleteFiles = useCallback(
@@ -46,7 +53,8 @@ export function useAdmin() {
     );
 
     return {
-        getAllEntries,
+        getPagedEntries,
+        getBucketFileCounts,
         deleteFiles,
         getBlockedIps,
         unblockIps,

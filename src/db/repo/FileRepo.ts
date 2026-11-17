@@ -3,6 +3,7 @@ import { FileDao } from "../dao/FileDao.js";
 import { FileUploadModel } from "../../model/db/FileUpload.model.js";
 import Path from "node:path";
 import { ThumbnailCacheRepo } from "./ThumbnailCacheRepo.js";
+import type { BucketFileCount, FileSearchTerm, FileSortColumn, SortDirection } from "../../utils/typeings.js";
 
 @Service()
 export class FileRepo {
@@ -61,30 +62,33 @@ export class FileRepo {
         return this.getEntries([token]).then(entries => entries[0].views);
     }
 
-    public getAllEntriesOrdered(
-        start: number,
-        records: number,
-        sortColumn?: string,
-        sortDir?: string,
-        search?: string,
-        bucket?: string,
-    ): Promise<FileUploadModel[]> {
-        // bypass cache
-        return this.fileDao.getAllEntriesOrdered(start, records, sortColumn, sortDir, search, bucket);
-    }
-
     public async deleteEntries(tokens: string[]): Promise<boolean> {
         const entries = await this.getEntries(tokens);
         await this.thumbnailCacheRepo.deleteThumbsIfExist(entries);
         return this.fileDao.deleteEntries(tokens);
     }
 
-    public getRecordCount(bucket?: string): Promise<number> {
-        return this.fileDao.getRecordCount(bucket);
+    public getRecordCount(): Promise<number> {
+        return this.fileDao.getRecordCount();
     }
 
-    public getSearchRecordCount(search: string, bucket?: string): Promise<number> {
-        return this.fileDao.getSearchRecordCount(search, bucket);
+    public getEntriesMatching(
+        terms: FileSearchTerm[],
+        start: number,
+        records: number,
+        sortColumn: FileSortColumn,
+        sortDirection: SortDirection,
+        bucket?: string,
+    ): Promise<FileUploadModel[]> {
+        return this.fileDao.getEntriesMatching(terms, start, records, sortColumn, sortDirection, bucket);
+    }
+
+    public getMatchingRecordCount(terms: FileSearchTerm[], bucket?: string): Promise<number> {
+        return this.fileDao.getMatchingRecordCount(terms, bucket);
+    }
+
+    public getBucketFileCounts(): Promise<BucketFileCount[]> {
+        return this.fileDao.getBucketFileCounts();
     }
 
     public async clearCache(token: string | string[] | null): Promise<void> {

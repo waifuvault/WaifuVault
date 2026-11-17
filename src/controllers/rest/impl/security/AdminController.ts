@@ -6,10 +6,10 @@ import { PlatformResponse, Res } from "@tsed/platform-http";
 import { BodyParams, QueryParams } from "@tsed/platform-params";
 import type {
     AdminDataTaleEntryModel,
+    BucketFileCount,
     DatatableColumn,
     DatatableOrder,
     DatatableSearch,
-    IpBlockedAwareFileEntry,
 } from "../../../../utils/typeings.js";
 import { StatusCodes } from "http-status-codes";
 import { Authorize } from "@tsed/passport";
@@ -31,7 +31,7 @@ export class AdminController extends AbstractAdminController implements IAdminCo
     }
 
     @Get("/datatablesEntries")
-    public override async getDatatablesEntries(
+    public override getDatatablesEntries(
         @QueryParams("draw") draw: number,
         @QueryParams("start") start: number,
         @QueryParams("length") length: number,
@@ -39,25 +39,7 @@ export class AdminController extends AbstractAdminController implements IAdminCo
         @QueryParams("columns") columns: DatatableColumn[],
         @QueryParams("search") search: DatatableSearch,
     ): Promise<AdminDataTaleEntryModel> {
-        let sortColumn;
-        let sortOrder;
-        const searchVal = search ? search.value : undefined;
-        if (order && columns) {
-            sortOrder = order[0]?.dir.toUpperCase();
-            sortColumn = columns[order[0]?.column ?? 0]?.data;
-        }
-        const files = await this.adminService.getPagedEntries(start, length, sortColumn, sortOrder, searchVal);
-        const data = await this.mapIpToFileEntries(files);
-        const records = searchVal
-            ? await this.adminService.getFileSearchRecordCount(search.value)
-            : await this.adminService.getFileRecordCount();
-
-        return {
-            draw: draw,
-            recordsTotal: records,
-            recordsFiltered: records,
-            data: data,
-        };
+        return super.getDatatablesEntries(draw, start, length, order, columns, search);
     }
 
     @Post("/setBucketType")
@@ -77,6 +59,11 @@ export class AdminController extends AbstractAdminController implements IAdminCo
         return this.userAdminService.getAllBlockedIps();
     }
 
+    @Get("/bucketFileCounts")
+    public getBucketFileCounts(): Promise<BucketFileCount[]> {
+        return this.userAdminService.getBucketFileCounts();
+    }
+
     @Post("/blockIp")
     public async blockIp(
         @Res() res: PlatformResponse,
@@ -94,11 +81,6 @@ export class AdminController extends AbstractAdminController implements IAdminCo
             return super.doError(res, "Unable to remove selected ips", StatusCodes.INTERNAL_SERVER_ERROR);
         }
         return super.doSuccess(res, "IP un-blocked");
-    }
-
-    @Get("/allEntries")
-    public override getAllEntries(): Promise<IpBlockedAwareFileEntry[]> {
-        return super.getAllEntries();
     }
 
     @Delete("/deleteEntries")

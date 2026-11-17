@@ -3,6 +3,9 @@ import { DataSource, Repository } from "typeorm";
 import { createTestDataSource } from "../../__TEST__/testDataSource.js";
 import { FileDao } from "../FileDao.js";
 import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
+import { BucketModel } from "../../../model/db/Bucket.model.js";
+import { AlbumModel } from "../../../model/db/Album.model.js";
+import type { FileSearchTerm } from "../../../utils/typeings.js";
 
 function fileFixture(overrides: Partial<FileUploadModel>): Partial<FileUploadModel> {
     return {
@@ -125,6 +128,133 @@ describe("FileDao", () => {
             expect(byId[0].token).toBe("f1");
 
             expect(await dao.getAllEntries([])).toHaveLength(0);
+        });
+    });
+
+    describe("getEntriesMatching", () => {
+        const nameAndIp: FileSearchTerm["columns"] = ["fileName", "fileExtension", "ip", "originalFileName"];
+
+        beforeEach(async () => {
+            await repo.save([
+                repo.create(
+                    fileFixture({ token: "m1", checksum: "m1", ip: "aaa111", originalFileName: "football.png" }),
+                ),
+                repo.create(
+                    fileFixture({ token: "m2", checksum: "m2", ip: "bbb222", originalFileName: "bug_footage.mp4" }),
+                ),
+                repo.create(fileFixture({ token: "m3", checksum: "m3", ip: null, originalFileName: "cat.jpg" })),
+                repo.create(
+                    fileFixture({
+                        token: "m4",
+                        checksum: "m4",
+                        ip: "aaa111",
+                        originalFileName: "food.png",
+                        expires: 1,
+                    }),
+                ),
+            ]);
+        });
+
+        it("matches a term case-insensitively across name and ip and skips expired files", async () => {
+            const terms: FileSearchTerm[] = [{ columns: nameAndIp, value: "FOO", exclude: false, exact: false }];
+
+            const found = await dao.getEntriesMatching(terms, 0, 10, "id", "ASC");
+
+            expect(found.map(file => file.token)).toEqual(["m1", "m2"]);
+        });
+
+        it("excludes an ip while keeping files with no ip", async () => {
+            const terms: FileSearchTerm[] = [{ columns: ["ip"], value: "aaa111", exclude: true, exact: true }];
+
+            const found = await dao.getEntriesMatching(terms, 0, 10, "id", "ASC");
+
+            expect(found.map(file => file.token)).toEqual(["m2", "m3"]);
+            expect(await dao.getMatchingRecordCount(terms)).toBe(2);
+        });
+
+        it("matches an exact ip only, never a part of one", async () => {
+            const partial: FileSearchTerm[] = [{ columns: ["ip"], value: "aaa", exclude: true, exact: true }];
+            const whole: FileSearchTerm[] = [{ columns: ["ip"], value: "AAA111", exclude: false, exact: true }];
+
+            expect(await dao.getMatchingRecordCount(partial)).toBe(3);
+            expect((await dao.getEntriesMatching(whole, 0, 10, "id", "ASC")).map(file => file.token)).toEqual(["m1"]);
+        });
+
+        it("treats underscore and percent as literal characters", async () => {
+            const found = await dao.getEntriesMatching(
+                [{ columns: ["originalFileName"], value: "g_f", exclude: false, exact: false }],
+                0,
+                10,
+                "id",
+                "ASC",
+            );
+
+            expect(found.map(file => file.token)).toEqual(["m2"]);
+            expect(
+                await dao.getMatchingRecordCount([
+                    { columns: ["originalFileName"], value: "l_p", exclude: false, exact: false },
+                ]),
+            ).toBe(0);
+            expect(
+                await dao.getMatchingRecordCount([
+                    { columns: ["originalFileName"], value: "%", exclude: false, exact: false },
+                ]),
+            ).toBe(0);
+        });
+
+        it("pages and sorts in the query", async () => {
+            const found = await dao.getEntriesMatching([], 1, 1, "originalFileName", "DESC");
+
+            expect(found.map(file => file.token)).toEqual(["m3"]);
+            expect(await dao.getMatchingRecordCount([])).toBe(3);
+        });
+    });
+
+    describe("getEntriesMatching in a bucket", () => {
+        it("returns only that bucket's files and matches album names", async () => {
+            await dataSource.getRepository(BucketModel).save([{ bucketToken: "b1" }, { bucketToken: "b2" }]);
+            await dataSource
+                .getRepository(AlbumModel)
+                .save([{ bucketToken: "b1", albumToken: "a1", name: "Holiday Pics" }]);
+            await repo.save([
+                repo.create(
+                    fileFixture({
+                        token: "p1",
+                        checksum: "p1",
+                        bucketToken: "b1",
+                        albumToken: "a1",
+                        originalFileName: "one.png",
+                    }),
+                ),
+                repo.create(
+                    fileFixture({ token: "p2", checksum: "p2", bucketToken: "b1", originalFileName: "two.png" }),
+                ),
+                repo.create(
+                    fileFixture({ token: "p3", checksum: "p3", bucketToken: "b2", originalFileName: "holiday.png" }),
+                ),
+            ]);
+            const terms: FileSearchTerm[] = [
+                { columns: ["originalFileName", "albumName"], value: "holiday", exclude: false, exact: false },
+            ];
+
+            const found = await dao.getEntriesMatching(terms, 0, 10, "id", "ASC", "b1");
+
+            expect(found.map(file => file.token)).toEqual(["p1"]);
+            expect(await dao.getMatchingRecordCount([], "b1")).toBe(2);
+        });
+    });
+
+    describe("getBucketFileCounts", () => {
+        it("counts unexpired files per bucket and ignores files with no bucket", async () => {
+            await dataSource.getRepository(BucketModel).save([{ bucketToken: "b1" }, { bucketToken: "b2" }]);
+            await repo.save([
+                repo.create(fileFixture({ token: "n1", checksum: "n1", bucketToken: "b1" })),
+                repo.create(fileFixture({ token: "n2", checksum: "n2", bucketToken: "b1" })),
+                repo.create(fileFixture({ token: "n3", checksum: "n3", bucketToken: "b2", expires: 1 })),
+                repo.create(fileFixture({ token: "n4", checksum: "n4", bucketToken: null })),
+            ]);
+
+            expect(await dao.getBucketFileCounts()).toEqual([{ token: "b1", fileCount: 2 }]);
         });
     });
 

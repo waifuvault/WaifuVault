@@ -117,6 +117,30 @@ export type AdminDataTaleEntryModel = {
     data: IpBlockedAwareFileEntry[];
 };
 
+export type FileSearchColumn = "fileName" | "fileExtension" | "ip" | "originalFileName" | "albumName";
+
+export type FileSearchTerm = {
+    columns: FileSearchColumn[];
+    value: string;
+    exclude: boolean;
+    exact: boolean;
+};
+
+export type FileSortColumn =
+    | "id"
+    | "originalFileName"
+    | "createdAt"
+    | "fileSize"
+    | "fileExtension"
+    | "addedToAlbumOrder";
+
+export type SortDirection = "ASC" | "DESC";
+
+export type BucketFileCount = {
+    token: string;
+    fileCount: number;
+};
+
 export type WorkerResponse<T> = {
     success: boolean;
     error?: string;

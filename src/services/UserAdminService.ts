@@ -9,6 +9,7 @@ import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
 import BucketType from "../model/constants/BucketType.js";
+import type { BucketFileCount } from "../utils/typeings.js";
 
 /**
  * This is an admin service that will work when logged in as a user
@@ -30,14 +31,12 @@ export class UserAdminService extends AbstractAdminService {
         return allEntries.filter(e => !e.hasExpired);
     }
 
-    public override getPagedEntries(
-        start: number,
-        length: number,
-        sortColumn = "id",
-        sortDir = "ASC",
-        search?: string,
-    ): Promise<FileUploadModel[]> {
-        return this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search);
+    protected override getBucketScope(): string | undefined {
+        return undefined;
+    }
+
+    public getBucketFileCounts(): Promise<BucketFileCount[]> {
+        return this.repo.getBucketFileCounts();
     }
 
     public getAllBlockedIps(): Promise<IpBlackListModel[]> {
