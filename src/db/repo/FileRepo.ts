@@ -62,30 +62,14 @@ export class FileRepo {
         return this.getEntries([token]).then(entries => entries[0].views);
     }
 
-    public getAllEntriesOrdered(
-        start: number,
-        records: number,
-        bucket: string,
-        sortColumn?: string,
-        sortDir?: string,
-        search?: string,
-    ): Promise<FileUploadModel[]> {
-        // bypass cache
-        return this.fileDao.getAllEntriesOrdered(start, records, bucket, sortColumn, sortDir, search);
-    }
-
     public async deleteEntries(tokens: string[]): Promise<boolean> {
         const entries = await this.getEntries(tokens);
         await this.thumbnailCacheRepo.deleteThumbsIfExist(entries);
         return this.fileDao.deleteEntries(tokens);
     }
 
-    public getRecordCount(bucket?: string): Promise<number> {
-        return this.fileDao.getRecordCount(bucket);
-    }
-
-    public getSearchRecordCount(search: string, bucket: string): Promise<number> {
-        return this.fileDao.getSearchRecordCount(search, bucket);
+    public getRecordCount(): Promise<number> {
+        return this.fileDao.getRecordCount();
     }
 
     public getEntriesMatching(
@@ -94,12 +78,13 @@ export class FileRepo {
         records: number,
         sortColumn: FileSortColumn,
         sortDirection: SortDirection,
+        bucket?: string,
     ): Promise<FileUploadModel[]> {
-        return this.fileDao.getEntriesMatching(terms, start, records, sortColumn, sortDirection);
+        return this.fileDao.getEntriesMatching(terms, start, records, sortColumn, sortDirection, bucket);
     }
 
-    public getMatchingRecordCount(terms: FileSearchTerm[]): Promise<number> {
-        return this.fileDao.getMatchingRecordCount(terms);
+    public getMatchingRecordCount(terms: FileSearchTerm[], bucket?: string): Promise<number> {
+        return this.fileDao.getMatchingRecordCount(terms, bucket);
     }
 
     public getBucketFileCounts(): Promise<BucketFileCount[]> {

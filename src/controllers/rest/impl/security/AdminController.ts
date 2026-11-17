@@ -10,11 +10,8 @@ import type {
     DatatableColumn,
     DatatableOrder,
     DatatableSearch,
-    FileSortColumn,
-    SortDirection,
 } from "../../../../utils/typeings.js";
 import { StatusCodes } from "http-status-codes";
-import { BadRequest } from "@tsed/exceptions";
 import { Authorize } from "@tsed/passport";
 import { IAdminController } from "../../IAdminController.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
@@ -26,17 +23,6 @@ import BucketType from "../../../../model/constants/BucketType.js";
 @Authorize("loginAuthProvider")
 @Controller("/admin")
 export class AdminController extends AbstractAdminController implements IAdminController {
-    private readonly sortableColumns: FileSortColumn[] = [
-        "id",
-        "originalFileName",
-        "createdAt",
-        "fileSize",
-        "fileExtension",
-        "addedToAlbumOrder",
-    ];
-
-    private readonly sortDirections: SortDirection[] = ["ASC", "DESC"];
-
     public constructor(
         @Inject() private userAdminService: UserAdminService,
         @Inject() blackListRepo: IpBlackListRepo,
@@ -45,7 +31,7 @@ export class AdminController extends AbstractAdminController implements IAdminCo
     }
 
     @Get("/datatablesEntries")
-    public override async getDatatablesEntries(
+    public override getDatatablesEntries(
         @QueryParams("draw") draw: number,
         @QueryParams("start") start: number,
         @QueryParams("length") length: number,
@@ -53,37 +39,7 @@ export class AdminController extends AbstractAdminController implements IAdminCo
         @QueryParams("columns") columns: DatatableColumn[],
         @QueryParams("search") search: DatatableSearch,
     ): Promise<AdminDataTaleEntryModel> {
-        const searchVal = search ? search.value : undefined;
-        const requestedColumn = order && columns ? columns[order[0]?.column ?? 0]?.data : undefined;
-        const requestedDirection = order && columns ? order[0]?.dir.toUpperCase() : undefined;
-        const sortColumn = this.sortableColumns.find(column => column === requestedColumn);
-        const sortDirection = this.sortDirections.find(direction => direction === requestedDirection);
-
-        if (requestedColumn !== undefined && sortColumn === undefined) {
-            throw new BadRequest(`Cannot sort by ${requestedColumn}`);
-        }
-        if (requestedDirection !== undefined && sortDirection === undefined) {
-            throw new BadRequest(`Invalid sort direction ${requestedDirection}`);
-        }
-
-        const files = await this.userAdminService.getMatchingEntries(
-            start,
-            length,
-            sortColumn,
-            sortDirection,
-            searchVal,
-        );
-        const data = await this.mapIpToFileEntries(files);
-        const records = searchVal
-            ? await this.userAdminService.getMatchingRecordCount(searchVal)
-            : await this.adminService.getFileRecordCount();
-
-        return {
-            draw: draw,
-            recordsTotal: records,
-            recordsFiltered: records,
-            data: data,
-        };
+        return super.getDatatablesEntries(draw, start, length, order, columns, search);
     }
 
     @Post("/setBucketType")

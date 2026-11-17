@@ -4,6 +4,7 @@ import { createTestDataSource } from "../../__TEST__/testDataSource.js";
 import { FileDao } from "../FileDao.js";
 import { FileUploadModel } from "../../../model/db/FileUpload.model.js";
 import { BucketModel } from "../../../model/db/Bucket.model.js";
+import { AlbumModel } from "../../../model/db/Album.model.js";
 import type { FileSearchTerm } from "../../../utils/typeings.js";
 
 function fileFixture(overrides: Partial<FileUploadModel>): Partial<FileUploadModel> {
@@ -206,6 +207,40 @@ describe("FileDao", () => {
 
             expect(found.map(file => file.token)).toEqual(["m3"]);
             expect(await dao.getMatchingRecordCount([])).toBe(3);
+        });
+    });
+
+    describe("getEntriesMatching in a bucket", () => {
+        it("returns only that bucket's files and matches album names", async () => {
+            await dataSource.getRepository(BucketModel).save([{ bucketToken: "b1" }, { bucketToken: "b2" }]);
+            await dataSource
+                .getRepository(AlbumModel)
+                .save([{ bucketToken: "b1", albumToken: "a1", name: "Holiday Pics" }]);
+            await repo.save([
+                repo.create(
+                    fileFixture({
+                        token: "p1",
+                        checksum: "p1",
+                        bucketToken: "b1",
+                        albumToken: "a1",
+                        originalFileName: "one.png",
+                    }),
+                ),
+                repo.create(
+                    fileFixture({ token: "p2", checksum: "p2", bucketToken: "b1", originalFileName: "two.png" }),
+                ),
+                repo.create(
+                    fileFixture({ token: "p3", checksum: "p3", bucketToken: "b2", originalFileName: "holiday.png" }),
+                ),
+            ]);
+            const terms: FileSearchTerm[] = [
+                { columns: ["originalFileName", "albumName"], value: "holiday", exclude: false, exact: false },
+            ];
+
+            const found = await dao.getEntriesMatching(terms, 0, 10, "id", "ASC", "b1");
+
+            expect(found.map(file => file.token)).toEqual(["p1"]);
+            expect(await dao.getMatchingRecordCount([], "b1")).toBe(2);
         });
     });
 

@@ -5,12 +5,10 @@ import { SQLITE_DATA_SOURCE } from "../../model/di/tokens.js";
 import {
     DataSource,
     EntityManager,
-    Equal,
     FindOptionsRelations,
     In,
     IsNull,
     LessThan,
-    Like,
     MoreThan,
     Or,
     SelectQueryBuilder,
@@ -19,7 +17,13 @@ import { FindOperator } from "typeorm/find-options/FindOperator.js";
 import { AfterInit } from "@tsed/platform-http";
 import xxhash from "xxhash-wasm";
 import { TimedSet } from "../../utils/timedSet/TimedSet.js";
-import type { BucketFileCount, FileSearchTerm, FileSortColumn, SortDirection } from "../../utils/typeings.js";
+import type {
+    BucketFileCount,
+    FileSearchColumn,
+    FileSearchTerm,
+    FileSortColumn,
+    SortDirection,
+} from "../../utils/typeings.js";
 
 @Injectable()
 export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements AfterInit {
@@ -41,6 +45,14 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
     };
 
     private readonly notExpiredCondition = "(file.expires > :now OR file.expires IS NULL)";
+
+    private readonly searchColumns: Record<FileSearchColumn, string> = {
+        fileName: "file.fileName",
+        fileExtension: "file.fileExtension",
+        ip: "file.ip",
+        originalFileName: "file.originalFileName",
+        albumName: "album.name",
+    };
 
     public async $afterInit(): Promise<void> {
         const { h64ToString } = await xxhash();
@@ -145,46 +157,6 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         });
     }
 
-    public getAllEntriesOrdered(
-        start: number,
-        records: number,
-        bucket: string,
-        sortColumn?: string,
-        sortOrder?: string,
-        search?: string,
-        transaction?: EntityManager,
-    ): Promise<FileUploadModel[]> {
-        const orderOptions = sortColumn ? { [sortColumn]: sortOrder } : {};
-        if (search) {
-            search = `%${search}%`;
-            return this.getRepository(transaction).find({
-                where: [
-                    { album: { name: Like(search) }, bucketToken: Equal(bucket), expires: this.expiresCondition },
-                    { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                    { fileExtension: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                    { ip: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                    { originalFileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                ],
-                order: orderOptions,
-                skip: start,
-                take: records,
-                relations: {
-                    album: true,
-                },
-            });
-        }
-
-        return this.getRepository(transaction).find({
-            where: {
-                bucketToken: Equal(bucket),
-                expires: this.expiresCondition,
-            },
-            order: orderOptions,
-            skip: start,
-            take: records,
-        });
-    }
-
     public async getEntryFileName(fileName: string, transaction?: EntityManager): Promise<FileUploadModel | null> {
         const r = await this.getRepository(transaction).findOne({
             where: {
@@ -199,30 +171,9 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         return r;
     }
 
-    public getRecordCount(bucket?: string, transaction?: EntityManager): Promise<number> {
-        if (bucket) {
-            return this.getRepository(transaction).count({
-                where: {
-                    expires: this.expiresCondition,
-                    bucketToken: Equal(bucket),
-                },
-            });
-        }
+    public getRecordCount(transaction?: EntityManager): Promise<number> {
         return this.getRepository(transaction).count({
             where: { expires: this.expiresCondition },
-        });
-    }
-
-    public getSearchRecordCount(search: string, bucket: string, transaction?: EntityManager): Promise<number> {
-        search = `%${search}%`;
-        return this.getRepository(transaction).count({
-            where: [
-                { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                { fileExtension: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                { ip: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                { originalFileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                { album: { name: Like(search) }, bucketToken: Equal(bucket), expires: this.expiresCondition },
-            ],
         });
     }
 
@@ -232,10 +183,10 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         records: number,
         sortColumn: FileSortColumn,
         sortDirection: SortDirection,
+        bucket?: string,
         transaction?: EntityManager,
     ): Promise<FileUploadModel[]> {
-        return this.getMatchingQuery(terms, transaction)
-            .leftJoinAndSelect("file.album", "album")
+        return this.getMatchingQuery(terms, bucket, transaction)
             .orderBy(`file.${sortColumn}`, sortDirection)
             .addOrderBy("file.id", sortDirection)
             .skip(start)
@@ -243,8 +194,12 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
             .getMany();
     }
 
-    public getMatchingRecordCount(terms: FileSearchTerm[], transaction?: EntityManager): Promise<number> {
-        return this.getMatchingQuery(terms, transaction).getCount();
+    public getMatchingRecordCount(
+        terms: FileSearchTerm[],
+        bucket?: string,
+        transaction?: EntityManager,
+    ): Promise<number> {
+        return this.getMatchingQuery(terms, bucket, transaction).getCount();
     }
 
     public async getBucketFileCounts(transaction?: EntityManager): Promise<BucketFileCount[]> {
@@ -262,11 +217,17 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
 
     private getMatchingQuery(
         terms: FileSearchTerm[],
+        bucket?: string,
         transaction?: EntityManager,
     ): SelectQueryBuilder<FileUploadModel> {
         const query = this.getRepository(transaction)
             .createQueryBuilder("file")
+            .leftJoinAndSelect("file.album", "album")
             .where(this.notExpiredCondition, { now: Date.now() });
+
+        if (bucket !== undefined) {
+            query.andWhere("file.bucketToken = :bucket", { bucket });
+        }
 
         for (const [index, term] of terms.entries()) {
             const parameter = `term${index}`;
@@ -274,7 +235,7 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
             const pattern = term.exact ? value : `%${value.replace(/[\\%_]/g, "\\$&")}%`;
             const comparison = term.exact ? `= :${parameter}` : `LIKE :${parameter} ESCAPE '\\'`;
             const matches = term.columns
-                .map(column => `LOWER(COALESCE(file.${column}, '')) ${comparison}`)
+                .map(column => `LOWER(COALESCE(${this.searchColumns[column]}, '')) ${comparison}`)
                 .join(" OR ");
 
             query.andWhere(term.exclude ? `NOT (${matches})` : `(${matches})`, { [parameter]: pattern });

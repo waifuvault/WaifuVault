@@ -8,6 +8,7 @@ import { BucketService } from "./BucketService.js";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { GlobalEnv } from "../model/constants/GlobalEnv.js";
 import BucketType from "../model/constants/BucketType.js";
+import { BucketAuthenticationException } from "../model/exceptions/BucketAuthenticationException.js";
 
 /**
  * This is an admin service that will work when a bucket is open
@@ -23,12 +24,16 @@ export class BucketAdminService extends AbstractAdminService {
         super(ipBlackListRepo, repo, fileService, settingsDao.getSetting(GlobalEnv.BASE_URL));
     }
 
-    public getFileSearchRecordCount(search: string, bucket: string): Promise<number> {
-        return this.repo.getSearchRecordCount(search, bucket);
-    }
-
-    public override getFileRecordCount(bucket?: string): Promise<number> {
-        return this.repo.getRecordCount(bucket);
+    protected override getBucketScope(): string {
+        const bucketToken = this.bucketService.getLoggedInBucketToken();
+        if (!bucketToken) {
+            throw new BucketAuthenticationException({
+                name: "BucketAuthenticationException",
+                message: "Token is required",
+                status: 401,
+            });
+        }
+        return bucketToken;
     }
 
     public override async getAllEntries(): Promise<FileUploadModel[]> {
@@ -37,17 +42,6 @@ export class BucketAdminService extends AbstractAdminService {
             return [];
         }
         return bucket.files?.filter(e => !e.hasExpired) ?? [];
-    }
-
-    public getPagedEntries(
-        start: number,
-        length: number,
-        sortColumn = "id",
-        sortDir = "ASC",
-        bucket: string,
-        search?: string,
-    ): Promise<FileUploadModel[]> {
-        return this.repo.getAllEntriesOrdered(start, length, bucket, sortColumn, sortDir, search);
     }
 
     public override async deleteEntries(ids: number[]): Promise<boolean> {

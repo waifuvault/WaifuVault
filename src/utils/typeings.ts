@@ -117,7 +117,7 @@ export type AdminDataTaleEntryModel = {
     data: IpBlockedAwareFileEntry[];
 };
 
-export type FileSearchColumn = "fileName" | "fileExtension" | "ip" | "originalFileName";
+export type FileSearchColumn = "fileName" | "fileExtension" | "ip" | "originalFileName" | "albumName";
 
 export type FileSearchTerm = {
     columns: FileSearchColumn[];

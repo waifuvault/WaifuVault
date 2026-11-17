@@ -5,6 +5,7 @@ import { PlatformResponse, Res } from "@tsed/platform-http";
 import { BodyParams, PathParams, QueryParams } from "@tsed/platform-params";
 import { UseBefore } from "@tsed/platform-middlewares";
 import type {
+    AdminDataTaleEntryModel,
     DatatableColumn,
     DatatableOrder,
     DatatableSearch,
@@ -33,40 +34,15 @@ export class BucketAdminController extends AbstractAdminController implements IA
     }
 
     @Get("/datatablesEntries")
-    public override async getDatatablesEntries(
+    public override getDatatablesEntries(
         @QueryParams("draw") draw: number,
         @QueryParams("start") start: number,
         @QueryParams("length") length: number,
         @QueryParams("order") order: DatatableOrder[],
         @QueryParams("columns") columns: DatatableColumn[],
         @QueryParams("search") search: DatatableSearch,
-    ): Promise<unknown> {
-        let sortColumn;
-        let sortOrder;
-        const searchVal = search ? search.value : undefined;
-        if (order && columns) {
-            sortOrder = order[0]?.dir.toUpperCase();
-            sortColumn = columns[order[0]?.column ?? 0]?.data;
-        }
-        const bucketToken = this.bucketService.getLoggedInBucketToken()!;
-        const files = await this.bucketAdminService.getPagedEntries(
-            start,
-            length,
-            sortColumn,
-            sortOrder,
-            bucketToken,
-            searchVal,
-        );
-        const data = await this.mapIpToFileEntries(files);
-        const records = searchVal
-            ? await this.bucketAdminService.getFileSearchRecordCount(search.value, bucketToken)
-            : await this.bucketAdminService.getFileRecordCount(bucketToken);
-        return {
-            draw: draw,
-            recordsTotal: records,
-            recordsFiltered: records,
-            data: data,
-        };
+    ): Promise<AdminDataTaleEntryModel> {
+        return super.getDatatablesEntries(draw, start, length, order, columns, search);
     }
 
     @Get("/allEntries")
