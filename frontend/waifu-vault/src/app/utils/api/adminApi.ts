@@ -1,4 +1,18 @@
-import type { AdminFileData } from "@/types/AdminTypes";
+import type { AdminData } from "@/types/AdminTypes";
+
+export type AdminFileQuery = {
+    draw: number;
+    start: number;
+    length: number;
+    sortColumn: string;
+    sortDirection: "asc" | "desc";
+    search: string;
+};
+
+export type BucketFileCount = {
+    token: string;
+    fileCount: number;
+};
 
 export interface BlockedIp {
     id: number;
@@ -12,8 +26,18 @@ export interface UserInfo {
     email: string;
 }
 
-export async function getAllEntries(waifuVaultBackend: string): Promise<AdminFileData[]> {
-    const response = await fetch(`${waifuVaultBackend}/rest/admin/allEntries`, {
+export async function getPagedEntries(waifuVaultBackend: string, query: AdminFileQuery): Promise<AdminData> {
+    const params = new URLSearchParams({
+        draw: String(query.draw),
+        start: String(query.start),
+        length: String(query.length),
+        "order[0][column]": "0",
+        "order[0][dir]": query.sortDirection,
+        "columns[0][data]": query.sortColumn,
+        "search[value]": query.search,
+    });
+
+    const response = await fetch(`${waifuVaultBackend}/rest/admin/datatablesEntries?${params}`, {
         method: "GET",
         credentials: "include",
     });
@@ -22,11 +46,20 @@ export async function getAllEntries(waifuVaultBackend: string): Promise<AdminFil
         throw new Error(`Failed to fetch admin entries: ${response.statusText}`);
     }
 
-    const result = await response.json();
-    if (Array.isArray(result)) {
-        return result.flatMap(item => item.data ?? []);
+    return await response.json();
+}
+
+export async function getBucketFileCounts(waifuVaultBackend: string): Promise<BucketFileCount[]> {
+    const response = await fetch(`${waifuVaultBackend}/rest/admin/bucketFileCounts`, {
+        method: "GET",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch buckets: ${response.statusText}`);
     }
-    return result.data ?? [];
+
+    return await response.json();
 }
 
 export async function deleteFiles(waifuVaultBackend: string, fileIds: number[]): Promise<void> {

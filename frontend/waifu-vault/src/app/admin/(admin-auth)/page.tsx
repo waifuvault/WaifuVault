@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAdmin, useAdminAuth, useErrorHandler } from "@/app/hooks";
-import type { BlockedIp } from "@/app/utils/api/adminApi";
+import type { BlockedIp, BucketFileCount } from "@/app/utils/api/adminApi";
 import { useLoading } from "@/app/contexts";
 import {
     BlockedIpsTable,
@@ -19,18 +19,32 @@ import {
     ParticleBackground,
 } from "@/app/components";
 import { useToast } from "@/app/components/Toast";
+import type { FileBrowserQuery, SortField } from "@/app/components/FileBrowser/FileBrowser";
 import type { AdminFileData } from "@/app/types";
 import { FileWrapper } from "@/app/types";
 import styles from "./page.module.scss";
 
+const sortColumns: Record<SortField, string> = {
+    name: "originalFileName",
+    date: "createdAt",
+    size: "fileSize",
+    type: "fileExtension",
+    layout: "addedToAlbumOrder",
+};
+
 function AdminPageContent() {
     const { isAuthenticated, logout, changeDetails, getCurrentUser } = useAdminAuth();
     const { withLoading } = useLoading();
-    const { getAllEntries, deleteFiles, getBlockedIps, unblockIps, blockIp, setBucketType } = useAdmin();
+    const { getPagedEntries, getBucketFileCounts, deleteFiles, getBlockedIps, unblockIps, blockIp, setBucketType } =
+        useAdmin();
     const { handleError } = useErrorHandler();
     const { showToast } = useToast();
 
     const [adminFiles, setAdminFiles] = useState<AdminFileData[]>([]);
+    const [totalFiles, setTotalFiles] = useState(0);
+    const [bucketFileCounts, setBucketFileCounts] = useState<BucketFileCount[]>([]);
+    const latestQuery = useRef<FileBrowserQuery | null>(null);
+    const latestDraw = useRef(0);
     const [blockedIps, setBlockedIps] = useState<BlockedIp[]>([]);
     const [banIpDialogOpen, setBanIpDialogOpen] = useState(false);
     const [selectedIpsToBan, setSelectedIpsToBan] = useState<string[]>([]);
@@ -44,17 +58,49 @@ function AdminPageContent() {
     const [newEmail, setNewEmail] = useState("");
     const [newPassword, setNewPassword] = useState("");
 
+    const loadFiles = useCallback(
+        async (query: FileBrowserQuery) => {
+            latestQuery.current = query;
+            latestDraw.current += 1;
+            const draw = latestDraw.current;
+
+            try {
+                const result = await getPagedEntries({
+                    draw,
+                    start: (query.page - 1) * query.pageSize,
+                    length: query.pageSize,
+                    sortColumn: sortColumns[query.sortField],
+                    sortDirection: query.sortOrder,
+                    search: query.search.trim(),
+                });
+
+                if (draw !== latestDraw.current) {
+                    return;
+                }
+
+                setAdminFiles(result.data);
+                setTotalFiles(result.recordsFiltered);
+            } catch (error) {
+                handleError(error, { defaultMessage: "Failed to load files" });
+            }
+        },
+        [getPagedEntries, handleError],
+    );
+
     const fetchAdminData = useCallback(async () => {
         await withLoading(async () => {
             try {
-                const [files, ips] = await Promise.all([getAllEntries(), getBlockedIps()]);
-                setAdminFiles(files);
+                const ips = await getBlockedIps();
                 setBlockedIps(ips);
+
+                if (latestQuery.current) {
+                    await loadFiles(latestQuery.current);
+                }
             } catch (error) {
                 handleError(error, { defaultMessage: "Failed to load admin data" });
             }
         });
-    }, [getAllEntries, getBlockedIps, withLoading, handleError]);
+    }, [getBlockedIps, loadFiles, withLoading, handleError]);
 
     const handleDeleteFiles = useCallback(
         async (fileIds: number[]) => {
@@ -140,9 +186,16 @@ function AdminPageContent() {
         setDetailsDialogOpen(true);
     }, []);
 
-    const handleUpgradeBucketClick = useCallback(() => {
-        setUpgradeBucketDialogOpen(true);
-    }, []);
+    const handleUpgradeBucketClick = useCallback(async () => {
+        await withLoading(async () => {
+            try {
+                setBucketFileCounts(await getBucketFileCounts());
+                setUpgradeBucketDialogOpen(true);
+            } catch (error) {
+                handleError(error, { defaultMessage: "Failed to load buckets" });
+            }
+        });
+    }, [getBucketFileCounts, withLoading, handleError]);
 
     const handleUpgradeBucketConfirm = useCallback(async () => {
         if (!selectedBucketToken) {
@@ -199,19 +252,6 @@ function AdminPageContent() {
             }
         });
     }, [newEmail, newPassword, changeDetails, withLoading, handleError, showToast]);
-
-    const uniqueBuckets = useMemo(() => {
-        const bucketMap = new Map<string, number>();
-        adminFiles.forEach(file => {
-            if (file.bucket) {
-                bucketMap.set(file.bucket, (bucketMap.get(file.bucket) ?? 0) + 1);
-            }
-        });
-        return Array.from(bucketMap.entries()).map(([token, fileCount]) => ({
-            token,
-            fileCount,
-        }));
-    }, [adminFiles]);
 
     const mappedFiles = useMemo(() => {
         return adminFiles.map(file => ({
@@ -288,6 +328,8 @@ function AdminPageContent() {
                                     allowUpload={true}
                                     albums={[]}
                                     mode="admin"
+                                    totalFiles={totalFiles}
+                                    onQueryChange={loadFiles}
                                 />
                             </div>
                         </CardBody>
@@ -376,11 +418,11 @@ function AdminPageContent() {
                 <div className={styles.dialogContent}>
                     <p>Select the bucket you want to set as premium:</p>
 
-                    {uniqueBuckets.length === 0 ? (
+                    {bucketFileCounts.length === 0 ? (
                         <p>No buckets found</p>
                     ) : (
                         <div className={styles.bucketList}>
-                            {uniqueBuckets.map(bucket => (
+                            {bucketFileCounts.map(bucket => (
                                 <label key={bucket.token} className={styles.bucketOption}>
                                     <input
                                         type="radio"

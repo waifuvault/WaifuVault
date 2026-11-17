@@ -17,20 +17,9 @@ export abstract class AbstractAdminService implements IAdminService {
     }
 
     public abstract getAllEntries(): Promise<FileUploadModel[]>;
-    public abstract getPagedEntries(
-        start: number,
-        length: number,
-        sortColumn: string,
-        sortDir: string,
-        search?: string,
-    ): Promise<FileUploadModel[]>;
 
     public getFileRecordCount(): Promise<number> {
         return this.repo.getRecordCount();
-    }
-
-    public getFileSearchRecordCount(search: string): Promise<number> {
-        return this.repo.getSearchRecordCount(search);
     }
 
     public async deleteEntries(ids: number[]): Promise<boolean> {

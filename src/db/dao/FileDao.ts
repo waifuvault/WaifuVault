@@ -13,11 +13,13 @@ import {
     Like,
     MoreThan,
     Or,
+    SelectQueryBuilder,
 } from "typeorm";
 import { FindOperator } from "typeorm/find-options/FindOperator.js";
 import { AfterInit } from "@tsed/platform-http";
 import xxhash from "xxhash-wasm";
 import { TimedSet } from "../../utils/timedSet/TimedSet.js";
+import type { BucketFileCount, FileSearchTerm, FileSortColumn, SortDirection } from "../../utils/typeings.js";
 
 @Injectable()
 export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements AfterInit {
@@ -37,6 +39,8 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
             album: true,
         },
     };
+
+    private readonly notExpiredCondition = "(file.expires > :now OR file.expires IS NULL)";
 
     public async $afterInit(): Promise<void> {
         const { h64ToString } = await xxhash();
@@ -144,14 +148,14 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
     public getAllEntriesOrdered(
         start: number,
         records: number,
+        bucket: string,
         sortColumn?: string,
         sortOrder?: string,
         search?: string,
-        bucket?: string,
         transaction?: EntityManager,
     ): Promise<FileUploadModel[]> {
         const orderOptions = sortColumn ? { [sortColumn]: sortOrder } : {};
-        if (search && bucket) {
+        if (search) {
             search = `%${search}%`;
             return this.getRepository(transaction).find({
                 where: [
@@ -170,27 +174,9 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
             });
         }
 
-        if (search) {
-            return this.getRepository(transaction).find({
-                where: this.getSearchQuery(search, bucket),
-                order: orderOptions,
-                skip: start,
-                take: records,
-            });
-        }
-        if (bucket) {
-            return this.getRepository(transaction).find({
-                where: {
-                    bucketToken: Equal(bucket),
-                    expires: this.expiresCondition,
-                },
-                order: orderOptions,
-                skip: start,
-                take: records,
-            });
-        }
         return this.getRepository(transaction).find({
             where: {
+                bucketToken: Equal(bucket),
                 expires: this.expiresCondition,
             },
             order: orderOptions,
@@ -227,41 +213,74 @@ export class FileDao extends AbstractTypeOrmDao<FileUploadModel> implements Afte
         });
     }
 
-    public getSearchRecordCount(search: string, bucket?: string, transaction?: EntityManager): Promise<number> {
-        if (bucket) {
-            search = `%${search}%`;
-            return this.getRepository(transaction).count({
-                where: [
-                    { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                    { fileExtension: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                    { ip: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                    { originalFileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-                    { album: { name: Like(search) }, bucketToken: Equal(bucket), expires: this.expiresCondition },
-                ],
-            });
-        }
-        return this.getRepository(transaction).count({
-            where: this.getSearchQuery(search, bucket),
-        });
-    }
-
-    private getSearchQuery(search: string, bucket?: string): Record<string, FindOperator<unknown>>[] {
+    public getSearchRecordCount(search: string, bucket: string, transaction?: EntityManager): Promise<number> {
         search = `%${search}%`;
-
-        if (bucket) {
-            return [
+        return this.getRepository(transaction).count({
+            where: [
                 { fileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
                 { fileExtension: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
                 { ip: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
                 { originalFileName: Like(search), bucketToken: Equal(bucket), expires: this.expiresCondition },
-            ];
+                { album: { name: Like(search) }, bucketToken: Equal(bucket), expires: this.expiresCondition },
+            ],
+        });
+    }
+
+    public getEntriesMatching(
+        terms: FileSearchTerm[],
+        start: number,
+        records: number,
+        sortColumn: FileSortColumn,
+        sortDirection: SortDirection,
+        transaction?: EntityManager,
+    ): Promise<FileUploadModel[]> {
+        return this.getMatchingQuery(terms, transaction)
+            .leftJoinAndSelect("file.album", "album")
+            .orderBy(`file.${sortColumn}`, sortDirection)
+            .addOrderBy("file.id", sortDirection)
+            .skip(start)
+            .take(records)
+            .getMany();
+    }
+
+    public getMatchingRecordCount(terms: FileSearchTerm[], transaction?: EntityManager): Promise<number> {
+        return this.getMatchingQuery(terms, transaction).getCount();
+    }
+
+    public async getBucketFileCounts(transaction?: EntityManager): Promise<BucketFileCount[]> {
+        const counts = await this.getRepository(transaction)
+            .createQueryBuilder("file")
+            .select("file.bucketToken", "token")
+            .addSelect("COUNT(*)", "fileCount")
+            .where("file.bucketToken IS NOT NULL")
+            .andWhere(this.notExpiredCondition, { now: Date.now() })
+            .groupBy("file.bucketToken")
+            .getRawMany<{ token: string; fileCount: string | number }>();
+
+        return counts.map(count => ({ token: count.token, fileCount: Number(count.fileCount) }));
+    }
+
+    private getMatchingQuery(
+        terms: FileSearchTerm[],
+        transaction?: EntityManager,
+    ): SelectQueryBuilder<FileUploadModel> {
+        const query = this.getRepository(transaction)
+            .createQueryBuilder("file")
+            .where(this.notExpiredCondition, { now: Date.now() });
+
+        for (const [index, term] of terms.entries()) {
+            const parameter = `term${index}`;
+            const value = term.value.toLowerCase();
+            const pattern = term.exact ? value : `%${value.replace(/[\\%_]/g, "\\$&")}%`;
+            const comparison = term.exact ? `= :${parameter}` : `LIKE :${parameter} ESCAPE '\\'`;
+            const matches = term.columns
+                .map(column => `LOWER(COALESCE(file.${column}, '')) ${comparison}`)
+                .join(" OR ");
+
+            query.andWhere(term.exclude ? `NOT (${matches})` : `(${matches})`, { [parameter]: pattern });
         }
-        return [
-            { fileName: Like(search), expires: this.expiresCondition },
-            { fileExtension: Like(search), expires: this.expiresCondition },
-            { ip: Like(search), expires: this.expiresCondition },
-            { originalFileName: Like(search), expires: this.expiresCondition },
-        ];
+
+        return query;
     }
 
     public getAllEntriesForIp(ip: string, transaction?: EntityManager): Promise<FileUploadModel[]> {

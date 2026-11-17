@@ -6,12 +6,15 @@ import { PlatformResponse, Res } from "@tsed/platform-http";
 import { BodyParams, QueryParams } from "@tsed/platform-params";
 import type {
     AdminDataTaleEntryModel,
+    BucketFileCount,
     DatatableColumn,
     DatatableOrder,
     DatatableSearch,
-    IpBlockedAwareFileEntry,
+    FileSortColumn,
+    SortDirection,
 } from "../../../../utils/typeings.js";
 import { StatusCodes } from "http-status-codes";
+import { BadRequest } from "@tsed/exceptions";
 import { Authorize } from "@tsed/passport";
 import { IAdminController } from "../../IAdminController.js";
 import { IpBlackListRepo } from "../../../../db/repo/IpBlackListRepo.js";
@@ -23,6 +26,17 @@ import BucketType from "../../../../model/constants/BucketType.js";
 @Authorize("loginAuthProvider")
 @Controller("/admin")
 export class AdminController extends AbstractAdminController implements IAdminController {
+    private readonly sortableColumns: FileSortColumn[] = [
+        "id",
+        "originalFileName",
+        "createdAt",
+        "fileSize",
+        "fileExtension",
+        "addedToAlbumOrder",
+    ];
+
+    private readonly sortDirections: SortDirection[] = ["ASC", "DESC"];
+
     public constructor(
         @Inject() private userAdminService: UserAdminService,
         @Inject() blackListRepo: IpBlackListRepo,
@@ -39,17 +53,29 @@ export class AdminController extends AbstractAdminController implements IAdminCo
         @QueryParams("columns") columns: DatatableColumn[],
         @QueryParams("search") search: DatatableSearch,
     ): Promise<AdminDataTaleEntryModel> {
-        let sortColumn;
-        let sortOrder;
         const searchVal = search ? search.value : undefined;
-        if (order && columns) {
-            sortOrder = order[0]?.dir.toUpperCase();
-            sortColumn = columns[order[0]?.column ?? 0]?.data;
+        const requestedColumn = order && columns ? columns[order[0]?.column ?? 0]?.data : undefined;
+        const requestedDirection = order && columns ? order[0]?.dir.toUpperCase() : undefined;
+        const sortColumn = this.sortableColumns.find(column => column === requestedColumn);
+        const sortDirection = this.sortDirections.find(direction => direction === requestedDirection);
+
+        if (requestedColumn !== undefined && sortColumn === undefined) {
+            throw new BadRequest(`Cannot sort by ${requestedColumn}`);
         }
-        const files = await this.adminService.getPagedEntries(start, length, sortColumn, sortOrder, searchVal);
+        if (requestedDirection !== undefined && sortDirection === undefined) {
+            throw new BadRequest(`Invalid sort direction ${requestedDirection}`);
+        }
+
+        const files = await this.userAdminService.getMatchingEntries(
+            start,
+            length,
+            sortColumn,
+            sortDirection,
+            searchVal,
+        );
         const data = await this.mapIpToFileEntries(files);
         const records = searchVal
-            ? await this.adminService.getFileSearchRecordCount(search.value)
+            ? await this.userAdminService.getMatchingRecordCount(searchVal)
             : await this.adminService.getFileRecordCount();
 
         return {
@@ -77,6 +103,11 @@ export class AdminController extends AbstractAdminController implements IAdminCo
         return this.userAdminService.getAllBlockedIps();
     }
 
+    @Get("/bucketFileCounts")
+    public getBucketFileCounts(): Promise<BucketFileCount[]> {
+        return this.userAdminService.getBucketFileCounts();
+    }
+
     @Post("/blockIp")
     public async blockIp(
         @Res() res: PlatformResponse,
@@ -94,11 +125,6 @@ export class AdminController extends AbstractAdminController implements IAdminCo
             return super.doError(res, "Unable to remove selected ips", StatusCodes.INTERNAL_SERVER_ERROR);
         }
         return super.doSuccess(res, "IP un-blocked");
-    }
-
-    @Get("/allEntries")
-    public override getAllEntries(): Promise<IpBlockedAwareFileEntry[]> {
-        return super.getAllEntries();
     }
 
     @Delete("/deleteEntries")

@@ -13,7 +13,7 @@ import {
     Toggle,
     Tooltip,
 } from "@/app/components";
-import { useContextMenu, useErrorHandler } from "@/app/hooks";
+import { useContextMenu, useDebouncedValue, useErrorHandler } from "@/app/hooks";
 import { formatDate } from "@/app/utils";
 import styles from "./FileBrowser.module.scss";
 import { type BucketType, FileWrapper, type UploadFile } from "@/app/types";
@@ -28,9 +28,19 @@ import {
 import { useToast } from "@/app/components/Toast";
 import { ConfirmDialog } from "@/app/components/ConfirmDialog/ConfirmDialog";
 
-type SortField = "name" | "date" | "size" | "type" | "layout";
-type SortOrder = "asc" | "desc";
+export type SortField = "name" | "date" | "size" | "type" | "layout";
+export type SortOrder = "asc" | "desc";
 type ViewMode = "grid" | "list" | "detailed";
+
+export type FileBrowserQuery = {
+    search: string;
+    sortField: SortField;
+    sortOrder: SortOrder;
+    page: number;
+    pageSize: number;
+};
+
+const SEARCH_DEBOUNCE_MS = 200;
 
 interface FileBrowserProps {
     files: FileWrapper[];
@@ -67,6 +77,8 @@ interface FileBrowserProps {
     mode: "bucket" | "admin" | "public";
     itemsPerPage?: number;
     showPagination?: boolean;
+    totalFiles?: number;
+    onQueryChange?: (query: FileBrowserQuery) => void;
 }
 
 export function FileBrowser({
@@ -99,6 +111,8 @@ export function FileBrowser({
     mode,
     itemsPerPage = 10,
     showPagination = true,
+    totalFiles,
+    onQueryChange,
 }: FileBrowserProps) {
     const [selectedFiles, setSelectedFiles] = useState<Set<number>>(new Set());
     const [lastSelectedFile, setLastSelectedFile] = useState<number | null>(null);
@@ -135,8 +149,20 @@ export function FileBrowser({
     const fileListRef = useRef<HTMLDivElement>(null);
 
     const isSearchActive = useMemo(() => searchQuery.trim() !== "", [searchQuery]);
+    const isServerPaged = onQueryChange !== undefined;
+    const debouncedSearch = useDebouncedValue(searchQuery, SEARCH_DEBOUNCE_MS);
+    const appliedSearch = isServerPaged ? debouncedSearch : searchQuery;
+    const latestOnQueryChange = useRef(onQueryChange);
+
+    useEffect(() => {
+        latestOnQueryChange.current = onQueryChange;
+    }, [onQueryChange]);
 
     const filteredFiles = useMemo(() => {
+        if (isServerPaged) {
+            return files;
+        }
+
         return files.filter(file => {
             const searchLower = searchQuery.toLowerCase();
             return (
@@ -144,9 +170,13 @@ export function FileBrowser({
                 (file.ip?.toLowerCase().startsWith(searchLower) && mode === "admin")
             );
         });
-    }, [files, searchQuery, mode]);
+    }, [files, searchQuery, mode, isServerPaged]);
 
     const sortedFiles = useMemo(() => {
+        if (isServerPaged) {
+            return filteredFiles;
+        }
+
         return [...filteredFiles].sort((a, b) => {
             if (albumToken && a.addedToAlbumOrder !== null && b.addedToAlbumOrder !== null && sortField === "layout") {
                 const orderA = a.addedToAlbumOrder ?? Infinity;
@@ -182,7 +212,7 @@ export function FileBrowser({
 
             return sortOrder === "asc" ? comparison : -comparison;
         });
-    }, [filteredFiles, sortField, sortOrder, albumToken]);
+    }, [filteredFiles, sortField, sortOrder, albumToken, isServerPaged]);
 
     const handleSelectAll = useCallback(() => {
         const allFileIds = new Set(sortedFiles.map(f => f.id));
@@ -190,10 +220,11 @@ export function FileBrowser({
         onFilesSelected?.(Array.from(allFileIds));
     }, [sortedFiles, onFilesSelected]);
 
-    const totalPages = showPagination ? Math.ceil(sortedFiles.length / currentItemsPerPage) : 1;
+    const fileCount = isServerPaged ? (totalFiles ?? 0) : sortedFiles.length;
+    const totalPages = showPagination ? Math.ceil(fileCount / currentItemsPerPage) : 1;
     const startIndex = showPagination ? (currentPage - 1) * currentItemsPerPage : 0;
-    const endIndex = showPagination ? startIndex + currentItemsPerPage : sortedFiles.length;
-    const previewFiles = showPagination ? sortedFiles.slice(startIndex, endIndex) : sortedFiles;
+    const endIndex = showPagination ? startIndex + currentItemsPerPage : fileCount;
+    const previewFiles = showPagination && !isServerPaged ? sortedFiles.slice(startIndex, endIndex) : sortedFiles;
 
     useEffect(() => {
         const pageSizeKey = getPaginationSizeKey(albumToken);
@@ -204,13 +235,13 @@ export function FileBrowser({
         const savedPage = LocalStorage.getNumberDynamic(pageKey, 1);
         setCurrentPage(savedPage);
 
-        const actualTotalPages = showPagination ? Math.ceil(sortedFiles.length / savedSize) : 1;
+        const actualTotalPages = showPagination ? Math.ceil(fileCount / savedSize) : 1;
 
         if (savedPage > actualTotalPages && actualTotalPages > 0) {
             setCurrentPage(1);
             LocalStorage.setNumberDynamic(pageKey, 1);
         }
-    }, [currentPage, albumToken, itemsPerPage, showPagination, sortedFiles]);
+    }, [currentPage, albumToken, itemsPerPage, showPagination, sortedFiles, fileCount]);
 
     useEffect(() => {
         const viewModeKey = getViewModeKey(albumToken);
@@ -422,21 +453,21 @@ export function FileBrowser({
 
     const isInitialMount = useRef(true);
     const previousFilesLength = useRef(files.length);
-    const previousSearchQuery = useRef(searchQuery);
+    const previousSearchQuery = useRef(appliedSearch);
     const previousAlbumToken = useRef(albumToken);
 
     useEffect(() => {
         if (isInitialMount.current) {
             isInitialMount.current = false;
             previousFilesLength.current = files.length;
-            previousSearchQuery.current = searchQuery;
+            previousSearchQuery.current = appliedSearch;
             previousAlbumToken.current = albumToken;
             return;
         }
 
         const albumChanged = previousAlbumToken.current !== albumToken;
-        const filesChanged = previousFilesLength.current !== files.length;
-        const searchChanged = previousSearchQuery.current !== searchQuery;
+        const filesChanged = !isServerPaged && previousFilesLength.current !== files.length;
+        const searchChanged = previousSearchQuery.current !== appliedSearch;
 
         if ((filesChanged || searchChanged) && !albumChanged) {
             setCurrentPage(1);
@@ -445,9 +476,19 @@ export function FileBrowser({
         }
 
         previousFilesLength.current = files.length;
-        previousSearchQuery.current = searchQuery;
+        previousSearchQuery.current = appliedSearch;
         previousAlbumToken.current = albumToken;
-    }, [files.length, searchQuery, albumToken]);
+    }, [files.length, appliedSearch, albumToken, isServerPaged]);
+
+    useEffect(() => {
+        latestOnQueryChange.current?.({
+            search: debouncedSearch,
+            sortField,
+            sortOrder,
+            page: currentPage,
+            pageSize: currentItemsPerPage,
+        });
+    }, [debouncedSearch, sortField, sortOrder, currentPage, currentItemsPerPage]);
 
     const handleClearSelection = useCallback(() => {
         setSelectedFiles(new Set());
@@ -960,7 +1001,9 @@ export function FileBrowser({
                             <Input
                                 type="text"
                                 placeholder={
-                                    mode === "admin" ? "Search files,types and ip hash..." : "Search files and types..."
+                                    mode === "admin"
+                                        ? "Search files or IPs, -ip: / -name: to exclude"
+                                        : "Search files and types..."
                                 }
                                 className={styles.searchInput}
                                 variant="search"
@@ -1415,7 +1458,7 @@ export function FileBrowser({
                     </div>
 
                     <div className={styles.paginationInfo}>
-                        Showing {startIndex + 1}-{Math.min(endIndex, sortedFiles.length)} of {sortedFiles.length} files
+                        Showing {startIndex + 1}-{Math.min(endIndex, fileCount)} of {fileCount} files
                     </div>
                 </div>
             )}
@@ -1424,7 +1467,7 @@ export function FileBrowser({
 
     return (
         <>
-            {files.length === 0 ? renderEmptyState() : renderFileList()}
+            {files.length === 0 && !(isServerPaged && isSearchActive) ? renderEmptyState() : renderFileList()}
 
             {allowUpload && (
                 <FileUploadModal

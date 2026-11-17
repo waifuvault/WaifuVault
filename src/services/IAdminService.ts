@@ -7,14 +7,6 @@ import { FileUploadModel } from "../model/db/FileUpload.model.js";
 export interface IAdminService {
     getAllEntries(): Promise<FileUploadModel[]>;
     deleteEntries(ids: number[]): Promise<boolean>;
-    getPagedEntries(
-        start: number,
-        length: number,
-        sortColumn?: string,
-        sortDir?: string,
-        search?: string,
-    ): Promise<FileUploadModel[]>;
-    getFileSearchRecordCount(search: string): Promise<number>;
     getFileRecordCount(): Promise<number>;
     getStatsData(): Promise<FileUploadModel[]>;
 }

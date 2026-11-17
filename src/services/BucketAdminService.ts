@@ -23,7 +23,7 @@ export class BucketAdminService extends AbstractAdminService {
         super(ipBlackListRepo, repo, fileService, settingsDao.getSetting(GlobalEnv.BASE_URL));
     }
 
-    public override getFileSearchRecordCount(search: string, bucket?: string): Promise<number> {
+    public getFileSearchRecordCount(search: string, bucket: string): Promise<number> {
         return this.repo.getSearchRecordCount(search, bucket);
     }
 
@@ -39,7 +39,7 @@ export class BucketAdminService extends AbstractAdminService {
         return bucket.files?.filter(e => !e.hasExpired) ?? [];
     }
 
-    public override getPagedEntries(
+    public getPagedEntries(
         start: number,
         length: number,
         sortColumn = "id",
@@ -47,7 +47,7 @@ export class BucketAdminService extends AbstractAdminService {
         bucket: string,
         search?: string,
     ): Promise<FileUploadModel[]> {
-        return this.repo.getAllEntriesOrdered(start, length, sortColumn, sortDir, search, bucket);
+        return this.repo.getAllEntriesOrdered(start, length, bucket, sortColumn, sortDir, search);
     }
 
     public override async deleteEntries(ids: number[]): Promise<boolean> {
