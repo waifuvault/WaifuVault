@@ -3,11 +3,13 @@
 import React from "react";
 import styles from "./Footer.module.scss";
 
+const currentYear = new Date().getFullYear();
+
 export default function Footer() {
     return (
         <footer className={styles.footer}>
             <div className={styles.footerContent}>
-                <p>&copy; {new Date().getFullYear()} WaifuVault. All Rights Reserved.</p>
+                <p>&copy; {currentYear} WaifuVault. All Rights Reserved.</p>
                 <small>
                     Built with ❤️ By{" "}
                     <a href="https://x.com/VictoriqueM" target="_blank" rel="noopener noreferrer">
